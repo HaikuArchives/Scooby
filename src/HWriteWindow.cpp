@@ -82,7 +82,7 @@ HWriteWindow::HWriteWindow(BRect rect
 	min_width = 400;
 	min_height = 300;
 	SetSizeLimits(min_width,max_width,min_height,max_height);
-	AddShortcut('U',0,new BMessage(M_SELECT),fTextView);
+	//AddShortcut('U',0,new BMessage(M_SELECT),fTextView);
 }
 
 /***********************************************************
