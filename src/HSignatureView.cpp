@@ -85,7 +85,7 @@ HSignatureView::InitGUI()
 	status_t err = B_OK;
 	while(err == B_OK)
 	{
-		if((err = dir.GetNextEntry(&entry)) == B_OK )
+		if((err = dir.GetNextEntry(&entry)) == B_OK && entry.IsFile())
 		{
 			char name[B_FILE_NAME_LENGTH+1];
 			entry.GetName(name);
