@@ -21,6 +21,7 @@
 #include "StatusBar.h"
 #include "AddOnMenu.h"
 #include "ExtraMailAttr.h"
+#include "base64.h"
 
 #include <MenuBar.h>
 #include <ClassInfo.h>
@@ -1264,10 +1265,10 @@ HWriteWindow::WriteAllPart(BString &out,const char* boundary)
 			off_t size;
 			file.GetSize(&size);
 			char *buf = new char[size+1];
-			char *outBuf = new char[size*2];
+			char *outBuf = new char[size*4];
 			size = file.Read(buf,size);
 			buf[size] = '\0';
-			size = encode_base64(outBuf,buf,size);
+			size = encode64(outBuf,buf,size);
 			outBuf[size] = '\0';
 			
 			char name[B_FILE_NAME_LENGTH+1];
