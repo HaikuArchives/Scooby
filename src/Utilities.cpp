@@ -15,6 +15,15 @@
 #include <fs_attr.h>
 #include <Node.h>
 #include <stdlib.h>
+#include <Resources.h>
+
+typedef struct {
+uint32 v1;
+uint32 v2;
+uint32 v3;
+uint32 status;
+uint32 rel;
+} app_version_info;
 
 void
 DisallowFilenameKeys(BTextView *textView)
@@ -375,3 +384,31 @@ time_t MakeTime_t(const char* date)
 	return mktime(&btime);
 }
  
+/***********************************************************
+ * GetAppVersion
+ ***********************************************************/
+void GetAppVersion(BString &version)
+{
+	version ="";
+	BResources* rsrc = BApplication::AppResources();
+	if(rsrc)
+	{
+		size_t resource_size;
+		const char* app_version_data = (const char*)rsrc->LoadResource('APPV',
+			"BEOS:APP_VERSION",&resource_size);
+		if(app_version_data && resource_size > 20)
+		{
+			const char* status[] = {"Development","Alpha","Beta","Gamma",
+				"Golden master","Final"};
+			app_version_info *info = (app_version_info*)app_version_data;
+			uint32 v1 = info->v1;
+			uint32 v2 = info->v2;
+			uint32 v3 = info->v3;
+			version << v1 << "." << v2 << "." << v3;
+			if(info->status != 5)
+				version << " " <<status[info->status];
+			if(info->rel != 0)
+				version << " Release " << info->rel;
+		}
+	}
+}

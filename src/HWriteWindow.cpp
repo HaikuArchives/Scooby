@@ -1098,7 +1098,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 		   day, dd, mon, yyyy, hh, mm, ss, TimeZoneOffset(&now));
 #endif
 	// make header
-	BString header("");
+	BString header(""),version("");
 	from = fTopView->From();
 	BString encoded_from(from),encoded_to(to),encoded_cc(cc),encoded_bcc(bcc);
 	encode.UTF82Mime(encoded_from,encoding);
@@ -1117,7 +1117,8 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 		header << "Reply-To: " << reply << "\n";
 	header << "Date: " << timeBuf << "\n";
 	header << "MIME-Version: 1.0" << "\n";
-	header << "X-Mailer: " << XMAILER << "\n";
+	GetAppVersion(version);
+	header << "X-Mailer: " << XMAILER <<" (version " << version <<")" << "\n";
 	// Get priority
 	int32 priority = 3;
 	BMenu *subMenu = KeyMenuBar()->SubmenuAt(3);
