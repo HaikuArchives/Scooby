@@ -107,8 +107,11 @@ void SetMenuItemLabel(BMenuItem *item,const char* label)
  ***********************************************************/
 void LineUpdate(StatusItem *item)
 {
+	if(!item) return;
 	BWindow *window = item->Window();
+	if(!window) return;
 	BTextView *view = cast_as(window->FindView("HMailView"),BTextView);
+	if(!view) return;
 //	int32 lines = view->CountLines();
 	int32 current = view->CurrentLine();
 	int32 lineoffset = view->OffsetAt(current);
@@ -126,8 +129,11 @@ void LineUpdate(StatusItem *item)
  ***********************************************************/
 void SizeUpdate(StatusItem *item)
 {
+	if(!item) return;
 	BWindow *window = item->Window();
+	if(!window) return;
 	BTextView *view = cast_as(window->FindView("HMailView"),BTextView);
+	if(!view) return;
 	int32 size = view->TextLength();
 	BString label;
 	label << _("Size") << ": " << size << " byte";
