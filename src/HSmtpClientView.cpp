@@ -80,7 +80,7 @@ HSmtpClientView::MessageReceived(BMessage *message)
 		fSmtpLooper->PostMessage(message);
 		StopProgress();
 		StartBarberPole();
-		fStringView->SetText(_("Sending Mails…"));
+		fStringView->SetText(_("Sending Mail" B_UTF8_ELLIPSIS));
 		break;
 	}
 	// End of smtp session
