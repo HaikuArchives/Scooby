@@ -439,7 +439,7 @@ void HMailView::MessageReceived(BMessage *msg)
 					break;
 				const char* data;
 				ssize_t size;
-				dataMsg.FindData("data",B_ANY_TYPE,&data,&size);
+				dataMsg.FindData("data",B_ANY_TYPE,(const void**)&data,&size);
 				file.Write(data,size);
 				file.SetSize(size);
 			}
