@@ -33,6 +33,8 @@ public:
 			void	SetMaxValue(float max) { fMaxValue = max;}
 			
 			bool	IsRunning() const {return fIsRunning;}
+			
+			void	Cancel();
 protected:
 	virtual void	MessageReceived(BMessage *message);
 	virtual void	Draw(BRect updateRect);

@@ -1517,13 +1517,19 @@ HWindow::QuitRequested()
 {	
 	if(fPopClientView->IsRunning())
 	{
-		(new BAlert("","POP3 session is running","OK",NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
-		return false;
+		int32 btn = (new BAlert("","POP3 session is running","Force Quit","OK",NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		if(btn == 0)
+			fPopClientView->Cancel();
+		else
+			return false;
 	}
 	if(fSmtpClientView->IsRunning())
 	{
-		(new BAlert("","SMTP session is running","OK",NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
-		return false;
+		int32 btn = (new BAlert("","SMTP session is running","Force Quit","OK",NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		if(btn == 0)
+			fSmtpClientView->Cancel();
+		else
+			return false;
 	}
 	Hide();
 	Unlock();

@@ -253,3 +253,13 @@ HSmtpClientView::SetValue(float value)
 	fCurrentValue = value;
 	Invalidate();
 }
+
+
+/***********************************************************
+ * Cancel
+ ***********************************************************/
+void
+HSmtpClientView::Cancel()
+{
+	fSmtpClient->ForceQuit();
+}
