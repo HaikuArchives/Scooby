@@ -23,6 +23,7 @@ HCoolListView::HCoolListView(BRect frame,
 						const BFont* LabelFont)
 	:_inherited(frame,ContainerView,Name,ResizingMode,flags,Type,
 					hierarchical,horizontal,vertical,scroll_view_corner,border,LabelFont)
+	,fHovering(true)
 	,fOldSelection(-1)
 {
 	SetViewColor(tint_color( ui_color(B_PANEL_BACKGROUND_COLOR),B_LIGHTEN_2_TINT));
@@ -42,6 +43,8 @@ void
 HCoolListView::MouseMoved(BPoint where,uint32 code,const BMessage *message)
 {
 	_inherited::MouseMoved(where,code,message);
+	if(!fHovering)
+		return;
 	if(!Window()->IsActive())
 		return;
 	int32 count = CountItems();

@@ -117,22 +117,23 @@ int32
 SmtpClient::ReceiveResponse(BString &out)
 {
 	out = "";
-	int32 len = 0;
-	char *buf = out.LockBuffer(SMTP_RESPONSE_SIZE+1);
+	int32 len = 0,r;
+	char buf[SMTP_RESPONSE_SIZE];
 	bigtime_t timeout = 1000000*180; //timeout 180 secs
 	
 	if(fEndpoint->IsDataPending(timeout))
 	{	
 		while(1)
 		{
-			len += fEndpoint->Receive(buf,SMTP_RESPONSE_SIZE-1);
+			r = fEndpoint->Receive(buf,SMTP_RESPONSE_SIZE-1);
+			len += r;
+			out.Append(buf,r);
 			if(strstr(buf,"\r\n"))
 				break;
 		}
 	}else{
 		(new BAlert("",_("SMTP socket timeout."),_("OK")))->Go();
 	}
-	out.UnlockBuffer();
 	return len;
 }
 

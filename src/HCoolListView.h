@@ -25,11 +25,16 @@ public:
 								const BFont* LabelFont = be_plain_font);
 				//!Destructor.
 	virtual		~HCoolListView();
+				//!Enable or disable hovering.
+	void		SetEnableHovering(bool enable){fHovering=enable;}
+				//!Returns hovering was enabled or not.
+	bool		DoesHovering()const {return fHovering;}
 protected:
 				//!Override function.
 	virtual void MouseMoved(BPoint where, uint32 code, const BMessage* message);
 private:
 	typedef ColumnListView	_inherited;
+	bool					fHovering;
 	int32					fOldSelection;	
 };
 #endif
