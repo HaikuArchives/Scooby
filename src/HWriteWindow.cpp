@@ -39,7 +39,7 @@
 #define TEMPLATE_FOLDER "Templates"
 
 #define ENCLOSUREVIEW_MINI_HEIGHT 40
-#define ENCLOSUREVIEW_MAX_HEIGHT 80
+#define ENCLOSUREVIEW_MAX_HEIGHT 100
 
 const char *kBoundary="----=_NextPart_";
 
@@ -1081,6 +1081,9 @@ void
 HWriteWindow::WriteAllPart(BString &out,const char* boundary)
 {
 	BString str("");
+	Encoding encode;
+	BString encodedName;
+	int32 encoding = fEnclosureView->GetEncoding();
 	BListView *list = cast_as(fEnclosureView->FindView("listview"),BListView);
 	int32 count = list->CountItems();
 	
@@ -1125,9 +1128,11 @@ HWriteWindow::WriteAllPart(BString &out,const char* boundary)
 		}
 		if(!type)
 			strcpy(type,"application/octet-stream");
+		encodedName = name;
+		encode.UTF82Mime(encodedName,encoding);
 		str << boundary << "\n";
 		str << "Content-Type: " << type << "; ";
-		str << "name=\"" << name << "\"\n";
+		str << "name=\"" << encodedName << "\"\n";
 		str << "Content-Disposition: attachment\n";
 		str << "Content-Transfer-Encoding: base64\n\n";
 		str << outBuf << "\n";
