@@ -16,12 +16,13 @@ HIMAP4Item::HIMAP4Item(const char* status,
 						const char* subject,
 						const char* from,
 						const char* to,
+						const char* cc,
 						time_t		 when,
 						const char* priority,
 						int8 		enclosure,
 						int32		index,
 						IMAP4Client *client)
-	:HMailItem(status,subject,from,to,when,priority,enclosure)
+	:HMailItem(status,subject,from,to,cc,when,priority,enclosure)
 	,fMailIndex(index)
 	,fClient(client)
 	,fGotContent(false)
@@ -134,6 +135,7 @@ HIMAP4Item::Ref()
 	file.WriteAttr(B_MAIL_ATTR_CONTENT,B_INT32_TYPE,0,&content_len,sizeof(int32));
 	file.WriteAttrString(B_MAIL_ATTR_SUBJECT,&fSubject);
 	file.WriteAttrString(B_MAIL_ATTR_TO,&fTo);
+	file.WriteAttrString(B_MAIL_ATTR_CC,&fCC);
 	file.WriteAttrString(B_MAIL_ATTR_FROM,&fFrom);
 	file.WriteAttrString(B_MAIL_ATTR_PRIORITY,&fPriority);
 	const char *mime_version = "1.0";

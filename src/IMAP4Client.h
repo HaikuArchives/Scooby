@@ -23,6 +23,7 @@ public:
 								BString &subject,
 								BString &from,
 								BString &to,
+								BString &cc,
 								BString &date,
 								BString &priority,
 								bool	&read,
