@@ -64,8 +64,9 @@ ssize_t decode64(char *out,const char *_in, unsigned inlen)
 	unsigned char *in;
  	unsigned i,k;
  	
+ 	buf = malloc(inlen+1);
  	in = (unsigned char*)buf;
-	buf = malloc(inlen+1);
+	
  	k=0;
  	// Eliminate invalid charactors.
  	for(i = 0;i < inlen;i++)
