@@ -17,6 +17,10 @@ HRulerView::HRulerView(BRect rect,const char* name,HWrapTextView *view)
 {
 	SetViewColor(tint_color(ui_color(B_PANEL_BACKGROUND_COLOR),B_LIGHTEN_2_TINT));
 
+	BFont font;
+	font.SetFamilyAndStyle("Courier 10 BT","Roman");
+	font.SetSize(9);
+	SetFont(&font);
 	FontReseted();
 }
 
@@ -61,9 +65,19 @@ HRulerView::DrawRuler()
 	BeginLineArray(count);
 	
 	float start = 4.0;
+	BPoint pos;
+	char buf[100];
+	pos.y = bounds.top + 7;
 	for(int32 i = 0;i < count;i++)
 	{
-		AddLine(BPoint(start,(i%10)?bounds.top+12:bounds.top+7),BPoint(start,bounds.bottom),black);
+		AddLine(BPoint(start,(i%10)?bounds.top+13:bounds.top+8),BPoint(start,bounds.bottom),black);
+		if(!(i%10))
+		{
+			pos.x = start-3;
+			
+			::sprintf(buf,"%ld",i);
+			DrawString(buf,pos);
+		}
 		start += fFontWidth;
 	}
 	
