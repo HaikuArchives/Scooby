@@ -294,11 +294,14 @@ int32
 HFolderItem::ThreadFunc(void*data)
 {
 	HFolderItem *item = (HFolderItem*)data;
-	item->Gather();
 	BListView *list = item->fOwner;
-	item->SetUnreadCount(item->fUnread);
-	BAutolock lock(list->Window());
-	list->InvalidateItem(((ColumnListView*)list)->IndexOf(item));
+	if(list->HasItem(item))
+	{
+		item->Gather();
+		item->SetUnreadCount(item->fUnread);
+		BAutolock lock(list->Window());
+		list->InvalidateItem(((ColumnListView*)list)->IndexOf(item));
+	}
 	return 0;
 }
 

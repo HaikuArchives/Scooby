@@ -386,7 +386,8 @@ HFolderList::GetFolders(void* data)
 	
 	BFile cacheFile(cachePath.Path(),B_READ_ONLY);
 	list->fFoldersCache = new BMessage();
-	list->fFoldersCache->Unflatten(&cacheFile);
+	if(cacheFile.InitCheck() == B_OK)
+		list->fFoldersCache->Unflatten(&cacheFile);
 	
 	list->LoadFolders(ref,NULL,0,msg,childMsg);
 
@@ -441,47 +442,6 @@ HFolderList::GetFolders(void* data)
 		}
 	}
 	// Gather IMAP4 folders
-/*	err = B_OK;
-	find_directory(B_USER_SETTINGS_DIRECTORY,&path);
-	path.Append( APP_NAME );
-	path.Append("Accounts");
-	path.Append("IMAP4");
-	if(dir.SetTo(path.Path()) != B_OK)
-		dir.CreateDirectory(path.Path(),&dir);
-	
-	BMessage setting;
-	BFile file;
-	const char* folder;
-	const char* addr;
-	const char* login;
-	const char* pass;
-	int16 port;
-		
-	while( err == B_OK && !list->fCancel )
-	{
-		err = dir.GetNextEntry(&entry,false);	
-		if( entry.InitCheck() != B_NO_ERROR )
-			break;
-		if( entry.GetPath(&path) != B_NO_ERROR )
-			break;
-		else{
-			BFile file(path.Path(),B_READ_ONLY);
-			if(file.InitCheck() != B_OK)
-				continue;
-			entry.GetName(name);
-			setting.Unflatten(&file);
-			setting.FindString("server",&addr);
-			setting.FindString("login",&login);
-			setting.FindString("password",&pass);
-			BString password;
-			int32 len = strlen(pass);
-			for(int32 i =0;i < len;i++)
-				password += (char)255-pass[i];
-			setting.FindString("folder",&folder);
-			setting.FindInt16("port",&port);
-			msg.AddPointer("item",new HIMAP4Folder(name,folder,addr,port,login,password.String(),list));
-		}
-	}*/
 	list->LoadIMAP4Account(msg);
 	
 	// Send add list items message
