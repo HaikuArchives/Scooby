@@ -92,6 +92,7 @@ private:
 		BBitmap*			fCloseQueryIcon;
 		BBitmap*			fOpenIMAPIcon;
 		BBitmap*			fCloseIMAPIcon;
+		BBitmap*			fPersonIcon;
 		//
 #ifndef USE_SPLOCALE
 		typedef	BApplication	_inherited;

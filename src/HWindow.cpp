@@ -99,13 +99,14 @@ HWindow::InitMenu()
 	MenuUtils utils;
 	BMessage *msg;
 	ResourceUtils rsrc_utils;
+	HApp* app = (HApp*)be_app;
 //// ------------------------ File Menu ----------------------    
 	aMenu = new BMenu(_("File"));
 	utils.AddMenuItem(aMenu,_("New Folder" B_UTF8_ELLIPSIS),M_CREATE_FOLDER_DIALOG,this,this,0,0,
-						rsrc_utils.GetBitmapResource('BBMP',"OpenFolder"));
+						app->GetIcon("OpenFolder"),false);
 	
 	utils.AddMenuItem(aMenu,_("Open Query Folder" B_UTF8_ELLIPSIS),M_OPEN_QUERY,this,this,0,0,
-							rsrc_utils.GetBitmapResource('BBMP',"OpenQuery"));
+							app->GetIcon("OpenQuery"),false);
 	utils.AddMenuItem(aMenu,_("Empty Trash"),M_EMPTY_TRASH,this,this,'T',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();

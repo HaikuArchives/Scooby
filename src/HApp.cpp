@@ -85,6 +85,7 @@ HApp::~HApp()
 	delete fOpenIMAPIcon;
 	delete fCloseIMAPIcon;
 	delete fPendingIcon;
+	delete fPersonIcon;
 	//
 #ifdef CHECK_NETPOSITIVE
 	delete fMessageFilter;
@@ -640,6 +641,7 @@ HApp::InitIcons()
 	fCloseQueryIcon = utils.GetBitmapResource('BBMP',"CloseQuery");
 	fOpenIMAPIcon = utils.GetBitmapResource('BBMP',"OpenIMAP");
 	fCloseIMAPIcon = utils.GetBitmapResource('BBMP',"CloseIMAP");
+	fPersonIcon = utils.GetBitmapResource('BBMP',"Person");
 }
 
 /***********************************************************
@@ -685,7 +687,9 @@ HApp::GetIcon(const char* icon_name)
 	else if(strcmp(icon_name,"OpenIMAP")== 0)
 		bitmap = fOpenIMAPIcon;
 	else if(strcmp(icon_name,"CloseIMAP")== 0)
-		bitmap = fCloseIMAPIcon;	
+		bitmap = fCloseIMAPIcon;
+	else if(strcmp(icon_name,"Person") == 0)
+		bitmap = fPersonIcon;	
 	return bitmap;
 }
 

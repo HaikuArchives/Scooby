@@ -548,7 +548,7 @@ HAddressView::AddPerson(BMenu *menu
 							, uint32 modifiers)
 {
 	BMenu *subMenu(NULL);
-	ResourceUtils rutils;
+	HApp *app = (HApp*)be_app;
 	MenuUtils utils;
 	
 	if(::strlen(group) > 0)
@@ -581,18 +581,18 @@ HAddressView::AddPerson(BMenu *menu
 			font.SetSize(10);
 			subMenu->SetFont(&font);
 			IconMenuItem *iconItem = new IconMenuItem(subMenu,message,0,0
-						,rutils.GetBitmapResource('BBMP',"OpenFolder"));
+						,app->GetIcon("OpenFolder"));
 			iconItem->SetTarget(this,Window());
 		
 			menu->AddItem(iconItem);
 		}
 		// Add item
 		utils.AddMenuItem(subMenu,title,msg,this,Window(),shortcut,modifiers
-						,rutils.GetBitmapResource('BBMP',"Person"));
+						,app->GetIcon("Person"),false);
 		
 	}else
 		utils.AddMenuItem(menu,title,msg,this,Window(),shortcut,modifiers
-						,rutils.GetBitmapResource('BBMP',"Person"));
+						,app->GetIcon("Person"),false);
 }
 
 /***********************************************************

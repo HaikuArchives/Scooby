@@ -14,9 +14,9 @@
 class IconMenuItem :public BMenuItem {
 public:
 					IconMenuItem(const char* label,BMessage *message,
-							char shortcut = 0,uint32 modifiers = 0,BBitmap *bitmap = NULL);
+							char shortcut = 0,uint32 modifiers = 0,BBitmap *bitmap = NULL,bool copyBitmap = true);
 					IconMenuItem(BMenu *submenu,BMessage *message,
-							char shortcut = 0,uint32 modifiers = 0,BBitmap *bitmap = NULL);
+							char shortcut = 0,uint32 modifiers = 0,BBitmap *bitmap = NULL,bool copyBitmap = true);
 		virtual		~IconMenuItem();
 			void	SetBitmap(BBitmap *bitmap);
 protected:
@@ -24,6 +24,7 @@ protected:
 	virtual	void	GetContentSize(float *width ,float *height);
 private:
 		BBitmap 	*fBitmap;
+		bool		fCopy;
 		float 		fHeightDelta;
 };
 #endif
