@@ -1459,7 +1459,7 @@ HFolderList::SaveFolderStructure()
 		item = cast_as(FullListItemAt(i),HFolderItem);
 		if(!item || item->FolderType() != FOLDER_TYPE)
 			continue;
-		PRINT(("%s\n",item->FolderName()));
+		//PRINT(("%s\n",item->FolderName()));
 		ref = item->Ref();
 		entry.SetTo(&ref);
 		entry.GetStat(&st);
@@ -1489,6 +1489,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 	fFoldersCache->GetInfo("refs",&type,&count);
 	bool useCache = false;
 	int32 i = 0;
+	// Find cached info and compare modification time
 	for(i = 0;i < count;i++)
 	{
 		fFoldersCache->FindRef("refs",i,&ref);
@@ -1534,6 +1535,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 				
 		}
 	}else{
+		// Load from local strage
 		BDirectory dir(&inRef);
 		int32 direntcount,i=0;
 		struct dirent **dirents = NULL;
