@@ -235,11 +235,13 @@ HWriteWindow::InitGUI()
 										B_WILL_DRAW,true,true);
 	AddChild(scroll);
 	fTextView->SetDoesUndo(true);
+	/*
 	KeyMenuBar()->FindItem(B_CUT)->SetTarget(fTextView,this);
 	KeyMenuBar()->FindItem(B_COPY)->SetTarget(fTextView,this);
 	KeyMenuBar()->FindItem(B_PASTE)->SetTarget(fTextView,this);
 	KeyMenuBar()->FindItem(B_SELECT_ALL)->SetTarget(fTextView,this);
 	KeyMenuBar()->FindItem(B_UNDO)->SetTarget(fTextView,this);
+	*/
 	/********** Toolbarの追加 ***********/
 	BRect toolrect = Bounds();
 	toolrect.top += (KeyMenuBar()->Bounds()).Height();
@@ -514,6 +516,18 @@ HWriteWindow::MessageReceived(BMessage *message)
 		be_app->PostMessage(&msg);
 		break;
 	}
+	// Edit menus
+	case B_CUT:
+	case B_PASTE:
+	case B_COPY:
+	case B_SELECT_ALL:
+	case B_UNDO:
+	{
+		BView *view = CurrentFocus();
+		if(view)
+			PostMessage(message,view);
+		break;
+	}
 	default:
 		BWindow::MessageReceived(message);
 	}
@@ -535,13 +549,34 @@ HWriteWindow::MenusBeginning()
 	}
 	int32 start,end;
 	
-	// Cut & Copy	
-	fTextView->GetSelection(&start,&end);
-	if(start != end)
+	// Cut & Copy
+	BTextControl *ctrl(NULL);
+	BView *focus = CurrentFocus();
+	if(focus == fTextView)
 	{
-		KeyMenuBar()->FindItem(B_CUT)->SetEnabled(true);
-		KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
-	} else {
+		fTextView->GetSelection(&start,&end);
+		if(start != end)
+		{
+			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(true);
+			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+		} else {
+			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
+			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+		}
+	}else if((ctrl = fTopView->FocusedView()))
+	{
+		BTextView *textview = ctrl->TextView();
+		textview->GetSelection(&start,&end);
+		
+		if(start != end)
+		{
+			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(true);
+			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+		} else {
+			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
+			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+		}
+	}else{
 		KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
 		KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
 	}
@@ -579,24 +614,23 @@ HWriteWindow::MenusBeginning()
 	}
 	// Paste
 	BMessage *clip = NULL;
-    	
-    if(be_clipboard->Lock())
-    {
-    	clip = be_clipboard->Data();
-    	
-    	if(clip == NULL)
-    		KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
-    	else{
-    		type_code type;
-    		int32 count;
-    		clip->GetInfo("text/plain",&type,&count);
-    		if(count != 0)
-    			KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(true);
-    		else
-    			KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
-    	}
-    	be_clipboard->Unlock();
-    }
+   	if(be_clipboard->Lock())
+   	{
+   		clip = be_clipboard->Data();
+   	
+   		if(clip == NULL)
+   			KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
+   		else{
+   			type_code type;
+   			int32 count;
+   			clip->GetInfo("text/plain",&type,&count);
+   			if(count != 0)
+   				KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(true);
+   			else
+   				KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
+   		}
+   		be_clipboard->Unlock();
+   	}
 }
 
 /***********************************************************
