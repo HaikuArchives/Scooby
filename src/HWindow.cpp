@@ -138,7 +138,7 @@ HWindow::InitMenu()
 	aMenu->AddSeparatorItem();
 	//
 	
-	utils.AddMenuItem(aMenu,_("Send Peding Messages"),M_SEND_PENDING_MAILS,this,this,0,0,
+	utils.AddMenuItem(aMenu,_("Send Pending Messages"),M_SEND_PENDING_MAILS,this,this,0,0,
 							rsrc_utils.GetBitmapResource('BBMP',"Send"));
 	menubar->AddItem( aMenu );
 ////------------------------- Message Menu ---------------------
