@@ -21,6 +21,7 @@
 #include <NodeInfo.h>
 #include <ScrollBar.h>
 #include <ctype.h>
+#include <Roster.h>
 
 /***********************************************************
  * Constructor
@@ -125,6 +126,27 @@ HHtmlMailView::MessageReceived(BMessage *message)
 		BFile *file;
 		if(message->FindPointer("pointer",(void**)&file) == B_OK)
 			SetContent(file);
+		else{
+			if(fFile)
+			{
+				app_info info;
+    			be_app->GetAppInfo(&info); 
+    			BPath path(&info.ref);
+    			path.GetParent(&path);
+    			path.Append("html/startup.html");
+    			char *buf = new char[::strlen(path.Path())+8];
+    			::sprintf(buf,"file://%s",path.Path());
+				fHtmlView->ShowURL(buf);
+				delete[] buf;
+				
+				ResetAttachmentList();
+				ResetScrollBar();
+				delete fFile;
+				fFile = NULL;
+				
+				fHeaderView->SetText(NULL);
+			}
+		}
 		break;
 	}
 	default:
@@ -252,22 +274,11 @@ HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name)
 }
 
 /***********************************************************
- * LoadMessage
+ * ResetScrollBar
  ***********************************************************/
 void
-HHtmlMailView::LoadMessage(BFile *file)
+HHtmlMailView::ResetScrollBar()
 {
-	if(!file)
-		return;
-	ClearList();
-	delete fFile;
-	fFile = NULL;
-	// Reset attachment tab
-	BTabView *tabview = cast_as(FindView("tabview"),BTabView);
-	BTab *tab = tabview->TabAt(2);
-	tab->SetLabel(_("Attachment"));
-	tab->SetEnabled(false);
-	tabview->Invalidate();
 	// Reset scrollbar
 	BScrollBar *bar(NULL);
 	BView* view = this->FindView("NetPositive");
@@ -278,6 +289,36 @@ HHtmlMailView::LoadMessage(BFile *file)
 		if(bar)
 			bar->SetValue(0);
 	}
+}
+
+/***********************************************************
+ * ResetAttachmentList
+ ***********************************************************/
+void
+HHtmlMailView::ResetAttachmentList()
+{
+	ClearList();
+	// Reset attachment tab
+	BTabView *tabview = cast_as(FindView("tabview"),BTabView);
+	BTab *tab = tabview->TabAt(2);
+	tab->SetLabel(_("Attachment"));
+	tab->SetEnabled(false);
+	tabview->Invalidate();
+}
+
+/***********************************************************
+ * LoadMessage
+ ***********************************************************/
+void
+HHtmlMailView::LoadMessage(BFile *file)
+{
+	if(!file)
+		return;
+	delete fFile;
+	fFile = NULL;
+	ResetAttachmentList();
+	ResetScrollBar();
+	fHeaderView->SetText(NULL);
 	// Get content and header size
 	Encoding encode;
 	bool multipart = false;
@@ -370,6 +411,8 @@ HHtmlMailView::LoadMessage(BFile *file)
 			{
 				BString label(_("Attachment"));
 				label <<" [ " <<fAttachmentList->CountItems() << " ]";
+				BTabView *tabview = cast_as(FindView("tabview"),BTabView);
+				BTab *tab = tabview->TabAt(2);
 				tab->SetLabel(label.String() );
 				tab->SetEnabled(true);
 				tabview->Invalidate();
