@@ -121,7 +121,7 @@ SmtpLooper::SendMail(HMailItem *item)
 		if(bcc.Length() > 0)
 			to << "," << bcc;
 		BString attrStatus("");
-		if(SendMail(from.String(),to.String(),buf) == B_OK)
+		if(fSmtpClient->SendMail(from.String(),to.String(),buf,SmtpTotalSize,SmtpSentSize,this) == B_OK)
 			attrStatus = "Sent";
 		else{
 			attrStatus = "Error";
@@ -140,107 +140,6 @@ SmtpLooper::SendMail(HMailItem *item)
 		PRINT(("INIT ERROR\n"));
 	}
 	);
-	return B_OK;
-}
-
-
-/***********************************************************
- * SendMail
- ***********************************************************/
-status_t
-SmtpLooper::SendMail(const char* from,
-				const char* to,
-				const char* content)
-{
-	// Set mail from
-	BString cmd = "MAIL FROM: ";
-
-	SmtpClient::ParseAddress(from,cmd);
-	if(fSmtpClient->SendCommand(cmd.String()) != B_OK)
-	{
-		PRINT(("Err: mail from\n"));
-		PostError(fSmtpClient->Log());
-		return B_ERROR;
-	}
-	// Set rcpt to
-	int32 len = strlen(to);
-	BString addr("");
-	for(int32 i = 0;i < len;i++)
-	{
-		char c = to[i];
-		if(c != ',')
-			addr += (char)c;
-		if(c == ','||i == len-1)
-		{
-			if(addr.Length() == 0)
-				continue;
-			cmd = "RCPT TO: ";
-			const char* kText = addr.String();
-			
-			SmtpClient::ParseAddress(kText,cmd);
-			PRINT(("%s\n",cmd.String() ));
-			if(fSmtpClient->SendCommand(cmd.String()) != B_OK)
-			{
-				PRINT(("Err: rcpt\n"));
-				PostError(fSmtpClient->Log());
-				return B_ERROR;
-			}
-			addr ="";
-		}
-	}
-	// Data
-	cmd = "DATA\r\n";
-	if(fSmtpClient->SendCommand(cmd.String()) != B_OK)
-	{
-		PRINT(("Err: data\n"));
-		PostError(fSmtpClient->Log());
-		return B_ERROR;
-	}
-	// Content
-	len = ::strlen(content);
-	BString line("");
-	BMessage msg(M_SET_MAX_SIZE);
-	msg.AddInt32("max_size",len);
-	fLooper->PostMessage(&msg,fHandler);
-	// send content
-	int32 send_len = 0;
-	msg.MakeEmpty();
-	msg.what = M_SEND_MAIL_SIZE;
-	msg.AddInt32("size",send_len);
-	for(int32 i = 0;i < len;i++)
-	{
-		line += content[i];
-		if(content[i] == '\n' || i == len-1)
-		{
-			int32 line_len = line.Length();
-			if(line_len == 0 && i == len-1)
-				break;
-			
-			if(line[0] == '.')
-			{
-				line.Insert('.',1,0);
-				line_len = line.Length();
-			}
-			// if line is not end with carrige return
-			if(i == len-1 && line.FindLast( "\r\n" ) == B_ERROR)
-			{
-				line += "\r\n";
-				line_len = line.Length();
-			}
-			send_len = fSmtpClient->Send(line.String(),line_len);
-			msg.ReplaceInt32("size",send_len);
-			fLooper->PostMessage(&msg,fHandler);
-			line="";
-		}
-	}
-
-	cmd = ".\r\n";
-	if( fSmtpClient->SendCommand(cmd.String()) != B_OK)
-	{
-		PRINT(("Err:Send content\n"));
-		PostError(fSmtpClient->Log());
-		return B_ERROR;
-	}
 	return B_OK;
 }
 
@@ -284,4 +183,30 @@ SmtpLooper::QuitRequested()
 		delete fSmtpClient;
 	}
 	return BLooper::QuitRequested();
+}
+
+/***********************************************************
+ * SmtpTotalSize
+ ***********************************************************/
+void SmtpTotalSize(int32 size,void *cookie)
+{
+	BLooper *looper = ((SmtpLooper*)cookie)->fLooper;
+	BHandler *handler = ((SmtpLooper*)cookie)->fHandler;
+	
+	BMessage msg(M_SET_MAX_SIZE);
+	msg.AddInt32("max_size",size);
+	looper->PostMessage(&msg,handler);
+}
+
+/***********************************************************
+ * SmtpSentSize
+ ***********************************************************/
+void SmtpSentSize(int32 size,void *cookie)
+{
+	BLooper *looper = ((SmtpLooper*)cookie)->fLooper;
+	BHandler *handler = ((SmtpLooper*)cookie)->fHandler;
+	
+	BMessage msg(M_SEND_MAIL_SIZE);
+	msg.AddInt32("size",size);
+	looper->PostMessage(&msg,handler);
 }

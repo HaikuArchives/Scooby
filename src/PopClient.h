@@ -28,7 +28,12 @@ public:
 		//!Send list command.
 		status_t	List(int32 index,BString &outlist);
 		//!Send retr command.
-		status_t	Retr(int32 index,BString &content);
+		status_t	Retr(int32 index	 //!<Mail index to be fetched.
+						,BString &content	 //!<Output string stored mail content.
+						,void (*TotalSize)(int32,void*)  //!<Callback func update StatusBar max size.
+						,void (*SentSize)(int32,void*)  //!<Callback func update StatusBar value.
+						,void *cookie  //!<Cookie.
+						);
 		//!Send delete command.
 		status_t	Delete(int32 index);
 		//!Send rest command.

@@ -30,8 +30,8 @@ public:
 					PopLooper(BHandler *handler,BLooper *looper);
 		//!Destructor.
 					~PopLooper();
-		//!Send retr command.
-		status_t	Retr(int32 index,BString &content);
+		//!FetchMail.
+		status_t	FetchMail(int32 index,BString &content);
 		//!Close POP3 socket.
 			void	ForceQuit();
 		//!Check SPAM mails. If header contains spam address, returns true.
@@ -47,6 +47,9 @@ protected:
 			bool	QuitRequested();
 	//@}	
 private:
+	friend	void	PopTotalSize(int32 size,void* cookie);  //!<Callback func update StatusBar max size.
+	friend	void	PopSentSize(int32 size,void* cookie);  //!<Callback func update StatusBar value.
+		
 	PopClient		*fPopClient;		//!<POP3 socket.
 	BHandler		*fHandler;		//!<Target handler.
 	BLooper			*fLooper;		//!<Target looper.

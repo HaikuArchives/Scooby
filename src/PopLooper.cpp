@@ -96,7 +96,7 @@ PopLooper::MessageReceived(BMessage *message)
 			{
 				if(message->FindInt32("index",i,&index) != B_OK)
 					continue;
-				if( Retr(index,content) != B_OK)
+				if( FetchMail(index,content) != B_OK)
 				{
 					PostError(fLog.String());
 					break;	
@@ -229,9 +229,8 @@ PopLooper::PostError(const char* log)
  * Retr
  ***********************************************************/
 status_t
-PopLooper::Retr(int32 index,BString &content)
+PopLooper::FetchMail(int32 index,BString &content)
 {
-	int32 size = 0;
 	BString size_list;
 	
 	content = "";
@@ -251,76 +250,7 @@ PopLooper::Retr(int32 index,BString &content)
 			}
 		}
 	}
-	// Get mail content size 
-	if(index != 0)
-	{	
-		if(fPopClient->List(index,size_list) != B_OK) {
-			PRINT(("%s\n",fLog.String() ));
-			size = 1;
-		}else{
-			int32 i = size_list.FindLast(" ");
-			size = atol(&size_list[++i]);
-		}
-	}
-	// Send Retr command
-	BString cmd = "RETR ";
-	cmd << index << CRLF;
-	if( fPopClient->SendCommand(cmd.String()) != B_OK)
-	{
-		PRINT(("%s\n",cmd.String() ));
-		PRINT(("Retr error:%s %d\n",__FILE__,__LINE__));
-		return B_ERROR;
-	}
-	
-	// Get mail content
-	int32 r;
-	
-	size += 3;
-	BMessage msg(H_SET_MAX_SIZE);
-	msg.AddInt32("max_size",size);
-	fLooper->PostMessage(&msg,fHandler);
-	msg.what = H_RECEIVING_MESSAGE;
-	msg.AddInt32("index",index);
-	msg.AddInt32("size",0);
-	
-	char *buf = new char[MAX_RECIEVE_BUF_SIZE+1];
-	if(!buf)
-	{
-		(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
-		return B_ERROR;
-	}
-	int32 content_len = 0;
-	//PRINT(("buf_size:%d\n",buf_size));
-	while(1)
-	{
-		if(fPopClient->IsDataPending(kTimeout))
-		{
-			r = fPopClient->Receive(buf,MAX_RECIEVE_BUF_SIZE);
-			if(r <= 0)
-			{
-				PRINT(("Receive Err:%d %d %s\n",r,size,buf));
-				return B_ERROR;
-			}
-			size -= r;
-			content_len += r;
-			buf[r] = '\0';
-			content += buf;
-			msg.ReplaceInt32("size",r);
-			fLooper->PostMessage(&msg,fHandler);
-			
-			if(content_len > 5 &&
-			        content[content_len-1] == '\n' && 
-					content[content_len-2] == '\r' &&
-					content[content_len-3] == '.'  &&
-					content[content_len-4] == '\n' &&
-					content[content_len-5] == '\r' )
-				break;
-		}
-	}
-	delete[] buf;
-	content.Truncate(content.Length()-5);
-	content.ReplaceAll("\n..","\n.");
-	return B_OK;
+	return fPopClient->Retr(index,content,PopTotalSize,PopSentSize,this);
 }
 
 /***********************************************************
@@ -445,4 +375,30 @@ PopLooper::QuitRequested()
 
 	fLooper->PostMessage(M_QUIT_FINISHED,fHandler);
 	return BLooper::QuitRequested();
+}
+
+/***********************************************************
+ * PopTotalSize
+ ***********************************************************/
+void PopTotalSize(int32 size,void *cookie)
+{
+	BLooper *looper = ((PopLooper*)cookie)->fLooper;
+	BHandler *handler = ((PopLooper*)cookie)->fHandler;
+	
+	BMessage msg(H_SET_MAX_SIZE);
+	msg.AddInt32("max_size",size);
+	looper->PostMessage(&msg,handler);
+}
+
+/***********************************************************
+ * PopSentSize
+ ***********************************************************/
+void PopSentSize(int32 size,void *cookie)
+{
+	BLooper *looper = ((PopLooper*)cookie)->fLooper;
+	BHandler *handler = ((PopLooper*)cookie)->fHandler;
+	
+	BMessage msg(H_RECEIVING_MESSAGE);
+	msg.AddInt32("size",size);
+	looper->PostMessage(&msg,handler);
 }

@@ -219,7 +219,12 @@ PopClient::Uidl(int32 index,BString &outlist)
  * Retr
  ***********************************************************/
 status_t
-PopClient::Retr(int32 index,BString &content)
+PopClient::Retr(int32 index
+				,BString &content
+				,void (*TotalSize)(int32,void*)
+				,void (*SentSize)(int32 ,void*)
+				,void *cookie
+				)
 {
 	int32 size = 0;
 	BString size_list;
@@ -249,7 +254,11 @@ PopClient::Retr(int32 index,BString &content)
 	// Get mail content
 	int32 r;
 	
-	size += 3;	
+	size += 3;
+	
+	if(TotalSize)
+		TotalSize(size,cookie);
+	
 	char *buf = new char[MAX_RECIEVE_BUF_SIZE+1];
 	if(!buf)
 	{
@@ -272,6 +281,9 @@ PopClient::Retr(int32 index,BString &content)
 			content_len += r;
 			buf[r] = '\0';
 			content += buf;
+			
+			if(SentSize)
+				SentSize(r,cookie);
 			
 			if(content_len > 5 &&
 			        content[content_len-1] == '\n' && 
