@@ -28,7 +28,8 @@ const char *kCharsets[] ={"ISO-8859-1",
 								"ISO-8859-9",
 								"ISO-2022-JP",
 								"koi8-r",
-								"euc-kr"};
+								"euc-kr",
+								"WINDOWS-1251"};
 	
 const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_ISO2_CONVERSION,
@@ -41,7 +42,8 @@ const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_ISO9_CONVERSION,
 								B_JIS_CONVERSION,
 								B_KOI8R_CONVERSION,
-								B_EUC_KR_CONVERSION};
+								B_EUC_KR_CONVERSION,
+								B_MS_WINDOWS_1251_CONVERSION};
 
 const int32 kNumCharset = 12;
 

@@ -85,6 +85,8 @@ protected:
 				void	RemoveFromDeskbar();
 			
 				void	AddCheckFromItems();
+
+				void	EmptyTrash();
 private:
 		HMailList*		fMailList;
 		HMailCaption*	fMailCaption;
