@@ -48,6 +48,7 @@ protected:
 							const char* from,
 							const char* to,
 							const char* cc,
+							const char* reply,
 							BString &outpath);
 			bool	Filter(const char* key,
 							int32 operation,
