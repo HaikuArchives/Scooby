@@ -452,6 +452,7 @@ HMailList::MouseDown(BPoint pos)
     	 
     	 item = new IconMenuItem(_("Open Message in New Window" B_UTF8_ELLIPSIS),new BMessage(M_INVOKE_MAIL),'N',0,
 							utils.GetBitmapResource('BBMP',"Read"));
+		 item->SetEnabled( (sel >= 0)?true:false);
 		 theMenu->AddItem(item);
 		 theMenu->AddSeparatorItem();
 	
@@ -502,6 +503,7 @@ HMailList::MouseDown(BPoint pos)
     		item = new IconMenuItem(_(status[i]),msg,0,0,NULL);
     		statusMenu->AddItem(item);
     	}
+    	statusMenu->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(statusMenu);
     	theMenu->AddSeparatorItem();
     	// Open with menu
