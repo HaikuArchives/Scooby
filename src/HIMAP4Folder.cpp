@@ -180,6 +180,7 @@ HIMAP4Folder::IMAPGetList()
 											i,
 											fClient
 											));
+		if(!read) fUnread++;
 	}
 	fDone = true;
 	
@@ -187,6 +188,7 @@ HIMAP4Folder::IMAPGetList()
 	BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"OpenIMAP");
 	SetColumnContent(1,icon,2.0,true,false);
 	delete icon;
+	SetName(fUnread);
 	InvalidateMe();
 	return;
 }

@@ -4,6 +4,7 @@
 #include "CLVEasyItem.h"
 #include <Entry.h>
 #include <String.h>
+#include <Handler.h>
 
 enum{
 	M_INVALIDATE = 'mINV'
@@ -19,7 +20,7 @@ enum{
 
 class HMailItem;
 
-class HFolderItem : public CLVEasyItem
+class HFolderItem : public CLVEasyItem,public BHandler
 {
 public:
 					HFolderItem(const entry_ref &ref,BListView *owner);
@@ -34,7 +35,8 @@ public:
 			int32	CountMails() const {return fMailList.CountItems();}
 	
 		entry_ref	Ref(){return fFolderRef;}	
-	const char*		Name() {return fName.String();};
+		node_ref	NodeRef() {return fNodeRef;}
+	const char*		FolderName() {return fName.String();};
 			void	SetName(int32 unread);
 		
 	virtual	void	StartRefreshCache();
@@ -47,8 +49,8 @@ public:
 			
 			void	AddMail(HMailItem* mail);
 			void	RemoveMail(HMailItem* mail);
-		HMailItem*	RemoveMail(entry_ref ref);
-		HMailItem*	RemoveMail(node_ref nref);
+		HMailItem*	RemoveMail(entry_ref& ref);
+		HMailItem*	RemoveMail(node_ref& nref);
 			
 			int32	FolderType() const{return fFolderType;}
 			void	EmptyMailList();	
@@ -71,6 +73,8 @@ protected:
 	static	int32	CreateCacheThread(void *data);
 	static	int32	RefreshCacheThread(void *data);
 	
+	virtual void	MessageReceived(BMessage *message);
+			void	NodeMonitor(BMessage *message);
 protected:
 		BList		fMailList;
 		bool		fDone;
@@ -79,12 +83,13 @@ protected:
 		bool		fCancel;
 		BString		fName;
 		entry_ref  	fFolderRef;
-private:
 		BListView	*fOwner;
+private:
 		thread_id	fCacheThread;
 		bool		fCacheCancel;
 		thread_id	fRefreshThread;
 		int32		fFolderType;
 		bool		fUseCache;
+		node_ref	fNodeRef;
 };
 #endif

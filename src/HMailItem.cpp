@@ -36,6 +36,8 @@ HMailItem::HMailItem(const entry_ref &ref)
 	,fEnclosure(-1)
 	,fDeleteMe(false)
 {
+	BEntry entry(&ref);
+	entry.GetNodeRef(&fNodeRef);
 	InitItem();
 }
 
@@ -63,6 +65,8 @@ HMailItem::HMailItem(const entry_ref &ref,
 	,fEnclosure(enclosure)
 	,fDeleteMe(false)
 {
+	BEntry entry(&ref);
+	entry.GetNodeRef(&fNodeRef);
 	//fDate = ctime(&fWhen);
 	struct tm* time = localtime(&fWhen);
 	char *tmp = fDate.LockBuffer(24);
@@ -136,9 +140,8 @@ HMailItem::SetRead()
 	if(node.InitCheck() == B_OK)
 	{
 		node.ReadAttrString(B_MAIL_ATTR_STATUS,&fStatus);
-		if(fStatus.Compare("New")!=0 && fStatus.Compare("Read")!=0)
+		if(fStatus.Compare("New")!=0 )
 			return;
-	
 		node.WriteAttr(B_MAIL_ATTR_STATUS,B_STRING_TYPE,0,"Read",5);
 		fStatus = "Read";
 		ResetIcon();

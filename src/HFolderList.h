@@ -34,9 +34,13 @@ public:
 				int32 	FindQuery(const char* name);
 				
 			status_t	AddQuery(entry_ref ref);
-			status_t	RemoveQuery(entry_ref ref);
+			status_t	RemoveQuery(entry_ref &ref);
+			status_t	RemoveQuery(node_ref &nref);
 				
 				void	WatchQueryFolder();
+				void	AddToMailList(HMailItem *item);
+				void	RemoveFromMailList(HMailItem *item,bool free = false);
+
 
 protected:
 		virtual void 	MessageReceived(BMessage *message);		
@@ -55,6 +59,8 @@ protected:
 		status_t		SelectItem(const BPoint point);
 				void	SelectWithoutGathering(int32 sel);
 				void	NodeMonitor(BMessage *message);
+				
+				void	ProcessMails(BMessage *message);
 private:
 		BEntry   	*fEntry;
 		uint32	 	fOutlineLevel;
@@ -68,5 +74,6 @@ private:
 	HSimpleFolderItem	*fLocalFolders;
 	HSimpleFolderItem	*fIMAP4Folders;
 	HSimpleFolderItem	*fQueryFolders; 
+		bool		fSkipMoveMail;
 };
 #endif

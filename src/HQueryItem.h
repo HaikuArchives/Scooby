@@ -4,6 +4,8 @@
 #include "HFolderItem.h"
 #include <ListView.h>
 #include <String.h>
+#include <Handler.h>
+#include <Messenger.h>
 
 class HQueryItem : public HFolderItem
 {
@@ -17,7 +19,10 @@ public:
 protected:
 			void	Fetching();
 	static	int32	FetchingThread(void* data);
+	
 private:
 		BString		fPredicate;
+		BQuery		*fQuery;
+		BMessenger  *fMessenger;
 };
 #endif

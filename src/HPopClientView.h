@@ -6,10 +6,6 @@
 #include <StringView.h>
 #include <Message.h>
 
-enum{
-	M_RECEIVE_MAIL = 'REMC'
-};
-
 class PopClient;
 
 class HPopClientView :public BView {

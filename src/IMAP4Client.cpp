@@ -116,7 +116,7 @@ IMAP4Client::List(const char* folder_name)
 int32
 IMAP4Client::Select(const char* folder_name)
 {
-	int32 r,mail_count = -1;
+	int32 r = 0,mail_count = -1;
 	
 	BString cmd("SELECT ");
 	cmd << "\"" << folder_name << "\"";
