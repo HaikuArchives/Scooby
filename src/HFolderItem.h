@@ -91,7 +91,7 @@ public:
 				//!Not implemented yet.
 			void	RemoveSettings();
 				//!Delete folder.
-	virtual void	DeleteMe();
+	virtual bool	DeleteMe();
 
 protected:
 				//!Re-create mail cache file.

@@ -38,7 +38,7 @@ public:
 			void		SetChildFolder(bool child) {fChildItem = child;}
 			bool		IsChildFolder() const {return fChildItem;}
 			//!Delete IMAP4 folder.
-			void		DeleteMe();
+			bool		DeleteMe();
 			//!Create child folder.
 			void		CreateChildFolder(const char* name);
 			//!Move mails to dest_folder.

@@ -969,11 +969,12 @@ HFolderItem::RemoveSettings()
 /***********************************************************
  * DeleteMe
  ***********************************************************/
-void
+bool
 HFolderItem::DeleteMe()
 {
 	TrackerUtils utils;
 	utils.MoveToTrash(Ref());
+	return true;
 }
 
 /***********************************************************

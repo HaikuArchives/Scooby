@@ -1737,8 +1737,8 @@ HWindow::DeleteFolder(int32 sel)
 	HFolderItem *item = cast_as(fFolderList->RemoveFolder(sel),HFolderItem);
 	if(!item)
 		return;
-	item->DeleteMe();
-	delete item;
+	if(item->DeleteMe())
+		delete item;
 }
 
 /***********************************************************

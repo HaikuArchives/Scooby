@@ -339,10 +339,13 @@ HIMAP4Folder::FindParent(const char* name,const char* folder_path,BList *list)
 /***********************************************************
  * DeleteMe
  ***********************************************************/
-void
+bool
 HIMAP4Folder::DeleteMe()
 {
-	fClient->Delete(fRemoteFolderPath.String());
+	if(fClient->Delete(fRemoteFolderPath.String()) == B_OK)
+		return true;
+	(new BAlert("",_("Could not delete the folder."),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+	return false;
 }
 
 /***********************************************************
