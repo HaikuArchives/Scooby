@@ -2,6 +2,7 @@
 #include "HApp.h"
 #include "TrackerUtils.h"
 #include "NumberControl.h"
+#include "Utilities.h"
 
 #include <Path.h>
 #include <Directory.h>
@@ -121,7 +122,11 @@ HAccountView::InitGUI()
 		ctrl = new BTextControl(frame,kLabel[i],kLabel[i],"",NULL);
 		ctrl->SetDivider(kDivider);
 		box->AddChild(ctrl);
-		
+		if(i == 0)
+		{
+			DisallowFilenameKeys(ctrl->TextView());
+			DisallowMetaKeys(ctrl->TextView());
+		}
 		if(i == 5)
 			ctrl->TextView()->HideTyping(true);
 		frame.OffsetBy(0,23);

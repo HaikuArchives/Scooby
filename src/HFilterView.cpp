@@ -2,6 +2,7 @@
 #include "HCriteriaView.h"
 #include "HApp.h"
 #include "TrackerUtils.h"
+#include "Utilities.h"
 
 #include <ScrollView.h>
 #include <Menu.h>
@@ -160,8 +161,8 @@ HFilterView::InitGUI()
 	fNameControl = new BTextControl(rect,"name",_("Name:"),"",NULL);
 	fNameControl->SetDivider(StringWidth("Name:")+5);
 	// Disallow charactors that could not use filename
-	fNameControl->TextView()->DisallowChar('/');
-	fNameControl->TextView()->DisallowChar(':');
+	DisallowFilenameKeys(fNameControl->TextView());
+	DisallowMetaKeys(fNameControl->TextView());
 	AddChild(fNameControl);
 	
 	// Apply change button
