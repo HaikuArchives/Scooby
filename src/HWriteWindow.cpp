@@ -380,6 +380,7 @@ HWriteWindow::InitMenu()
    	utils.AddMenuItem(aMenu,_("Find Next"),msg,be_app,be_app,'G',0);
    	aMenu->AddSeparatorItem();
    	utils.AddMenuItem(aMenu,_("Check Spelling"),M_ENABLE_SPELLCHECKING,this,this,';',0);
+   	utils.AddMenuItem(aMenu,_("Show Ruler"),M_SHOW_RULER,this,this);
    	utils.AddMenuItem(aMenu,_("Quote Selection"),M_QUOTE_SELECTION,this,this);
 	
    	// Mail
@@ -476,6 +477,13 @@ HWriteWindow::InitGUI()
 	rect.right -= B_V_SCROLL_BAR_WIDTH;
 	rect.bottom = Bounds().bottom - B_H_SCROLL_BAR_HEIGHT*2;
 	fTextView = new HMailView(rect,false,NULL);
+	bool ruler;
+	((HApp*)be_app)->Prefs()->GetData("use_ruler",&ruler);
+	
+	fTextView->UseRuler(ruler);
+	float limit;
+	((HApp*)be_app)->Prefs()->GetData("wrapping_limit",&limit);
+	fTextView->SetRightLimit(limit);
 	
 	BScrollView *scroll = new BScrollView("scroll",fTextView,B_FOLLOW_ALL,
 										B_WILL_DRAW,true,true);
@@ -571,6 +579,10 @@ HWriteWindow::MessageReceived(BMessage *message)
 		}
 		break;
 	}
+	// Show, hide ruler
+	case M_SHOW_RULER:
+		fTextView->UseRuler(!fTextView->IsUsingRuler());
+		break;
 	// Send Later
 	/*case M_SEND_LATER:
 	{	
@@ -967,6 +979,8 @@ HWriteWindow::MenusBeginning()
    		}
    		be_clipboard->Unlock();
    	}
+   	
+   	MarkMenuItem(KeyMenuBar()->FindItem(M_SHOW_RULER),fTextView->IsUsingRuler());
 }
 
 /***********************************************************
@@ -1346,6 +1360,11 @@ HWriteWindow::QuitRequested()
 	prefs->SetData("expand_enclosure",expand);
 	// Save Window Rect
 	prefs->SetData("write_window_rect",Frame());
+	
+	bool ruler = fTextView->IsUsingRuler();
+	prefs->SetData("use_ruler",ruler);
+	float limit = fTextView->RightLimit();
+	prefs->SetData("wrapping_limit",limit);
 	return BWindow::QuitRequested();
 }
 
