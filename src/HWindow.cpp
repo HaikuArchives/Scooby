@@ -1059,6 +1059,8 @@ HWindow::MenusBeginning()
 	KeyMenuBar()->FindItem(B_UNDO)->SetEnabled(false);
 	KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
 	KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
+	KeyMenuBar()->FindItem(M_POP_CONNECT)->SetEnabled(fFolderList->IsGatheredLocalFolders());
+	KeyMenuBar()->FindItem(M_CHECK_FROM)->SetEnabled(fFolderList->IsGatheredLocalFolders());
 	// Select All
 	item = KeyMenuBar()->FindItem(B_SELECT_ALL);
 	BView *view = CurrentFocus();
