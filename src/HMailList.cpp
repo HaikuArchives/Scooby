@@ -544,10 +544,12 @@ HMailList::InitiateDrag(BPoint  point,
 	{
 		BMessage msg(M_MAIL_DRAG);
 		HMailItem *item = cast_as(ItemAt(index),HMailItem);
-		if(item == NULL)
+		if(!item)
 			return false;
 		BRect	theRect = this->ItemFrame(index);
 		int32 sel = ((HWindow*)Window())->FolderSelection();
+		if(sel < 0)
+			return false;
 		msg.AddInt32("sel",sel);
 		int32 selected; 
 		int32 sel_index = 0;

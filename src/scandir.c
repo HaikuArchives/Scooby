@@ -8,7 +8,7 @@
 #include <errno.h>
 
 /* Initial guess at directory size. */ 
-#define INITIAL_SIZE    100
+#define INITIAL_SIZE    4096
 
 char gName[B_FILE_NAME_LENGTH];
 
