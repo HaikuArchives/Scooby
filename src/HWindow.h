@@ -2,6 +2,7 @@
 #define __H_WINDOW_H__
 
 #include <Window.h>
+#include <FilePanel.h>
 
 #define TRASH_FOLDER	"Trash"
 
@@ -48,7 +49,9 @@ enum{
 	M_FILTER_MAIL = 'mFiM',
 	M_INVALIDATE_MAIL = 'mIVm',
 	M_DELETE_FOLDER = 'mDEF',
-	M_CREATE_FOLDER_DIALOG = 'mCED'
+	M_CREATE_FOLDER_DIALOG = 'mCED',
+	M_IMPORT_PLAIN_TEXT_MAIL = 'mPTM',
+	M_CONVERT_PLAIN_TO_MAIL = 'mCVP'
 };
 
 class HWindow: public BWindow {
@@ -71,6 +74,8 @@ public:
 				
 				int32	CurrentDeskbarIcon()const {return fCurrentDeskbarIcon;}
 				void	ChangeDeskbarIcon(int32 icon) {fCurrentDeskbarIcon = icon;}
+
+				void	ShowOpenPanel(int32 what);
 protected:		
 		virtual			~HWindow();
 
@@ -104,10 +109,13 @@ protected:
 				void	EmptyTrash();
 				
 				void	FilterMails(HMailItem *item);
-
 				void	DeleteFolder(int32 sel);
 				
 				void	PrintMessage(BMessage *message);
+				
+				void	Plain2BeMail(const char* path);
+				void	MBox2BeMail(const char* path);
+				
 private:
 		HMailList*		fMailList;
 		HMailCaption*	fMailCaption;
@@ -121,6 +129,7 @@ private:
 		time_t			fCheckIdleTime;
 		HSmtpClientView* fSmtpClientView;
 		int32			fCurrentDeskbarIcon;
+		BFilePanel		*fOpenPanel;
 };
 #endif		
 				

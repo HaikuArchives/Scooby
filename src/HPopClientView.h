@@ -38,6 +38,12 @@ public:
 							const char* cc,
 							const char* reply,
 							BString &outpath);
+
+			void	SaveMail(const char* content,
+							entry_ref *folder_ref,
+							entry_ref *file_ref,
+							bool *is_delete);
+
 protected:
 	virtual void	MessageReceived(BMessage *message);
 	virtual void	Draw(BRect updateRect);
@@ -45,14 +51,11 @@ protected:
 
 			BRect	BarberPoleInnerRect() const;	
 			BRect	BarberPoleOuterRect() const;
-			void	SaveMail(const char* content,
-							entry_ref *folder_ref,
-							entry_ref *file_ref,
-							bool *is_delete);
 			bool	Filter(const char* key,
 							int32 operation,
 							const char* value);
 			time_t	MakeTime_t(const char* date);
+			
 			void	SetNextRecvPos(const char* uidl);
 			
 			void	PlayNotifySound();
