@@ -15,7 +15,7 @@ enum{
  * Constructor
  ***********************************************************/
 HFindWindow::HFindWindow(BRect rect,const char* name)
-		:BWindow(rect,name,B_FLOATING_WINDOW,B_ASYNCHRONOUS_CONTROLS)
+		:BWindow(rect,name,B_FLOATING_WINDOW,B_ASYNCHRONOUS_CONTROLS|B_NOT_RESIZABLE|B_NOT_ZOOMABLE)
 		,fTarget(NULL)
 		,fCanQuit(false)
 {

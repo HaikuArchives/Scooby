@@ -45,7 +45,7 @@ HApp::HApp() :_inherited(APP_SIG)
 	SetPulseRate(100000);
 	AddSoundEvent("New E-mail");
 	
-	BRect rect(100,100,300,170);
+	BRect rect(100,100,300,180);
 	fFindWindow = new HFindWindow(rect,_("Find"));
 	fFindWindow->Hide();
 	fFindWindow->Show();
