@@ -435,7 +435,7 @@ PopClient::Retr(int32 index,BString &content)
 			content += buf;
 			msg.ReplaceInt32("rcv",r);
 			PostMessage(&msg,fHandler);
-			if( ::strstr(buf,"\n.\r\n") )
+			if( ::strstr(buf,"\n.\r\n") || size <=0 )
 				break;
 		}
 	}
