@@ -105,6 +105,8 @@ protected:
 				void	FilterMails(HMailItem *item);
 
 				void	DeleteFolder(int32 sel);
+				
+				void	PrintMessage(BMessage *message);
 private:
 		HMailList*		fMailList;
 		HMailCaption*	fMailCaption;

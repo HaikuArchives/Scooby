@@ -36,6 +36,7 @@ protected:
 			
 			void		SetRead();
 		
+			void		PrintMessage(BMessage *message);
 private:
 	BView*				fMailView;
 	HDetailView*		fDetailView;

@@ -229,28 +229,10 @@ HReadWindow::MessageReceived(BMessage *message)
 			PostMessage(message,fMailView);
 			break;
 		}
+	// Print message
 	case M_PRINT_MESSAGE:
-	{
-		BMessage msg(*message);
-		msg.AddString("job_name",fDetailView->Subject());
-		if(is_kind_of(fMailView,HMailView))
-		{
-			msg.AddPointer("view",fMailView);
-		}else{
-			BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
-			int32 sel = tabview->Selection();
-			
-			if(sel != 0)
-				break;
-			BView *view = FindView("__NetPositive__HTMLView");
-			if(!view)
-				break;
-			msg.AddPointer("view",view);	
-		}
-		msg.AddPointer("detail",fDetailView);
-		be_app->PostMessage(&msg);
+		PrintMessage(message);
 		break;
-	}
 	// Edit menu items
 	case B_SELECT_ALL:
 	case B_PASTE:
@@ -506,6 +488,48 @@ HReadWindow::SetRead()
 			node.WriteAttrString(B_MAIL_ATTR_STATUS,&status);
 		}
 	}
+}
+
+/***********************************************************
+ * PrintMessage
+ ***********************************************************/
+void
+HReadWindow::PrintMessage(BMessage *message)
+{
+	BMessage msg(*message);
+	int32 sel = 0;
+	
+	if(is_kind_of(fMailView,HMailView))
+	{
+		// Normal mode
+		msg.AddPointer("view",fMailView);
+	}else{
+		// HTML mode
+		BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
+		sel = tabview->Selection();
+		
+		if(sel < 0)
+			return;
+		BView *view(NULL);
+		switch(sel)
+		{
+		case 0:
+			view = FindView("__NetPositive__HTMLView");
+			break;
+		case 1:
+			view = FindView("headerview");
+			break;
+		case 2:
+			view = FindView("attachmentlist");
+			break;
+		}
+		if(!view)
+			return;
+		msg.AddPointer("view",view);	
+	}
+	msg.AddPointer("detail",fDetailView);
+	msg.AddString("job_name",Title());
+	be_app->PostMessage(&msg);
 }
 
 /***********************************************************

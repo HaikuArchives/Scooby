@@ -421,6 +421,9 @@ HHtmlMailView::LoadMessage(BFile *file)
 				tab->SetEnabled(true);
 				tabview->Invalidate();
 			}
+			// Convert link target to blank window
+			//if(html)
+			//	ConvertLinkToBlankWindow(content);
 		}
 	}else{
 		if(content_type.Compare("text/html") != 0)
@@ -429,6 +432,10 @@ HHtmlMailView::LoadMessage(BFile *file)
 			Plain2Html(content,parameter);
 			delete[] parameter;
 			parameter = NULL;
+		}else{
+			// Convert link target to blank window
+			//if(html)
+			//	ConvertLinkToBlankWindow(content);
 		}
 	}
 	encode.ConvertReturnsToLF(content);
@@ -450,6 +457,33 @@ HHtmlMailView::LoadMessage(BFile *file)
 	delete[] header;
 	free( charset );
 	fFile = file;
+}
+
+/***********************************************************
+ * ConvertLinkToBlankWindow
+ ***********************************************************/
+void
+HHtmlMailView::ConvertLinkToBlankWindow(BString &str)
+{
+	const char* text = str.String();
+	int32 len = str.Length();
+	BString out;
+	
+	for(int32 i = 0;i < len;i++)
+	{
+		if(strncasecmp(&text[i],"<a ",3) == 0)
+		{
+			while(text[i] && text[i] != '>')
+				out += text[i++];
+			if(text[i] == '>')
+			{
+				out += " target=\"_blank\"";
+				out += text[i];
+			}
+		}else
+			out += text[i];
+	}
+	str = out;
 }
 
 /***********************************************************
@@ -540,7 +574,9 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 				
 				tmp += "<a href=\"";
 				tmp += uri;
-				tmp += "\">";
+				tmp += "\"";
+				//tmp += " target=\"_blank\"";
+				tmp += ">";
 				tmp += uri;
 				tmp += "</a>";
 				ConvertToHtmlCharactor(text[i],buf,&translate_space);
