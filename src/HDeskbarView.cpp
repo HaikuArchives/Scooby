@@ -213,11 +213,11 @@ HDeskbarView::MouseDown(BPoint pos)
   	theMenu->SetFont(&font);
   	
   	MenuUtils utils;
-  	utils.AddMenuItem(theMenu,"New Message",M_NEW_MSG,NULL,NULL,0,0);
+  	utils.AddMenuItem(theMenu,_("New Message"),M_NEW_MSG,NULL,NULL,0,0);
   	theMenu->AddSeparatorItem();
-  	utils.AddMenuItem(theMenu,"Check Now",M_POP_CONNECT,NULL,NULL,0,0);
+  	utils.AddMenuItem(theMenu,_("Check Now"),M_POP_CONNECT,NULL,NULL,0,0);
   	theMenu->AddSeparatorItem();
-	utils.AddMenuItem(theMenu,"Quit",B_QUIT_REQUESTED,NULL,NULL,0,0);
+	utils.AddMenuItem(theMenu,_("Quit"),B_QUIT_REQUESTED,NULL,NULL,0,0);
   
 	BRect r ;
    	ConvertToScreen(&pos);
