@@ -61,7 +61,8 @@ SRCS= ./src/HFolderItem.cpp\
 		./src/HHtmlMailView.cpp\
 		./src/HCoolListView.cpp \
 		./src/Utilities.cpp\
-		./src/scandir.c
+		./src/scandir.c\
+		./src/HCreateFolderDialog.cpp
 #--------------------------------------------------------
 #	determine wheather running on x86 or ppc
 MACHINE=$(shell uname -m)

@@ -738,6 +738,8 @@ void
 PopClient::ForceQuit()
 {
 	fEndpoint->Close();
+	delete fEndpoint;
+	fEndpoint = NULL;
 }
 
 /***********************************************************
