@@ -953,7 +953,7 @@ HWindow::PopConnect()
 		PostMessage(&sendMsg,fPopClientView);
 	return;
 err:
-	(new BAlert("",_("Account file is corrupted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+	(new BAlert("",_("Account file corrupted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 }
 
 /***********************************************************
@@ -975,40 +975,32 @@ HWindow::AddPopServer(entry_ref ref,BMessage &sendMsg)
 	const char* host,*login,*password,*port;
 	int32 iValue;
 		
-	sendMsg.AddString("name",name);
 	if(msg.FindString("pop_host",&host) != B_OK)
 		return B_ERROR;
-	sendMsg.AddString("address",host);
 			
 	if(msg.FindString("pop_port",&port) != B_OK)
 		return B_ERROR;
-	sendMsg.AddInt16("port",atoi(port));
 			
 	if(msg.FindString("pop_user",&login) != B_OK)
 		return B_ERROR;
-	sendMsg.AddString("login",login);
 			
 	int16 proto;
 	if(msg.FindInt16("protocol_type",&proto) != B_OK)
 		proto = 0;
-	sendMsg.AddInt16("protocol_type",proto);		
 	
 	int16 retrieve;
 	if(msg.FindInt16("retrieve",&retrieve) != B_OK)
 		return B_ERROR;
-	sendMsg.AddBool("delete",(retrieve==0)?false:true);
 			
 	iValue = 0;
 	if(retrieve == 2)
 		msg.FindInt32("delete_day",&iValue);
-	sendMsg.AddInt32("delete_day",iValue);
 	
-	const char* uidl;
+	BString uidl;
 	if(msg.FindString("uidl",&uidl) != B_OK)	
-		sendMsg.AddString("uidl","");
-	else
-		sendMsg.AddString("uidl",uidl);
-	PRINT(("SAVED UIDL:%s\n",uidl));
+		uidl= "";
+		
+	PRINT(("SAVED UIDL:%s\n",uidl.String()));
 		
 	if(msg.FindString("pop_password",&password) != B_OK)
 		return B_ERROR;
@@ -1016,6 +1008,15 @@ HWindow::AddPopServer(entry_ref ref,BMessage &sendMsg)
 	int32 len = strlen(password);
 	for(int32 k = 0;k < len;k++)
 		pass << (char)(255-password[k]);
+	
+	sendMsg.AddString("name",name);
+	sendMsg.AddString("address",host);
+	sendMsg.AddInt16("port",atoi(port));
+	sendMsg.AddString("login",login);
+	sendMsg.AddBool("delete",(retrieve==0)?false:true);
+	sendMsg.AddInt16("protocol_type",proto);		
+	sendMsg.AddInt32("delete_day",iValue);
+	sendMsg.AddString("uidl",uidl);
 	
 	sendMsg.AddString("password",pass);
 	return B_OK;
