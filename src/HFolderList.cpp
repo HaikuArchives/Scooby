@@ -191,7 +191,7 @@ HFolderList::MessageReceived(BMessage *message)
 			{
 				parent->SetSuperItem(true);
 				parent->SetExpanded(expand);
-				InvalidateItem(FullListIndexOf(parent));
+				InvalidateItem(IndexOf(parent));
 			}
 			AddUnder(item,parent);
 			fPointerList.AddItem(item);
@@ -282,7 +282,7 @@ HFolderList::MessageReceived(BMessage *message)
 				if(child_count == 0)
 				{
 					parent->SetSuperItem(false);
-					InvalidateItem(FullListIndexOf(parent));
+					InvalidateItem(IndexOf(parent));
 				}
 			}
 			delete item;
@@ -325,7 +325,7 @@ HFolderList::FindFolder(entry_ref ref)
 		if(item && item->FolderType() == FOLDER_TYPE)
 		{
 			if( item->Ref() == ref)
-				return FullListIndexOf(item);
+				return IndexOf(item);
 		}
 	}
 	return -1;
@@ -346,7 +346,7 @@ HFolderList::FindFolder(node_ref nref)
 		if(item && item->FolderType() == FOLDER_TYPE)
 		{
 			if( item->NodeRef() == nref)
-				return FullListIndexOf(item);
+				return IndexOf(item);
 		}
 	}
 	return -1;
@@ -1332,11 +1332,11 @@ HFolderList::RemoveFolder(int32 index)
 	switch(item->FolderType())
 	{
 	case QUERY_TYPE:
-		if(!FullListHasItem(fQueryFolders))
+		if(!HasItem(fQueryFolders))
 			RemoveItem(fQueryFolders);
 		break;
 	case IMAP4_TYPE:
-		if(!FullListHasItem(fIMAP4Folders))
+		if(!HasItem(fIMAP4Folders))
 			RemoveItem(fIMAP4Folders);
 		break;
 	}
@@ -1372,7 +1372,7 @@ HFolderList::RemoveFromMailList(HMailItem *item,bool free)
 int32
 HFolderList::GenarateFolderPathes(BMessage &msg)
 {
-	int32 count = FullListCountItems();
+	int32 count = CountItems();
 	int32 result_count = 0;
 	for(int32 i = 0; i < count;i++)
 	{
