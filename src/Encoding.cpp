@@ -524,13 +524,32 @@ Encoding::ConvertFromUTF8(char** text,int32 encoding)
 void
 Encoding::ConvertToUTF8(BString& text,int32 encoding)
 {
-	int32 len = text.Length();
-	char *buf = new char[len+1];
-	::strcpy(buf,text.String());
+	int32	sourceLen = text.Length();
+	int32	destLen = 4 * sourceLen;
 	
-	ConvertToUTF8(&buf,encoding);
+	char*	inBuf = text.LockBuffer(destLen+1);
+	status_t	err = B_OK;
+	int32		state = 0;
 	
-	text = buf;
+	char *buf = new char[destLen+1];
+	
+	err = convert_to_utf8(encoding, inBuf, &sourceLen, buf, &destLen, &state);
+
+	if(err != B_OK)
+	{
+		delete[] buf;
+		text.UnlockBuffer();
+		return;	
+	}
+	for(register int32 i = 0; i < destLen; i++)
+	{
+		if(*(buf + i) == '\0'){ *(buf + i) = ' '; } 
+	}
+	
+	buf[destLen] = '\0';
+	::strncpy(inBuf,buf,destLen);
+	text.UnlockBuffer(destLen);
+	delete[] buf;
 }
 
 /***********************************************************
@@ -539,13 +558,32 @@ Encoding::ConvertToUTF8(BString& text,int32 encoding)
 void
 Encoding::ConvertFromUTF8(BString& text,int32 encoding)
 {
-	int32 len = text.Length();
-	char *buf = new char[len+1];
-	::strcpy(buf,text.String());
+	int32	sourceLen = text.Length();
+	int32	destLen = sourceLen;
 	
-	ConvertFromUTF8(&buf,encoding);
+	char*	inBuf = text.LockBuffer(destLen+1);
+	status_t	err = B_OK;
+	int32		state = 0;
 	
-	text = buf;
+	char *buf = new char[destLen+1];
+	
+	err = convert_from_utf8(encoding, inBuf, &sourceLen, buf, &destLen, &state);
+
+	if(err != B_OK)
+	{
+		delete[] buf;
+		text.UnlockBuffer();
+		return;	
+	}
+	
+	for(register int32 i = 0; i < destLen; i++)
+		if(*(buf + i) == '\0'){ *(buf + i) = ' '; } 
+	
+	buf[destLen] = '\0';
+
+	::strncpy(inBuf,buf,destLen);
+	text.UnlockBuffer(destLen);
+	delete[] buf;
 }
 
 /***********************************************************
