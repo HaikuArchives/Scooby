@@ -3,6 +3,10 @@
 
 #include <View.h>
 
+enum{
+	M_FONT_CHANGED = 'MFNC'
+};
+
 class HGeneralSettingView :public BView {
 public:
 					HGeneralSettingView(BRect rect);
@@ -13,5 +17,6 @@ protected:
 	virtual void	MessageReceived(BMessage *message);
 	virtual	void	AttachedToWindow();
 private:
+	
 };
 #endif
