@@ -52,6 +52,7 @@ public:
 			void	SetColumnShown(ColumnType type,bool shown);
 			void	RemoveMails(BList *list);
 			void	AddMail(HMailItem *item);
+			int32	SelectionCount();
 protected:
 	virtual void 	MessageReceived(BMessage *message);	
 	virtual	bool	InitiateDrag(BPoint point, 

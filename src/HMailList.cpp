@@ -168,7 +168,7 @@ void
 HMailList::SelectionChanged()
 {
 	int32 sel = this->CurrentSelection();
-	if(sel <0 && this->CurrentSelection(1) < 0)
+	if(sel <0 && SelectionCount() > 1)
 	{
 		// set content view empty
 		Window()->PostMessage(M_SET_CONTENT);
@@ -664,4 +664,17 @@ HMailList::SetColumns(int32 flags,
 		CLVColumn *col = ColumnAt(i+1);
 		col->SetWidth(column_width[i]);
 	}
+}
+
+/***********************************************************
+ * SelectionCount
+ ***********************************************************/
+int32
+HMailList::SelectionCount()
+{
+	int32 count = 0,i = 0;
+	
+	while(CurrentSelection(i++) >= 0)
+		count++;
+	return count;
 }
