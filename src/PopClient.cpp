@@ -430,7 +430,7 @@ PopClient::Retr(int32 index,BString &content)
 	int32 buf_size = (size>MAX_RECIEVE_BUF_SIZE)?MAX_RECIEVE_BUF_SIZE:size;
 	char *buf = new char[buf_size+1];
 	int32 content_len = 0;
-	PRINT(("buf_size:%d\n",buf_size));
+	//PRINT(("buf_size:%d\n",buf_size));
 	while(1)
 	{
 		if(fEndpoint->IsDataPending(kTimeout))

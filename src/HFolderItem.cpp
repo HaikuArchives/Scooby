@@ -5,6 +5,7 @@
 #include "HPrefs.h"
 #include "HFolderList.h"
 #include "HWindow.h"
+#include "HMailCache.h"
 
 #include <Path.h>
 #include <Node.h>
@@ -437,6 +438,7 @@ HFolderItem::StartCreateCache()
  * ReadFromCache
  ***********************************************************/
 #define __CALC__
+#define __NEW_CACHE__
 status_t
 HFolderItem::ReadFromCache()
 {
@@ -453,7 +455,7 @@ HFolderItem::ReadFromCache()
 	path.Append("FolderCache");
 	::create_directory(path.Path(),0777);
 	path.Append(name.String());
-	
+#ifndef __NEW_CACHE__
 	BFile file(path.Path(),B_READ_ONLY);
 	BMessage msg;
 	if(file.InitCheck() == B_OK)
@@ -516,7 +518,7 @@ HFolderItem::ReadFromCache()
 		}	
 #ifdef __CALC__
 		PRINT(("Done: %9.4lf sec\n",stopWatch.Lap()/1000000.0));
-#endif __CALC__
+#endif
 		fDone = true;
 		// Set icon to open folder
 		BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"OpenFolder");
@@ -524,6 +526,24 @@ HFolderItem::ReadFromCache()
 		delete icon;
 		return B_OK;
 	}
+#else
+	HMailCache cache(path.Path());
+	
+	if(cache.Open(fMailList,this) == B_OK)
+	{
+		fDone = true;
+		// Set icon to open folder
+		BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"OpenFolder");
+		SetColumnContent(ICON_COLUMN,icon,2.0,true,false);
+		delete icon;
+#ifdef __CALC__
+		PRINT(("Done: %9.4lf sec\n",stopWatch.Lap()/1000000.0));
+#endif
+		return B_OK;
+	}else{
+		PRINT(("Open ERROR\n"));
+	}
+#endif
 	return B_ERROR;
 }
 
@@ -560,7 +580,7 @@ HFolderItem::CreateCache()
 	}
 	path.Append(name.String());
 	fCacheCancel = false;
-	
+#ifndef __NEW_CACHE__
 	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
 	if(file.InitCheck() == B_OK)
 	{
@@ -594,6 +614,10 @@ HFolderItem::CreateCache()
 		cache.Flatten(&file,&numBytes);
 		file.SetSize(numBytes);
 	}
+#else
+	HMailCache cache(path.Path());
+	cache.Save(fMailList);
+#endif
 }
 
 /***********************************************************
@@ -616,6 +640,7 @@ HFolderItem::AddMailsToCacheFile()
 	path.Append(name.String());
 	fCacheCancel = false;
 	
+#ifndef __NEW_CACHE__
 	BMessage cache;
 	
 	BFile file(path.Path(),B_READ_WRITE|B_CREATE_FILE);
@@ -651,6 +676,10 @@ HFolderItem::AddMailsToCacheFile()
 			file.SetSize(numBytes);
 		}
 	}
+#else
+	HMailCache cache(path.Path());
+	cache.Append(fMailList);
+#endif
 }
 
 /***********************************************************

@@ -1141,28 +1141,23 @@ HWindow::DeleteMails()
 		msg.AddPointer("to",item);
 	
 		int32 selected; 
-		int32 count_selected = 0;
+		int32 last_selected = -1;
 		int32 sel_index = 0;
-		//int32 unread_mails = 0;
+		
 		HMailItem *mail(NULL);
 		while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
 		{
 			mail=cast_as(fMailList->ItemAt(selected),HMailItem);
 			if(!item)
 				continue;
-			count_selected++;
 			msg.AddPointer("mail",mail);
 			msg.AddRef("refs",&mail->fRef);
-			//if(!mail->IsRead())
-			//	unread_mails++;
+			last_selected = selected;
 		}
-		/*
-		if(unread_mails>0)
-		{
-			from->SetName(from->Unread()-unread_mails);
-			fFolderList->InvalidateItem(sel);
-		}
-		*/
+		// Select the next mail
+		if(last_selected >= 0)
+			fMailList->Select(last_selected+1);
+		
 		PostMessage(&msg);
 	}else{
 		// IMAP4 mails

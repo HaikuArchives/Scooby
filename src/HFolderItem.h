@@ -59,6 +59,7 @@ public:
 	static 	int 	CompareItems(const CLVListItem *a_Item1, 
 									const CLVListItem *a_Item2, 
 									int32 KeyColumn);
+	BListView*		Owner() const{return fOwner;}
 protected:
 			void	RefreshCache();	
 			void	StartCreateCache(); // Create cache with thread
