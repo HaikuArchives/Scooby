@@ -186,7 +186,7 @@ HDeskbarView::Pulse()
 		BMessage reply;
 		BMessage msg(M_CHECK_SCOOBY_STATE);
 		msg.AddInt32("icon",fCurrentIconState);
-		scooby.SendMessage(&msg,&reply);
+		scooby.SendMessage(&msg,&reply,1000000,1000000);
 		int32 icon;
 		if(reply.FindInt32("icon",&icon) != B_OK)
 			return;
