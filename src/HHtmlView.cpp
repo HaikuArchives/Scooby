@@ -40,9 +40,7 @@ HHtmlView::HHtmlView(BRect rect,
    	message_replicant.AddString("url",buf);
    	delete[] buf; 
     message_replicant.AddBool("openAsText",false); 
-    fDefaultEncoding = GetDefaultEncoding();
-    PRINT(("%d\n",fDefaultEncoding));
-    message_replicant.AddInt32("encoding",fDefaultEncoding); 
+    message_replicant.AddInt32("encoding",GetDefaultEncoding(fDefaultEncoding)); 
     message_replicant.AddString("class","NPBaseView"); 
     message_replicant.AddString("_name","NetPositive"); 
     message_replicant.AddRect("_frame",rect); 
@@ -146,7 +144,7 @@ HHtmlView::SetEncoding(EncodingMessages encoding)
  * GetDefaultEncoding
  ***********************************************************/
 int32
-HHtmlView::GetDefaultEncoding()
+HHtmlView::GetDefaultEncoding(int32 &outEncoding)
 {
 	int32 encoding = 0;
 	int32 result = 0;
@@ -205,5 +203,5 @@ HHtmlView::GetDefaultEncoding()
 		
 	}
 	PRINT(("Encoding:%d -> %d\n",encoding,result));
-	return result;
+	return encoding;
 }

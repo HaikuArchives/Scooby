@@ -41,7 +41,7 @@ public:
 			
 			int32	fDefaultEncoding;
 			
-			int32	GetDefaultEncoding();			
+			int32	GetDefaultEncoding(int32 &outEncoding);			
 protected:
 	
 private:
