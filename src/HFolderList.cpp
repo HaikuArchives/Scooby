@@ -1075,7 +1075,7 @@ HFolderList::AddQuery(entry_ref ref)
 status_t
 HFolderList::RemoveQuery(node_ref& in_nref)
 {
-	BListItem **items = static_cast<BListItem**>(fPointerList.Items());
+	BListItem **items = reinterpret_cast<BListItem**>(fPointerList.Items());
 	int32 count = fPointerList.CountItems();
 	node_ref nref;
 	BEntry entry;
