@@ -120,6 +120,16 @@ void HMailView::KeyDown(const char *key, int32 count)
 	mods = Window()->CurrentMessage()->FindInt32("modifiers");
 
 	switch (key[0]) {
+		case B_LEFT_ARROW:	// Select prev or next word.
+		case B_RIGHT_ARROW:
+			if(mods & B_CONTROL_KEY)
+			{
+				GetSelection(&start,&end);
+				FindWord((key[0] == B_LEFT_ARROW)?start-2:end+1,&start,&end);
+				Select(start,end);
+			}else
+				_inherited::KeyDown(key,count);
+			break;
 		case B_UP_ARROW:
 		case B_DOWN_ARROW:
 			if (IsEditable())
