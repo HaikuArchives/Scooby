@@ -177,12 +177,12 @@ HWindow::InitMenu()
 	aMenu->AddSeparatorItem();
     utils.AddMenuItem(aMenu,_("Filter"),M_FILTER_MAIL,this,this,0,0);
     aMenu->AddSeparatorItem();
-    utils.AddMenuItem(aMenu,_("Show Header"),M_HEADER,this,this,'H',0);
+    utils.AddMenuItem(aMenu,_("Show Headers"),M_HEADER,this,this,'H',0);
     utils.AddMenuItem(aMenu,_("Show Raw Message"),M_RAW,this,this,0,0);
     menubar->AddItem( aMenu );
 ////------------------------- Attr Menu ---------------------
 	aMenu = new BMenu(_("Attributes"));
-	const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachment")};
+	const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachments")};
 	ColumnType attr_col[] = {COL_SUBJECT,COL_FROM,COL_TO,COL_WHEN,COL_PRIORITY,COL_ATTACHMENT};
 	for(int32 i = 0;i < 6;i++)
 	{
@@ -607,7 +607,7 @@ HWindow::MessageReceived(BMessage *message)
 	}
 	case M_ATTR_MSG:
 	{
-		const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachment")};
+		const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachments")};
 
 		int32 col;
 		if(message->FindInt32("attr",&col) == B_OK)
@@ -897,7 +897,7 @@ HWindow::MessageReceived(BMessage *message)
 void
 HWindow::MenusBeginning()
 {
-	const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachment")};
+	const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachments")};
 	ColumnType attr_col[] = {COL_SUBJECT,COL_FROM,COL_TO,COL_WHEN,COL_PRIORITY,COL_ATTACHMENT};
 	BMenuItem *item;
 	for(int32 i = 0;i < 6;i++)

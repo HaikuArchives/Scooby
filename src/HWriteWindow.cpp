@@ -188,9 +188,9 @@ HWriteWindow::InitMenu()
 	menubar->AddItem( aMenu );
 	
 	aMenu = new BMenu(_("Message"));
-	subMenu = new BMenu(_("Enclosure"));
-	utils.AddMenuItem(subMenu,_("Add Enclosure…"),M_ADD_ENCLOSURE,this,this,'A',B_SHIFT_KEY);
-	utils.AddMenuItem(subMenu,_("Remove Enclosure"),M_DEL_ENCLOSURE,this,this,0,0);
+	subMenu = new BMenu(_("Attachments"));
+	utils.AddMenuItem(subMenu,_("Add Attachment"),M_ADD_ENCLOSURE,this,this,'A',B_SHIFT_KEY);
+	utils.AddMenuItem(subMenu,_("Remove Attachment"),M_DEL_ENCLOSURE,this,this,0,0);
 	aMenu->AddItem(subMenu);
 	subMenu = new BMenu(_("Priority"));
 	subMenu->SetRadioMode(true);
@@ -296,7 +296,7 @@ HWriteWindow::InitGUI()
 	
 	toolbox->AddSpace();
 	toolbox->AddButton("Attach",utils.GetBitmapResource('BBMP',"Enclosure"),
-					new BMessage(M_ADD_ENCLOSURE),"Add Enclosure");
+					new BMessage(M_ADD_ENCLOSURE),"Add Attachment");
 	
 	
 	AddChild(toolbox);

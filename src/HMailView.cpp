@@ -53,12 +53,12 @@ HMailView::HMailView(BRect frame, bool incoming, BFile *file)
 	fPanel = NULL;
 
 	font.SetSize(10);
-	fMenu = new BPopUpMenu("Enclosure", FALSE, FALSE);
+	fMenu = new BPopUpMenu("Attachments", FALSE, FALSE);
 	fMenu->SetFont(&font);
-	BString label = _("Save Enclosure");
+	BString label = _("Save Attachment");
 	label += B_UTF8_ELLIPSIS;
 	fMenu->AddItem(new BMenuItem(label.String(), new BMessage(M_SAVE)));
-	fMenu->AddItem(new BMenuItem(_("Open Enclosure"), new BMessage(M_ADD)));
+	fMenu->AddItem(new BMenuItem(_("Open Attachment"), new BMessage(M_ADD)));
 	ResetFont();
 }
 
@@ -507,13 +507,13 @@ void HMailView::MouseDown(BPoint where)
 		if(!fIncoming)
 			return _inherited::MouseDown(where);
 		
-		BPopUpMenu* theMenu = new BPopUpMenu("Enclosure");
+		BPopUpMenu* theMenu = new BPopUpMenu("Attachments");
 		BFont font(be_plain_font);
 		font.SetSize(10);
 		theMenu->SetFont(&font);
 		BMessage *msg =  new BMessage(M_HEADER);
 		msg->AddBool("header",!fHeader);
-		theMenu->AddItem((item = new BMenuItem(_("Show Header"),msg,'H',0)));
+		theMenu->AddItem((item = new BMenuItem(_("Show Headers"),msg,'H',0)));
 		item->SetMarked(fHeader);
 		item->SetEnabled( (fFile)?true:false);
 		msg = new BMessage(M_RAW);
@@ -533,10 +533,10 @@ void HMailView::MouseDown(BPoint where)
 		items = fEnclosures->CountItems();
 		theMenu->AddSeparatorItem();
 		BMenuItem *saveItem,*openItem;
-		BString label = _("Save Enclosure");
+		BString label = _("Save Attachment");
 		label += B_UTF8_ELLIPSIS;
 		theMenu->AddItem( saveItem = new BMenuItem(label.String(), new BMessage(M_SAVE)));
-		theMenu->AddItem( openItem = new BMenuItem(_("Open Enclosure"), new BMessage(M_ADD)));
+		theMenu->AddItem( openItem = new BMenuItem(_("Open Attachment"), new BMessage(M_ADD)));
 		openItem->SetEnabled(false);
 		saveItem->SetEnabled(false);
 		enclosure = NULL;
@@ -923,7 +923,7 @@ status_t HMailView::Save(BMessage *msg)
 		}
 		else {
 			beep();
-			(new BAlert("", _("An error occurred trying to save the enclosure."),
+			(new BAlert("", _("An error occurred trying to save the attachment."),
 				_("OK")))->Go();
 		}
 	}
@@ -1250,7 +1250,7 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 						index++;
 					}
 					type[index] = 0;
-					sprintf(hyper, "\n<Enclosure: %s (MIME type: %s)>\n",
+					sprintf(hyper, "\n<Attachment: %s (MIME type: %s)>\n",
 								str, &type[strlen(CONTENT_TYPE)]);
 					strcpy(enclosure->content_type, &type[strlen(CONTENT_TYPE)]);
 					info->view->GetSelection(&enclosure->text_start,

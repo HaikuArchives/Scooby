@@ -193,7 +193,7 @@ HReadWindow::InitMenu()
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();
     
-    utils.AddMenuItem(aMenu,_("Show Header"),M_HEADER,this,this,'H',0);
+    utils.AddMenuItem(aMenu,_("Show Headers"),M_HEADER,this,this,'H',0);
     utils.AddMenuItem(aMenu,_("Show Raw Message"),M_RAW,this,this,0,0);
     menubar->AddItem( aMenu );
 	
