@@ -34,8 +34,7 @@ enum{
 	M_PRINT_MESSAGE = 'mpRI',
 	M_PAGE_SETUP_MESSAGE = 'mPAG',
 	M_SEND_PENDING_MAILS = 'mSPM',
-	M_POP_CHECK = 'pCHC',
-	M_SELECT_ALL = 'mSEA'
+	M_POP_CHECK = 'pCHC'
 };
 
 class HWindow: public BWindow {

@@ -115,35 +115,15 @@ HWindow::InitMenu()
    	utils.AddMenuItem(aMenu,"Copy",B_COPY,this,this,'C',0);
    	utils.AddMenuItem(aMenu,"Paste",B_PASTE,this,this,'V',0);
    	aMenu->AddSeparatorItem();
-   	utils.AddMenuItem(aMenu,"Select All",M_SELECT_ALL,this,this,'A',0);
+   	utils.AddMenuItem(aMenu,"Select All",B_SELECT_ALL,this,this,'A',0);
    	menubar->AddItem(aMenu);
 ////------------------------- Mail Menu ---------------------
 	aMenu = new BMenu("Mail");
    	utils.AddMenuItem(aMenu,"Check Mail",M_POP_CONNECT,this,this,'M',0,
    							rsrc_utils.GetBitmapResource('BBMP',"Check Mail"));
-	// gather account
+	// account
 	BMenu *subMenu = new BMenu("Check Mail From");
-/*	BPath path;
-	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
-	path.Append(APP_NAME);
-	path.Append("Accounts");
-	BDirectory dir(path.Path());
-	BEntry entry;
-	status_t err = B_OK;
 
-	while(err == B_OK)
-	{
-		if((err = dir.GetNextEntry(&entry)) == B_OK )
-		{
-			char name[B_FILE_NAME_LENGTH+1];
-			entry.GetName(name);
-			entry_ref ref;
-			entry.GetRef(&ref);
-			BMessage *msg = new BMessage(M_CHECK_FROM);
-			msg->AddRef("refs",&ref);
-			subMenu->AddItem(new BMenuItem(name,msg));
-		}
-	}*/
 	aMenu->AddItem(subMenu);
 	aMenu->AddSeparatorItem();
 	//
@@ -334,11 +314,13 @@ HWindow::InitGUI()
 	
 	fFolderList->WatchQueryFolder();
 	fMailList->MakeFocus(true);	
-	
+	/*
 	KeyMenuBar()->FindItem(B_CUT)->SetTarget(fMailView,this);
 	KeyMenuBar()->FindItem(B_COPY)->SetTarget(fMailView,this);
 	KeyMenuBar()->FindItem(B_PASTE)->SetTarget(fMailView,this);
-	KeyMenuBar()->FindItem(M_SELECT_ALL)->SetTarget(this);
+	KeyMenuBar()->FindItem(B_SELECT_ALL)->SetTarget(this);
+	*/
+	
 	KeyMenuBar()->FindItem(B_UNDO)->SetTarget(fMailView,this);
 }
 
@@ -351,11 +333,12 @@ HWindow::MessageReceived(BMessage *message)
 	switch(message->what)
 	{
 	// Select All
-	case M_SELECT_ALL:
+	case B_COPY:
+	case B_SELECT_ALL:
 	{
 		BView *view = CurrentFocus();
 		if(view)
-			PostMessage(B_SELECT_ALL,view);
+			PostMessage(message,view);
 		break;
 	}
 	// Show write mail window
@@ -718,6 +701,7 @@ send:
 		fMailView->ResetFont();
 		break;
 	}
+	
 	case M_SELECT_NEXT_MAIL:
 	case M_SELECT_PREV_MAIL:
 		PostMessage(message,fMailList);
@@ -786,26 +770,46 @@ HWindow::MenusBeginning()
 	item->SetMarked(fMailView->IsShowingRawMessage());
 	item->SetEnabled(mailSelected);
 	
-	// Cut & Copy	
+	// Copy	
 	int32 start,end;
-	fMailView->GetSelection(&start,&end);
+	BTextControl *ctrl(NULL);
+	if(CurrentFocus() == fMailView)
+	{	
+		fMailView->GetSelection(&start,&end);
+	
+		if(start != end)
+			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+		else
+			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+	}else if((ctrl = fDetailView->FocusedView())){
+		BTextView *textview = ctrl->TextView();
+		textview->GetSelection(&start,&end);
+		
+		if(start != end)
+		{
+			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(true);
+			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+		} else {
+			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
+			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+		}
+	}
+	// Disabled items
+	KeyMenuBar()->FindItem(B_UNDO)->SetEnabled(false);
 	KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
 	KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
-	if(start != end)
-		KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
-	else
-		KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
-	// Undo
-	KeyMenuBar()->FindItem(B_UNDO)->SetEnabled(false);
-	
 	// Select All
-	item = KeyMenuBar()->FindItem(M_SELECT_ALL);
+	item = KeyMenuBar()->FindItem(B_SELECT_ALL);
 	BView *view = CurrentFocus();
-	item->SetEnabled(false);
+	
 	if(is_kind_of(view,HMailList))
 		item->SetEnabled(true);
 	else if(is_kind_of(view,BTextView))
 		item->SetEnabled(true);
+	else if(ctrl)
+		item->SetEnabled(true);
+	else
+		item->SetEnabled(false);
 	// Recreate check from items
 	// Delete all items
 	BMenu *subMenu = KeyMenuBar()->SubmenuAt(2);
