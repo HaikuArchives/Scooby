@@ -747,7 +747,7 @@ HHtmlMailView::ParseAllParts(const char* str,const char* boundary,int32 header_l
 			ParseAllParts(part.String(),subBoundary,header_len+part_offset);
 		}else
 			AddPart(part.String(),header_len+part_offset);
-		free(subBoundary);
+		delete[] subBoundary;
 		subBoundary = NULL;
 		if(::strncmp(&content[start],end_boundary,boundary_len+2) == 0)
 			break;
