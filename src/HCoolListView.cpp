@@ -2,6 +2,7 @@
 
 #include <Debug.h>
 #include <ClassInfo.h>
+#include <Window.h>
 
 const rgb_color highlight = {190,190,190,100};
 
@@ -41,7 +42,8 @@ void
 HCoolListView::MouseMoved(BPoint where,uint32 code,const BMessage *message)
 {
 	_inherited::MouseMoved(where,code,message);
-	
+	if(!Window()->IsActive())
+		return;
 	int32 count = CountItems();
 	if(count == 0)
 		return;
