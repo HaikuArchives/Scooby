@@ -5,16 +5,19 @@ RSRCS= ./resources/Icon.rsrc ./resources/Resource.rsrc
 # Libraries
 LIBS= root be textencoding netapi net tracker mail
 # Library path
-LIBPATHS= 
+LIBPATHS= /boot/home/config/lib 
 # System include path
 SYSTEM_INCLUDE_PATHS =
 # Local include path 
 LOCAL_INCLUDE_PATHS = ./libs/Utils ./libs/Santa ./libs/Toolbar ./libs/liblocale 
 # OPTIMIZE
 OPTIMIZE= FULL
-#OPTIMIZE= NONE
 # Defines
-DEFINES= DEBUG USE_SCANDIR 
+DEFINES= DEBUG USE_SCANDIR
+# USE_SPLOCALE: Enable SpLocale supprt
+# USE_ICONV:	Enable iconv support
+USE_SPLOCALE = 0
+USE_ICONV = 0
 # Warnings
 WARNINGS = ALL
 # Sources
@@ -68,6 +71,18 @@ SRCS= ./src/HFolderItem.cpp\
 	./src/SpellCheckView.cpp
 #-------------------------------------------------------
 #	determine wheather running on x86 or ppc
+ifeq ($(USE_SPLOCALE),1)
+	LIBS += SpLocaleApp
+	LOCAL_INCLUDE_PATHS += /boot/home/config/include
+	DEFINES += USE_SPLOCALE
+endif
+
+ifeq ($(USE_SPLOCALE),1)
+	LIBS += iconv
+	LOCAL_INCLUDE_PATHS += /boot/home/config/include
+	DEFINES += USE_ICONV
+endif
+
 MACHINE=$(shell uname -m)
 ifeq ($(MACHINE), BePC)
 	CPU = x86
