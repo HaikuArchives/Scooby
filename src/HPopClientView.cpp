@@ -453,21 +453,21 @@ HPopClientView::SaveMail(const char* all_content,
 	int32 header_len = 0;
 	for(int32 i = 0;i < org_len;i++)
 	{
-		if(strncasecmp(&all_content[i],"Subject: ",9) == 0)
+		if(strncasecmp(&all_content[i],"Subject: ",9) == 0 && all_content[i-1] == '\n')
 			i = GetHeaderParam(subject,all_content,i+9);
-		else if(strncasecmp(&all_content[i],"Date: ",6) == 0)
+		else if(strncasecmp(&all_content[i],"Date: ",6) == 0 && all_content[i-1] == '\n')
 			i = GetHeaderParam(date,all_content,i+6);
-		else if(strncasecmp(&all_content[i],"Cc: ",4) == 0)
+		else if(strncasecmp(&all_content[i],"Cc: ",4) == 0 && all_content[i-1] == '\n')
 			i = GetHeaderParam(cc,all_content,i+4);
-		else if(strncasecmp(&all_content[i],"To: ",4) == 0)
+		else if(strncasecmp(&all_content[i],"To: ",4) == 0 && all_content[i-1] == '\n')
 			i = GetHeaderParam(to,all_content,i+4);
-		else if(strncasecmp(&all_content[i],"From: ",6) == 0)
+		else if(strncasecmp(&all_content[i],"From: ",6) == 0 && all_content[i-1] == '\n')
 			i = GetHeaderParam(from,all_content,i+6);
-		else if(strncasecmp(&all_content[i],"X-Priority: ",12) == 0)
+		else if(strncasecmp(&all_content[i],"X-Priority: ",12) == 0 && all_content[i-1] == '\n')
 			i = GetHeaderParam(priority,all_content,i+12);
-		else if(strncasecmp(&all_content[i],"Mime-Version: ",14) == 0)
+		else if(strncasecmp(&all_content[i],"Mime-Version: ",14) == 0 && all_content[i-1] == '\n')
 			i = GetHeaderParam(mime,all_content,i+14);
-		else if(strncasecmp(&all_content[i],"Reply-To: ",10) == 0)
+		else if(strncasecmp(&all_content[i],"Reply-To: ",10) == 0 && all_content[i-1] == '\n')
 			i = GetHeaderParam(reply,all_content,i+10);
 		else if(all_content[i] == '\r'||all_content[i] == '\n')
 		{
