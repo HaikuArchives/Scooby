@@ -5,6 +5,8 @@
 #include <String.h>
 #include <Locker.h>
 
+class BList;
+
 enum{
 	IMAP_SESSION_CONTINUED = 0,
 	IMAP_SESSION_OK,
