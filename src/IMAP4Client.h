@@ -14,7 +14,7 @@ enum{
 };
 
 //! IMAP4 client socket.
-class IMAP4Client :public BNetEndpoint {
+class IMAP4Client :public BNetEndpoint,public BLocker {
 public:
 		//!Constructor.
 					IMAP4Client();
@@ -69,10 +69,7 @@ public:
 protected:
 		status_t	SendCommand(const char* str);
 		int32		ReceiveLine(BString &out);
-		int32		CheckSessionEnd(const char* line,int32 session);
-		
-		bool		Lock(){return fSocketLocker.Lock();}
-		void		Unlock(){return fSocketLocker.Unlock();}
+		int32		CheckSessionEnd(const char* line,int32 session);		
 		
 		status_t	ReceiveResponse(BString &out);
 private:
@@ -84,6 +81,5 @@ private:
 		BString			fPassword;
 		BString			fFolderName;
 		time_t			fIdleTime;
-		BLocker			fSocketLocker;
 };
 #endif

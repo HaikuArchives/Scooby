@@ -68,7 +68,7 @@ IMAP4Client::Reconnect()
 status_t
 IMAP4Client::Login(const char* login,const char* password)
 {
-	BAutolock lock(fSocketLocker);
+	BAutolock lock(this);
 	// for re-connect
 	fLogin = login; fPassword = password;
 	//
@@ -105,7 +105,7 @@ IMAP4Client::Login(const char* login,const char* password)
 status_t
 IMAP4Client::List(const char* folder_name,BList *namelist)
 {
-	BAutolock lock(fSocketLocker);
+	BAutolock lock(this);
 	BString cmd("LIST ");
 	
 	cmd << "\"" << "\" "; 
@@ -167,7 +167,7 @@ IMAP4Client::List(const char* folder_name,BList *namelist)
 int32
 IMAP4Client::Select(const char* folder_name)
 {
-	BAutolock lock(fSocketLocker);
+	BAutolock lock(this);
 	int32 r = 0,mail_count = -1;
 	
 	BString cmd("SELECT ");
@@ -304,7 +304,7 @@ IMAP4Client::FetchFields(int32 index,
 					bool	&read,
 					bool	&attachment)
 {
-	BAutolock lock(fSocketLocker);
+	BAutolock lock(this);
 	// Check connection
 	if(!IsAlive())
 	{
@@ -408,7 +408,7 @@ IMAP4Client::FetchFields(int32 index,
 status_t
 IMAP4Client::FetchBody(int32 index,BString &outBody)
 {
-	BAutolock lock(fSocketLocker);
+	BAutolock lock(this);
 	// Check connection
 	if(!IsAlive())
 	{
@@ -560,7 +560,7 @@ IMAP4Client::Logout()
 status_t
 IMAP4Client::SendCommand(const char* command)
 {
-	BAutolock lock(fSocketLocker);
+	BAutolock lock(this);
 	BString out("");
 	status_t err = B_ERROR;
 	char *cmd = new char[strlen(command) + 15];
@@ -743,7 +743,7 @@ IMAP4Client::CloseMailBox()
 status_t
 IMAP4Client::ReceiveResponse(BString &out)
 {
-	BAutolock lock(fSocketLocker);
+	BAutolock lock(this);
 	int32 cmdNumber = fCommandCount;
 	BString line;
 	int32 state;

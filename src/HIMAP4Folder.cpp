@@ -18,6 +18,7 @@
 #include <Directory.h>
 #include <ListView.h>
 #include <string.h>
+#include <Autolock.h>
 
 /***********************************************************
  * Constructor
@@ -161,12 +162,13 @@ HIMAP4Folder::IMAPGetList()
 	}	
 	
 	int32 mail_count = 0;
-	if( (mail_count = fClient->Select(fRemoteFolderPath.String())) < 0)
+	BAutolock lock(fClient);
+	if((mail_count = fClient->Select(fRemoteFolderPath.String())) < 0)
 	{
 		(new BAlert("",_("Could not select remote folder"),_("OK")
 						,NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		if(fOwner->IndexOf(this) == fOwner->CurrentSelection())
-				fOwner->Window()->PostMessage(M_STOP_MAIL_BARBER_POLE);
+				fOwner->Window()->PostMessage(M_STOP_MAIL_BARBER_POLE);	
 		return;
 	}
 	
