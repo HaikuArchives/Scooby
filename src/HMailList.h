@@ -66,7 +66,7 @@ protected:
 										int32 sort_key,
 										int32 sort_mode,
 										HMailItem *item);
-			status_t ReadSettings(entry_ref ref, BMessage *msg);
+			status_t ReadSettings(const char* path, BMessage *msg);
 			void	RefreshColumns(BMessage *msg);
 			void	SetColumns(int32 flags,
 									int32 *display_order,
@@ -74,6 +74,7 @@ protected:
 									int32 sort_mode,
 									float *column_width);
 			void	RefreshScrollPos(BMessage *msg);
+			void	MakePath(BPath &basePath,const char* relative);
 private:
 	BEntry  			*fCurrentFolder;
 	BetterScrollView 	*fScrollView;

@@ -138,15 +138,22 @@ HFolderList::MessageReceived(BMessage *message)
 		
 		bool gather;
 		((HApp*)be_app)->Prefs()->GetData("load_list_on_start_up",&gather);
-	
+		bool expand = false;
+		
 		for(int32 i = 0;i < count;i++)
 		{
 			message->FindPointer("item",i,(void**)&item);
 			message->FindPointer("parent",i,(void**)&parent);
-			AddUnder(item,parent);
+			if(message->FindBool("expand",i,&expand) != B_OK)
+				expand = false;
+			
 			
 			if(!parent->IsSuperItem())
+			{
 				parent->SetSuperItem(true);
+				parent->SetExpanded(expand);
+			}
+			AddUnder(item,parent);
 			
 			fPointerList.AddItem(item);
 			if(gather && item->FolderType() == FOLDER_TYPE)
@@ -655,6 +662,7 @@ HFolderList::SelectionChanged()
 		msg.AddPointer("pointer",list);
 		entry_ref ref = theItem->Ref();
 		msg.AddRef("refs",&ref);
+		GetFolderPath(theItem,msg);
 		msg.AddInt32("folder_type",theItem->FolderType());
 		Window()->PostMessage(&msg);
 	}else{
@@ -1249,7 +1257,9 @@ HFolderList::GetFolderPath(HFolderItem *item,BMessage &msg)
 	
 	while(parent)
 	{
-		if(strcmp(parent->FolderName(),_("Local Folders")) == 0)
+		if(strcmp(parent->FolderName(),_("Local Folders")) == 0 ||
+			strcmp(parent->FolderName(),_("IMAP4 Folders")) == 0 ||
+			strcmp(parent->FolderName(),_("Queries")) == 0)
 			break;
 		path.Insert("/",0);
 		path.Insert(parent->FolderName(),0);

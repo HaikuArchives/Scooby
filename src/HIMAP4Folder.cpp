@@ -15,6 +15,7 @@
 #include <File.h>
 #include <Directory.h>
 #include <ListView.h>
+#include <string.h>
 
 /***********************************************************
  * Constructor
@@ -34,6 +35,7 @@ HIMAP4Folder::HIMAP4Folder(const char* name,
 	,fPassword(password)
 	,fRemoteFolderName(folder_name)
 	,fFolderGathered(false)
+	,fChildItem(false)
 {
 }
 
@@ -58,6 +60,8 @@ HIMAP4Folder::~HIMAP4Folder()
 void
 HIMAP4Folder::StoreSettings()
 {
+	if(fChildItem)
+		return;
 	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
@@ -144,7 +148,9 @@ HIMAP4Folder::IMAPGetList()
 			return;	
 		}
 	}
-	GatherChildFolders();
+	if(!fChildItem)
+		GatherChildFolders();
+	
 	int32 mail_count = 0;
 	if( (mail_count = fClient->Select(fRemoteFolderName.String())) < 0)
 	{
@@ -195,13 +201,15 @@ HIMAP4Folder::IMAPGetList()
 											));
 		if(!read) fUnread++;
 	}
+	SetName(fUnread);
+	
 	fDone = true;
 	
 	// Set icon to open folder
 	BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"OpenIMAP");
 	SetColumnContent(1,icon,2.0,true,false);
 	delete icon;
-	SetName(fUnread);
+	
 	InvalidateMe();
 	fThread = -1;
 	return;
@@ -244,37 +252,90 @@ HIMAP4Folder::GatherChildFolders()
 {
 	if(fFolderGathered)
 		return;
-	BList namelist;
+	BList namelist,pointerList;
 	
 	int32 count = fClient->List(fRemoteFolderName.String(),&namelist);
+	if(count <= 0)
+		return;
 	
 	BMessage childMsg(M_ADD_UNDER_ITEM);
 	char displayName[B_FILE_NAME_LENGTH];
-	int32 k= 0;
 	char *p;
+	
+	const char* server = fServer.String();
+	const char* login = fLogin.String();
+	const char* password = fPassword.String();
+	int16 port = fPort;
+	BListView *list = fOwner;
+	
+	HIMAP4Folder *folder;
+	
 	for(int32 i = 0;i < count;i++)
 	{
 		char *name = (char*)namelist.ItemAt(i);
-		p = strstr(name,"/");
-		k= 0;
-		p++;
-		while(name[k] != '\0' && name[k] != '/')
+		if(strstr(name,"/"))
 		{
-			displayName[k++] = *p++;	
+			int32 namelen = ::strlen(name);
+			p = name;
+			p += namelen-1;
+			while(*p != '/')
+				p--;
+			p++;
 		}
-		displayName[k] = '\0';
-		childMsg.AddPointer("parent",this);
-		childMsg.AddPointer("item",new HIMAP4Folder(displayName,name
-											,fServer.String()
-											,fPort
-											,fLogin.String()
-											,fPassword.String()
-											,fOwner));
+		else
+			p = name;
+		::strcpy(displayName,p);
+		displayName[::strlen(p)] = '\0';
+		pointerList.AddItem((folder = new HIMAP4Folder(displayName,name
+											,server
+											,port
+											,login
+											,password
+											,list)));
+		folder->SetFolderGathered(true);
+		folder->SetChildFolder(true);
+		PRINT(("%s\n",name));
 		free( name );
+	}
+	
+	int32 index;
+	for(int32 i = 0;i < count;i++)
+	{
+		folder = (HIMAP4Folder*)pointerList.ItemAt(i);
+		index = FindParent(folder->FolderName(),folder->RemoteFolderName(),&pointerList);
+		childMsg.AddPointer("parent",(index < 0)?this:(HIMAP4Folder*)pointerList.ItemAt(index));
+		childMsg.AddBool("expand",(index < 0)?true:false);
+		childMsg.AddPointer("item",folder);
 	}
 	if(!childMsg.IsEmpty())
 		fOwner->Window()->PostMessage(&childMsg,fOwner);
 	fFolderGathered = true;
+}
+
+/***********************************************************
+ * FindParent
+ ***********************************************************/
+int32
+HIMAP4Folder::FindParent(const char* name,const char* folder_path,BList *list)
+{
+	int32 count = list->CountItems();
+	HIMAP4Folder *folder;
+	char path[B_PATH_NAME_LENGTH];
+	
+	if(::strstr(folder_path,"/"))
+	{
+		::strcpy(path,folder_path);
+		path[::strlen(path)-::strlen(name) -1] = '\0';
+	}else
+		return -1; 
+	
+	for(int32 i = 0;i < count;i++)
+	{
+		folder = (HIMAP4Folder*)list->ItemAt(i);
+		if(strcmp(folder->RemoteFolderName(),path) == 0)
+			return i;
+	}
+	return -1;
 }
 
 /***********************************************************

@@ -134,14 +134,14 @@ HMailList::MessageReceived(BMessage *message)
 			message->FindInt32("folder_type",&fFolderType);
 			entry_ref ref;
 			BMessage settings;
-			if(message->FindRef("refs",&ref) != B_OK)
-			{
+			const char* path;
+			
+			//PRINT(("%s\n",path));
+			if(message->FindString("path",&path) != B_OK)
 				RefreshColumns(NULL);
-			}
 			else
 			{
-				fCurrentFolder = new BEntry(&ref);
-				if (ReadSettings(ref, &settings) != B_OK) RefreshColumns(NULL);
+				if (ReadSettings(path, &settings) != B_OK) RefreshColumns(NULL);
 				else RefreshColumns(&settings);
 			}
 			//Add Mails
@@ -216,6 +216,7 @@ HMailList::SaveColumnsAndPos()
 {
 	if(!fCurrentFolder)
 		return;
+	/*
 	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
@@ -248,11 +249,11 @@ HMailList::SaveColumnsAndPos()
 	name << ".attr";
 	
 	path.Append(name.String());
-	
-	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
+	*/
+	BFile file(fCurrentFolder,B_WRITE_ONLY|B_CREATE_FILE);
 	if(file.InitCheck() != B_OK)
 	{
-		PRINT(("Fail to write attr setting:%s\n",path.Path()));
+		PRINT(("Fail to write attr setting\n"));
 		return;
 	}
 	const int32 kFlags[] = {COLUMN_SUBJECT,COLUMN_FROM,COLUMN_TO
@@ -549,7 +550,7 @@ HMailList::InitiateDrag(BPoint  point,
  * ReadSettings
  ***********************************************************/
 status_t
-HMailList::ReadSettings(entry_ref ref, BMessage *msg)
+HMailList::ReadSettings(const char* relativepath, BMessage *msg)
 {
 	BPath path;
 	BFile file;
@@ -558,41 +559,63 @@ HMailList::ReadSettings(entry_ref ref, BMessage *msg)
 	path.Append(APP_NAME);
 	path.Append("Attribute");
 	::create_directory(path.Path(),0777);
+	
 	if(fFolderType == QUERY_TYPE)
 	{
 		path.Append("Query");
 		::create_directory(path.Path(),0777);
 	}else if(fFolderType == IMAP4_TYPE){
 		path.Append("IMAP4");
-		::create_directory(path.Path(),0777);	
-	}else{
-		const char* p;
-		BPath folder_path(fCurrentFolder);
-		folder_path.GetParent(&folder_path);
-		while(1)
-		{
-			p = folder_path.Leaf();
-			if(::strcmp(p,"mail") == 0)
-				break;	
-			path.Append(p);
-			::create_directory(path.Path(),0777);
-			folder_path.GetParent(&folder_path);
-		}
+		::create_directory(path.Path(),0777);
 	}
-	
-	BString name( BPath(&ref).Leaf());
-	name << ".attr";
-	
-	path.Append(name.String());
+	MakePath(path,relativepath);
+	PRINT(("%s\n",path.Path() ));
+
 	if(path.InitCheck() != B_OK)
 		return B_ERROR;
+	// Store the setting files ref
+	fCurrentFolder = new BEntry(path.Path());
+
 	if(file.SetTo(path.Path(),B_READ_ONLY) != B_OK)
 		return B_ERROR;
 	
 	msg->Unflatten(&file);
+	
 	return B_OK;
 }
  
+
+/***********************************************************
+ * MakePath
+ ***********************************************************/ 
+void
+HMailList::MakePath(BPath &basePath,const char* relative)
+{
+	int32 len = ::strlen(relative);
+	char *path = new char[len+1];
+	::strcpy(path,relative);
+	path[len] = '\0';
+	BString leafName;
+	for(int32 i = 0;i < len;i++)
+	{
+		leafName = "";
+		while(path[i] != '/')
+		{
+			if(path[i] == '\0')
+			{
+				leafName += ".attr";
+				basePath.Append(leafName.String());
+				goto end;
+			}
+			leafName += path[i++];	
+		}
+		basePath.Append(leafName.String());
+		::create_directory(basePath.Path(),0777);
+	}
+end:
+	delete[] path;
+}
+
 /***********************************************************
  * RefreshColumns
  ***********************************************************/
