@@ -112,7 +112,7 @@ SmtpClient::ReceiveLine(BString &line)
 			if(rcv <=0)
 				break;
 			len += rcv;
-			line << c;
+			line += c;
 			if(c == '\n')
 				break;
 		}else
@@ -284,7 +284,7 @@ SmtpClient::SendMail(const char* from,
 	msg.AddInt32("size",send_len);
 	for(int32 i = 0;i < len;i++)
 	{
-		line << content[i];
+		line += content[i];
 		if(content[i] == '\n' || i == len-1)
 		{
 			int32 line_len = line.Length();
@@ -299,7 +299,7 @@ SmtpClient::SendMail(const char* from,
 			// if line is not end with carrige return
 			if(i == len-1 && line.FindLast( "\r\n" ) == B_ERROR)
 			{
-				line << "\r\n";
+				line += "\r\n";
 				line_len = line.Length();
 			}
 			send_len = fEndpoint->Send(line.String(),line_len);
@@ -331,7 +331,7 @@ SmtpClient::ParseAddress(const char* in,BString& out)
 	{
 		while( p)
 		{
-			out << (char)*p;
+			out += (char)*p;
 			if(*p++ == '>')
 				break;
 		}
