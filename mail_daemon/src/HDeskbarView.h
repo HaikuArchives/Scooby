@@ -32,6 +32,6 @@ protected:
 private:
 		BBitmap 		*fIcon;
 		int32			fCurrentIconState;
-		char*			fLabels[3];
+		char*			fLabels[4];
 };
 #endif

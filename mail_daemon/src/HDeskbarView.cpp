@@ -39,8 +39,8 @@ HDeskbarView::HDeskbarView(BRect frame)
 		,fIcon(NULL)
 		,fCurrentIconState(DESKBAR_NEW_ICON)
 {
-	const char* kLabels[] = {"New Message","Check Now","Quit"};
-	for(int32 i = 0;i < 3;i++)
+	const char* kLabels[] = {"New Message","Check Now","Quit","Launch Scooby"};
+	for(int32 i = 0;i < 4;i++)
 		fLabels[i] = strdup( kLabels[i] );
 }
 
@@ -61,8 +61,8 @@ HDeskbarView::HDeskbarView(BMessage *message)
 	,fCurrentIconState(DESKBAR_NEW_ICON)
 {
 //	LocaleUtils utils(APP_SIG);
-	const char* kLabels[] = {"New Message","Check Now","Quit"};
-	for(int32 i = 0;i < 3;i++)
+	const char* kLabels[] = {"New Message","Check Now","Quit","Launch Scooby"};
+	for(int32 i = 0;i < 4;i++)
 		fLabels[i] = strdup( kLabels[i]);//utils.GetText(kLabels[i]));
 	ChangeIcon(DESKBAR_NORMAL_ICON);
 }
@@ -73,7 +73,7 @@ HDeskbarView::HDeskbarView(BMessage *message)
 HDeskbarView::~HDeskbarView()
 {
 	delete fIcon;
-	for(int32 i = 0;i < 3;i++)
+	for(int32 i = 0;i < 4;i++)
 		free( fLabels[i] );
 }
 
@@ -233,7 +233,9 @@ HDeskbarView::MouseDown(BPoint pos)
   		theMenu->SetFont(&font);
   	
   		MenuUtils utils;
-  		utils.AddMenuItem(theMenu,fLabels[0],M_NEW_MESSAGE,NULL,NULL,0,0);
+  		utils.AddMenuItem(theMenu,fLabels[0],M_LAUNCH_SCOOBY,NULL,NULL,0,0);
+  		utils.AddMenuItem(theMenu,fLabels[4],M_NEW_MESSAGE,NULL,NULL,0,0);
+  		
   		theMenu->AddSeparatorItem();
   		utils.AddMenuItem(theMenu,fLabels[1],M_CHECK_NOW,NULL,NULL,0,0);
   		theMenu->AddSeparatorItem();
