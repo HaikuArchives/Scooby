@@ -1,6 +1,5 @@
 #include "HAccountView.h"
 #include "HApp.h"
-#include "PassControl.h"
 #include "TrackerUtils.h"
 #include "NumberControl.h"
 
@@ -119,16 +118,12 @@ HAccountView::InitGUI()
 	frame.bottom = frame.top +25;
 	for(int32 i = 0;i < 8;i++)
 	{
+		ctrl = new BTextControl(frame,kLabel[i],kLabel[i],"",NULL);
+		ctrl->SetDivider(kDivider);
+		box->AddChild(ctrl);
+		
 		if(i == 4)
-		{
-			PassControl *pctrl = new PassControl(frame,kLabel[i],kLabel[i],"",NULL);
-			pctrl->SetDivider(kDivider);
-			box->AddChild(pctrl);
-		}else{
-			ctrl = new BTextControl(frame,kLabel[i],kLabel[i],"",NULL);
-			ctrl->SetDivider(kDivider);
-			box->AddChild(ctrl);
-		}
+			ctrl->TextView()->HideTyping(true);
 		frame.OffsetBy(0,23);
 	}
 	
@@ -286,18 +281,18 @@ err:
 	for(int32 i = 0;i < 8;i++)
 	{
 		BString str;
-		if(i == 4){	
-			msg.FindString(kName[i],&str);
-			PassControl *pctrl = cast_as(FindView(kLabel[i]),PassControl);
+		msg.FindString(kName[i],&str);
+		BTextControl *ctrl = cast_as(FindView(kLabel[i]),BTextControl);
+		if(i == 4)
+		{		
 			const char* text = str.String();
 			BString pass("");
 			int32 len = strlen(text);
 			for(int32 k = 0;k < len;k++)
 				pass << (char)(255-text[k]);
-			pctrl->SetText(pass.String());
+			ctrl->SetText(pass.String());
 		}else{
 			msg.FindString(kName[i],&str);
-			BTextControl *ctrl = cast_as(FindView(kLabel[i]),BTextControl);
 			ctrl->SetText(str.String());
 		}
 	}
@@ -436,10 +431,10 @@ HAccountView::SaveAccount(int32 index)
 	msg.Unflatten(&file);
 	for(int32 i = 0;i < 8;i++)
 	{
+		ctrl = cast_as(FindView(kLabel[i]),BTextControl);
 		if(i == 4)
 		{
-			PassControl *pctrl = cast_as(FindView(kLabel[i]),PassControl);
-			const char* text = pctrl->actualText();
+			const char* text = ctrl->Text();
 			BString pass("");
 			int32 len = strlen(text);
 			for(int32 k = 0;k < len;k++)
@@ -447,7 +442,6 @@ HAccountView::SaveAccount(int32 index)
 			msg.RemoveData(kName[i]);
 			msg.AddString(kName[i],pass);
 		}else{
-			ctrl = cast_as(FindView(kLabel[i]),BTextControl);
 			msg.RemoveData(kName[i]);
 			msg.AddString(kName[i],ctrl->Text());
 		}
