@@ -296,8 +296,32 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
    		len = decode_quoted_printable(buf,old,len,false);	
    else	
    // MIME-B
+#ifndef USE_BASE64DECODER
  		len = decode_base64(buf, old, len); 
-    buf[len] = '\0'; 
+#else
+		int i, iR;
+		char a1, a2, a3, a4;
+		i = 0; 
+        iR = 0;
+        ::strcpy(buf,old);
+        buf[len] = '\0'; 
+        while (1) { 
+                if (i >= len) 
+                    break; 
+                a1 = p_Charconv(buf[i]); 
+                a2 = p_Charconv(buf[i+1]); 
+                a3 = p_Charconv(buf[i+2]); 
+                a4 = p_Charconv(buf[i+3]); 
+                buf[iR] = (a1 << 2) | (a2 >>4);        
+                buf[iR + 1] = (a2 << 4) | (a3 >>2); 
+                buf[iR + 2] = (a3 << 6) | a4; 
+                
+                iR += 3;        
+                i += 4; 
+        } 
+        len = iR;
+#endif   
+	buf[len] = '\0'; 
    	::strcpy(old,buf);
     str.UnlockBuffer();
  	//str = buf;
@@ -623,32 +647,6 @@ Encoding::ConvertReturnsToCR(char* text)
 	}
 }
 
-/***********************************************************
- * ConvertReturnsToCRLF
- *	NOTE: you need to prepare enough buffer
- ***********************************************************/
-void
-Encoding::ConvertReturnsToCRLF(char* text)
-{	
-	/*for(int32 i = 0, j = 0; true; i++, j++){
-		if(*(text + i) == LF)
-		{
-			*(text + j) = CR;
-			*(text + j + 1) = LF;
-			j++;
-		}else if(*(text+i) == CR) {
-			*(text + j) = CR;
-			*(text + j + 1) = LF;
-			j++;
-			if(*(text + i + 1) == LF)
-				i++;
-		}else{
-			*(text + j) = *(text + i);
-			if(*(text + j) == '\0')
-				break;
-		}
-	}*/
-}
 
 /***********************************************************
  * ConvertReturnsToCRLF

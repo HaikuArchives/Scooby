@@ -38,7 +38,6 @@ public:
 			void	ConvertReturnsToCR(char* text);
 			void	ConvertReturnsToCR(BString &text);
 			
-			void	ConvertReturnsToCRLF(char* text); // You have to prepare enough buffer
 			void	ConvertReturnsToCRLF(char** text);
 			void	ConvertReturnsToCRLF(BString &text);
 			
