@@ -471,12 +471,18 @@ HPopClientView::SaveMail(const char* all_content,
 	//PRINT(("Decoded From:%s\n",from.String()));
 	encode.Mime2UTF8(to);
 	encode.Mime2UTF8(cc);
+	encode.Mime2UTF8(reply);
 	// convert mime subject to UTF8
 	encode.Mime2UTF8(subject);
 	
 	// Filter mails
 	BString folder_path;
-	FilterMail(subject.String(),from.String(),to.String(),cc.String(),folder_path);
+	FilterMail(subject.String(),
+				from.String(),
+				to.String(),
+				cc.String(),
+				reply.String(),
+				folder_path);
 	//PRINT(("path:%s\n",folder_path.String() ));
 	
 	// Save to disk
@@ -561,6 +567,7 @@ HPopClientView::FilterMail(const char* subject,
 							const char* from,
 							const char* to,
 							const char* cc,
+							const char* reply,
 							BString &outpath)
 {
 	BPath	path;
@@ -614,6 +621,9 @@ HPopClientView::FilterMail(const char* subject,
 					break;
 				case 3:
 					key = cc;
+					break;
+				case 4:
+					key = reply;
 					break;
 				}
 			
