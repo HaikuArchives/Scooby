@@ -10,6 +10,7 @@
 #include "HIMAP4Window.h"
 #include "RectUtils.h"
 #include "HWindow.h"
+#include "Utilities.h"
 
 #include <Window.h>
 #include <StorageKit.h>
@@ -299,7 +300,7 @@ HFolderList::GetFolders(void* data)
 	((HApp*)be_app)->Prefs()->GetData("tree_mode",&tree_mode);
 	
 	BList folderList;
-	
+#ifndef USE_SCANDIR	
 	while( (count = dir.GetNextDirents((dirent *)buf, 4096)) > 0 && !list->fCancel )
 	{
 		offset = 0;
@@ -330,6 +331,38 @@ HFolderList::GetFolders(void* data)
 			}
 		}
 	}
+#else
+	int32 i=0;
+	struct dirent **dirents = NULL;
+	
+	count = GetAllDirents(path.Path(),&dirents);
+	while(count>i && !list->fCancel )
+	{
+		if(::strcmp(dirents[i]->d_name,".") == 0 || ::strcmp(dirents[i]->d_name,"..")== 0)
+		{
+			free(dirents[i++]);
+			continue;
+		}
+		ref.device = dirents[i]->d_pdev;
+		ref.directory = dirents[i]->d_pino;
+		ref.set_name(dirents[i]->d_name);
+		free(dirents[i++]);
+		if(entry.SetTo(&ref) != B_OK)
+			continue;
+		char link_path[B_PATH_NAME_LENGTH];
+		BSymLink link(path.Path());
+		if(B_BAD_VALUE == link.ReadLink(link_path,B_PATH_NAME_LENGTH)&& entry.IsDirectory())
+		{
+			entry.GetRef(&ref);
+			item = new HFolderItem(ref,list);
+			msg.AddPointer("item",item);
+			folderList.AddItem(item);
+			if(tree_mode)
+				GetChildFolders(entry,item,list,childMsg);
+		}
+	}
+	free(dirents);
+#endif
 	/********* QUERY ***********/
 	err = B_OK;
 	find_directory(B_USER_SETTINGS_DIRECTORY,&path);
@@ -443,6 +476,7 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 							HFolderList *list,
 							BMessage &childMsg)
 {
+#ifndef USE_SCANDIR
 	BDirectory dir(&inEntry);
 	BEntry entry;
 	entry_ref ref;
@@ -482,7 +516,46 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 				GetChildFolders(entry,item,list,childMsg);			
 			}
 		} 
-	} 
+	}
+#else
+	BDirectory dir(&inEntry);
+	HFolderItem *item(NULL);
+	
+	int32 count,i=0;
+	struct dirent **dirents = NULL;
+	entry_ref ref;
+	BEntry entry;
+	BPath path;
+	inEntry.GetPath(&path);
+	
+	count = GetAllDirents(path.Path(),&dirents);
+	while(count>i)
+	{
+		if(::strcmp(dirents[i]->d_name,".") == 0 || ::strcmp(dirents[i]->d_name,"..")== 0)
+		{
+			free(dirents[i++]);
+			continue;
+		}
+		ref.device = dirents[i]->d_pdev;
+		ref.directory = dirents[i]->d_pino;
+		ref.set_name(dirents[i]->d_name);
+		free(dirents[i++]);
+		if(entry.SetTo(&ref) != B_OK)
+			continue;
+		if(entry.IsDirectory())
+		{
+			entry.GetRef(&ref);
+			childMsg.AddPointer("item",(item = new HFolderItem(ref,list)));
+			childMsg.AddPointer("parent",parentItem);	
+			if(!parentItem->IsSuperItem())
+			{
+				parentItem->SetSuperItem(true);
+			}
+			GetChildFolders(entry,item,list,childMsg);			
+		} 
+	}
+	free(dirents);
+#endif 
 }
 
 /***********************************************************

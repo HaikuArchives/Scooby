@@ -14,7 +14,7 @@ LOCAL_INCLUDE_PATHS = ./libs/Utils ./libs/Santa ./libs/Toolbar ./libs/liblocale
 OPTIMIZE= FULL
 #OPTIMIZE= NONE
 # Defines
-DEFINES= DEBUG
+DEFINES= DEBUG USE_SCANDIR
 # Warnings
 WARNINGS = ALL
 # Sources
@@ -60,7 +60,8 @@ SRCS= ./src/HFolderItem.cpp\
 		./src/HHtmlView.cpp\
 		./src/HHtmlMailView.cpp\
 		./src/HCoolListView.cpp \
-		./src/Utilities.cpp
+		./src/Utilities.cpp\
+		./src/scandir.cpp
 #--------------------------------------------------------
 #	determine wheather running on x86 or ppc
 MACHINE=$(shell uname -m)
