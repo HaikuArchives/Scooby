@@ -532,7 +532,6 @@ void HMailView::MouseDown(BPoint where)
 		item->SetEnabled( (TextLength() > 0)?true:false);
 		
 		start = OffsetAt(where);
-		items = fEnclosures->CountItems();
 		theMenu->AddSeparatorItem();
 		BMenuItem *saveItem,*openItem;
 		BString label = _("Save Attachment");
@@ -542,6 +541,8 @@ void HMailView::MouseDown(BPoint where)
 		openItem->SetEnabled(false);
 		saveItem->SetEnabled(false);
 		enclosure = NULL;
+		
+		items = fEnclosures->CountItems();
 		for (loop = 0; loop < items; loop++)
 		{
 			enclosure = (hyper_text *)fEnclosures->ItemAt(loop);
@@ -552,6 +553,7 @@ void HMailView::MouseDown(BPoint where)
 				{
 					saveItem->SetEnabled(true);
 					openItem->SetEnabled(true);
+					break;
 				}
 			}
 		}
