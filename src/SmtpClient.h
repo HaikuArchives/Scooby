@@ -29,7 +29,10 @@ public:
 			//!Connect to SMTP server. Returns B_ERROR if failed to connect.
 		status_t		Connect(const char* addr //!<Server address.
 								,int16 port=25	//!<Server port.(default value is 25.)
+								,bool esmtp = false //!< Use ESMTP EHLO command or not.
 								);
+			//!ESMTP login
+		status_t		Login(const char* login,const char* password);
 			//!Sent mail.	Returns B_ERROR if failed to send.
 		status_t		SendMail(const char* from 	//!<From address.
 								,const char* to		//!<To addresses.(adress_A,address_B)
@@ -47,8 +50,8 @@ protected:
 			void		MessageReceived(BMessage *message);
 			bool		QuitRequested();
 	//@}
-			//!Receive one line from socket.
-			int32		ReceiveLine(BString &buf);
+			//!Receive all command response
+			int32		ReceiveResponse(BString &out);
 			//!Send command to socket.
 			status_t	SendCommand(const char* cmd);
 			//!Post error.

@@ -17,6 +17,8 @@
 #define CRLF "\r\n"
 #define xEOF    236
 
+#define SMTP_RESPONSE_SIZE 8192
+
 /***********************************************************
  * Constructor
  ***********************************************************/
@@ -70,7 +72,7 @@ SmtpClient::MessageReceived(BMessage *message)
  * Connect
  ***********************************************************/
 status_t
-SmtpClient::Connect(const char* address,int16 port)
+SmtpClient::Connect(const char* address,int16 port,bool esmpt)
 {
 	if(fEndpoint)
 		SmtpQuit();
@@ -82,9 +84,13 @@ SmtpClient::Connect(const char* address,int16 port)
 	}
 	
 	BString line;
-	ReceiveLine(line);
+	ReceiveResponse(line);
 	
-	BString cmd = "HELO ";
+	BString cmd;
+	if(!esmpt)
+		cmd = "HELO ";
+	else
+		cmd = "EHLO ";
 	cmd << address << CRLF;
 	if( SendCommand(cmd.String()) != B_OK)
 	{
@@ -96,32 +102,34 @@ SmtpClient::Connect(const char* address,int16 port)
 }
 
 /***********************************************************
- * ReadData
+ * Login
+ ***********************************************************/
+status_t
+SmtpClient::Login(const char* login,const char* password)
+{
+	return B_OK;
+}
+
+/***********************************************************
+ * ReceiveResponse
  ***********************************************************/
 int32
-SmtpClient::ReceiveLine(BString &line)
+SmtpClient::ReceiveResponse(BString &out)
 {
+	out = "";
+	int32 len = 0;
+	char *buf = out.LockBuffer(SMTP_RESPONSE_SIZE+1);
 	bigtime_t timeout = 1000000*180; //timeout 180 secs
-	int32 len = 0,rcv;
-	int c = 0;
-	line = "";
 	
 	if(fEndpoint->IsDataPending(timeout))
-	{
-		while(c != '\n'&& c != EOF && c != xEOF)
-		{
-			rcv = fEndpoint->Receive(&c,1);
-			if(rcv <=0)
-				break;
-			len += rcv;
-			line += (char)c;
-		}		
+	{	
+		len = fEndpoint->Receive(buf,SMTP_RESPONSE_SIZE-1);
 	}else{
 		(new BAlert("",_("SMTP socket timeout."),_("OK")))->Go();
 	}
+	out.UnlockBuffer();
 	return len;
 }
-
 
 /***********************************************************
  * Command
@@ -130,14 +138,15 @@ status_t
 SmtpClient::SendCommand(const char* cmd)
 {
 	int32 len;
+	PRINT(("C:%s\n",cmd));
  	if( fEndpoint->Send(cmd, ::strlen(cmd)) == B_ERROR)
 		return B_ERROR;
 	fLog = "";
 	// Receive
 	while(1)
 	{
-		len = ReceiveLine(fLog);
-	
+		len = ReceiveResponse(fLog);
+		
 		if(len <= 0)
 			return B_ERROR;
 		PRINT(("%s\n",fLog.String()));
