@@ -21,6 +21,33 @@
 #include <E-mail.h>
 
 /***********************************************************
+ * Scripting properties
+ ***********************************************************/
+#define kScriptingSuites "suite/vnd.x-vnd.takamatsu-scooby-maillist"
+const uint32 kNextSpecifier = 'snxt';
+const uint32 kPreviousSpecifier = 'sprv';
+
+const property_info kMailPropertyList[] = {
+	{	"Entry",
+		{ B_GET_PROPERTY },
+		{ B_DIRECT_SPECIFIER, B_INDEX_SPECIFIER, kPreviousSpecifier, kNextSpecifier },
+		"get Entry [next|previous|index] # returns specified entries",
+		0,
+		{ B_REF_TYPE },
+		{},
+		{}
+	},
+	{	NULL,
+		{},
+		{},
+		NULL, 0,
+		{},
+		{},
+		{}
+	}
+};
+
+/***********************************************************
  * Constructor
  ***********************************************************/
 HMailList::HMailList(BRect frame,
@@ -103,6 +130,9 @@ HMailList::SetColumnShown(ColumnType type,bool shown)
 void
 HMailList::MessageReceived(BMessage *message)
 {
+	if(HandleScriptingMessage(message))
+		return;
+	
 	switch(message->what)
 	{
 	// Select next mail
@@ -807,4 +837,172 @@ HMailList::MarkOldSelectionAsRead()
 		InvalidateItem(IndexOf(fOldSelection));
 		fOldSelection = NULL;
 	}
+}
+
+/***********************************************************
+ * ResolveSpecifier
+ ***********************************************************/
+BHandler*
+HMailList::ResolveSpecifier(BMessage *message,
+									int32 index,
+									BMessage *specifier,
+									int32 what,
+									const char *property)
+{
+	BPropertyInfo propertyInfo(const_cast<property_info *>(kMailPropertyList));
+	
+	int32 result = propertyInfo.FindMatch(message, index, specifier, what, property);
+	if (result < 0) 
+		return _inherited::ResolveSpecifier(message, index, specifier,what, property);
+
+	return this;
+}
+
+/***********************************************************
+ * GetSupportedSuites
+ ***********************************************************/
+status_t
+HMailList::GetSupportedSuites(BMessage *data)
+{
+	data->AddString("suites", kScriptingSuites);
+	BPropertyInfo propertyInfo(const_cast<property_info *>(kMailPropertyList));
+	data->AddFlat("messages", &propertyInfo);
+	
+	return _inherited::GetSupportedSuites(data);
+}
+
+/***********************************************************
+ * HandleScriptingMessage
+ ***********************************************************/
+bool
+HMailList::HandleScriptingMessage(BMessage *message)
+{
+	if (message->what != B_GET_PROPERTY
+		&& message->what != B_SET_PROPERTY
+		&& message->what != B_CREATE_PROPERTY
+		&& message->what != B_COUNT_PROPERTIES
+		&& message->what != B_DELETE_PROPERTY
+		&& message->what != B_EXECUTE_PROPERTY)
+		return false;
+	
+	// dispatch scripting messages
+	BMessage reply(B_REPLY);
+	const char *property = 0;
+	bool handled = false;
+
+	int32 index = 0;
+	int32 form = 0;
+	BMessage specifier;
+	status_t result = message->GetCurrentSpecifier(&index, &specifier,
+		&form, &property);
+
+	if (result != B_OK || index == -1) 
+		return false;
+		
+	switch (message->what) 
+	{
+		case B_GET_PROPERTY:
+			handled = GetProperty(&specifier, form, property, &reply);
+			break;
+	}
+	if (handled) 
+		// done handling message, send a reply
+		message->SendReply(&reply);
+	return handled;
+}
+
+/***********************************************************
+ * GetProperty
+ ***********************************************************/
+bool
+HMailList::GetProperty(BMessage *specifier, int32 form, const char *property,
+	BMessage *reply)
+{
+	bool handled = false;
+	status_t error = B_OK;
+	entry_ref item_ref;
+	HMailItem *item(NULL);
+	
+	if (strcmp(property, "Entry") == 0) {
+		switch (form) {
+			case B_DIRECT_SPECIFIER:
+			{
+				int32 count = CountItems();
+				// return all entries in MailList
+				for (int32 index = 0; index < count; index++)
+				{
+					item = (HMailItem*)ItemAt(index);
+					if(!item)
+						continue;
+					item_ref = item->Ref(); 
+					reply->AddRef("result",&item_ref);
+				}
+				handled = true;
+				break;
+			}
+			case B_INDEX_SPECIFIER:
+				{
+					// return entry at index
+					int32 index;
+					if (specifier->FindInt32("index", &index) != B_OK)
+						break;
+					
+					if (!ItemAt(index)) {
+						error = B_BAD_INDEX;
+						handled = true;
+						break;
+					}
+					item = (HMailItem*)ItemAt(index);
+					item_ref = item->Ref(); 
+					reply->AddRef("result", &item_ref);
+	
+					handled = true;
+					break;
+				}
+			case kPreviousSpecifier:
+			case kNextSpecifier:
+				{
+					// return entry and index of MailItem before or after specified pose
+					entry_ref ref;
+					if (specifier->FindRef("data", &ref) != B_OK)
+						break;
+					
+					int32 count = CountItems();
+					int32 tmp=-1;
+					for(int32 i = 0;i < count;i++)
+					{
+						item = (HMailItem*)ItemAt(i);
+						if(!item)
+							continue;
+						if(item->Ref() == ref)
+						{
+							tmp = IndexOf(item);
+							break;	
+						}
+					}
+					if(form == (int32)kPreviousSpecifier)
+						tmp--;
+					else if(form == (int32)kNextSpecifier)
+						tmp++;
+						
+					if (tmp < 0 || count == tmp) {
+						error = B_ENTRY_NOT_FOUND;
+						handled = true;
+						break;
+					}					
+					item = (HMailItem*)ItemAt(tmp);
+					item_ref = item->Ref();
+					reply->AddRef("result",&item_ref);
+					reply->AddInt32("index",tmp);
+	
+					handled = true;
+					break;
+				}
+		}
+	}
+	
+	if (error != B_OK)
+		reply->AddInt32("error", error);
+
+	return handled;
 }

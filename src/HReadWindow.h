@@ -30,9 +30,8 @@ protected:
 			
 			void		LoadMessage(entry_ref ref);
 			
-			void		InitIndex();
 			void		Select(entry_ref ref);
-			void		SiblingItem(int32 far);
+			void		SiblingItem(int32 what);
 			
 			void		SetRead();
 		
@@ -43,6 +42,5 @@ private:
 	BMessenger*			fMessenger;
 		entry_ref		fRef;
 		int32			fCurrentIndex;
-		BMessage*		fEntryList;
 };
 #endif

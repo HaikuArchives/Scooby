@@ -316,7 +316,6 @@ HApp::ArgvReceived(int32 argc,char** argv)
 void
 HApp::RefsReceived(BMessage *message)
 {
-	message->PrintToStream();
 	fWindow->RefsReceived(message);
 	MakeMainWindow(true);
 }
