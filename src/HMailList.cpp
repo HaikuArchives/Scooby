@@ -91,6 +91,8 @@ HMailList::HMailList(BRect frame,
 	SetSortKey(sort_key);
 	rgb_color selection_col = {184,194, 255,255};
 	SetItemSelectColor(true, selection_col);
+	
+	SetHovering(false);
 }
 
 /***********************************************************

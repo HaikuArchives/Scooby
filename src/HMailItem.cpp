@@ -515,19 +515,13 @@ HMailItem::DrawItemColumn(BView* owner,
 									int32 column_index, 
 									bool complete)
 {
+	if(((BListView*)owner)->IndexOf(this)%2)
+		SetBackgroundColor(NULL);
+	else{
+		rgb_color col = tint_color(owner->ViewColor(),1.05F);
+		SetBackgroundColor(&col);
+	}
 	_inherited::DrawItemColumn(owner,item_column_rect,column_index,complete);
-	// Stroke line
-	rgb_color old_col = owner->HighColor();
-	
-	owner->SetHighColor(kBorderColor);
-	
-	BPoint start,end;
-	start.y = end.y = item_column_rect.bottom;
-	start.x = 0;
-	end.x = owner->Bounds().right;
-	
-	owner->StrokeLine(start,end);
-	owner->SetHighColor(old_col);
 }
 
 /***********************************************************
