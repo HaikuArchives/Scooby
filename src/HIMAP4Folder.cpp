@@ -4,6 +4,7 @@
 #include "Encoding.h"
 #include "HWindow.h"
 #include "HFolderList.h"
+#include "HString.h"
 
 #include <Alert.h>
 #include <Bitmap.h>
@@ -230,7 +231,9 @@ HIMAP4Folder::IMAPConnect()
 	PRINT(("IMAP4 Connect Start:%s %d\n",fServer.String(),fPort));
 	if( fClient->Connect(fServer.String(),fPort) != B_OK)
 	{
-		(new BAlert("",_("Could not connect to IMAP4 server"),"OK",
+		HString str;
+		str.Format("%s: Address:%s Port:%d",_("Could not connect to IMAP4 server"),fServer.String(),fPort);
+		(new BAlert("",str.String(),_("OK"),
 						NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		delete fClient;
 		fClient = NULL;
