@@ -124,7 +124,9 @@ HFilterView::InitGUI()
 	BMenu *menu  = new BMenu("action");
 	menu->AddItem( new BMenuItem(_("Move to"),NULL));
 	menu->SetRadioMode(true);
-	menu->ItemAt(0)->SetMarked(true);
+	BMenuItem *item = menu->ItemAt(0);
+	if(item)
+		item->SetMarked(true);
 	menu->SetLabelFromMarked(true);
 	fActionMenu = new BMenuField(rect,"action","",menu);
 	fActionMenu->SetDivider(0);
@@ -141,7 +143,9 @@ HFilterView::InitGUI()
 	AddFolderItem(entry,menu);
 
 	menu->SetRadioMode(true);
-	menu->ItemAt(0)->SetMarked(true);
+	item = menu->ItemAt(0);
+	if(item)
+		item->SetMarked(true);
 	menu->SetLabelFromMarked(true);
 	rect.OffsetBy(100,0);
 	fFolderMenu = new BMenuField(rect,"folder","",menu);
