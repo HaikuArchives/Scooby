@@ -440,7 +440,7 @@ void
 HFolderItem::InvalidateMe()
 {
 	BMessage msg(M_INVALIDATE);
-	msg.AddInt32("index",((ColumnListView*)fOwner)->FullListIndexOf(this));
+	msg.AddInt32("index",((ColumnListView*)fOwner)->IndexOf(this));
 	fOwner->Window()->PostMessage(&msg,fOwner);
 }
 
@@ -941,7 +941,7 @@ bool
 HFolderItem::IsSelected()
 {
 	int32 sel =  fOwner->CurrentSelection();
-	if(sel < 0 || sel != ((ColumnListView*)fOwner)->FullListIndexOf(this))
+	if(sel < 0 || sel != ((ColumnListView*)fOwner)->IndexOf(this))
 		return false;
 	return true;
 }
