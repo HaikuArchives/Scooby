@@ -1206,8 +1206,13 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 				if ((encoding) && (cistrstr(encoding, "base64")))
 				{
 					saved_len = len;
-					len = decode_base64(offset, offset, len, true);
+					len = ::decode_base64(offset, offset, len, true);
+				}else if ((encoding) && (cistrstr(encoding, "quoted-printable")))
+				{// Decode quoted-printable
+					saved_len = len;
+					len = encode.decode_quoted_printable(offset, offset, len, true);
 				}
+				
 				
 				if ((type) && (get_parameter(type, "charset=", type))) {
 					charset = type;
