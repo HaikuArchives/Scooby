@@ -67,6 +67,9 @@ protected:
 			
 				void		EmptyNewMailList();
 				void		AddNewMail(BEntry *entry);
+				
+				void		RefreshAllCaches();
+				void		RefreshMailCache(entry_ref &ref);
 private:
 		BMessageRunner		*fRunner;
 		HPrefs				*fPrefs;
