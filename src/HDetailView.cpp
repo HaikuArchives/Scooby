@@ -1,6 +1,7 @@
 #include "HDetailView.h"
 #include "MenuUtils.h"
 #include "HApp.h"
+#include "MultiLineTextControl.h"
 
 #include <TextControl.h>
 #include <StringView.h>
@@ -51,30 +52,29 @@ HDetailView::InitGUI()
 	rect.top += 3;
 	rect.left += 5;
 	rect.right -= 5 + B_V_SCROLL_BAR_WIDTH;
-	rect.bottom = rect.top + 20;
+	rect.bottom = rect.top + 18;
 	
-	BTextControl *ctrl;
-
+	MultiLineTextControl *ctrl;
 	const char* kName[] = {"subject","from","when"};
 	const char* kLabel[] = {_("Subject:"),_("From:"),_("When:")};
 	
 	for(int32 i = 0;i < 3;i++)
 	{
-		ctrl = new BTextControl(BRect(rect.left,rect.top
+		
+		ctrl = new MultiLineTextControl(BRect(rect.left,rect.top
 								,rect.right
 								,rect.bottom)
-								,kName[i],kLabel[i],"",NULL
+								,kName[i],kLabel[i],"","",NULL
 								,B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP,B_WILL_DRAW|B_NAVIGABLE);
 		
 		ctrl->SetDivider(divider);
-
+		ctrl->SetTextMargin(1);
 		AddChild(ctrl);
-	
 		rect.OffsetBy(0,20);
 	}
-	fSubject = cast_as(FindView("subject"),BTextControl);
-	fFrom = cast_as(FindView("from"),BTextControl);
-	fWhen = cast_as(FindView("when"),BTextControl);
+	fSubject = cast_as(FindView("subject"),MultiLineTextControl);
+	fFrom = cast_as(FindView("from"),MultiLineTextControl);
+	fWhen = cast_as(FindView("when"),MultiLineTextControl);
 
 }
 
@@ -85,9 +85,12 @@ HDetailView::InitGUI()
 void
 HDetailView::SetReadOnly(bool enable)
 {
-	fSubject->SetEnabled(!enable);
-	fFrom->SetEnabled(!enable);
-	fWhen->SetEnabled(!enable);
+	//fSubject->SetEnabled(!enable);
+	//fFrom->SetEnabled(!enable);
+	//fWhen->SetEnabled(!enable);
+	fSubject->TextView()->MakeEditable(!enable);
+	fFrom->TextView()->MakeEditable(!enable);
+	fWhen->TextView()->MakeEditable(!enable);
 }
 
 /***********************************************************

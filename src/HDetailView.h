@@ -5,7 +5,7 @@
 #include <TextControl.h>
 #include <List.h>
 
-//class ROTextControl;
+class MultiLineTextControl;
 
 #define DETAIL_VIEW_HEIGHT 65;
 
@@ -27,9 +27,9 @@ public:
 protected:
 			void	InitGUI();
 private:
-	BTextControl	*fSubject;
-	BTextControl	*fFrom;
-	BTextControl	*fWhen;
+	MultiLineTextControl	*fSubject;
+	MultiLineTextControl	*fFrom;
+	MultiLineTextControl	*fWhen;
 		bool		fReadOnly;
 };
 #endif
