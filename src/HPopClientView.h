@@ -43,7 +43,7 @@ public:
 							entry_ref *folder_ref,
 							entry_ref *file_ref,
 							bool *is_delete);
-
+			int16	RetrieveType() const {return fRetrieve;}
 protected:
 	virtual void	MessageReceived(BMessage *message);
 	virtual void	Draw(BRect updateRect);

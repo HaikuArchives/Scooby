@@ -1,12 +1,11 @@
 $(OBJ_DIR)/HFolderItem.o : ./src/HFolderItem.cpp src/HFolderItem.h \
  libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h src/HApp.h \
- libs/liblocale/LocaleApp.h libs/Utils/ResourceUtils.h src/HMailItem.h \
- src/HPrefs.h libs/Utils/HSetting.h src/HFolderList.h \
- libs/Santa/ColumnListView.h libs/Santa/Colors.h \
- libs/Santa/CLVColumn.h libs/Santa/PrefilledBitmap.h \
- libs/Santa/BetterScrollView.h libs/Santa/ScrollViewCorner.h \
- src/HSimpleFolderItem.h src/HCoolListView.h src/HWindow.h \
- src/HMailCache.h src/Utilities.h
+ libs/liblocale/LocaleApp.h src/HMailItem.h src/HPrefs.h \
+ libs/Utils/HSetting.h src/HFolderList.h libs/Santa/ColumnListView.h \
+ libs/Santa/Colors.h libs/Santa/CLVColumn.h \
+ libs/Santa/PrefilledBitmap.h libs/Santa/BetterScrollView.h \
+ libs/Santa/ScrollViewCorner.h src/HSimpleFolderItem.h \
+ src/HCoolListView.h src/HWindow.h src/HMailCache.h src/Utilities.h
 $(OBJ_DIR)/HFolderList.o : ./src/HFolderList.cpp src/HFolderList.h \
  libs/Santa/ColumnListView.h libs/Santa/Colors.h \
  libs/Santa/CLVColumn.h libs/Santa/PrefilledBitmap.h \
@@ -60,12 +59,13 @@ $(OBJ_DIR)/HWindow.o : ./src/HWindow.cpp src/HWindow.h libs/Utils/MenuUtils.h \
  libs/Utils/OpenWithMenu.h src/HReadWindow.h src/HDeskbarView.h \
  src/HIMAP4Item.h src/HIMAP4Window.h src/HIMAP4Folder.h \
  src/IMAP4Client.h src/HHtmlMailView.h src/HTabView.h \
- src/HAttachmentList.h src/HCreateFolderDialog.h
+ src/HAttachmentList.h src/HCreateFolderDialog.h src/Encoding.h \
+ src/Utilities.h
 $(OBJ_DIR)/HApp.o : ./src/HApp.cpp src/HApp.h libs/liblocale/LocaleApp.h \
  libs/Utils/RectUtils.h src/HWindow.h src/HPrefs.h \
  libs/Utils/HSetting.h libs/Utils/HAboutWindow.h src/HPrefWindow.h \
  src/HDeskbarView.h src/HFindWindow.h src/HReadWindow.h \
- src/HWriteWindow.h
+ src/HWriteWindow.h libs/Utils/ResourceUtils.h
 $(OBJ_DIR)/HStatusView.o : ./src/HStatusView.cpp src/HStatusView.h \
  libs/Utils/ResourceUtils.h src/HFolderList.h \
  libs/Santa/ColumnListView.h libs/Santa/Colors.h \
@@ -87,7 +87,7 @@ $(OBJ_DIR)/HDetailView.o : ./src/HDetailView.cpp src/HDetailView.h \
  libs/Santa/MultiLineTextControl.h libs/Utils/ArrowButton.h
 $(OBJ_DIR)/HQueryItem.o : ./src/HQueryItem.cpp src/HQueryItem.h src/HFolderItem.h \
  libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h src/HMailItem.h \
- libs/Utils/ResourceUtils.h src/HFolderList.h \
+ src/HApp.h libs/liblocale/LocaleApp.h src/HFolderList.h \
  libs/Santa/ColumnListView.h libs/Santa/Colors.h \
  libs/Santa/CLVColumn.h libs/Santa/PrefilledBitmap.h \
  libs/Santa/BetterScrollView.h libs/Santa/ScrollViewCorner.h \
@@ -97,7 +97,8 @@ $(OBJ_DIR)/HPopClientView.o : ./src/HPopClientView.cpp src/HPopClientView.h \
  libs/liblocale/LocaleApp.h src/Encoding.h src/HWindow.h \
  src/ExtraMailAttr.h libs/Utils/TrackerUtils.h
 $(OBJ_DIR)/PopClient.o : ./src/PopClient.cpp src/PopClient.h src/Encoding.h \
- src/md5.h src/md5global.h src/HApp.h libs/liblocale/LocaleApp.h
+ src/md5.h src/md5global.h src/HApp.h libs/liblocale/LocaleApp.h \
+ libs/Utils/HFile.h src/HPopClientView.h
 $(OBJ_DIR)/SmtpClient.o : ./src/SmtpClient.cpp src/SmtpClient.h \
  src/ExtraMailAttr.h src/HApp.h libs/liblocale/LocaleApp.h \
  src/HMailItem.h libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h \
@@ -105,7 +106,8 @@ $(OBJ_DIR)/SmtpClient.o : ./src/SmtpClient.cpp src/SmtpClient.h \
 $(OBJ_DIR)/HPrefWindow.o : ./src/HPrefWindow.cpp src/HPrefWindow.h \
  src/HFilterView.h src/HAccountView.h src/HGeneralSettingView.h \
  src/HSignatureView.h libs/Utils/CTextView.h src/HApp.h \
- libs/liblocale/LocaleApp.h src/HPrefs.h libs/Utils/HSetting.h
+ libs/liblocale/LocaleApp.h src/HPrefs.h libs/Utils/HSetting.h \
+ src/HSpamFilterView.h
 $(OBJ_DIR)/HFilterView.o : ./src/HFilterView.cpp src/HFilterView.h \
  src/HCriteriaView.h src/HApp.h libs/liblocale/LocaleApp.h \
  libs/Utils/TrackerUtils.h src/Utilities.h
@@ -155,9 +157,8 @@ $(OBJ_DIR)/HIMAP4Item.o : ./src/HIMAP4Item.cpp src/HIMAP4Item.h src/HMailItem.h 
 $(OBJ_DIR)/HIMAP4Folder.o : ./src/HIMAP4Folder.cpp src/HIMAP4Folder.h \
  src/HFolderItem.h libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h \
  src/IMAP4Client.h src/HApp.h libs/liblocale/LocaleApp.h \
- libs/Utils/ResourceUtils.h src/HIMAP4Item.h src/HMailItem.h \
- src/Encoding.h src/HWindow.h src/HFolderList.h \
- libs/Santa/ColumnListView.h libs/Santa/Colors.h \
+ src/HIMAP4Item.h src/HMailItem.h src/Encoding.h src/HWindow.h \
+ src/HFolderList.h libs/Santa/ColumnListView.h libs/Santa/Colors.h \
  libs/Santa/CLVColumn.h libs/Santa/PrefilledBitmap.h \
  libs/Santa/BetterScrollView.h libs/Santa/ScrollViewCorner.h \
  src/HSimpleFolderItem.h src/HCoolListView.h
@@ -210,3 +211,5 @@ $(OBJ_DIR)/HCreateFolderDialog.o : ./src/HCreateFolderDialog.cpp \
  libs/liblocale/LocaleApp.h
 $(OBJ_DIR)/HFindWindow.o : ./src/HFindWindow.cpp src/HFindWindow.h src/HApp.h \
  libs/liblocale/LocaleApp.h
+$(OBJ_DIR)/HSpamFilterView.o : ./src/HSpamFilterView.cpp src/HSpamFilterView.h \
+ src/HApp.h libs/liblocale/LocaleApp.h
