@@ -22,11 +22,11 @@ HApp::HApp() :LocaleApp(APP_SIG)
 	::find_directory(B_USER_DIRECTORY,&path);
 	path.Append("mail");
 	path.Append( TRASH_FOLDER );
-	//if(path.InitCheck() != B_OK)
 	::create_directory(path.Path(),0777);
-	BString pref_name = APP_NAME;
-	pref_name << " preference";
-	fPref = new HPrefs(pref_name.String(),APP_NAME);
+	char *pref_name = new char[strlen(APP_NAME) + 12];
+	::sprintf(pref_name,"%s %s",APP_NAME,"preference");
+	fPref = new HPrefs(pref_name,APP_NAME);
+	delete[] pref_name;
 	fPref->LoadPrefs();
 	
 	AddSoundEvent("New E-mail");

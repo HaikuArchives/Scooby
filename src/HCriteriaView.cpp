@@ -12,7 +12,6 @@ HCriteriaView::HCriteriaView(BRect rect,const char* name)
 	:BView(rect,name,B_FOLLOW_ALL,B_WILL_DRAW)
 {
 	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
-	//SetViewColor(200,0,0);
 	InitGUI();
 }
 

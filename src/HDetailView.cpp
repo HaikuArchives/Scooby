@@ -44,10 +44,8 @@ void
 HDetailView::InitGUI()
 {
 	float divider = StringWidth(_("Subject:")) +5;
-	float divider2 = StringWidth(_("From:"));
-	divider = (divider < divider2)?divider2:divider;
-	divider2 = StringWidth(_("When:"));
-	divider = (divider < divider2)?divider2:divider; 
+	divider = max_c(divider, StringWidth(_("From:")));
+	divider = max_c(divider ,StringWidth(_("When:"))); 
 	
 	BRect rect = Bounds();
 	rect.top += 3;
@@ -57,15 +55,15 @@ HDetailView::InitGUI()
 	
 	BTextControl *ctrl;
 
-	const char* name[] = {"subject","from","when"};
-	const char* label[] = {_("Subject:"),_("From:"),_("When:")};
+	const char* kName[] = {"subject","from","when"};
+	const char* kLabel[] = {_("Subject:"),_("From:"),_("When:")};
 	
 	for(int32 i = 0;i < 3;i++)
 	{
 		ctrl = new BTextControl(BRect(rect.left,rect.top
 								,rect.right
 								,rect.bottom)
-								,name[i],label[i],"",NULL
+								,kName[i],kLabel[i],"",NULL
 								,B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP,B_WILL_DRAW|B_NAVIGABLE);
 		
 		ctrl->SetDivider(divider);
@@ -87,14 +85,9 @@ HDetailView::InitGUI()
 void
 HDetailView::SetReadOnly(bool enable)
 {
-/*	fSubject->TextView()->MakeEditable(!enable);
-	fFrom->TextView()->MakeEditable(!enable);
-	fWhen->TextView()->MakeEditable(!enable);
-*/
 	fSubject->SetEnabled(!enable);
 	fFrom->SetEnabled(!enable);
 	fWhen->SetEnabled(!enable);
-
 }
 
 /***********************************************************

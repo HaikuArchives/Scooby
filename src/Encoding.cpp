@@ -26,9 +26,13 @@ const char *kCharsets[] ={"ISO-8859-1",
 								"ISO-8859-7",
 								"ISO-8859-8",
 								"ISO-8859-9",
+								"ISO-8859-10",
 								"ISO-2022-JP",
 								"koi8-r",
 								"euc-kr",
+								"ISO-8859-13",
+								"ISO-8859-14",
+								"ISO-8859-15",
 								"WINDOWS-1251"};
 	
 const int32 kEncodings[] = {B_ISO1_CONVERSION,
@@ -40,12 +44,16 @@ const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_ISO7_CONVERSION,
 								B_ISO8_CONVERSION,
 								B_ISO9_CONVERSION,
+								B_ISO10_CONVERSION,
 								B_JIS_CONVERSION,
 								B_KOI8R_CONVERSION,
 								B_EUC_KR_CONVERSION,
+								B_ISO13_CONVERSION,
+								B_ISO14_CONVERSION,
+								B_ISO15_CONVERSION,
 								B_MS_WINDOWS_1251_CONVERSION};
 
-const int32 kNumCharset = 13;
+const int32 kNumCharset = 17;
 
 const char kMimeBase[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -81,22 +89,22 @@ Encoding::UTF82Mime(BString &str,int32 encoding)
 		if( !isascii(kText[i]) )
 		{
 			is_mime = true;
-			mime << (char)kText[i];
+			mime += (char)kText[i];
 		}else{
 			if(is_mime)
 			{
 				ToMime(mime,encoding);
-				out << mime;
+				out += mime;
 				mime = "";		
 			}
 			is_mime = false;
-			out << kText[i];
+			out += kText[i];
 		}	
 	}
 	if(is_mime)
 	{
 		ToMime(mime,encoding);
-		out << mime;
+		out += mime;
 	}	
 	str = out;
 }
@@ -738,4 +746,47 @@ Encoding::unhex(char c)
     return (c - 'a' + 10);
   else
     return c;
+}
+
+
+/***********************************************************
+ * FindCharset
+ ***********************************************************/
+const char*
+Encoding::FindCharset(int32 conversion)
+{
+	for(int32 i = 0;i < kNumCharset;i++)
+	{
+		if(conversion == kEncodings[i])
+			return kCharsets[i];
+	}
+	return kCharsets[0];
+}
+
+/***********************************************************
+ * CountCharset
+ ***********************************************************/
+int32
+Encoding::CountCharset() const
+{
+	return kNumCharset;
+}
+
+/***********************************************************
+ * Charset
+ ***********************************************************/
+const char*
+Encoding::Charset(int32 index) const
+{
+	return kCharsets[index];
+}
+
+
+/***********************************************************
+ * Conversion
+ ***********************************************************/
+int32
+Encoding::Conversion(int32 index) const
+{
+	return kEncodings[index];
 }

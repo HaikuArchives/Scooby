@@ -105,7 +105,6 @@ HEnclosureView::MessageReceived(BMessage *message)
 void
 HEnclosureView::WhenDropped(BMessage *message)
 {
-	//message->PrintToStream();
 	entry_ref ref;
 	int32 count;
 	type_code type;
@@ -133,6 +132,5 @@ HEnclosureView::KeyDown(const char* bytes,int32 numBytes)
 				RemoveEnclosure(sel);
 		}
 	}
-	PRINT(("test\n"));
 	BView::KeyDown(bytes,numBytes);
 }

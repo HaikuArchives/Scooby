@@ -45,6 +45,11 @@ public:
 			void	ConvertReturnsToLF(BString &text);
 			void	ConvertReturnsToCR(char* text);
 			void	ConvertReturnsToCR(BString &text);
+			
+	const char*		FindCharset(int32 conversion);
+	const char*		Charset(int32 index) const;
+			int32	Conversion(int32 index) const;
+			int32	CountCharset() const;
 protected:
 			void	p_MimeDecode(BString &str,bool quoted_printable);
 			char	p_Charconv(char c);

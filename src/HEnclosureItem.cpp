@@ -38,7 +38,7 @@ HEnclosureItem::HEnclosureItem(entry_ref ref)
 	char buf[15];
 	::sprintf(buf,format,new_size,notation);
 	
-	fName << buf;
+	fName += buf;
 	
 	fBitmap = new BBitmap(BRect(0,0,15,15),B_CMAP8);
 	if(BNodeInfo::GetTrackerIcon(&ref,fBitmap,B_MINI_ICON) != B_OK)
