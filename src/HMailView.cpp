@@ -1542,10 +1542,12 @@ HMailView::GetHardWrapedText(BString &out)
 				{
 					if(CanEndLine(oldLen-n))
 					{
-						insertPos[k++] = oldLen-n+1;
-						char *tmp = new char[n-1];
-						::strncpy(tmp,&text[oldLen-n+1],n-2);
-						tmp[n-2] = '\0';
+						int32 skip = ByteLength(text[oldLen-n])-1;
+						insertPos[k++] = oldLen-n+1+skip;
+						int32 charLen = n - skip;
+						char *tmp = new char[charLen+1];
+						::strncpy(tmp,&text[oldLen-n+1+skip],charLen);
+						tmp[charLen] = '\0';
 						c.Insert(tmp,0);
 						lineWidth = fFont.StringWidth(c.String());
 						delete[] tmp;
@@ -1559,7 +1561,9 @@ HMailView::GetHardWrapedText(BString &out)
 	// Insert linefeeds
 	out = text;
 	for(int32 i = 0;i < k;i++)
+	{
 		out.Insert('\n',1,insertPos[i]+i);
+	}
 	delete[] insertPos;
 	//PRINT(("%s\n",out.String()));
 }
