@@ -72,7 +72,8 @@ PopClient::Login(const char* user,const char* password,bool apop)
 		BString timestamp("");
 		fLog.CopyInto(timestamp,index,end-index+1);
 		timestamp += password;
-		char *md5sum = MD5Digest((unsigned char*)timestamp.String());
+		char md5sum[33];
+		MD5Digest((unsigned char*)timestamp.String(),md5sum);
 		
 		//md5_buffer(timestamp.String(),timestamp.Length(),buf);
 		BString cmd = "APOP ";
@@ -80,7 +81,7 @@ PopClient::Login(const char* user,const char* password,bool apop)
 		cmd += " ";
 		cmd += md5sum;
 		cmd += CRLF;
-		free(md5sum);
+	
 		err = SendCommand(cmd.String());
 		if(err != B_OK)
 		{
@@ -471,22 +472,21 @@ PopClient::ReceiveLine(BString &line)
 }
 
 /***********************************************************
- * MD5Digest (unsigned char *s)
+ * MD5Digest
  ***********************************************************/
-char*
-PopClient::MD5Digest (unsigned char *s)
+void
+PopClient::MD5Digest (unsigned char *in,char *ascii_digest)
 {
 	int i;
 	MD5_CTX context;
 	unsigned char digest[16];
-	char ascii_digest [33];
 	
 	MD5Init(&context);
-	MD5Update(&context, s, strlen((char*)s));
+	MD5Update(&context, in, ::strlen((char*)in));
 	MD5Final(digest, &context);
   	
   	for (i = 0;  i < 16;  i++) 
     	sprintf(ascii_digest+2*i, "%02x", digest[i]);
  
-	return ::strdup(ascii_digest);
+	return;
 }

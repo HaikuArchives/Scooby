@@ -55,7 +55,7 @@ public:
 		//!Send command to server.
 		status_t	SendCommand(const char* cmd);	
 		//!Make MD5 digest string. (You need to free output buffer.)
-			char*	MD5Digest (unsigned char *s);
+			void	MD5Digest (unsigned char *in,char *out);
 		//!Returns the last POP command response log.
 		const char*		Log() const {return fLog.String();}
 private:
