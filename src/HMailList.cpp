@@ -450,7 +450,7 @@ HMailList::MouseDown(BPoint pos)
     	 font.SetSize(10);
     	 theMenu->SetFont(&font);
     	 
-    	 item = new IconMenuItem(_("New Message"),new BMessage(M_NEW_MSG),'N',0,
+    	 item = new IconMenuItem(_("New Message" B_UTF8_ELLIPSIS),new BMessage(M_NEW_MSG),'N',0,
 							utils.GetBitmapResource('BBMP',"New Message"));
 		 theMenu->AddItem(item);
 		 theMenu->AddSeparatorItem();
@@ -458,19 +458,19 @@ HMailList::MouseDown(BPoint pos)
     	 
     	 msg = new BMessage(M_REPLY_MESSAGE);
     	 msg->AddBool("reply_all",false);
-    	 item = new IconMenuItem(_("Reply"),msg,'R',0,
+    	 item = new IconMenuItem(_("Reply" B_UTF8_ELLIPSIS),msg,'R',0,
     	 						utils.GetBitmapResource('BBMP',"Reply"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
     	 
      	 msg = new BMessage(M_REPLY_MESSAGE);
     	 msg->AddBool("reply_all",true);
-    	 item = new IconMenuItem(_("Reply To All"),msg,'R',B_SHIFT_KEY,
+    	 item = new IconMenuItem(_("Reply To All" B_UTF8_ELLIPSIS),msg,'R',B_SHIFT_KEY,
     	 						utils.GetBitmapResource('BBMP',"Reply To All"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
     	 
-    	 item = new IconMenuItem(_("Forward"),new BMessage(M_FORWARD_MESSAGE),'J',0,
+    	 item = new IconMenuItem(_("Forward" B_UTF8_ELLIPSIS),new BMessage(M_FORWARD_MESSAGE),'J',0,
     	 						utils.GetBitmapResource('BBMP',"Forward"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
@@ -481,7 +481,7 @@ HMailList::MouseDown(BPoint pos)
     	 theMenu->AddItem(item);
     	// Add to people menu
     	theMenu->AddSeparatorItem();
-    	item = new IconMenuItem(_("Save as People"),new BMessage(M_ADD_TO_PEOPLE),0,0,
+    	item = new IconMenuItem(_("Save as People" B_UTF8_ELLIPSIS),new BMessage(M_ADD_TO_PEOPLE),0,0,
     	 						utils.GetBitmapResource('BBMP',"Person"));
     	item->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(item);

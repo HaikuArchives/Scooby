@@ -801,7 +801,7 @@ HFolderList::MouseDown(BPoint pos)
     	 theMenu->SetFont(&font);
     	 
     	
-    	 BMenuItem *item = new BMenuItem(_("Recreate Cache"),new BMessage(M_REFRESH_CACHE),0,0);
+    	 BMenuItem *item = new BMenuItem(_("Refresh Folder Cache"),new BMessage(M_REFRESH_CACHE),0,0);
     	 HFolderItem *folder= cast_as(ItemAt(sel),HFolderItem);
     	 
     	 if(sel < 0)
