@@ -14,6 +14,9 @@
 
 #define CRLF "\r\n"
 
+const bigtime_t kTimeout = 1000000*180; //timeout 180 secs
+	
+
 /***********************************************************
  * Constructor
  ***********************************************************/
@@ -265,7 +268,7 @@ PopClient::Login(const char* user,const char* password,bool apop)
 		int32 end = fLog.FindFirst(">",index);
 		BString timestamp("");
 		fLog.CopyInto(timestamp,index,end-index+1);
-		timestamp << password;
+		timestamp += password;
 		char *md5sum = MD5Digest((unsigned char*)timestamp.String());
 		
 		//md5_buffer(timestamp.String(),timestamp.Length(),buf);
@@ -311,7 +314,7 @@ status_t
 PopClient::Stat(int32 *mails,int32 *numBytes)
 {
 	BString cmd = "STAT";
-	cmd << CRLF;
+	cmd += CRLF;
 	if( SendCommand(cmd.String()) != B_OK)
 		return B_ERROR;
 	
@@ -332,7 +335,7 @@ PopClient::List(int32 index,BString &size_list)
 	BString cmd = "LIST";
 	if(index != 0)
 		cmd << " " << index;
-	cmd << CRLF;
+	cmd += CRLF;
 	
 	if( SendCommand(cmd.String()) != B_OK)
 		return B_ERROR;
@@ -354,7 +357,7 @@ PopClient::List(int32 index,BString &size_list)
 			if(len >2)
 				if( ::strcmp(&log[len-3],".\r\n") == 0)
 					break;
-			size_list << cmd;
+			size_list += cmd;
 		}
 	}
 	return B_OK;
@@ -370,7 +373,7 @@ PopClient::Uidl(int32 index,BString &outlist)
 	BString cmd = "UIDL";
 	if(index != 0)
 		cmd << " " << index;
-	cmd << CRLF;
+	cmd += CRLF;
 	
 	if( SendCommand(cmd.String()) != B_OK)
 		return B_ERROR;
@@ -392,7 +395,7 @@ PopClient::Uidl(int32 index,BString &outlist)
 			const char* log = cmd.String();
 			if(len >2 && ::strcmp(&log[len-3],".\r\n") == 0)
 					break;
-			outlist << cmd;	
+			outlist += cmd;	
 		}
 	}
 	return B_OK;
@@ -406,7 +409,7 @@ status_t
 PopClient::Retr(int32 index,BString &content)
 {
 	BString cmd = "RETR ";
-	cmd << index << CRLF;
+	cmd << index += CRLF;
 	PRINT(("%s\n",cmd.String() ));
 	if( SendCommand(cmd.String()) != B_OK)
 		return B_ERROR;
@@ -418,26 +421,26 @@ PopClient::Retr(int32 index,BString &content)
 	msg.AddInt32("index",index);
 	msg.AddInt32("rcv",0);
 	content = "";
-	while(1)
+	char *buf = new char[size+1];
+	while(size > 0)
 	{
-		r = ReceiveLine(cmd);
-		if(cmd.Length() > 1&&cmd[0] == '.' && cmd[1] == '.')
+		if(fEndpoint->IsDataPending(kTimeout))
 		{
-			const char* str = cmd.String();
-			content << &str[1];
-		}else
-			content << cmd;
-		msg.ReplaceInt32("rcv",r);
-		PostMessage(&msg,fHandler);
-		//int32 len = cmd.Length();
-		log = cmd.String();
-		if( ::strcmp(log,".\r\n") == 0)
-			break;	
+			r = fEndpoint->Receive(buf,size);
+			if(r <= 0)
+				break;
+			size -= r;
+			buf[r] = '\0';
+			content += buf;
+			msg.ReplaceInt32("rcv",r);
+			PostMessage(&msg,fHandler);
+			if( ::strcmp(buf,"\n.\r") == 0)
+				break;
+		}
 	}
-	content[size] = '\0';
-	//int32 len = content.Length();
-	//content.Truncate(len-3);
-	//PRINT(("Recv:%d\n",size));
+	delete buf;
+
+	content.ReplaceAll("\n..","\n.");
 	return B_OK;
 }
 
@@ -462,7 +465,7 @@ status_t
 PopClient::Last(int32 *index)
 {
 	BString cmd = "LAST";
-	cmd << CRLF;
+	cmd += CRLF;
 	if( SendCommand(cmd.String()) != B_OK)
 		return B_ERROR;
 	
@@ -478,7 +481,7 @@ status_t
 PopClient::Rset()
 {
 	BString cmd = "RSET";
-	cmd << CRLF;
+	cmd += CRLF;
 	
 	if( SendCommand(cmd.String()) != B_OK)
 		return B_ERROR;
@@ -494,7 +497,7 @@ PopClient::PopQuit()
 	if(!fEndpoint)
 		return B_OK;
 	BString cmd = "QUIT";
-	cmd << CRLF;
+	cmd += CRLF;
 	
 	if( SendCommand(cmd.String()) != B_OK)
 		return B_ERROR;
@@ -540,14 +543,13 @@ PopClient::ReceiveLine(BString &line)
 {
 	if(!fEndpoint)
 		return B_ERROR;
-	bigtime_t timeout = 1000000*180; //timeout 180 secs
 	int32 len = 0,rcv;
 	char c = 0;
 	line = "";
 	
 	while(c != '\n')
 	{
-		if(fEndpoint->IsDataPending(timeout))
+		if(fEndpoint->IsDataPending(kTimeout))
 		{
 			rcv = fEndpoint->Receive(&c,1);
 			if(rcv <=0)
