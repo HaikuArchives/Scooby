@@ -375,6 +375,8 @@ void
 SmtpClient::ForceQuit()
 {
 	fEndpoint->Close();
+	delete fEndpoint;
+	fEndpoint = NULL;
 }
 
 /***********************************************************
