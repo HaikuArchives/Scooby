@@ -189,7 +189,6 @@ HFolderItem::RemoveMail(node_ref &nref)
 	int32 count = fMailList.CountItems();
 	HMailItem **items = (HMailItem**)fMailList.Items();
 	
-	PRINT(("N:%ld\n",nref.node));
 		
 	for(int32 i = 0;i< count;i++)
 	{

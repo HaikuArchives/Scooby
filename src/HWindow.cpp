@@ -515,6 +515,7 @@ HWindow::MessageReceived(BMessage *message)
 		if(message->FindRef("refs",&ref) != B_OK)
 		{
 			fMailView->SetContent(NULL);
+			fDetailView->SetInfo("","","");
 			break;
 		}
 		// this file pointer will be deleted at MailView
