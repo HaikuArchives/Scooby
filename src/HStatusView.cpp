@@ -105,30 +105,8 @@ HStatusView::Pulse()
 		if(num != fOld)
 			dirty = true;
 		
-		BString str("");
-		/*	
 		if(dirty)
-			str = fStatus;
-		HFolderList *list = cast_as(fTarget,HFolderList);
-		
-		int32 sel = list->CurrentSelection();
-		if(sel>=0 && fOldSel != sel)
-		{
-			HFolderItem *item = cast_as(list->ItemAt(sel),HFolderItem);
-			if(item)
-			{
-				int32 unread = item->Unread();
-				int32 all = item->CountMails();
-				str = "Total:";
-				str << all << "  Unread:" << unread;
-				fOldSel = sel;
-				fStatus = str;
-				dirty = true;
-			}
-		}
-		*/
-		if(dirty)
-			SetCaption(num,str.String());
+			SetCaption(num,"");
 	}
 	if (!fShowingBarberPole)
 		return;

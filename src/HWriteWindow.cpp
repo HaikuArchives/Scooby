@@ -236,13 +236,7 @@ HWriteWindow::InitGUI()
 										B_WILL_DRAW,true,true);
 	AddChild(scroll);
 	fTextView->SetDoesUndo(true);
-	/*
-	KeyMenuBar()->FindItem(B_CUT)->SetTarget(fTextView,this);
-	KeyMenuBar()->FindItem(B_COPY)->SetTarget(fTextView,this);
-	KeyMenuBar()->FindItem(B_PASTE)->SetTarget(fTextView,this);
-	KeyMenuBar()->FindItem(B_SELECT_ALL)->SetTarget(fTextView,this);
-	KeyMenuBar()->FindItem(B_UNDO)->SetTarget(fTextView,this);
-	*/
+	
 	/********** Toolbarの追加 ***********/
 	BRect toolrect = Bounds();
 	toolrect.top += (KeyMenuBar()->Bounds()).Height();
@@ -590,27 +584,27 @@ HWriteWindow::MenusBeginning()
 		switch(fTextView->UndoState(&redo))
 		{
 		case B_UNDO_UNAVAILABLE:
-			item->SetLabel("Can't Undo");
+			item->SetLabel(_("Can't Undo"));
 			item->SetEnabled(false);
 			break;
 		case B_UNDO_TYPING:
-			item->SetLabel(redo?"Redo Typing":"Undo Typing");
+			item->SetLabel(redo?_("Redo Typing"):_("Undo Typing"));
 			break;
 		case B_UNDO_CUT:
-			item->SetLabel(redo?"Redo Cut":"Undo Cut");
+			item->SetLabel(redo?_("Redo Cut"):_("Undo Cut"));
 			break;
 		case B_UNDO_PASTE:
-			item->SetLabel(redo?"Redo Paste":"Undo Paste");
+			item->SetLabel(redo?_("Redo Paste"):_("Undo Paste"));
 			break;
 		case B_UNDO_CLEAR:
-			item->SetLabel(redo?"Redo Clear":"Undo Clear");
+			item->SetLabel(redo?_("Redo Clear"):_("Undo Clear"));
 			break;
 		case B_UNDO_DROP:
-			item->SetLabel(redo?"Redo Drop":"Undo Drop");
+			item->SetLabel(redo?_("Redo Drop"):_("Undo Drop"));
 			break;
 		}
 	}else{
-		item->SetLabel("Can't Undo");
+		item->SetLabel(_("Can't Undo"));
 		item->SetEnabled(false);
 	}
 	// Paste
@@ -661,7 +655,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	BString to(fTopView->To());
 	if(to.Length() == 0)
 	{
-		(new BAlert("","\"To\" field is empty","OK",NULL,NULL,
+		(new BAlert("",_("To field is empty"),_("OK"),NULL,NULL,
 								B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		return B_ERROR;
 	}
@@ -946,10 +940,10 @@ HWriteWindow::QuitRequested()
 	if(fTextView->TextLength() > 0 && !fSent)
 	{
 		// **GR changed to standard Be-Mail-Alert
-		BAlert *alert= new BAlert("Save_Alert","Save as draft before closing?",
-						"Don't Save",
-						"Cancel (C)",
-						"Save",
+		BAlert *alert= new BAlert("Save_Alert",_("Save as draft before closing?"),
+						_("Don't Save"),
+						_("Cancel"),
+						_("Save"),
 						B_WIDTH_AS_USUAL,
 						B_WARNING_ALERT);
 		alert->SetShortcut(0, B_ESCAPE);
@@ -1047,7 +1041,7 @@ HWriteWindow::SaveAsTemplate()
 	if(subject.Length() == 0)
 	{
 		beep();
-		(new BAlert("","Please enter subject","OK",NULL,NULL,
+		(new BAlert("",_("Please enter subject"),_("OK"),NULL,NULL,
 					B_WIDTH_AS_USUAL,B_IDEA_ALERT))->Go();
 		return;
 	}
@@ -1062,7 +1056,7 @@ HWriteWindow::SaveAsTemplate()
 	if(file.InitCheck() != B_OK)
 	{
 		beep();
-		(new BAlert("","Same file exists","OK",NULL,NULL,
+		(new BAlert("",_("Same file exists"),_("OK"),NULL,NULL,
 					B_WIDTH_AS_USUAL,B_IDEA_ALERT))->Go();
 		return;
 	}
@@ -1140,6 +1134,7 @@ HWriteWindow::OpenDraft(entry_ref ref)
 	
 	delete fDraftEntry;
 	fDraftEntry = new BEntry(&ref);
+	delete file;
 	//fTextView->LoadMessage(file,false,false,NULL);
 }
 
@@ -1153,7 +1148,7 @@ HWriteWindow::SaveAsDraft()
 	if(subject.Length() == 0)
 	{
 		beep();
-		(new BAlert("","Please enter subject","OK",NULL,NULL,
+		(new BAlert("",_("Please enter subject"),_("OK"),NULL,NULL,
 					B_WIDTH_AS_USUAL,B_IDEA_ALERT))->Go();
 		return;
 	}
@@ -1168,7 +1163,7 @@ HWriteWindow::SaveAsDraft()
 	if(file.InitCheck() != B_OK)
 	{
 		beep();
-		(new BAlert("","Could not create file","OK",NULL,NULL,
+		(new BAlert("",_("Could not create file"),_("OK"),NULL,NULL,
 					B_WIDTH_AS_USUAL,B_IDEA_ALERT))->Go();
 		return;
 	}
@@ -1260,47 +1255,9 @@ HWriteWindow::AddChildItem(BMenu *menu,const char* path,int32 what,bool mod)
 void
 HWriteWindow::FindCharset(int32 conversion,BString &charset)
 {
-	switch(conversion)
-	{
-	case B_JIS_CONVERSION:
-		charset = "\"ISO-2022-JP\"";
-		break;
-	case B_ISO1_CONVERSION:
-		charset = "\"ISO-8859-1\"";
-		break;
-	case B_ISO2_CONVERSION:
-		charset = "\"ISO-8859-2\"";
-		break;
-	case B_ISO3_CONVERSION:
-		charset = "\"ISO-8859-3\"";
-		break;
-	case B_ISO4_CONVERSION:
-		charset = "\"ISO-8859-4\"";
-		break;
-	case B_ISO5_CONVERSION:
-		charset = "\"ISO-8859-5\"";
-		break;
-	case B_ISO6_CONVERSION:
-		charset = "\"ISO-8859-6\"";
-		break;
-	case B_ISO7_CONVERSION:
-		charset = "\"ISO-8859-7\"";
-		break;
-	case B_ISO8_CONVERSION:
-		charset = "\"ISO-8859-8\"";
-		break;
-	case B_ISO9_CONVERSION:
-		charset = "\"ISO-8859-9\"";
-		break;
-	case B_KOI8R_CONVERSION:
-		charset = "\"KOI8-R\"";
-		break;
-	case B_EUC_KR_CONVERSION:
-		charset = "\"euc-kr\"";
-		break;
-	default:
-		charset = "\"ISO-8859-1\"";
-	}
+	charset += "\"";
+	charset += Encoding().FindCharset(conversion);
+	charset += "\"";
 }
 
 /***********************************************************

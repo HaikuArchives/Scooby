@@ -887,7 +887,7 @@ HWindow::PopConnect()
 		PostMessage(&sendMsg,fPopClientView);
 	return;
 err:
-	(new BAlert("","Account file is corrupted","OK",NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+	(new BAlert("",_("Account file is corrupted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 }
 
 /***********************************************************
@@ -1109,10 +1109,7 @@ HWindow::MoveFile(entry_ref file_ref,const char *kDir_Path)
 	BString name = filePath.Leaf();
 	
 	BString toName = name;
-	
-	//PRINT(("Mail:%s\n",filePath.Path() ));
-	//PRINT(("DEST:%s\n",dir_path ));
-	
+
 	BEntry entry(&file_ref);
 	while(entry.MoveTo(&destDir,toName.String(),false) != B_OK)
 		toName << "_" << i;
@@ -1516,7 +1513,7 @@ HWindow::QuitRequested()
 {	
 	if(fPopClientView->IsRunning())
 	{
-		int32 btn = (new BAlert("","POP3 session is running",_("Force Quit"),_("Wait"),NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		int32 btn = (new BAlert("",_("POP3 session is running"),_("Force Quit"),_("Wait"),NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		if(btn == 0)
 			fPopClientView->Cancel();
 		else
@@ -1524,7 +1521,7 @@ HWindow::QuitRequested()
 	}
 	if(fSmtpClientView->IsRunning())
 	{
-		int32 btn = (new BAlert("","SMTP session is running",_("Force Quit"),_("Wait"),NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		int32 btn = (new BAlert("",_("SMTP session is running"),_("Force Quit"),_("Wait"),NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		if(btn == 0)
 			fSmtpClientView->Cancel();
 		else

@@ -137,18 +137,9 @@ HFilterView::InitGUI()
 	path.Append("mail");
 	BDirectory dir(path.Path());
 	BEntry entry(path.Path());
-	status_t err = B_OK;
-	/*while(err == B_OK)
-	{
-		if((err = dir.GetNextEntry(&entry)) == B_OK )
-		{
-			char name[B_FILE_NAME_LENGTH+1];
-			entry.GetName(name);
-			menu->AddItem( new BMenuItem(name,NULL));
-		}
-	}
-	*/
+
 	AddFolderItem(entry,menu);
+
 	menu->SetRadioMode(true);
 	menu->ItemAt(0)->SetMarked(true);
 	menu->SetLabelFromMarked(true);
@@ -178,7 +169,7 @@ HFilterView::InitGUI()
 	path.Append(APP_NAME);
 	path.Append("Filters");
 	dir.SetTo(path.Path());
-	err = B_OK;
+	status_t err = B_OK;
 	while(err == B_OK)
 	{
 		if((err = dir.GetNextEntry(&entry)) == B_OK )
@@ -333,8 +324,7 @@ HFilterView::SetEnableControls(bool enable)
 	
 	button = cast_as(FindView("criteria_add"),BButton);
 	button->SetEnabled(enable);
-	//button = cast_as(FindView("criteria_del"),BButton);
-	//button->SetEnabled(enable);
+
 	if(!enable)
 		RemoveAllCriteria();
 }

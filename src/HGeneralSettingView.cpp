@@ -4,6 +4,7 @@
 #include "MenuUtils.h"
 #include "NumberControl.h"
 #include "HPrefWindow.h"
+#include "Encoding.h"
 
 #include <ClassInfo.h>
 #include <MenuField.h>
@@ -46,24 +47,11 @@ HGeneralSettingView::InitGUI()
 	menu->SetRadioMode(true);
 	menu->SetLabelFromMarked(true);
 	BMenuItem *item(NULL);
-	menu->AddItem(new BMenuItem("ISO-8859-1",new BMessage(B_ISO1_CONVERSION)));
-	menu->AddItem(new BMenuItem("ISO-8859-2",new BMessage(B_ISO2_CONVERSION)));
-	menu->AddItem(new BMenuItem("ISO-8859-3",new BMessage(B_ISO3_CONVERSION)));
-	menu->AddItem(new BMenuItem("ISO-8859-4",new BMessage(B_ISO4_CONVERSION)));
-	menu->AddItem(new BMenuItem("ISO-8859-5",new BMessage(B_ISO5_CONVERSION)));
-	menu->AddItem(new BMenuItem("ISO-8859-6",new BMessage(B_ISO6_CONVERSION)));
-	menu->AddItem(new BMenuItem("ISO-8859-7",new BMessage(B_ISO7_CONVERSION)));
-	menu->AddItem(new BMenuItem("ISO-8859-8",new BMessage(B_ISO8_CONVERSION)));
-	menu->AddItem(new BMenuItem("ISO-8859-9",new BMessage(B_ISO9_CONVERSION)));
-	menu->AddItem(new BMenuItem("ISO-8859-10",new BMessage(B_ISO10_CONVERSION)));
 	
-	menu->AddItem(new BMenuItem("ISO-2022-JP",new BMessage(B_JIS_CONVERSION)));
-	menu->AddItem(new BMenuItem("KOI8-R",new BMessage(B_KOI8R_CONVERSION)));
-	menu->AddItem(new BMenuItem("EUC-KR",new BMessage(B_EUC_KR_CONVERSION)));
-	menu->AddItem(new BMenuItem("ISO-8859-13",new BMessage(B_ISO13_CONVERSION)));
-	menu->AddItem(new BMenuItem("ISO-8859-14",new BMessage(B_ISO14_CONVERSION)));
-	menu->AddItem(new BMenuItem("ISO-8859-15",new BMessage(B_ISO15_CONVERSION)));
-	menu->AddItem(new BMenuItem("Windows-1251",new BMessage(B_MS_WINDOWS_1251_CONVERSION)));
+	Encoding encode;
+	int32 numCharset = encode.CountCharset();
+	for(int32 i = 0;i < numCharset;i++)
+		menu->AddItem(new BMenuItem(encode.Charset(i),new BMessage(encode.Conversion(i))));
 	
 	int32 encoding;
 	((HApp*)be_app)->Prefs()->GetData("encoding",&encoding);

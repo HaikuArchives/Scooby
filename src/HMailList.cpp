@@ -82,7 +82,6 @@ HMailList::IsColumnShown(ColumnType type)
 void
 HMailList::SetColumnShown(ColumnType type,bool shown)
 {
-	//fColumns[(int32)type]->SetShown(shown);
 	CLVColumn *col = ColumnAt((int32)type+1);
 	col->SetShown(shown);
 }
@@ -406,12 +405,6 @@ HMailList::MouseDown(BPoint pos)
     // 右クリックのハンドリング 
     if(buttons == B_SECONDARY_MOUSE_BUTTON)
     {
-    	 /*int32 sel = IndexOf(pos);
-    	 if(sel >= 0)
-    	 	Select(sel);
-    	 else
-    	 	DeselectAll();
-    	 */
     	 int32 sel = CurrentSelection();
     	
     	 BPopUpMenu *theMenu = new BPopUpMenu("RIGHT_CLICK",false,false);
