@@ -171,7 +171,7 @@ HFilterView::InitGUI()
 	rect.left = rect.right - 80;
 	rect.top = rect.bottom - 20;
 	
-	button = new BButton(rect,"apply",_("Apply Change"),new BMessage(M_FILTER_SAVE_CHANGED));
+	button = new BButton(rect,"apply",_("Apply Changes"),new BMessage(M_FILTER_SAVE_CHANGED));
 	AddChild(button);
 	
 	// Load saved filters
@@ -379,20 +379,21 @@ HFilterView::SaveItem(int32 index,bool rename)
 	BMenu *menu;
 	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
 	
+	BView *view = cast_as(FindView("criteria_bg"),BView);
+	int32 count = view->CountChildren();
+	if(count == 0)
+	{
+	    // There is no criteria
+		beep();
+		(new BAlert("",_("You must add one or more criteria."),_("OK"),
+						NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		return;
+	}
+
 	BMessage msg(B_SIMPLE_DATA);
 	menu = fFolderMenu->Menu();
 	msg.AddString("action_value",menu->FindMarked()->Label());
 
-	BView *view = cast_as(FindView("criteria_bg"),BView);
-	int32 count = view->CountChildren();
-	// There is no criteria
-	if(count == 0)
-	{
-		beep();
-		(new BAlert("",_("You should create one or more criteria."),_("OK"),
-						NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
-		return;
-	}
 	for(int32 i = 0;i < count;i++)
 	{
 		HCriteriaView *criteria = cast_as(view->ChildAt(i),HCriteriaView);
