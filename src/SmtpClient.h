@@ -40,6 +40,7 @@ public:
 			int32		ReceiveResponse(BString &out);
 private:
 		BString			fLog;				//!<The last command's output log.
+		int32			fAuthType;	//!<SMTP auth type;
 		typedef	BNetEndpoint	_inherited;
 };
 #endif
