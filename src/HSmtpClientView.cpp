@@ -266,7 +266,6 @@ void
 HSmtpClientView::Cancel()
 {
 	fSmtpLooper->ForceQuit();
-	fSmtpLooper=NULL;
 	
 	StopBarberPole();
 	StopProgress();

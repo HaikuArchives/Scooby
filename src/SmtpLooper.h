@@ -25,14 +25,15 @@ enum{
 class SmtpLooper :public BLooper{
 public:
 			//!Constructor.
-						SmtpLooper(BHandler *handler,BLooper *looper);
-			//!Destructor.
-						~SmtpLooper();
+					SmtpLooper(BHandler *handler,BLooper *looper);
 			//!Send mail by HMailItem pointer. Returns B_ERROR if failed to send.
 		status_t		SendMail(HMailItem *item);
 			//!Close SMTP socket.
 			void		ForceQuit();
 protected:
+			//!Destructor.
+					~SmtpLooper();
+
 	//@{
 	//!Override functions.
 			void		MessageReceived(BMessage *message);
