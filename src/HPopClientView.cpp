@@ -239,7 +239,7 @@ HPopClientView::MessageReceived(BMessage *message)
 			BString label("RETR [ ");
 			
 			fMailCurrentIndex = (startpos == 0)?1:startpos;
-			fMailMaxIndex = count;
+			fMailMaxIndex = count + fMailCurrentIndex - 1;
 			label << fMailCurrentIndex << " / " << fMailMaxIndex << " ]";
 			SetText(label.String());
 			StopBarberPole();
