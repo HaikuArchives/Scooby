@@ -582,7 +582,7 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 	}
 	// free all dirents
 	for(int32 i = 0;i < count;i++)
-		free(dirents[i++]);
+		free(dirents[i]);
 	free(dirents);
 #endif 
 }
@@ -1408,7 +1408,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		}
 		// free all dirents
 		for(int32 i = 0;i < direntcount;i++)
-			free(dirents[i++]);
+			free(dirents[i]);
 		free(dirents);
 #endif
 	}

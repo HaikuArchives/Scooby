@@ -377,7 +377,7 @@ HFolderItem::Gather()
 	}
 	// free all dirents
 	for(i = 0;i < count;i++)
-		free(dirents[i++]);
+		free(dirents[i]);
 	free(dirents);
 #endif		
 	//fMailList.SortItems(HFolderItem::CompareFunc);
