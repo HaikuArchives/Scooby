@@ -16,7 +16,6 @@ protected:
 	virtual bool		QuitRequested();
 private:
 	BHandler			*fTarget;
-	BString				fText;
 	bool				fCanQuit;
 };
 #endif
