@@ -396,7 +396,7 @@ void HMailView::MessageReceived(BMessage *msg)
 			LoadMessage(fFile, FALSE, FALSE, NULL);
 			break;
 
-		case M_SELECT:	
+		case M_SELECT:
 			if (IsSelectable())
 				Select(0, TextLength());
 			break;
@@ -1525,9 +1525,8 @@ HMailView::GetHardWrapedText(BString &out)
 			width = 0;
 			if(c[0] != '\n')
 			{
-				//PRINT(("Hit:%f %s\n",width,c.String()));
 				out += '\n';
-				width = fFont.StringWidth("\n");			
+				width = fFont.StringWidth(c.String());			
 			}
 		}
 		out += c;
@@ -1541,9 +1540,9 @@ HMailView::GetHardWrapedText(BString &out)
 int32
 HMailView::ByteLength(char c)
 {
-	if( !(c & 0x10000000) )
+	if( !(c & 0x80) )
 		return 1;
-	if(c & 0x00100000)
+	if(c & 0x20)
 		return 3;
 	return 2;
 }
