@@ -11,6 +11,10 @@ public:
 	
 			void		SetTarget(BHandler *handler) {fTarget = handler;}
 			void		SetQuit(bool quit) {fCanQuit = quit;}
+
+			void		SaveHistory();
+			void		LoadHistory();
+			void		AddToHistory(const char* text);
 protected:
 	virtual	void		MessageReceived(BMessage *message);
 	virtual bool		QuitRequested();

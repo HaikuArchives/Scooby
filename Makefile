@@ -9,7 +9,7 @@ LIBPATHS=
 # System include path
 SYSTEM_INCLUDE_PATHS =
 # Local include path 
-LOCAL_INCLUDE_PATHS = ./libs/Utils ./libs/Santa ./libs/Toolbar
+LOCAL_INCLUDE_PATHS = ./libs/ComboBox ./libs/Utils ./libs/Santa ./libs/Toolbar
 # OPTIMIZE
 OPTIMIZE= FULL
 # Defines
@@ -42,12 +42,14 @@ MACHINE=$(shell uname -m)
 ifeq ($(MACHINE), BePC)
 	CPU = x86
 	LIBS +=  ./libs/Utils/libUtils.a ./libs/Santa/sgb.a \
-			./libs/Toolbar/libToolbar.a 
+			./libs/Toolbar/libToolbar.a \
+			./libs/ComboBox/libComboBox.a
 else
 	CPU = ppc
 	NAME = Scooby_ppc
 	LIBS += ./libs/Utils/libUtils_ppc.a ./libs/Santa/sgb_ppc.a \
-			./libs/Toolbar/libToolbar_ppc.a mslcpp_4_0
+			./libs/Toolbar/libToolbar_ppc.a mslcpp_4_0\
+			./libs/ComboBox/libComboBox_ppc.a
 endif
 #	set the directory where object files and binaries will be created
 	OBJ_DIR		:= obj.$(CPU)
