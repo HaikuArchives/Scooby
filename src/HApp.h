@@ -7,9 +7,6 @@
 #define QUERY_FOLDER	"Queries"
 #define APP_SIG			"application/x-vnd.takamatsu-scooby"
 
-#undef _(String)
-#define _(String) (String)
-
 class HWindow;
 class HPrefs;
 
