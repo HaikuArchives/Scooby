@@ -3,11 +3,14 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
+#include <StorageDefs.h>
 #include "scandir.h"
 #include <errno.h>
 
 /* Initial guess at directory size. */ 
 #define INITIAL_SIZE    100
+
+char gName[B_FILE_NAME_LENGTH];
 
 int
 scandir(const char *name, struct dirent ***list, int (*selector)(struct dirent *), int (*sorter)(const void *, const void *))
@@ -24,7 +27,8 @@ scandir(const char *name, struct dirent ***list, int (*selector)(struct dirent *
     names = (struct dirent **)malloc(size * sizeof names[0]); 
     if (names == NULL) 
         return -1; 
-    dirp = opendir(name); 
+    dirp = opendir(name);
+    strcpy(gName,name); 
     if (dirp == NULL) 
         return -1; 
 	i = 0;
@@ -48,7 +52,7 @@ scandir(const char *name, struct dirent ***list, int (*selector)(struct dirent *
             if (names[i - 1] == NULL) { 
                 closedir(dirp); 
                 return -1; 
-            } 
+            }
             memcpy(names[i-1],entp,dirent_size);
             memcpy(names[i - 1]->d_name, entp->d_name,entp->d_reclen); 
         	names[i-1]->d_name[entp->d_reclen] = '\0';
@@ -74,4 +78,21 @@ alphasort(const void *d1, const void *d2)
 {
 	return(strcmp((*(struct dirent **)d1)->d_name,
 	    (*(struct dirent **)d2)->d_name));
+}
+
+int
+folderselector(struct dirent *dent)
+{
+	int result = 0;
+	struct stat st;
+	char name[B_FILE_NAME_LENGTH];
+	
+	if(strcmp(dent->d_name,".") == 0||strcmp(dent->d_name,"..") == 0)
+		return 0;
+	sprintf(name,"%s/%s",gName,dent->d_name);
+	stat(name,&st);
+	
+	if(S_ISDIR(st.st_mode))
+		result = 1;
+	return result;
 }
