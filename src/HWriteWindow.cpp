@@ -1220,6 +1220,7 @@ HWriteWindow::WriteAllPart(BString &out,const char* boundary)
 				PRINT(("File not found\n"));
 				continue;
 			}
+			// Encode attachment by base64
 			off_t size;
 			file.GetSize(&size);
 			char *buf = new char[size+1];
@@ -1228,23 +1229,25 @@ HWriteWindow::WriteAllPart(BString &out,const char* boundary)
 			buf[size] = '\0';
 			size = encode_base64(outBuf,buf,size);
 			outBuf[size] = '\0';
+			
 			char name[B_FILE_NAME_LENGTH+1];
 			BEntry entry(&ref);
 			entry.GetName(name);
 			BNodeInfo info(&file);
 			char type[B_MIME_TYPE_LENGTH+1];
 			type[0] = '\0';
+			
 			if( info.GetType(type) != B_OK)
 			{
-				BPath path(&ref);
-				BString cmd("/bin/mimeset \"");
-				cmd << path.Path() << "\"";
-				::system(cmd.String());
+				// Guess mime type
+				::update_mime_info(BPath(&ref).Path(),false,true,false);
 				if(info.GetType(type) != B_OK)
 					type[0] = '\0';
 			}
+			// Could not guess mimetype
 			if(!type)
 				strcpy(type,"application/octet-stream");
+			
 			encodedName = name;
 			encode.UTF82Mime(encodedName,encoding);
 			str << boundary << "\n";
