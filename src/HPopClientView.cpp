@@ -286,7 +286,7 @@ HPopClientView::MessageReceived(BMessage *message)
 			message->FindString("content",&content) == B_OK)
 		{
 			fMailCurrentIndex = index+1;
-			entry_ref folder_ref,file_ref;
+			entry_ref folder_ref;
 			bool is_delete;
 			SaveMail(content,&folder_ref,&is_delete);
 	

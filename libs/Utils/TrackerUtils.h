@@ -19,7 +19,8 @@ public:
 									BDirectory *destDir,
 									const char* name,
 									const char* suffix = " copy ",
-									uint32 mode = B_READ_WRITE);
+									uint32 mode = B_READ_WRITE,
+									entry_ref* outref=NULL);
 
 		status_t	SmartMoveFile(entry_ref &ref,
 									BDirectory *destDir,

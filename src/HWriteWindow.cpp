@@ -906,7 +906,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	BFile file;
 
 	BDirectory destDir(path.Path());
-	if(TrackerUtils().SmartCreateFile(&file,&destDir,filename.String(),"_") != B_OK)
+	if(TrackerUtils().SmartCreateFile(&file,&destDir,filename.String(),"_",B_READ_WRITE,&ref) != B_OK)
 	{
 		BString label(_("Cound not create file"));
 		label << ":" << path.Path() << "/" << filename;

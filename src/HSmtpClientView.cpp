@@ -73,9 +73,9 @@ HSmtpClientView::MessageReceived(BMessage *message)
 		if(!fSmtpClient)
 			fSmtpClient = new SmtpClient(this,Window());
 		fIsRunning = true;
-		int32 count;
-		type_code type;
-		message->GetInfo("pointer",&type,&count);
+		//int32 count;
+		//type_code type;
+		//message->GetInfo("pointer",&type,&count);
 		message->what = M_SMTP_CONNECT;
 		fSmtpClient->PostMessage(message);
 		StopProgress();

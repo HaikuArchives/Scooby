@@ -5,7 +5,7 @@ MV=/bin/mv
 MKDIR=/bin/mkdir
 DEST_DIR=/boot/home/config/locale
 
-alert --info "Would you like to install message catalogs?" Cancel OK > /dev/null
+alert --info "Would you like to install message catalogs?" Cancel OK > /dev/nulL
 case $? in
 0)
 	exit
