@@ -1363,9 +1363,9 @@ HFolderList::AddToMailList(HMailItem *item)
 void
 HFolderList::RemoveFromMailList(HMailItem *item,bool free)
 {
-	BMessage msg(M_REMOVE_MAIL_FROM_LIST);
+	BMessage msg(M_REMOVE_FROM_NODEMONITOR);
 	msg.AddPointer("mail",item);
-	msg.AddBool("free",free);
+	msg.AddBool("delete",free);
 	Window()->PostMessage(&msg);
 }
 

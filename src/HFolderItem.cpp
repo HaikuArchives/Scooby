@@ -861,10 +861,11 @@ HFolderItem::NodeMonitor(BMessage *message)
 				HMailItem *item = RemoveMail(old_nref);
 				if(!item)
 					break;
-				if(IsSelected())
-					((HFolderList*)fOwner)->RemoveFromMailList(item,true);
-				else
-					delete item;
+				//if(IsSelected())
+				// The pointer will be deleted in HWindow.
+				((HFolderList*)fOwner)->RemoveFromMailList(item,true);
+				//else
+				//	delete item;
 				InvalidateMe();
 			}
 		}

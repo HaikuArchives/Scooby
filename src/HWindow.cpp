@@ -479,25 +479,6 @@ HWindow::MessageReceived(BMessage *message)
 		}
 		break;
 	}
-	// Remove mails
-	case M_REMOVE_MAIL_FROM_LIST:
-	{
-		HMailItem *mail;
-		int32 count;
-		type_code type;
-		bool free;
-		
-		message->GetInfo("mail",&type,&count);
-		for(int32 i = 0;i < count;i++)
-		{
-			if(message->FindPointer("mail",i,(void**)&mail) == B_OK)
-				fMailList->RemoveItem(mail);
-			message->FindBool("free",i,&free);
-			if(free)
-				delete mail;
-		}
-		break;
-	}
 	// Invoke mail
 	case M_INVOKE_MAIL:
 		InvokeMailItem();
