@@ -350,7 +350,7 @@ MD5Hmac(unsigned char *digest,
 		MD5_CTX tctx;
 
 		MD5Init(&tctx);
-		MD5Update(&tctx, key, key_len);
+		MD5Update(&tctx, (unsigned char*)key, key_len);
 		MD5Final(k_ipad, &tctx);
 		MD5Final(k_opad, &tctx);
 	} else {
@@ -382,7 +382,7 @@ MD5Hmac(unsigned char *digest,
 	MD5Init(&context);		      /* init context for 1st
 					       * pass */
 	MD5Update(&context, k_ipad, 64);     /* start with inner pad */
-	MD5Update(&context, text, text_len); /* then text of datagram */
+	MD5Update(&context, (unsigned char*)text, text_len); /* then text of datagram */
 	MD5Final(digest, &context);	      /* finish up 1st pass */
 	/*
 	 * perform outer MD5
