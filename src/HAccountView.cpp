@@ -1,8 +1,8 @@
 #include "HAccountView.h"
 #include "HApp.h"
 #include "TrackerUtils.h"
-#include "NumberControl.h"
 #include "Utilities.h"
+#include "NumberControl.h"
 
 #include <Path.h>
 #include <Directory.h>
@@ -22,6 +22,9 @@
 #include <RadioButton.h>
 #include <StringView.h>
 #include <MenuField.h>
+
+const char* kLabel[] = {"Account Name:","E-Mail:","Host:","Port:","Login:",
+							"Password:","SMTP host:","Real name:","Reply to:"};
 
 /***********************************************************
  * Constructor
@@ -109,10 +112,8 @@ HAccountView::InitGUI()
 	rect.bottom = Bounds().bottom - 65;
 	BBox *box = new BBox(rect,"Account Info");
 	box->SetLabel(_("Account Info"));
-	const float kDivider = StringWidth(_("POP password:"))+5;
-	const char* kLabel[] = {_("Account Name:"),_("E-Mail:"),_("POP host:"),_("POP port:"),_("POP user name:"),
-							_("POP password:"),_("SMTP host:"),_("Real name:"),
-							_("Reply to:")};
+	const float kDivider = StringWidth(_("Account Name:"))+5;
+
 	BTextControl *ctrl;
 	frame = box->Bounds();
 	frame.InsetBy(10,20);
@@ -120,7 +121,7 @@ HAccountView::InitGUI()
 	frame.bottom = frame.top +25;
 	for(int32 i = 0;i < 9;i++)
 	{
-		ctrl = new BTextControl(frame,kLabel[i],kLabel[i],"",NULL);
+		ctrl = new BTextControl(frame,_(kLabel[i]),_(kLabel[i]),"",NULL);
 		ctrl->SetDivider(kDivider);
 		box->AddChild(ctrl);
 		if(i == 0)
@@ -136,6 +137,8 @@ HAccountView::InitGUI()
 	BMenu *menu = new BMenu("protocol");
 	menu->AddItem(new BMenuItem("POP3",NULL));
 	menu->AddItem(new BMenuItem("APOP",NULL));
+	menu->AddItem(new BMenuItem("IMAP4",NULL));
+	
 	menu->SetRadioMode(true);
 	menu->SetLabelFromMarked(true);
 	menu->ItemAt(0)->SetMarked(true);
@@ -249,15 +252,12 @@ HAccountView::MessageReceived(BMessage *message)
 void
 HAccountView::OpenAccount(int32 index)
 {
-	const char* kLabel[] = {_("Account Name:"),_("E-Mail:"),_("POP host:"),_("POP port:"),_("POP user name:"),
-							_("POP password:"),_("SMTP host:"),_("Real name:"),
-							_("Reply to:")};
 	if(index<0)
 	{
 err:
 		for(int32 i = 0;i < 9;i++)
 		{
-			BTextControl *ctrl = cast_as(FindView(kLabel[i]),BTextControl);
+			BTextControl *ctrl = cast_as(FindView(_(kLabel[i])),BTextControl);
 			ctrl->SetText("");
 		}
 		BRadioButton *radio = cast_as(FindView("leave"),BRadioButton);
@@ -291,9 +291,8 @@ err:
 	{
 		BString str;
 		msg.FindString(kName[i],&str);
-		BTextControl *ctrl = cast_as(FindView(kLabel[i]),BTextControl);
-		if(i == 5)
-		{		
+		BTextControl *ctrl = cast_as(FindView(_(kLabel[i])),BTextControl);
+		if(i == 5){		
 			const char* text = str.String();
 			BString pass("");
 			int32 len = strlen(text);
@@ -427,10 +426,6 @@ HAccountView::SaveAccount(int32 index)
 		}
 		return;
 	}
-	
-	const char* kLabel[] = {_("Account Name:"),_("E-Mail:"),_("POP host:"),_("POP port:"),_("POP user name:"),
-							_("POP password:"),_("SMTP host:"),_("Real name:"),
-							_("Reply to:")};
 	const char* kName[] = {"name","address","pop_host","pop_port","pop_user",
 						"pop_password","smtp_host","real_name","reply_to"};
 
@@ -440,7 +435,7 @@ HAccountView::SaveAccount(int32 index)
 	msg.Unflatten(&file);
 	for(int32 i = 0;i < 9;i++)
 	{
-		ctrl = cast_as(FindView(kLabel[i]),BTextControl);
+		ctrl = cast_as(FindView(_(kLabel[i])),BTextControl);
 		if(i == 5)
 		{
 			const char* text = ctrl->Text();
@@ -493,13 +488,10 @@ HAccountView::SaveAccount(int32 index)
 void
 HAccountView::SetEnableControls(bool enable)
 {
-	const char* kLabel[] = {_("Account Name:"),_("E-Mail:"),_("POP host:"),_("POP port:"),_("POP user name:"),
-							_("POP password:"),_("SMTP host:"),_("Real name:"),
-							_("Reply to:")};
 	BTextControl *ctrl;					
 	for(int32 i = 0;i < 9;i++)
 	{
-		ctrl = cast_as(FindView(kLabel[i]),BTextControl);
+		ctrl = cast_as(FindView(_(kLabel[i])),BTextControl);
 		ctrl->SetEnabled(enable);
 	}
 	

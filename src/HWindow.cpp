@@ -1115,9 +1115,7 @@ HWindow::PopConnect()
 		else{
 			entry_ref ref;
 			entry.GetRef(&ref);
-			if(AddPopServer(ref,sendMsg) != B_OK)
-				(new BAlert("",_("Account file corrupted"),_("OK"),
-						NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+			AddPopServer(ref,sendMsg);
 		}
 	}
 	if(!sendMsg.IsEmpty())
@@ -1129,7 +1127,7 @@ HWindow::PopConnect()
  * AddPopServer
  ***********************************************************/
 status_t
-HWindow::AddPopServer(entry_ref ref,BMessage &sendMsg)
+HWindow::AddPopServer(entry_ref& ref,BMessage &sendMsg)
 {
 	BFile file;
 	BMessage msg;
@@ -1155,8 +1153,10 @@ HWindow::AddPopServer(entry_ref ref,BMessage &sendMsg)
 			
 	int16 proto;
 	if(msg.FindInt16("protocol_type",&proto) != B_OK)
-		proto = 0;
-	
+		return B_ERROR;
+	if(proto == 2) // if protocol type is IMAP4, we need to skip.
+		return B_NOT_ALLOWED;
+		
 	int16 retrieve;
 	if(msg.FindInt16("retrieve",&retrieve) != B_OK)
 		retrieve = 0;
@@ -1784,9 +1784,12 @@ HWindow::AddCheckFromItems()
 			entry.GetName(name);
 			entry_ref ref;
 			entry.GetRef(&ref);
-			BMessage *msg = new BMessage(M_CHECK_FROM);
-			msg->AddRef("refs",&ref);
-			subMenu->AddItem(new BMenuItem(name,msg));
+			if(fFolderList->IsIMAP4Account(ref))
+			{
+				BMessage *msg = new BMessage(M_CHECK_FROM);
+				msg->AddRef("refs",&ref);
+				subMenu->AddItem(new BMenuItem(name,msg));
+			}
 		}
 	}
 }

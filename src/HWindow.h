@@ -126,7 +126,7 @@ protected:
 				//!This function will be call when mail list item was double clicked.
 				void	InvokeMailItem();
 				//!Add one POP3 server to check target.
-			status_t	AddPopServer(entry_ref ref,BMessage &sendMsg);
+			status_t	AddPopServer(entry_ref &ref,BMessage &sendMsg);
 				//!Install the deskbar icon.
 				void	InstallToDeskbar();
 				//!Remove the deskar icon.
