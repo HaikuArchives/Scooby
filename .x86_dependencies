@@ -33,7 +33,7 @@ $(OBJ_DIR)/HMailList.o : ./src/HMailList.cpp src/HMailList.h src/HCoolListView.h
  src/HWindow.h libs/Utils/IconMenuItem.h libs/Utils/OpenWithMenu.h \
  src/HIMAP4Item.h
 $(OBJ_DIR)/HPrefs.o : ./src/HPrefs.cpp src/HPrefs.h libs/Utils/HSetting.h
-$(OBJ_DIR)/HMailView.o : ./src/HMailView.cpp src/HMailView.h \
+$(OBJ_DIR)/HMailView.o : ./src/HMailView.cpp src/HMailView.h src/SpellCheckView.h \
  libs/Utils/CTextView.h src/HApp.h libs/liblocale/LocaleApp.h \
  src/HPrefs.h libs/Utils/HSetting.h src/Encoding.h src/HMailList.h \
  src/HCoolListView.h libs/Santa/ColumnListView.h libs/Santa/Colors.h \
@@ -42,8 +42,8 @@ $(OBJ_DIR)/HMailView.o : ./src/HMailView.cpp src/HMailView.h \
  src/HMailItem.h libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h \
  src/HWindow.h
 $(OBJ_DIR)/HWindow.o : ./src/HWindow.cpp src/HWindow.h libs/Utils/MenuUtils.h \
- src/HMailView.h libs/Utils/CTextView.h src/HApp.h \
- libs/liblocale/LocaleApp.h src/HFolderList.h \
+ src/HMailView.h src/SpellCheckView.h libs/Utils/CTextView.h \
+ src/HApp.h libs/liblocale/LocaleApp.h src/HFolderList.h \
  libs/Santa/ColumnListView.h libs/Santa/Colors.h \
  libs/Santa/CLVColumn.h libs/Santa/PrefilledBitmap.h \
  libs/Santa/BetterScrollView.h libs/Santa/ScrollViewCorner.h \
@@ -80,8 +80,8 @@ $(OBJ_DIR)/HWriteWindow.o : ./src/HWriteWindow.cpp src/HWriteWindow.h \
  src/HSmtpClientView.h src/SmtpClient.h src/ExtraMailAttr.h \
  src/HEnclosureView.h libs/Utils/ArrowButton.h src/HEnclosureItem.h \
  src/HMailItem.h libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h \
- src/HMailView.h libs/Utils/CTextView.h libs/Utils/TrackerUtils.h \
- src/HWindow.h
+ src/HMailView.h src/SpellCheckView.h libs/Utils/CTextView.h \
+ libs/Utils/TrackerUtils.h src/HWindow.h
 $(OBJ_DIR)/HDetailView.o : ./src/HDetailView.cpp src/HDetailView.h \
  libs/Utils/MenuUtils.h src/HApp.h libs/liblocale/LocaleApp.h \
  libs/Santa/MultiLineTextControl.h libs/Utils/ArrowButton.h
@@ -142,10 +142,10 @@ $(OBJ_DIR)/HDeskbarView.o : ./src/HDeskbarView.cpp src/HDeskbarView.h \
  src/HWindow.h libs/Utils/MenuUtils.h src/HApp.h \
  libs/liblocale/LocaleApp.h libs/liblocale/LocaleUtils.h
 $(OBJ_DIR)/HReadWindow.o : ./src/HReadWindow.cpp src/HReadWindow.h \
- libs/Utils/MenuUtils.h src/HMailView.h libs/Utils/CTextView.h \
- src/HDetailView.h libs/Utils/ResourceUtils.h libs/Toolbar/HToolbar.h \
- src/HApp.h libs/liblocale/LocaleApp.h src/HPrefs.h \
- libs/Utils/HSetting.h src/HWindow.h src/HHtmlMailView.h \
+ libs/Utils/MenuUtils.h src/HMailView.h src/SpellCheckView.h \
+ libs/Utils/CTextView.h src/HDetailView.h libs/Utils/ResourceUtils.h \
+ libs/Toolbar/HToolbar.h src/HApp.h libs/liblocale/LocaleApp.h \
+ src/HPrefs.h libs/Utils/HSetting.h src/HWindow.h src/HHtmlMailView.h \
  src/HMailList.h src/HCoolListView.h libs/Santa/ColumnListView.h \
  libs/Santa/Colors.h libs/Santa/CLVColumn.h \
  libs/Santa/PrefilledBitmap.h libs/Santa/BetterScrollView.h \
@@ -186,7 +186,7 @@ $(OBJ_DIR)/HAttachmentList.o : ./src/HAttachmentList.cpp src/HAttachmentList.h \
  libs/Santa/CLVColumn.h libs/Santa/PrefilledBitmap.h \
  libs/Santa/BetterScrollView.h libs/Santa/ScrollViewCorner.h \
  src/HAttachmentItem.h libs/Santa/CLVEasyItem.h \
- libs/Santa/CLVListItem.h
+ libs/Santa/CLVListItem.h src/HHtmlMailView.h
 $(OBJ_DIR)/HAttachmentItem.o : ./src/HAttachmentItem.cpp src/HAttachmentItem.h \
  libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h
 $(OBJ_DIR)/HTabView.o : ./src/HTabView.cpp src/HTabView.h libs/Santa/Colors.h
@@ -199,7 +199,8 @@ $(OBJ_DIR)/HHtmlMailView.o : ./src/HHtmlMailView.cpp src/HHtmlMailView.h \
  src/HAttachmentItem.h libs/Santa/CLVEasyItem.h \
  libs/Santa/CLVListItem.h src/Encoding.h src/HMailList.h \
  src/HCoolListView.h src/HMailItem.h src/HApp.h \
- libs/liblocale/LocaleApp.h src/HPrefs.h libs/Utils/HSetting.h
+ libs/liblocale/LocaleApp.h libs/Utils/TrackerUtils.h src/HPrefs.h \
+ libs/Utils/HSetting.h
 $(OBJ_DIR)/HCoolListView.o : ./src/HCoolListView.cpp src/HCoolListView.h \
  libs/Santa/ColumnListView.h libs/Santa/Colors.h \
  libs/Santa/CLVColumn.h libs/Santa/PrefilledBitmap.h \
@@ -213,3 +214,5 @@ $(OBJ_DIR)/HFindWindow.o : ./src/HFindWindow.cpp src/HFindWindow.h src/HApp.h \
  libs/liblocale/LocaleApp.h
 $(OBJ_DIR)/HSpamFilterView.o : ./src/HSpamFilterView.cpp src/HSpamFilterView.h \
  src/HApp.h libs/liblocale/LocaleApp.h libs/Utils/HFile.h
+$(OBJ_DIR)/SpellCheckView.o : ./src/SpellCheckView.cpp src/SpellCheckView.h \
+ libs/Utils/CTextView.h
