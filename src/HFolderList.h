@@ -25,6 +25,7 @@ M_GATHER_ALL_MAILS = 'mGaM',
 M_REMOVE_FOLDER = 'mREF'
 };
 
+
 class HFolderList	:public	 ColumnListView {
 public:
 						HFolderList(BRect frame,
@@ -80,10 +81,11 @@ private:
 		BList		fPointerList;
 		bool		fWatching;
 		bool		fSkipGathering;
+		CLVColumn	*cFolders;
 	// Parent items	
 	HSimpleFolderItem	*fLocalFolders;
 	HSimpleFolderItem	*fIMAP4Folders;
-	HSimpleFolderItem	*fQueryFolders; 
+	HSimpleFolderItem	*fQueryFolders;
 		bool		fSkipMoveMail;
 		bool		fGatheredLocalFolders;
 
