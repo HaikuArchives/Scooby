@@ -133,6 +133,8 @@ Encoding::ToMime(BString &inString, int32 encoding)
 #ifndef USE_ICONV	
 	const char kJis_End[4] = {0x1b,0x28,0x42,'\0'};
 #endif
+	if(inString.Length() <= 0)
+		return;
 	ConvertFromUTF8(inString,encoding);
 	
 #ifndef USE_ICONV
@@ -166,7 +168,7 @@ Encoding::ToMime(BString &inString, int32 encoding)
     }
     out[i] = '\0';
     
-    outString.UnlockBuffer(strlen(out));
+    outString.UnlockBuffer();
     outString += "?=";
     
     // Find encoding
@@ -509,6 +511,8 @@ Encoding::ConvertToUTF8(char** text,int32 encoding)
 	iconv_close(cd);
 #else
 	int32	sourceLen = strlen(*text);
+	if(sourceLen <= 0)
+		return;
 	int32	destLen = 4 * sourceLen;
 	
 	char*	buf = new char[destLen+1];
@@ -564,6 +568,8 @@ Encoding::ConvertFromUTF8(char** text,int32 encoding)
 	iconv_close(cd);
 #else
 	int32	sourceLen = strlen(*text);
+	if(sourceLen <= 0)
+		return;
 	int32	destLen = 4 * sourceLen;
 	
 	char*	buf = new char[destLen+1];
@@ -616,6 +622,8 @@ Encoding::ConvertToUTF8(BString& text,int32 encoding)
 	iconv_close(cd);
 #else
 	int32	sourceLen = text.Length();
+	if(sourceLen <= 0)
+		return;
 	int32	destLen = 4 * sourceLen;
 	
 	status_t	err = B_OK;
@@ -680,7 +688,8 @@ Encoding::ConvertFromUTF8(BString& text,int32 encoding)
 #else
 	int32	sourceLen = text.Length();
 	int32	destLen = sourceLen*2;
-	
+	if(sourceLen <= 0)
+		return;
 	status_t	err = B_OK;
 	int32		state = 0;
 	

@@ -106,9 +106,9 @@ AddOnMenu::Build()
 BBitmap*
 AddOnMenu::GetIcon(entry_ref &ref)
 {
-	BBitmap bitmap(BRect(0,0,15,15),B_CMAP8);
-	BNodeInfo::GetTrackerIcon(&ref,&bitmap,B_MINI_ICON);
-	return new BBitmap(&bitmap);
+	BBitmap *bitmap = new BBitmap(BRect(0,0,15,15),B_CMAP8);
+	BNodeInfo::GetTrackerIcon(&ref,bitmap,B_MINI_ICON);
+	return bitmap;
 }
 
 /***********************************************************
