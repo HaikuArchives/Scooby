@@ -16,7 +16,7 @@ StatusItem::StatusItem(BRect rect,
 {
 	fBackgroundColor = ui_color(B_PANEL_BACKGROUND_COLOR);
 	fDark_1_color = tint_color(fBackgroundColor,B_DARKEN_1_TINT);
-	fDark_2_color = tint_color(fBackgroundColor,B_DARKEN_4_TINT);
+	fDark_2_color = tint_color(fBackgroundColor,B_DARKEN_2_TINT);
 	fCachedBounds = Bounds();
 
 	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
