@@ -528,7 +528,15 @@ HFolderItem::ReadFromCache()
 	}
 #else
 	HMailCache cache(path.Path());
-	
+	int32 count = cache.CountItems();
+	// check entry in directory and refs count
+	if(count + fMailList.CountItems() != BDirectory(&fFolderRef).CountEntries() )
+	{
+		PRINT(("Auto refresh\n"));
+		EmptyMailList();
+		return B_ERROR;
+	}		
+	//
 	if(cache.Open(fMailList,this) == B_OK)
 	{
 		fDone = true;
