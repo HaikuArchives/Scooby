@@ -707,8 +707,11 @@ void HMailView::Open(hyper_text *enclosure)
 					dir.SetTo(path.Path());
 					if (dir.InitCheck() == B_NO_ERROR) {
 						if (enclosure->name)
-							sprintf(name1, "%s", enclosure->name);
-						else{
+						{
+							BString decodedName(enclosure->name);
+							Encoding().Mime2UTF8(decodedName);
+							sprintf(name1, "%s", decodedName.String());
+						}else{
 							sprintf(name1, "Untitled");
 						}
 						strcpy(name, name1);
@@ -859,7 +862,6 @@ status_t HMailView::Save(BMessage *msg)
 	BDirectory		dir;
 	BEntry			entry;
 	BFile			file;
-	BNodeInfo		*info;
 	hyper_text		*enclosure;
 	ssize_t			size;
 	status_t		result = B_NO_ERROR;
@@ -908,11 +910,11 @@ status_t HMailView::Save(BMessage *msg)
 				file.SetSize(size);
 			}
 			delete[] data;
-			if (enclosure->content_type) {
-				info = new BNodeInfo(&file);
-				info->SetType(enclosure->content_type);
-				delete info;
-			}
+			// Update mime info
+			BPath filePath(&ref);
+			filePath.Append(name);
+			::update_mime_info(filePath.Path(),false,true,true);
+			//
 			PRINT(("Name:%s Type:%s\n",name,enclosure->content_type));
 			// Unset execute bits for security
 			mode_t perm;
@@ -1735,7 +1737,15 @@ TSavePanel::TSavePanel(hyper_text *enclosure, HMailView *view)
 	fEnclosure = enclosure;
 	fView = view;
 	if (enclosure->name)
-		SetSaveText(enclosure->name);
+		SetSaveFileName(enclosure->name);
+}
+
+void
+TSavePanel::SetSaveFileName(const char* name)
+{
+	BString decodedName(name);
+	Encoding().Mime2UTF8(decodedName);
+	SetSaveText(decodedName.String());
 }
 
 //--------------------------------------------------------------------
@@ -1760,7 +1770,7 @@ void TSavePanel::SetEnclosure(hyper_text *enclosure)
 {
 	fEnclosure = enclosure;
 	if (enclosure->name)
-		SetSaveText(enclosure->name);
+		SetSaveFileName(enclosure->name);
 	else
 		SetSaveText("");
 	if (!IsShowing())

@@ -146,5 +146,6 @@ public:
 				TSavePanel(hyper_text*, HMailView*);
 virtual void	SendMessage(const BMessenger*, BMessage*);
 void			SetEnclosure(hyper_text*);
+void			SetSaveFileName(const char* name);
 };
 #endif
