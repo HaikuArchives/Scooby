@@ -61,6 +61,7 @@ void
 HIMAP4Item::Delete()
 {
 	fClient->MarkAsDelete(fMailIndex);
+	PRINT(("IMAP MAIL DELETED\n"));
 }
 
 /***********************************************************
