@@ -8,7 +8,7 @@
 class HQueryItem : public HFolderItem
 {
 public:
-					HQueryItem(entry_ref ref,
+					HQueryItem(const entry_ref &ref,
 								BListView *target);
 	virtual			~HQueryItem();
 	
