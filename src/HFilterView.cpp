@@ -54,7 +54,7 @@ HFilterView::InitGUI()
 	BRect rect(Bounds());
 	rect.top += 10;
 	rect.left +=5;
-	rect.bottom-= 55;
+	rect.bottom-= 65;
 	rect.right = rect.left +100;
 	BBox *box;
 	BRect frame;
@@ -155,7 +155,7 @@ HFilterView::InitGUI()
 	fFolderMenu->SetDivider(0);
 	box->AddChild(fFolderMenu);
 	
-	rect.bottom = Bounds().bottom-55;
+	rect.bottom = Bounds().bottom-65;
 	rect.top = rect.bottom - 25;
 	rect.OffsetBy(30,0);
 	fNameControl = new BTextControl(rect,"name",_("Name:"),"",NULL);
@@ -167,11 +167,15 @@ HFilterView::InitGUI()
 	
 	// Apply change button
 	rect.bottom = Bounds().bottom - 30;
-	rect.right = Bounds().right - 5;
+	rect.right = Bounds().right - 10;
 	rect.left = rect.right - 80;
-	rect.top = rect.bottom - 20;
+	rect.top = rect.bottom - 30;
 	
+	float width = rect.Width();
 	button = new BButton(rect,"apply",_("Apply Changes"),new BMessage(M_FILTER_SAVE_CHANGED));
+	button->ResizeToPreferred();
+	if(width < button->Bounds().Width() )
+		button->MoveBy(width-button->Bounds().Width(),0 );
 	AddChild(button);
 	
 	// Load saved filters

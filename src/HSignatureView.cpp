@@ -64,7 +64,7 @@ HSignatureView::InitGUI()
 	BRect rect(Bounds());
 	rect.top += 10;
 	rect.left +=5;
-	rect.bottom-= 55;
+	rect.bottom-= 65;
 	rect.right = rect.left +100;
 	BRect frame;
 	
@@ -111,9 +111,9 @@ HSignatureView::InitGUI()
 	fName->SetDivider(StringWidth(_("Name:"))+5);
 	AddChild(fName);
 	
-	rect.right = Bounds().right - 5 - B_V_SCROLL_BAR_WIDTH;
+	rect.right = Bounds().right - 10 - B_V_SCROLL_BAR_WIDTH;
 	rect.OffsetBy(0,30);
-	rect.bottom = Bounds().bottom - 55 - B_H_SCROLL_BAR_HEIGHT;
+	rect.bottom = Bounds().bottom - 65 - B_H_SCROLL_BAR_HEIGHT;
 	fTextView = new CTextView(rect,"text",B_FOLLOW_ALL,B_WILL_DRAW);
 	
 	scroll = new BScrollView("scroll",fTextView,B_FOLLOW_ALL,
@@ -122,12 +122,15 @@ HSignatureView::InitGUI()
 	
 	// Apply change button
 	rect.bottom = Bounds().bottom - 30;
-	rect.right = Bounds().right - 5;
+	rect.right = Bounds().right - 10;
 	rect.left = rect.right - 80;
-	rect.top = rect.bottom - 20;
-	
+	rect.top = rect.bottom - 30;
+	float width = rect.Width();
 	button = new BButton(rect,"apply",_("Apply Changes"),new BMessage(M_SIGNATURE_SAVE_CHANGED));
-	AddChild(button);	
+	button->ResizeToPreferred();
+	if(width < button->Bounds().Width() )
+		button->MoveBy(width-button->Bounds().Width(),0 );
+	AddChild(button);
 	
 	SetEnableControls(false);
 }

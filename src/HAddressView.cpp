@@ -166,6 +166,7 @@ HAddressView::InitGUI()
 			BNode node(&ref);
 			if(node.InitCheck() != B_OK)
 				continue;
+			
 			if(node.ReadAttrString("META:name",&name) != B_OK)
 				continue;
 			if(node.ReadAttrString("META:email",&addr1) != B_OK)
