@@ -92,6 +92,9 @@ HPopClientView::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
+	case M_POP_ABORT:
+		Cancel();
+		break;
 	case H_ERROR_MESSAGE:
 	{
 		PRINT(("POP ERROR\n"));
@@ -101,7 +104,8 @@ HPopClientView::MessageReceived(BMessage *message)
 			err_str += message->FindString("log");
 		beep();
 		(new BAlert("",err_str.String(),"OK",NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
-		fPopLooper->PostMessage(B_QUIT_REQUESTED);
+		if(fPopLooper)
+			fPopLooper->PostMessage(B_QUIT_REQUESTED);
 		fPopLooper = NULL;
 		break;
 	}
@@ -121,7 +125,8 @@ HPopClientView::MessageReceived(BMessage *message)
 			Window()->PostMessage(M_POP_CONNECT,this);
 		}else{
 			// Quit pop session
-			fPopLooper->PostMessage(B_QUIT_REQUESTED);
+			if(fPopLooper)
+				fPopLooper->PostMessage(B_QUIT_REQUESTED);
 			fStringView->SetText("");
 			fIsRunning = false;
 			delete fPopServers;
@@ -181,13 +186,15 @@ HPopClientView::MessageReceived(BMessage *message)
 		msg.AddString("login",fLogin);
 		msg.AddString("password",fPassword);
 		msg.AddBool("apop",fUseAPOP);
-		fPopLooper->PostMessage(&msg);
+		if(fPopLooper)
+			fPopLooper->PostMessage(&msg);
 		break;
 	}
 	// login success
 	case H_LOGIN_MESSAGE:
 		fStringView->SetText("UIDL" B_UTF8_ELLIPSIS);
-		fPopLooper->PostMessage(H_UIDL_MESSAGE);
+		if(fPopLooper)
+			fPopLooper->PostMessage(H_UIDL_MESSAGE);
 		break;
 	// list success
 	case H_UIDL_MESSAGE:
@@ -208,7 +215,8 @@ HPopClientView::MessageReceived(BMessage *message)
 			
 			if(list.Length() == 0)
 			{
-				fPopLooper->PostMessage(B_QUIT_REQUESTED);
+				if(fPopLooper)
+					fPopLooper->PostMessage(B_QUIT_REQUESTED);
 				fPopLooper = NULL;
 				fStringView->SetText("");
 				break;
@@ -248,7 +256,8 @@ HPopClientView::MessageReceived(BMessage *message)
 			
 			if(count==0)
 			{
-				fPopLooper->PostMessage(B_QUIT_REQUESTED);
+				if(fPopLooper)
+					fPopLooper->PostMessage(B_QUIT_REQUESTED);
 				fPopLooper = NULL;
 				fStringView->SetText("");
 				break;
@@ -261,13 +270,15 @@ HPopClientView::MessageReceived(BMessage *message)
 			fStringView->SetText(label.String());
 			StopBarberPole();
 			StartProgress();
-			fPopLooper->PostMessage(&msg);
+			if(fPopLooper)
+				fPopLooper->PostMessage(&msg);
 		}else{
 			// POP3 server is not support UIDL command
 			fCanUseUIDL = false;
 			PRINT(("UIDL not supported\n"));
 			fStringView->SetText("LIST" B_UTF8_ELLIPSIS);
-			fPopLooper->PostMessage(H_LIST_MESSAGE);
+			if(fPopLooper)
+				fPopLooper->PostMessage(H_LIST_MESSAGE);
 		}
 		break;
 	}
@@ -297,7 +308,8 @@ HPopClientView::MessageReceived(BMessage *message)
 			if(!is_delete && message->FindBool("end"))
 			{
 				SetNextRecvPos(fUidl.String());
-				fPopLooper->PostMessage(B_QUIT_REQUESTED);
+				if(fPopLooper)
+					fPopLooper->PostMessage(B_QUIT_REQUESTED);
 				fPopLooper = NULL;
 				fStringView->SetText("");
 				break;
@@ -315,10 +327,12 @@ HPopClientView::MessageReceived(BMessage *message)
 					BString label("DEL [ ");
 					label << fMailCurrentIndex << " / " << fMailMaxIndex << " ]";
 					fStringView->SetText(label.String() );
-					fPopLooper->PostMessage(&fDeleteMails);
+					if(fPopLooper)
+						fPopLooper->PostMessage(&fDeleteMails);
 					
 				}else{
-					fPopLooper->PostMessage(B_QUIT_REQUESTED);
+					if(fPopLooper)
+						fPopLooper->PostMessage(B_QUIT_REQUESTED);
 					fPopLooper = NULL;
 					fStringView->SetText("");
 				}
@@ -346,7 +360,8 @@ HPopClientView::MessageReceived(BMessage *message)
 			fStringView->SetText(label.String());
 			if(message->FindBool("end"))
 			{
-				fPopLooper->PostMessage(B_QUIT_REQUESTED);
+				if(fPopLooper)
+					fPopLooper->PostMessage(B_QUIT_REQUESTED);
 				fPopLooper = NULL;
 				fStringView->SetText("");
 				SetNextRecvPos("");
@@ -357,7 +372,8 @@ HPopClientView::MessageReceived(BMessage *message)
 	// last success
 	case H_LAST_MESSAGE:
 		fStringView->SetText("");
-		fPopLooper->PostMessage(B_QUIT_REQUESTED);
+		if(fPopLooper)
+			fPopLooper->PostMessage(B_QUIT_REQUESTED);
 		break;
 	// Set max size of progress bar
 	case H_SET_MAX_SIZE:
@@ -998,4 +1014,7 @@ void
 HPopClientView::Cancel()
 {
 	fPopLooper->ForceQuit();
+	fPopLooper = NULL;
+	StopBarberPole();
+	StopProgress();
 }

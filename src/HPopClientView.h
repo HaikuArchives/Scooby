@@ -8,6 +8,10 @@
 
 class PopLooper;
 
+enum{
+	M_POP_ABORT = 'mPaB'
+};
+
 class HPopClientView :public BView {
 public:
 					HPopClientView(BRect rect

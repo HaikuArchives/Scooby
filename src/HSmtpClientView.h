@@ -7,7 +7,8 @@ class HMailItem;
 class SmtpLooper;
 
 enum{
-	M_SEND_MAIL = 'SENM'
+	M_SEND_MAIL = 'SENM',
+	M_SMTP_ABORT='mSmA'
 };
 
 class HSmtpClientView :public BView {
