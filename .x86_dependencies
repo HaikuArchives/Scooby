@@ -81,7 +81,8 @@ $(OBJ_DIR)/HWriteWindow.o : ./src/HWriteWindow.cpp src/HWriteWindow.h \
  src/HEnclosureView.h libs/Utils/ArrowButton.h src/HEnclosureItem.h \
  src/HMailItem.h libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h \
  src/HMailView.h src/SpellCheckView.h libs/Utils/CTextView.h \
- libs/Utils/TrackerUtils.h src/HWindow.h
+ libs/Utils/TrackerUtils.h src/HWindow.h libs/Utils/HString.h \
+ src/Utilities.h
 $(OBJ_DIR)/HDetailView.o : ./src/HDetailView.cpp src/HDetailView.h \
  libs/Utils/MenuUtils.h src/HApp.h libs/liblocale/LocaleApp.h \
  libs/Santa/MultiLineTextControl.h libs/Utils/ArrowButton.h
@@ -135,7 +136,7 @@ $(OBJ_DIR)/HGeneralSettingView.o : ./src/HGeneralSettingView.cpp \
  libs/Utils/NumberControl.h src/HPrefWindow.h src/Encoding.h
 $(OBJ_DIR)/HEnclosureView.o : ./src/HEnclosureView.cpp src/HEnclosureView.h \
  libs/Utils/ArrowButton.h src/HEnclosureItem.h src/HApp.h \
- libs/liblocale/LocaleApp.h
+ libs/liblocale/LocaleApp.h src/Encoding.h
 $(OBJ_DIR)/HEnclosureItem.o : ./src/HEnclosureItem.cpp src/HEnclosureItem.h
 $(OBJ_DIR)/md5c.o : ./src/md5c.c src/md5global.h src/md5.h
 $(OBJ_DIR)/HDeskbarView.o : ./src/HDeskbarView.cpp src/HDeskbarView.h \
@@ -151,7 +152,8 @@ $(OBJ_DIR)/HReadWindow.o : ./src/HReadWindow.cpp src/HReadWindow.h \
  libs/Santa/PrefilledBitmap.h libs/Santa/BetterScrollView.h \
  libs/Santa/ScrollViewCorner.h src/HMailItem.h \
  libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h \
- src/HAttachmentList.h libs/Utils/TrackerUtils.h src/HTabView.h
+ src/HAttachmentList.h libs/Utils/TrackerUtils.h src/HTabView.h \
+ src/Utilities.h
 $(OBJ_DIR)/HIMAP4Item.o : ./src/HIMAP4Item.cpp src/HIMAP4Item.h src/HMailItem.h \
  libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h src/IMAP4Client.h
 $(OBJ_DIR)/HIMAP4Folder.o : ./src/HIMAP4Folder.cpp src/HIMAP4Folder.h \
@@ -188,7 +190,7 @@ $(OBJ_DIR)/HAttachmentList.o : ./src/HAttachmentList.cpp src/HAttachmentList.h \
  src/HAttachmentItem.h libs/Santa/CLVEasyItem.h \
  libs/Santa/CLVListItem.h src/HHtmlMailView.h
 $(OBJ_DIR)/HAttachmentItem.o : ./src/HAttachmentItem.cpp src/HAttachmentItem.h \
- libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h
+ libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h src/Encoding.h
 $(OBJ_DIR)/HTabView.o : ./src/HTabView.cpp src/HTabView.h libs/Santa/Colors.h
 $(OBJ_DIR)/HHtmlView.o : ./src/HHtmlView.cpp src/HHtmlView.h
 $(OBJ_DIR)/HHtmlMailView.o : ./src/HHtmlMailView.cpp src/HHtmlMailView.h \

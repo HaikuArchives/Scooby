@@ -17,6 +17,7 @@
 #include "HWindow.h"
 #include "TrackerUtils.h"
 #include "HString.h"
+#include "Utilities.h"
 
 #include <MenuBar.h>
 #include <ClassInfo.h>
@@ -737,9 +738,8 @@ HWriteWindow::MenusBeginning()
 	item = KeyMenuBar()->FindItem(M_DEL_ENCLOSURE);
 	BListView *list= cast_as(fEnclosureView->FindView("listview"),BListView);
 	if(list)
-	{
-		item->SetEnabled((list->CurrentSelection() <0 )?false:true);
-	}
+		EnableMenuItem(item,(list->CurrentSelection() <0 )?false:true);
+	
 	int32 start,end;
 	
 	// Cut & Copy
@@ -750,13 +750,13 @@ HWriteWindow::MenusBeginning()
 		fTextView->GetSelection(&start,&end);
 		if(start != end)
 		{
-			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(true);
-			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
-			KeyMenuBar()->FindItem(M_QUOTE_SELECTION)->SetEnabled(true);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_CUT),true);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_COPY),true);
+			EnableMenuItem(KeyMenuBar()->FindItem(M_QUOTE_SELECTION),true);
 		} else {
-			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
-			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
-			KeyMenuBar()->FindItem(M_QUOTE_SELECTION)->SetEnabled(false);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_CUT),false);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_COPY),false);
+			EnableMenuItem(KeyMenuBar()->FindItem(M_QUOTE_SELECTION),false);
 		}
 	}else if((ctrl = fTopView->FocusedView()))
 	{
@@ -765,47 +765,47 @@ HWriteWindow::MenusBeginning()
 		
 		if(start != end)
 		{
-			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(true);
-			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_CUT),true);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_COPY),true);
 		} else {
-			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
-			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_CUT),false);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_COPY),false);
 		}
 	}else{
-		KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
-		KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+		EnableMenuItem(KeyMenuBar()->FindItem(B_CUT),false);
+		EnableMenuItem(KeyMenuBar()->FindItem(B_COPY),false);
 	}
 	// Undo
 	item = KeyMenuBar()->FindItem(B_UNDO);
 	if(fTextView->DoesUndo())
 	{
-		item->SetEnabled(true);
+		EnableMenuItem(item,true);
 		bool redo;
 		switch(fTextView->UndoState(&redo))
 		{
 		case B_UNDO_UNAVAILABLE:
-			item->SetLabel(_("Can't Undo"));
-			item->SetEnabled(false);
+			SetMenuItemLabel(item,_("Can't Undo"));
+			EnableMenuItem(item,false);
 			break;
 		case B_UNDO_TYPING:
-			item->SetLabel(redo?_("Redo Typing"):_("Undo Typing"));
+			SetMenuItemLabel(item,redo?_("Redo Typing"):_("Undo Typing"));
 			break;
 		case B_UNDO_CUT:
-			item->SetLabel(redo?_("Redo Cut"):_("Undo Cut"));
+			SetMenuItemLabel(item,redo?_("Redo Cut"):_("Undo Cut"));
 			break;
 		case B_UNDO_PASTE:
-			item->SetLabel(redo?_("Redo Paste"):_("Undo Paste"));
+			SetMenuItemLabel(item,redo?_("Redo Paste"):_("Undo Paste"));
 			break;
 		case B_UNDO_CLEAR:
-			item->SetLabel(redo?_("Redo Clear"):_("Undo Clear"));
+			SetMenuItemLabel(item,redo?_("Redo Clear"):_("Undo Clear"));
 			break;
 		case B_UNDO_DROP:
-			item->SetLabel(redo?_("Redo Drop"):_("Undo Drop"));
+			SetMenuItemLabel(item,redo?_("Redo Drop"):_("Undo Drop"));
 			break;
 		}
 	}else{
-		item->SetLabel(_("Can't Undo"));
-		item->SetEnabled(false);
+		SetMenuItemLabel(item,_("Can't Undo"));
+		EnableMenuItem(item,false);
 	}
 	// Paste
 	BMessage *clip = NULL;
@@ -814,15 +814,15 @@ HWriteWindow::MenusBeginning()
    		clip = be_clipboard->Data();
    	
    		if(clip == NULL)
-   			KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
+   			EnableMenuItem(KeyMenuBar()->FindItem(B_PASTE),false);
    		else{
    			type_code type;
    			int32 count;
    			clip->GetInfo("text/plain",&type,&count);
    			if(count != 0)
-   				KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(true);
+   				EnableMenuItem(KeyMenuBar()->FindItem(B_PASTE),true);
    			else
-   				KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
+   				EnableMenuItem(KeyMenuBar()->FindItem(B_PASTE),false);
    		}
    		be_clipboard->Unlock();
    	}

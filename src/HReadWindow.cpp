@@ -12,6 +12,7 @@
 #include "HAttachmentList.h"
 #include "TrackerUtils.h"
 #include "HTabView.h"
+#include "Utilities.h"
 
 #include <Menu.h>
 #include <MenuItem.h>
@@ -339,19 +340,15 @@ HReadWindow::LoadMessage(entry_ref ref)
 void
 HReadWindow::MenusBeginning()
 {
-	BMenuItem *item;
+	BMenuItem *item(NULL);
 	if(is_kind_of(fMailView,HMailView))
 	{
 		HMailView *view = cast_as(fMailView,HMailView);
-		item = KeyMenuBar()->FindItem(M_HEADER);
-		item->SetMarked(view->IsShowingHeader());
-		item = KeyMenuBar()->FindItem(M_RAW);
-		item->SetMarked(view->IsShowingRawMessage());
+		EnableMenuItem(KeyMenuBar()->FindItem(M_HEADER),view->IsShowingHeader());
+		EnableMenuItem(KeyMenuBar()->FindItem(M_RAW),view->IsShowingHeader());
 	}else{
-		item = KeyMenuBar()->FindItem(M_HEADER);
-		item->SetMarked(false);
-		item = KeyMenuBar()->FindItem(M_RAW);
-		item->SetMarked(false);
+		EnableMenuItem(KeyMenuBar()->FindItem(M_HEADER),false);
+		EnableMenuItem(KeyMenuBar()->FindItem(M_RAW),false);
 	}
 	BTextControl *ctrl(NULL);
 	int32 start,end;
@@ -366,9 +363,9 @@ HReadWindow::MenusBeginning()
 		{
 			view->GetSelection(&start,&end);
 			if(start != end)
-				KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+				EnableMenuItem(KeyMenuBar()->FindItem(B_COPY),true);
 			else
-				KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+				EnableMenuItem(KeyMenuBar()->FindItem(B_COPY),false);
 		}
 	}else if((ctrl = fDetailView->FocusedView())){
 		BTextView *textview = ctrl->TextView();
@@ -376,25 +373,25 @@ HReadWindow::MenusBeginning()
 		
 		if(start != end)
 		{
-			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(true);
-			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_CUT),true);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_COPY),true);
 		} else {
-			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
-			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_CUT),false);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_COPY),false);
 		}
 	}
 	// Disabled items
-	KeyMenuBar()->FindItem(B_UNDO)->SetEnabled(false);
-	KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
-	KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
+	EnableMenuItem(KeyMenuBar()->FindItem(B_UNDO),false);
+	EnableMenuItem(KeyMenuBar()->FindItem(B_CUT),false);
+	EnableMenuItem(KeyMenuBar()->FindItem(B_PASTE),false);
 	// Select All
 	BView *view = CurrentFocus();
 	if(is_kind_of(view,BTextView))
-		item->SetEnabled(true);
+		EnableMenuItem(item,true);
 	else if(ctrl)
-		item->SetEnabled(true);
+		EnableMenuItem(item,true);
 	else
-		item->SetEnabled(false);
+		EnableMenuItem(item,false);
 }
 
 /***********************************************************
