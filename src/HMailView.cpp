@@ -35,7 +35,7 @@ HMailView::HMailView(BRect frame, bool incoming, BFile *file)
 		  :_inherited(frame, "", 
 		  	 B_FOLLOW_ALL, B_WILL_DRAW |B_NAVIGABLE)
 {
-	BFont	m_font = *be_plain_font;
+	BFont	font = *be_plain_font;
 
 	fIncoming = incoming;
 	fFile = file;
@@ -51,14 +51,13 @@ HMailView::HMailView(BRect frame, bool incoming, BFile *file)
 	fEnclosures = new BList();
 	fPanel = NULL;
 
-	m_font.SetSize(10);
+	font.SetSize(10);
 	fMenu = new BPopUpMenu("Enclosure", FALSE, FALSE);
-	fMenu->SetFont(&m_font);
+	fMenu->SetFont(&font);
 	BString label = _("Save Enclosure");
 	label += B_UTF8_ELLIPSIS;
 	fMenu->AddItem(new BMenuItem(label.String(), new BMessage(M_SAVE)));
 	fMenu->AddItem(new BMenuItem(_("Open Enclosure"), new BMessage(M_ADD)));
-	
 	ResetFont();
 }
 
@@ -99,12 +98,11 @@ HMailView::ResetFont()
 	prefs->GetData("font_style",&style);
 	prefs->GetData("font_size",&size);
 	
-	BFont font;
-	font.SetFamilyAndStyle(family,style);
-	font.SetSize(size);
+	fFont.SetFamilyAndStyle(family,style);
+	fFont.SetSize(size);
 	
-	font.SetSpacing(B_FIXED_SPACING);
-	SetFontAndColor(0,TextLength(),&font);
+	fFont.SetSpacing(B_FIXED_SPACING);
+	SetFontAndColor(0,TextLength(),&fFont);
 }
 
 //--------------------------------------------------------------------
@@ -387,7 +385,7 @@ void HMailView::MessageReceived(BMessage *msg)
 			SetText(NULL);
 			LoadMessage(fFile, FALSE, FALSE, NULL);
 			break;
-
+			
 		case M_RAW:
 			Window()->Unlock();
 			StopLoad();
@@ -398,15 +396,15 @@ void HMailView::MessageReceived(BMessage *msg)
 			LoadMessage(fFile, FALSE, FALSE, NULL);
 			break;
 
-		case M_SELECT:
+		case M_SELECT:	
 			if (IsSelectable())
 				Select(0, TextLength());
 			break;
-
+		
 		case M_SAVE:
 			Save(msg);
 			break;
-
+		
 		default:
 			_inherited::MessageReceived(msg);
 	}
@@ -419,12 +417,9 @@ void HMailView::ResetTextRunArray()
 {
 	text_run_array array;
 	text_run	run;
-	BFont		font;
-	uint32		propa;
 	
-	GetFontAndColor(&font,&propa);
 	run.offset = 0;
-	run.font = font;
+	run.font = fFont;
 	run.color = kBlack;
 	array.runs[0] = run;
 	array.count = 1;
@@ -784,9 +779,6 @@ HMailView::HighlightQuote(BTextView *view)
 	int32 length = text.Length();
 	
 	BString line("");
-	BFont font;
-	uint32 propa;
-	view->GetFontAndColor(&font,&propa);
 	int32 i = 0,e,j;
 	text_run_array *array;
 	while(i < length)
@@ -1503,6 +1495,58 @@ HMailView::linelen(char *str, int32 len, bool header)
 	return len;
 }
 
+/***********************************************************
+ * HardWrap
+ ***********************************************************/
+void
+HMailView::GetHardWrapedText(BString &out)
+{
+	const char* text = Text();
+	out = "";
+	
+	float width = 0;
+	BString c;
+	int32 length = TextLength();
+	float view_width = TextRect().Width();
+	int32 k = 0;
+	int32 nextbytes = 0;
+	for(int32 i = 0;i < length;i++)
+	{
+		c = text[k++];
+		nextbytes = ByteLength(c[0])-1;
+		
+		for(int32 j = 0;j < nextbytes;j++)
+			c += text[k++];	
+		i += nextbytes;
+		
+		width += fFont.StringWidth(c.String());
+		if(view_width <= width || c[0] == '\n')
+		{
+			width = 0;
+			if(c[0] != '\n')
+			{
+				//PRINT(("Hit:%f %s\n",width,c.String()));
+				out += '\n';
+				width = fFont.StringWidth("\n");			
+			}
+		}
+		out += c;
+	}
+	//PRINT(("%s\n",out.String()));
+}
+
+/***********************************************************
+ * ByteLength: Calculate UTF-8 charactor byte length
+ ***********************************************************/
+int32
+HMailView::ByteLength(char c)
+{
+	if( !(c & 0x10000000) )
+		return 1;
+	if(c & 0x00100000)
+		return 3;
+	return 2;
+}
 
 //--------------------------------------------------------------------
 // get named parameter from string

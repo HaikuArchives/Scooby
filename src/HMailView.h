@@ -92,6 +92,8 @@ public:
 	virtual void	KeyDown(const char*, int32);
 			void	SetContent(BFile*);
 	virtual void	MakeFocus(bool);
+			void	GetHardWrapedText(BString &out);
+			int32	ByteLength(char c);
 protected:
 	virtual	void	AttachedToWindow(void);
 	virtual void	MessageReceived(BMessage*);
@@ -109,6 +111,7 @@ protected:
 	static	bool	get_parameter(char*, char*, char*);
 	static	char*	find_boundary(char*, char*, int32);
 	static	void	HighlightQuote(BTextView *view);
+	
 private:
 	bool			fIncoming;
 	bool			fRaw;
