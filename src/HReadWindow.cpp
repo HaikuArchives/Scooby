@@ -9,6 +9,7 @@
 #include "HWindow.h"
 #include "HHtmlMailView.h"
 #include "HMailList.h"
+#include "HAttachmentList.h"
 
 #include <Menu.h>
 #include <MenuItem.h>
@@ -232,7 +233,20 @@ HReadWindow::MessageReceived(BMessage *message)
 	{
 		BMessage msg(*message);
 		msg.AddString("job_name",fDetailView->Subject());
-		msg.AddPointer("view",fMailView);
+		if(is_kind_of(fMailView,HMailView))
+		{
+			msg.AddPointer("view",fMailView);
+		}else{
+			BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
+			int32 sel = tabview->Selection();
+			
+			if(sel != 0)
+				break;
+			BView *view = FindView("__NetPositive__HTMLView");
+			if(!view)
+				break;
+			msg.AddPointer("view",view);	
+		}
 		msg.AddPointer("detail",fDetailView);
 		be_app->PostMessage(&msg);
 		break;
@@ -251,6 +265,10 @@ HReadWindow::MessageReceived(BMessage *message)
 	// Expand attributes
 	case M_EXPAND_ATTRIBUTES:
 		PostMessage(message,fDetailView);
+		break;
+	case M_OPEN_ATTACHMENT:
+	case M_SAVE_ATTACHMENT:
+		PostMessage(message,fMailView);
 		break;
 	default:
 		BWindow::MessageReceived(message);
@@ -453,19 +471,16 @@ HReadWindow::DispatchMessage(BMessage *message,BHandler *handler)
 			BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
 			if(tabview->Selection() == 0)
 			{
-				BTab *tab = tabview->TabAt(0);
-				BView *view = tab->View();
-				view = view->FindView("NetPositive");
-				if(view && (view = view->ChildAt(0)))
+				BView *view(NULL);
+				if(tabview->Selection() == 0)
 				{
-					view = view->ChildAt(1);
-					bar = cast_as(view,BScrollBar);
+					view = FindView("__NetPositive__HTMLView");
+					bar = view->ScrollBar(B_VERTICAL);
 				}
-				if(bar)
+				if(bar && view)
 				{
 					char b[1];
 					b[0] = c;
-					view = bar->Target();
 					view->KeyDown(b,1);
 				}	
 			}

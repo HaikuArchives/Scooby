@@ -13,6 +13,7 @@
 #include <Beep.h>
 #include <Roster.h>
 #include <ClassInfo.h>
+#include <ScrollBar.h>
 #include <Autolock.h>
 
 /***********************************************************
@@ -170,12 +171,10 @@ HApp::PageSetup()
  * Print
  ***********************************************************/
 void
-HApp::Print(BView *view ,BView *detail,const char* job_name)
+HApp::Print(BView *view ,BView *detailView,const char* job_name)
 {
     status_t		err;
-    BView			*detailView(detail);
-    BTextView		*bodyView = cast_as(view,BTextView);
- 	BAutolock lock(view->Window());
+    BTextView		*textView = cast_as(view,BTextView);
     BPrintJob print( job_name ); 
     
 	if(!fPrintSettings)
@@ -192,21 +191,33 @@ HApp::Print(BView *view ,BView *detail,const char* job_name)
 	int32 lineCount = 0;
 	float lineHeight = 0;
 	float bodyHeight = 0;
-  	if(bodyView)
+  	if(textView)
   	{
-   		lineCount = bodyView->CountLines();
-   		lineHeight = bodyView->LineHeight();
+   		lineCount = textView->CountLines();
+   		lineHeight = textView->LineHeight();
    		bodyHeight = lineHeight * lineCount;
-  	}else
-  		bodyHeight = view->Bounds().Height();
-   	if (/*(lineCount) &&*/ (print.ConfigJob() == B_NO_ERROR)) {
+  	}else{
+  		view->LockLooper();
+  		bodyHeight = view->Frame().Height();
+  		BScrollBar *bar;
+  		if( (bar = view->ScrollBar(B_VERTICAL)) )
+  		{
+  			float min,max;
+  			bar->GetRange(&min,&max);
+  			bodyHeight += (max == min)?0:max;
+  		}
+  		view->UnlockLooper();
+  	}
+	// Printing
+	if(textView && lineCount <=0)
+		goto out;
+	if (print.ConfigJob() == B_NO_ERROR) {
 		BRect printRect(print.PrintableRect());
 		printRect.OffsetTo(0, 0);
-		if(bodyView)
+		
+		if(textView)
 			printRect.bottom = lineHeight * floor( printRect.Height() / lineHeight );
-		else
-			printRect.bottom = view->Bounds().Height();
-		printRect.PrintToStream();
+	
 		print.BeginJob();
 		if (!print.CanContinue())
 			goto out;
@@ -217,7 +228,7 @@ HApp::Print(BView *view ,BView *detail,const char* job_name)
 		//print the first page
 		BRect headerRect;
 		
-	    if (detailView)
+	    if (detailView && detailView->LockLooper())
 	    {
 			BRect origDetailBounds=detailView->Bounds();
 	    	headerRect=detailView->Bounds();
@@ -228,14 +239,19 @@ HApp::Print(BView *view ,BView *detail,const char* job_name)
 				print.DrawView(detailView, headerRect, BPoint(0, 0));
 		    	detailView->ResizeTo(origDetailBounds.Width(), origDetailBounds.Height());
 		    }
+		    detailView->UnlockLooper();
 	    }
 	    
-	    float headerHeight=ceil(headerRect.Height()/lineHeight)*lineHeight;
+	    float headerHeight;
+	    if(textView)
+	    	headerHeight=ceil(headerRect.Height()/lineHeight)*lineHeight;
+		else
+			headerHeight=ceil(headerRect.Height());
 		BRect firstPageBodyRect(printRect);
 		firstPageBodyRect.bottom -= headerHeight;
 		if (firstPage<=1 )
 		{
-			print.DrawView((bodyView)?bodyView:view, firstPageBodyRect, BPoint(0, headerRect.Height()));
+			print.DrawView((textView)?textView:view, firstPageBodyRect, BPoint(0, headerRect.Height()));
 			print.SpoolPage();
 			firstPage++;
 		}
@@ -250,7 +266,7 @@ HApp::Print(BView *view ,BView *detail,const char* job_name)
 		
 		for (int32 loop = firstPage; loop <= lastPage; loop++) {
 			
-			print.DrawView((bodyView)?bodyView:view, printRect, BPoint(0, 0));
+			print.DrawView((textView)?textView:view, printRect, BPoint(0, 0));
 			print.SpoolPage();
 			printRect.OffsetBy(0, printRect.Height());
 			if (!print.CanContinue())

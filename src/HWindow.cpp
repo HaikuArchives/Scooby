@@ -26,6 +26,7 @@
 #include "HIMAP4Window.h"
 #include "HIMAP4Folder.h"
 #include "HHtmlMailView.h"
+#include "HAttachmentList.h"
 
 #include <Box.h>
 #include <Beep.h>
@@ -476,22 +477,15 @@ HWindow::MessageReceived(BMessage *message)
 			msg.AddPointer("view",fMailView);
 		}else{
 			// HTML mode
-			(new BAlert("","Not implemented yet\n","OK"))->Go();
-			break;
 			BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
 			int32 sel = tabview->Selection();
-			if(sel == 2|| sel < 0)
-				break;
-			BTab *tab = tabview->TabAt(0);
-			BView *view= tab->View();
-			view = view->FindView("NetPositive");
 			
-			if(!(view = view->ChildAt(0)) || !(view = view->ChildAt(1)))
+			if(sel != 0)
 				break;
-			BScrollBar *bar = cast_as(view,BScrollBar);
-			//PRINT(("%s\n",bar->Target()->Name()));
-			//PRINT(("%d\n",is_kind_of(view,BTextView)));
-			msg.AddPointer("view",bar->Target());	
+			BView *view = FindView("__NetPositive__HTMLView");
+			if(!view)
+				break;
+			msg.AddPointer("view",view);	
 		}
 		msg.AddPointer("detail",fDetailView);
 		msg.AddString("job_name",item->fSubject.String());
@@ -826,6 +820,10 @@ HWindow::MessageReceived(BMessage *message)
 	// Expand attributes
 	case M_EXPAND_ATTRIBUTES:
 		PostMessage(message,fDetailView);
+		break;
+	case M_OPEN_ATTACHMENT:
+	case M_SAVE_ATTACHMENT:
+		PostMessage(message,fMailView);
 		break;
 	// Update toolbar buttons
 	case M_UPDATE_TOOLBUTTON:
@@ -1506,14 +1504,8 @@ HWindow::DispatchMessage(BMessage *message,BHandler *handler)
 			html = true;
 			if(tabview->Selection() == 0)
 			{
-				BTab *tab = tabview->TabAt(0);
-				BView *view = tab->View();
-				view = view->FindView("NetPositive");
-				if(view && (view = view->ChildAt(0)))
-				{
-					view = view->ChildAt(1);
-					bar = cast_as(view,BScrollBar);
-				}
+				BView *view = FindView("__NetPositive__HTMLView");
+				bar = view->ScrollBar(B_VERTICAL);
 			}
 		}
 		if(!bar)
@@ -1535,7 +1527,7 @@ HWindow::DispatchMessage(BMessage *message,BHandler *handler)
 			}else{
 				char b[1];
 				b[0] = (modifiers & B_SHIFT_KEY)?B_PAGE_UP:B_PAGE_DOWN;
-				BView *view = bar->Target();
+				BView *view = FindView("__NetPositive__HTMLView");
 				view->KeyDown(b,1);
 			}
 		}else{
