@@ -7,7 +7,7 @@
 #include <errno.h>
 
 /* Initial guess at directory size. */ 
-#define INITIAL_SIZE    20
+#define INITIAL_SIZE    100
 
 int
 scandir(const char *name, struct dirent ***list, int (*selector)(struct dirent *), int (*sorter)(const void *, const void *))

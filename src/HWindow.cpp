@@ -756,6 +756,7 @@ HWindow::MessageReceived(BMessage *message)
 			fFolderList->SetWatching( true );
 			item->StartRefreshCache();
 			fFolderList->InvalidateItem(fFolderList->IndexOf(item));
+			fFolderList->SetWatching(true);
 		}
 		break;
 	}
