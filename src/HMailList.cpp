@@ -30,7 +30,7 @@ HMailList::HMailList(BRect frame,
 					(CLVContainerView**)scroll,
 					title,
 					B_FOLLOW_ALL,
-					B_WILL_DRAW,
+					B_WILL_DRAW|B_FRAME_EVENTS,
 					B_MULTIPLE_SELECTION_LIST)
 	,fCurrentFolder(NULL)
 	,fScrollView(*scroll)

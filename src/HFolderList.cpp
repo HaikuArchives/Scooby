@@ -32,7 +32,7 @@ HFolderList::HFolderList(BRect frame,
 					(CLVContainerView**)scroll,
 					title,
 					B_FOLLOW_LEFT|B_FOLLOW_TOP_BOTTOM,
-					B_WILL_DRAW|B_PULSE_NEEDED,
+					B_WILL_DRAW|B_PULSE_NEEDED|B_FRAME_EVENTS,
 					B_SINGLE_SELECTION_LIST,
 					true   )
 	,fCancel(false)
