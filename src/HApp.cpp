@@ -313,7 +313,7 @@ HApp::AboutRequested()
 {
 	(new HAboutWindow(APP_NAME,
 			__DATE__,
-			"Created by Atsushi Takamatsu @ Sapporo,Japan.",
+			"Created by Atsushi Takamatsu @ Sapporo,Japan.\n\nIf you want to send me bugs, include stack crawl info :)",
 			"http://scooby.sourceforge.net/",
 			"E-Mail: atsushi@io.ocn.ne.jp"))->Show();
 }	

@@ -227,7 +227,7 @@ HGeneralSettingView::InitGUI()
 	
 	frame.OffsetBy(x_offset,0);
 	checkbox = new BCheckBox(frame,"open_new_window",
-				_("Always open like with new window(HTML view)"),NULL);
+				_("Always open like in new window(HTML view)"),NULL);
 	prefs->GetData("open_link_as_new_window",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);

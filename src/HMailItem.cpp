@@ -1,8 +1,8 @@
-#include "HMailItem.h"
 #include "ResourceUtils.h"
 #include "ExtraMailAttr.h"
 #include "HApp.h"
 #include "HPrefs.h"
+#include "HMailItem.h"
 
 #include <String.h>
 #include <Entry.h>
@@ -18,6 +18,7 @@
 #include <Debug.h>
 #include <ClassInfo.h>
 #include <stdlib.h>
+#include <View.h>
 #include <StopWatch.h>
 
 #define TIME_FORMAT "%a, %d %b %Y %r"
@@ -367,25 +368,28 @@ HMailItem::RefreshEnclosureAttr()
 		return;
 	int32 header_len;
 	file.ReadAttr(B_MAIL_ATTR_HEADER,B_INT32_TYPE,0,&header_len,sizeof(int32));
-	char *header = new char[header_len+1];
-	header_len = file.Read(header,header_len);
-	header[header_len] = '\0';
-	
-	fEnclosure = (strstr(header,"Content-Type: multipart"))?1:0;
-	bool enclosure = (fEnclosure)?true:false;
-	file.WriteAttr(B_MAIL_ATTR_ATTACHMENT,B_BOOL_TYPE,0,&enclosure,sizeof(bool));
-	PRINT(("Attachment ATTR Refreshed\n"));
-	delete[] header;
-	BBitmap *icon;
-	
-	if(fEnclosure == 1)
+	if(header_len >= 0)
 	{
-		icon = ResourceUtils().GetBitmapResource('BBMP',"Enclosure");
-		if(icon)
-			SetColumnContent(6,icon,2.0,true,false);
-		delete icon;
-	}else
-		SetColumnContent(6,NULL,2.0,true,false);
+		char *header = new char[header_len+1];
+		header_len = file.Read(header,header_len);
+	
+		header[header_len] = '\0';
+		fEnclosure = (strstr(header,"Content-Type: multipart"))?1:0;
+		bool enclosure = (fEnclosure)?true:false;
+		file.WriteAttr(B_MAIL_ATTR_ATTACHMENT,B_BOOL_TYPE,0,&enclosure,sizeof(bool));
+		PRINT(("Attachment ATTR Refreshed\n"));
+		BBitmap *icon;
+		
+		if(fEnclosure == 1)
+		{
+			icon = ResourceUtils().GetBitmapResource('BBMP',"Enclosure");
+			if(icon)
+				SetColumnContent(6,icon,2.0,true,false);
+			delete icon;
+		}else
+			SetColumnContent(6,NULL,2.0,true,false);
+		delete[] header;	
+	}
 }
 
 /***********************************************************

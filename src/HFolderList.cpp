@@ -550,14 +550,12 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 	while(count>i)
 	{
 		if(::strcmp(dirents[i]->d_name,".") == 0 || ::strcmp(dirents[i]->d_name,"..")== 0)
-		{
-			free(dirents[i++]);
 			continue;
-		}
+		
 		ref.device = dirents[i]->d_pdev;
 		ref.directory = dirents[i]->d_pino;
 		ref.set_name(dirents[i]->d_name);
-		free(dirents[i++]);
+		
 		if(entry.SetTo(&ref) != B_OK)
 			continue;
 		if(entry.IsDirectory())
@@ -569,6 +567,9 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 			GetChildFolders(entry,item,list,childMsg);			
 		} 
 	}
+	// free all dirents
+	for(int32 i = 0;i < count;i++)
+		free(dirents[i++]);
 	free(dirents);
 #endif 
 }
