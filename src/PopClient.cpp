@@ -4,6 +4,7 @@
 #include "HApp.h"
 #include "HFile.h"
 #include "HPopClientView.h"
+#include "TrackerString.h"
 
 #include <Debug.h>
 #include <String.h>
@@ -25,7 +26,6 @@
 
 const bigtime_t kTimeout = 1000000*180; //timeout 180 secs
 	
-
 /***********************************************************
  * Constructor
  ***********************************************************/
@@ -791,7 +791,9 @@ PopClient::MD5Digest (unsigned char *s)
 bool
 PopClient::IsSpam(const char* header)
 {
-	BString from("");
+	using namespace BPrivate;
+	
+	TrackerString from("");
 	// Find from field
 	char *p;
 	
@@ -806,7 +808,10 @@ PopClient::IsSpam(const char* header)
 			{
 				p++;
 				if(*p != ' ')
-					from = *p;
+				{
+					from = "";
+					from += *p;
+				}
 			}else{
 				if(*p != ' ')
 					from += *p;
@@ -823,7 +828,7 @@ PopClient::IsSpam(const char* header)
 	// Compare to blacklist	
 	for(int32 i = 0;i < fBlackListCount;i++)
 	{
-		if(from.Compare((const char*)fBlackList.ItemAt(i)) == 0)
+		if(from.Matches((const char*)fBlackList.ItemAt(i),true) == 0)
 		{
 			PRINT(("SPAM:%s\n",(char*)fBlackList.ItemAt(i)));
 			return true;
