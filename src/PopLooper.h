@@ -28,8 +28,6 @@ class PopLooper :public BLooper{
 public:
 		//!Constructor.
 					PopLooper(BHandler *handler,BLooper *looper);
-		//!Destructor.
-					~PopLooper();
 		//!FetchMail.
 		status_t	FetchMail(int32 index,BString &content);
 		//!Close POP3 socket.
@@ -39,6 +37,8 @@ public:
 		//!Initialize spam mail address list.
 			void	InitBlackList();
 protected:
+		//!Destructor.
+					~PopLooper();
 		//!Post error.
 			void	PostError(const char* log);
 	//@{

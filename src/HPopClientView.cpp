@@ -1014,7 +1014,6 @@ void
 HPopClientView::Cancel()
 {
 	fPopLooper->ForceQuit();
-	fPopLooper = NULL;
 	StopBarberPole();
 	StopProgress();
 }
