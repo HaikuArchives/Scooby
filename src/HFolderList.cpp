@@ -1222,6 +1222,8 @@ HFolderList::GetFolderPath(HFolderItem *item,BMessage &msg)
 void
 HFolderList::SaveFolderStructure()
 {
+	if(!IsGatheredLocalFolders())
+		return;
 	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
