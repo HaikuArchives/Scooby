@@ -52,6 +52,8 @@ HPopClientView::HPopClientView(BRect frame,
 	,fServerIndex(0)
 	,fAccountName("")
 	,fLastSize(0)
+	,fMailCurrentIndex(0)
+	,fMailMaxIndex(0)
 {
 	BFont font(be_fixed_font);
 	font.SetSize(10);
@@ -238,13 +240,11 @@ HPopClientView::MessageReceived(BMessage *message)
 				fStringView->SetText("");
 				break;
 			}
-			SetMaxValue(count);
-			SetValue(1);
 			BString label("RETR [ ");
 			
-			fCurrentValue = (startpos == 0)?1:startpos;
-			fMaxValue = fCurrentValue+ count-1;
-			label << (int32)fCurrentValue << " / " << (int32)fMaxValue << " ]";
+			fMailCurrentIndex = (startpos == 0)?1:startpos;
+			fMailMaxIndex = fMailCurrentIndex+ count-1;
+			label << fMailCurrentIndex << " / " << fMailMaxIndex << " ]";
 			fStringView->SetText(label.String());
 			StopBarberPole();
 			StartProgress();
@@ -273,7 +273,7 @@ HPopClientView::MessageReceived(BMessage *message)
 		if(message->FindInt32("index",&index) == B_OK &&
 			message->FindString("content",&content) == B_OK)
 		{
-			Update(1);
+			fMailCurrentIndex = index+1;
 			entry_ref folder_ref,file_ref;
 			bool is_delete;
 			SaveMail(content,&folder_ref,&file_ref,&is_delete);
@@ -284,14 +284,15 @@ HPopClientView::MessageReceived(BMessage *message)
 			
 			if(is_delete)
 				fDeleteMails.AddInt32("index",index);
-			if(!fIsDelete && fCurrentValue > fMaxValue)
+			
+			if(!fIsDelete && fMailCurrentIndex > fMailMaxIndex)
 			{
 				SetNextRecvPos(fUidl.String());
 				fPopClient->PostMessage(B_QUIT_REQUESTED);
 				fPopClient = NULL;
 				fStringView->SetText("");
 				break;
-			}else if(fIsDelete && fCurrentValue > fMaxValue){
+			}else if(fIsDelete && fMailCurrentIndex > fMailMaxIndex){
 				int32 count;
 				type_code type;
 				
@@ -301,8 +302,10 @@ HPopClientView::MessageReceived(BMessage *message)
 				if(count > 0)
 				{
 					SetValue(fStartPos+1);
+					fMailCurrentIndex = fStartPos + 1;
+					SetMaxValue(fMailMaxIndex);
 					BString label("DEL [ ");
-					label << (int32)fCurrentValue << " / " << (int32)fMaxValue << " ]";
+					label << fMailCurrentIndex << " / " << fMailMaxIndex << " ]";
 					fStringView->SetText(label.String() );
 					fPopClient->PostMessage(&fDeleteMails);
 					
@@ -314,8 +317,10 @@ HPopClientView::MessageReceived(BMessage *message)
 				break;
 			}
 			
+			SetValue(0);
 			BString label("RETR [ ");
-			label << (int32)fCurrentValue << " / " << (int32)fMaxValue << " ]";
+			label << fMailCurrentIndex << " / " << fMailMaxIndex << " ]";
+			PRINT(("%s\n",label.String() ));
 			fStringView->SetText(label.String() );
 		}
 		break;
@@ -323,16 +328,21 @@ HPopClientView::MessageReceived(BMessage *message)
 	// delete success
 	case H_DELETE_MESSAGE:
 	{
-		Update(1);
-		BString label("DEL [ ");
-		label << (int32)fCurrentValue << "/" << (int32)fMaxValue << " ]";
-		fStringView->SetText(label.String());
-		if(fCurrentValue >= fMaxValue)
+		int32 index;
+		if(message->FindInt32("index",&index) == B_OK)
 		{
-			fPopClient->PostMessage(B_QUIT_REQUESTED);
-			fPopClient = NULL;
-			fStringView->SetText("");
-			SetNextRecvPos("");
+			Update(1);
+			fMailCurrentIndex = index+1;
+			BString label("DEL [ ");
+			label << fMailCurrentIndex << "/" << fMailMaxIndex << " ]";
+			fStringView->SetText(label.String());
+			if(fMailCurrentIndex > fMailMaxIndex)
+			{
+				fPopClient->PostMessage(B_QUIT_REQUESTED);
+				fPopClient = NULL;
+				fStringView->SetText("");
+				SetNextRecvPos("");
+			}
 		}
 		break;
 	}
@@ -341,6 +351,25 @@ HPopClientView::MessageReceived(BMessage *message)
 		fStringView->SetText("");
 		fPopClient->PostMessage(B_QUIT_REQUESTED);
 		break;
+	// Set max size of progress bar
+	case H_SET_MAX_SIZE:
+	{
+		int32 size;
+		if(message->FindInt32("max_size",&size) != B_OK)
+			break;
+		SetMaxValue(size);
+		SetValue(0);
+		break;
+	}
+	// Receive received data size
+	case H_RECEIVING_MESSAGE:
+	{
+		int32 size;
+		if(message->FindInt32("size",&size) != B_OK)
+			break;
+		Update(size);
+		break;
+	}
 	default:
 		BView::MessageReceived(message);	
 	}

@@ -268,7 +268,14 @@ SmtpClient::SendMail(const char* from,
 	// Content
 	len = ::strlen(content);
 	BString line("");
+	BMessage msg(M_SET_MAX_SIZE);
+	msg.AddInt32("max_size",len);
+	fLooper->PostMessage(&msg,fHandler);
 	// send content
+	int32 send_len = 0;
+	msg.MakeEmpty();
+	msg.what = M_SEND_MAIL_SIZE;
+	msg.AddInt32("size",send_len);
 	for(int32 i = 0;i < len;i++)
 	{
 		line << content[i];
@@ -289,7 +296,9 @@ SmtpClient::SendMail(const char* from,
 				line << "\r\n";
 				line_len = line.Length();
 			}
-			fEndpoint->Send(line.String(),line_len);
+			send_len = fEndpoint->Send(line.String(),line_len);
+			msg.ReplaceInt32("size",send_len);
+			fLooper->PostMessage(&msg,fHandler);
 			line="";
 		}
 	}
