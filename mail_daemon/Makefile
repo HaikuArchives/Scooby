@@ -3,7 +3,7 @@ NAME = scooby_daemon
 # Resources
 RSRCS= ./resources/Resource.rsrc ./resources/Icon.rsrc
 # Libraries
-LIBS= be root net netapi textencoding stdc++.r4
+LIBS= be root net netapi textencoding
 # Library path
 LIBPATHS= 
 # System include path

@@ -4,7 +4,6 @@
 #include <Application.h>
 #include <MessageRunner.h>
 #include <Path.h>
-#include <set>
 
 #include "PopClient.h"
 #include "HPrefs.h"
@@ -71,7 +70,6 @@ private:
 		bool				fChecking;
 		bool				fGotMails;
 		PopClient			*fPopClient;
-		set<entry_ref>		fNewMailSet;
 		BDirectory			*fAccountDirectory;
 		bool				fCanUseUIDL;
 		BMessage			fDeleteMails;
