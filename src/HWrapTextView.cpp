@@ -135,22 +135,23 @@ HWrapTextView::GetHardWrapedText(BString &out)
 {
 	MakeEditable(false);
 	
-	char *backup = ::strdup(Text());
+	BTextView *offview = new BTextView(Bounds(),NULL,TextRect(),B_FOLLOW_ALL);
+	offview->SetText(Text());
 	
 	BFont font;
 	uint32 propa;
 	GetFontAndColor(&font,&propa);
 	out = "";
-	
+	offview->SetFontAndColor(&font,B_FONT_ALL);
 	BString line;
-	int32 length = TextLength();
-	float view_width = TextRect().Width();
+	int32 length = offview->TextLength();
+	float view_width = offview->TextRect().Width();
 	char c=0;
 	bool inserted;
 	
 	for(int32 i=0;i < length;i++)
 	{
-		c = ByteAt(i);
+		c = offview->ByteAt(i);
 		if(c == '\n')
 		{
 			line = "";
@@ -167,9 +168,9 @@ HWrapTextView::GetHardWrapedText(BString &out)
 			int32 len = line.Length();
 			for(int32 k = 0;k<len;k++)
 			{
-				if(CanEndLine(i-k))
+				if(offview->CanEndLine(i-k))
 				{
-					Insert(i-k+1,"\n",1);
+					offview->Insert(i-k+1,"\n",1);
 					inserted=true;
 					i = i-k+1;
 					break;
@@ -177,13 +178,13 @@ HWrapTextView::GetHardWrapedText(BString &out)
 			}
 			// If could not find proper position, add line break to end.
 			if(!inserted)
-				Insert(i,"\n",1);
+				offview->Insert(i,"\n",1);
 			line = "";
 		}
 	}
-	out = Text();
-	SetText(backup);
-	free(backup);
+	out = offview->Text();
+	
+	delete offview;
 	MakeEditable(true);
 }
 
