@@ -68,7 +68,7 @@ HMailView::~HMailView(void)
 	if (fPanel)
 		delete fPanel;
 	if (fYankBuffer)
-		free(fYankBuffer);
+		delete[] fYankBuffer;
 	delete_sem(fStopSem);
 	delete fFile;
 }
@@ -233,7 +233,7 @@ void HMailView::KeyDown(const char *key, int32 count)
 				if (IsEditable()) {
 					GetSelection(&start, &end);
 					if ((start != fLastPosition) && (fYankBuffer)) {
-						free(fYankBuffer);
+						delete[] fYankBuffer;
 						fYankBuffer = NULL;
 					}
 					fLastPosition = start;
@@ -256,7 +256,7 @@ void HMailView::KeyDown(const char *key, int32 count)
 							    &fYankBuffer[strlen(fYankBuffer)]);
 					}
 					else {
-						fYankBuffer = (char *)malloc(end - start + 1);
+						fYankBuffer = new char[end - start + 1];
 						GetText(start, end - start, fYankBuffer);
 					}
 					Delete();
@@ -339,7 +339,7 @@ void HMailView::MessageReceived(BMessage *msg)
 						file.GetSize(&size);
 						if ((!strncmp(type, "text/", 5)) && (size)) {
 							len += size;
-							text = (char *)malloc(size);
+							text = new char[size];
 							file.Read(text, size);
 							if (!inserted) {
 								GetSelection(&start, &end);
@@ -360,7 +360,7 @@ void HMailView::MessageReceived(BMessage *msg)
 									offset = loop + 1;
 								}
 							}
-							free(text);
+							delete[] text;
 						}
 						else {
 							enclosure = TRUE;
@@ -547,16 +547,16 @@ void HMailView::ClearList(void)
 	while ((enclosure = (hyper_text *)fEnclosures->FirstItem())) {
 		fEnclosures->RemoveItem(enclosure);
 		if (enclosure->name)
-			free(enclosure->name);
+			delete[] enclosure->name;
 		if (enclosure->content_type)
-			free(enclosure->content_type);
+			delete[] enclosure->content_type;
 		if (enclosure->encoding)
-			free(enclosure->encoding);
+			delete[] enclosure->encoding;
 		if ((enclosure->have_ref) && (!enclosure->saved)) {
 			entry.SetTo(&enclosure->ref);
 			entry.Remove();
 		}
-		free(enclosure);
+		delete enclosure;
 	}
 }
 
@@ -585,7 +585,7 @@ void HMailView::LoadMessage(BFile *file, bool quote_it, bool close,
 	if (text)
 		Insert(text, strlen(text));
 	fFile = file;
-	info = (reader *)malloc(sizeof(reader));
+	info = new reader;
 	info->header = fHeader;
 	info->raw = fRaw;
 	info->quote = quote_it;
@@ -678,7 +678,7 @@ status_t HMailView::Reader(reader *info)
 	off_t		size;
 
 	info->file->GetSize(&size);
-	if ((msg = (char *)malloc(size)) == NULL)
+	if ((msg = new char[size]) == NULL)
 		goto done;
 	info->file->Seek(0, 0);
 	size = info->file->Read(msg, size);
@@ -711,9 +711,9 @@ done:;
 		HighlightQuote(info->view);
 	if (info->close)
 		delete info->file;
-	free(info);
+	delete info;
 	if (msg)
-		free(msg);
+		delete[] msg;
 	return B_NO_ERROR;
 }
 
@@ -815,7 +815,7 @@ status_t HMailView::Save(BMessage *msg)
 		}
 		
 		if ((result = dir.CreateFile(name, &file)) == B_NO_ERROR) {
-			data = (char *)malloc(enclosure->file_length);
+			data = new char[enclosure->file_length];
 			fFile->Seek(enclosure->file_offset, 0);
 			size = fFile->Read(data, enclosure->file_length);
 			data[enclosure->file_length] = '\0';
@@ -834,7 +834,7 @@ status_t HMailView::Save(BMessage *msg)
 				file.Write(data, size);
 				file.SetSize(size);
 			}
-			free(data);
+			delete[] data;
 			if (enclosure->content_type) {
 				info = new BNodeInfo(&file);
 				info->SetType(enclosure->content_type);
@@ -1117,14 +1117,14 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 					charset = type;
 					saved_len = len;
 					PRINT(("Charset:%s\n",charset));
-					utf8 = (char *)malloc(len+1);
+					utf8 = new char[len+1];
 					::strncpy(utf8,offset,len);
 					utf8[len] = '\0';
 					encode.ConvertToUTF8(&utf8,charset);
 					len = ::strlen(utf8);
 				}else{
 					saved_len = len;
-					utf8 = (char *)malloc(len+1);
+					utf8 = new char[len+1];
 					::strncpy(utf8,offset,len);
 					utf8[len] = '\0';
 					encode.ConvertToUTF8(&utf8,encode.DefaultEncoding());
@@ -1138,7 +1138,7 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 				}
 				if (utf8) {
 					result = strip_it(utf8, len, info);
-					free(utf8);
+					delete[] utf8;
 					utf8 = NULL;
 					if (!result)
 						return FALSE;
@@ -1151,22 +1151,22 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 			}
 			else if (info->incoming) {
 				if (type) {
-					enclosure = (hyper_text *)malloc(sizeof(hyper_text));
+					enclosure = new hyper_text;
 					memset(enclosure, 0, sizeof(hyper_text));
 					if (is_bfile)
 						enclosure->type = TYPE_BE_ENCLOSURE;
 					else
 						enclosure->type = TYPE_ENCLOSURE;
-					enclosure->content_type = (char *)malloc(strlen(type) + 1);
+					enclosure->content_type = new char[strlen(type) + 1];
 					if (encoding) {
-						enclosure->encoding = (char *)malloc(strlen(encoding) + 1);
+						enclosure->encoding = new char[strlen(encoding) + 1];
 						strcpy(enclosure->encoding, encoding);
 					}
 					PRINT(("Type:%s\n",type));
-					str = (char *)malloc(strlen(type));
-					hyper = (char *)malloc(strlen(str) + 256);
+					str = new char[strlen(type)];
+					hyper = new char[strlen(str) + 256];
 					if (get_parameter(type, "name=", str)) {
-						enclosure->name = (char *)malloc(strlen(str) + 1);
+						enclosure->name = new char[strlen(str) + 1];
 						strcpy(enclosure->name, str);
 					}
 					else
@@ -1186,8 +1186,8 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 					enclosure->file_offset = offset - base;
 					enclosure->file_length = len;
 					insert(info, hyper, strlen(hyper), TRUE);
-					free(hyper);
-					free(str);
+					delete[] hyper;
+					delete[] str;
 					info->enclosures->AddItem(enclosure);
 				}
 			}
@@ -1252,12 +1252,12 @@ HMailView::strip_it(char* data, int32 data_len, reader *info)
 				else if (!insert(info, line, count, FALSE))
 					return FALSE;
 				count = 0;
-				enclosure = (hyper_text *)malloc(sizeof(hyper_text));
+				enclosure = new hyper_text;
 				memset(enclosure, 0, sizeof(hyper_text));
 				info->view->GetSelection(&enclosure->text_start,
 										 &enclosure->text_end);
 				enclosure->type = type;
-				enclosure->name = (char *)malloc(index + 1);
+				enclosure->name = new char[index + 1];
 				memcpy(enclosure->name, &data[loop], index);
 				enclosure->name[index] = 0;
 				if (bracket) {
