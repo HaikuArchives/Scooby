@@ -18,6 +18,7 @@ class HPopClientView;
 class HSmtpClientView;
 class HDeskbarView;
 class HHtmlMailView;
+class LEDAnimation;
 
 enum{
 	DESKBAR_NORMAL_ICON = 0,
@@ -78,6 +79,7 @@ public:
 				void	MakeReadWindow(entry_ref ref,BMessenger *messenger = NULL);
 				void	RefsReceived(BMessage *message);
 				
+				void	PlayLEDAnimaiton();
 				int32	CurrentDeskbarIcon()const {return fCurrentDeskbarIcon;}
 				void	ChangeDeskbarIcon(int32 icon) {fCurrentDeskbarIcon = icon;}
 
@@ -141,6 +143,7 @@ private:
 		HSmtpClientView* fSmtpClientView;
 		int32			fCurrentDeskbarIcon;
 		BFilePanel		*fOpenPanel;
+		LEDAnimation	*fLEDAnimation;
 };
 #endif		
 				
