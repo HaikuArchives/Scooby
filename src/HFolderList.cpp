@@ -53,11 +53,11 @@ HFolderList::HFolderList(BRect frame,
 	
 	SetSortKey(2);
 	
-	fLocalFolders = new HSimpleFolderItem("Local Folders",this);
+	fLocalFolders = new HSimpleFolderItem(_("Local Folders"),this);
 	fPointerList.AddItem(fLocalFolders);
-	fIMAP4Folders = new HSimpleFolderItem("IMAP4 Folders",this);
+	fIMAP4Folders = new HSimpleFolderItem(_("IMAP4 Folders"),this);
 	fPointerList.AddItem(fIMAP4Folders);
-	fQueryFolders = new HSimpleFolderItem("Queries",this);
+	fQueryFolders = new HSimpleFolderItem(_("Queries"),this);
 	fPointerList.AddItem(fQueryFolders);
 	
 	AddItem(fLocalFolders);
@@ -292,8 +292,8 @@ HFolderList::GetFolders(void* data)
 	
 	BMessage msg(M_ADD_FOLDER);
 	msg.MakeEmpty();
-	BMessage childMsg(M_ADD_UNDER_ITEM);
-	childMsg.MakeEmpty();
+
+	BList folderList;
 	
 	while( (count = dir.GetNextDirents((dirent *)buf, 4096)) > 0 && !list->fCancel )
 	{
@@ -319,8 +319,7 @@ HFolderList::GetFolders(void* data)
 				entry.GetRef(&ref);
 				item = new HFolderItem(ref,list);
 				msg.AddPointer("item",item);
-
-				GetChildFolders(entry,item,list,childMsg);
+				folderList.AddItem(item);
 			}
 		}
 	}
@@ -419,9 +418,19 @@ HFolderList::GetFolders(void* data)
 	// Send add list items message
 	if(!msg.IsEmpty())
 		list->Window()->PostMessage(&msg,list);
-	if(!childMsg.IsEmpty())
-		list->Window()->PostMessage(&childMsg,list);
+	// Gather child folders
+	int32 folder_count = folderList.CountItems();
+	for(int32 i = 0;i < folder_count;i++)
+	{
+		HFolderItem *item = (HFolderItem*)folderList.ItemAt(i);
+		entry_ref ref = item->Ref();
+		if(entry.SetTo(&ref) == B_OK)
+			GetChildFolders(entry,item,list);
+		if(list->fCancel)
+			break;
+	}
 	list->fThread =  -1;
+	
 	return 0;
 }
 
@@ -431,8 +440,7 @@ HFolderList::GetFolders(void* data)
 void
 HFolderList::GetChildFolders(const BEntry &inEntry,
 							HFolderItem *parentItem,
-							HFolderList *list,
-							BMessage &outList)
+							HFolderList *list)
 {
 	BDirectory dir(&inEntry);
 	BEntry entry;
@@ -443,7 +451,7 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 	dirent *dent;
 	int32 count;
 	int32 offset;
-	
+
 	while((count = dir.GetNextDirents((dirent *)buf, 4096)) > 0)
 	{
 		offset = 0;
@@ -464,16 +472,15 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 			if(entry.IsDirectory())
 			{
 				entry.GetRef(&ref);
-				PRINT(("%s\n",dent->d_name));
-				outList.AddPointer("item",(item = new HFolderItem(ref,list)));
-				outList.AddPointer("parent",parentItem);
+				BMessage childMsg(M_ADD_UNDER_ITEM);
+				childMsg.AddPointer("item",(item = new HFolderItem(ref,list)));
+				childMsg.AddPointer("parent",parentItem);
 				if(!parentItem->IsSuperItem())
 					parentItem->SetSuperItem(true);
-				GetChildFolders(entry,item,list,outList);
-			}else
-				 // if the subfolder contains files, 
-			 	 // 	break loop to improve speed
-				return;
+				list->Window()->PostMessage(&childMsg,list);
+	
+				GetChildFolders(entry,item,list);			
+			}
 		} 
 	} 
 }
@@ -1130,4 +1137,51 @@ HFolderList::RemoveFromMailList(HMailItem *item,bool free)
 	msg.AddPointer("mail",item);
 	msg.AddBool("free",free);
 	Window()->PostMessage(&msg);
+}
+
+/***********************************************************
+ * GenarateFolderPathes
+ ***********************************************************/
+int32
+HFolderList::GenarateFolderPathes(BMessage &msg)
+{
+	int32 count = FullListCountItems();
+	int32 result_count = 0;
+	for(int32 i = 0; i < count;i++)
+	{
+		HFolderItem *item = cast_as(FullListItemAt(i),HFolderItem);
+		
+		if(strcmp(item->FolderName(),_("Local Folders")) == 0)
+			continue;
+		if(strcmp(item->FolderName(),_("IMAP4 Folders")) == 0 ||
+			strcmp(item->FolderName(),_("Queries")) == 0 )
+			break;
+		
+		GetFolderPath(item,msg);
+		result_count++;
+	}
+	return result_count;
+}
+
+/***********************************************************
+ * GetFolderPath
+ ***********************************************************/
+void
+HFolderList::GetFolderPath(HFolderItem *item,BMessage &msg)
+{
+	BString path("");
+	
+	path += item->FolderName();
+	HFolderItem *parent = cast_as(Superitem(item),HFolderItem);
+	
+	while(parent)
+	{
+		if(strcmp(parent->FolderName(),_("Local Folders")) == 0)
+			break;
+		path.Insert("/",0);
+		path.Insert(parent->FolderName(),0);
+		parent = cast_as(Superitem(parent),HFolderItem);
+	}
+	msg.AddString("path",path.String() );
+	return; 
 }

@@ -585,6 +585,9 @@ HWindow::MessageReceived(BMessage *message)
 	case M_PREF_MSG:
 	{
 		HPrefWindow *win = new HPrefWindow(RectUtils().CenterRect(600,380));
+		BMessage msg(M_ADD_FOLDERS);
+		fFolderList->GenarateFolderPathes(msg);
+		win->PostMessage(&msg);
 		win->Show();
 		break;
 	}

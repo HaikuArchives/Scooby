@@ -100,6 +100,9 @@ HPrefWindow::MessageReceived(BMessage *message)
 	case 'FSel':
 		PostMessage(message,fGeneralView);
 		break;
+	case M_ADD_FOLDERS:
+		fFilterView->AddFolderItem(message);
+		break;
 	default:
 		BWindow::MessageReceived(message);
 	}

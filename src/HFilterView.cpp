@@ -57,6 +57,10 @@ HFilterView::InitGUI()
 	rect.right = rect.left +100;
 	BBox *box;
 	BRect frame;
+	BPath path;
+	BDirectory dir;
+	BEntry entry;
+
 	
 	fListView = new BListView(rect,"list");
 	fListView->SetFont(be_bold_font);
@@ -133,15 +137,13 @@ HFilterView::InitGUI()
 	box->AddChild(fActionMenu);
 	AddChild(box);
 	menu  = new BMenu("folder");
-	
-	BPath path;
+/*	
 	::find_directory(B_USER_DIRECTORY,&path);
 	path.Append("mail");
-	BDirectory dir(path.Path());
 	BEntry entry(path.Path());
 
 	AddFolderItem(entry,menu);
-
+*/
 	menu->SetRadioMode(true);
 	item = menu->ItemAt(0);
 	if(item)
@@ -470,40 +472,19 @@ HFilterView::OpenItem(const char* name)
  * AddFolderItem
  ***********************************************************/
 void
-HFilterView::AddFolderItem(const BEntry& inEntry,BMenu *menu)
+HFilterView::AddFolderItem(BMessage *msg)
 {
-	BDirectory dir(&inEntry);
-	BEntry entry;
-	BPath path;
-	BString name("");
-	status_t err = B_OK;
+	BMenuField *field = cast_as(FindView("folder"),BMenuField);
 	
-	while(err == B_OK)
+	BMenu *menu = field->Menu();
+	type_code type;
+	int32 count;
+	msg->GetInfo("path",&type,&count);
+	for(int32 i = 0;i < count;i++)
 	{
-		if((err = dir.GetNextEntry(&entry)) != B_OK)
-			continue;
-		if(entry.IsDirectory())
-		{
-			path.SetTo(&entry);
-			const char* p;
-			name = "";
-			while(1)
-			{
-				p = path.Leaf();
-				if(::strcmp(p,"mail") == 0)
-					break;
-				if(name.Length() != 0)
-					name.Insert("/",0);
-				name.Insert(p,0);
-				path.GetParent(&path);
-			}
-			menu->AddItem( new BMenuItem(name.String(),NULL));
-			
-			AddFolderItem(entry,menu);
-		}else{
-			if(!entry.IsSymLink())
-				break;
-		}
+		const char* path;
+		if(msg->FindString("path",i,&path) == B_OK)
+			menu->AddItem( new BMenuItem(path,NULL));
 	}
 }
 

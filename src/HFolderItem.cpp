@@ -467,82 +467,12 @@ HFolderItem::ReadFromCache()
 	path.Append("FolderCache");
 	::create_directory(path.Path(),0777);
 	path.Append(name.String());
-#ifndef __NEW_CACHE__
-	BFile file(path.Path(),B_READ_ONLY);
-	BMessage msg;
-	if(file.InitCheck() == B_OK)
-	{
-		msg.Unflatten(&file);
-		int32 count;
-		type_code type;
-		msg.GetInfo("refs",&type,&count);
-#ifdef __CALC__
-		PRINT(("Unflattened: %9.4lf sec\n",stopWatch.Lap()/1000000.0));
-#endif	
-		// check entry in directory and refs count
-		if(count + fMailList.CountItems() != BDirectory(&fFolderRef).CountEntries() )
-		{
-			PRINT(("Auto refresh\n"));
-			EmptyMailList();
-			return B_ERROR;
-		}		
-		//
-		
-		entry_ref ref;
-		const char *status,*subject,*from,*to,*cc,*reply,*priority;
-		int8 enclosure;
-		ino_t	node = 0;
-		int64 when;
-		HMailItem *item;
-#ifdef __CALC__
-		PRINT(("Start Adding: %9.4lf sec\n",stopWatch.Lap()/1000000.0));
-#endif
-		for(register int32 i = 0;i < count;i++)
-		{
-			if(msg.FindRef("refs",i,&ref) ==B_OK)
-			{
-				node = 0;
-				msg.FindString("subject",i,&subject);
-				msg.FindString("status",i,&status);
-				msg.FindString("from",i,&from);
-				msg.FindString("to",i,&to);
-				msg.FindString("cc",i,&cc);
-				msg.FindString("reply",i,&reply);
-				msg.FindInt64("when",i,&when);
-				msg.FindString("priority",i,&priority);
-				msg.FindInt8("enclosure",i,&enclosure);
-				msg.FindInt64("ino_t",i,&node);
-				fMailList.AddItem(item = new HMailItem(ref,
-													status,
-													subject,
-													from,
-													to,
-													cc,
-													reply,
-													(time_t)when,
-													priority,
-													enclosure,
-													node));
-				::watch_node(&item->fNodeRef,B_WATCH_ATTR,this,fOwner->Window());
-				if(!item->IsRead())
-					fUnread++;
-			}
-		}	
-#ifdef __CALC__
-		PRINT(("Done: %9.4lf sec\n",stopWatch.Lap()/1000000.0));
-#endif
-		fDone = true;
-		// Set icon to open folder
-		BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"OpenFolder");
-		SetColumnContent(ICON_COLUMN,icon,2.0,true,false);
-		delete icon;
-		return B_OK;
-	}
-#else
+
 	HMailCache cache(path.Path());
 	int32 count = cache.CountItems();
 	// check entry in directory and refs count
-	if(count + fMailList.CountItems() != BDirectory(&fFolderRef).CountEntries() )
+	int32 children = ((ColumnListView*)fOwner)->FullListNumberOfSubitems(this);
+	if(children+count + fMailList.CountItems() != BDirectory(&fFolderRef).CountEntries() )
 	{
 		PRINT(("Auto refresh\n"));
 		EmptyMailList();
@@ -563,7 +493,6 @@ HFolderItem::ReadFromCache()
 	}else{
 		PRINT(("Open ERROR\n"));
 	}
-#endif
 	return B_ERROR;
 }
 
