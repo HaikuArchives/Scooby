@@ -289,7 +289,31 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
 #ifndef USE_BASE64DECODER
 		len = decode_base64(buf, buf, len,true); 
 #else
-		len = decode64(buf,buf,len);
+		int i, iR; 
+        char a1, a2, a3, a4; 
+        i = 0; 
+        iR = 0; 
+        while (1)
+        { 
+                if (i >= len) 
+                    break; 
+                if(buf[i] == '\r'|| buf[i] == '\n') 
+                { 
+                        i++; 
+                        continue; 
+                } 
+                a1 = p_Charconv(buf[i]); 
+                a2 = p_Charconv(buf[i+1]); 
+                a3 = p_Charconv(buf[i+2]); 
+                a4 = p_Charconv(buf[i+3]); 
+                buf[iR] = (a1 << 2) | (a2 >>4);        
+                buf[iR + 1] = (a2 << 4) | (a3 >>2); 
+                buf[iR + 2] = (a3 << 6) | a4; 
+                
+                iR += 3;        
+                i += 4; 
+        } 
+        len = iR; 
 #endif
     }
     buf[len] = '\0'; 
