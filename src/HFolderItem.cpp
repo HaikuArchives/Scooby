@@ -966,8 +966,8 @@ int HFolderItem::CompareItems(const CLVListItem *a_Item1,
 	// display in and out folder first.
 	if(strcmp(text1,"in") == 0) return -1;
 	if(strcmp(text2,"in") == 0) return  1;
-	if(strcmp(text1,"Local Folders") == 0) return -1;
-	if(strcmp(text2,"Local Folders") == 0) return  1;
+	if(strcmp(text1,_("Local Folders")) == 0) return -1;
+	if(strcmp(text2,_("Local Folders")) == 0) return  1;
 	
 	if(strcmp(text1,"out") == 0 && strcmp(text2,"in") != 0) return -1;
 	if(strcmp(text2,"out") == 0 && strcmp(text1,"in") != 0) return  1;
