@@ -23,7 +23,7 @@ public:
 			void		SetLogin(const char* login) {fLogin = login;}
 			void		SetPort(int port) {fPort = port;}
 			void		SetPassword(const char* pass){fPassword = pass;}
-			void		SetFolderName(const char* folder) {fFolderName = name;}
+			void		SetFolderName(const char* folder) {fFolderName = folder;}
 protected:
 			void		IMAPGetList();
 		status_t		IMAPConnect();
