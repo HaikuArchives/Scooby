@@ -476,7 +476,15 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 				childMsg.AddPointer("item",(item = new HFolderItem(ref,list)));
 				childMsg.AddPointer("parent",parentItem);
 				if(!parentItem->IsSuperItem())
+				{
 					parentItem->SetSuperItem(true);
+					
+					if(list->Window()->Lock())
+					{
+						list->InvalidateItem(list->IndexOf(parentItem));
+						list->Window()->Unlock();
+					}
+				}
 				list->Window()->PostMessage(&childMsg,list);
 	
 				GetChildFolders(entry,item,list);			
