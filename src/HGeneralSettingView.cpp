@@ -187,6 +187,20 @@ HGeneralSettingView::InitGUI()
 	box->AddChild(checkbox);
 	
 	frame.OffsetBy(0,22);
+	checkbox = new BCheckBox(frame,"check_inbox",
+				_("Open inbox when Scooby started up"),NULL);
+	prefs->GetData("check_inbox",&bValue);
+	checkbox->SetValue(bValue);
+	box->AddChild(checkbox);
+	
+	frame.OffsetBy(0,22);
+	checkbox = new BCheckBox(frame,"tree_mode",
+				_("Use folder tree support"),NULL);
+	prefs->GetData("tree_mode",&bValue);
+	checkbox->SetValue(bValue);
+	box->AddChild(checkbox);
+	
+	frame.OffsetBy(0,22);
 	checkbox = new BCheckBox(frame,"desktray",
 				_("Use deskbar replicant"),NULL);
 	prefs->GetData("use_desktray",&bValue);
@@ -197,13 +211,6 @@ HGeneralSettingView::InitGUI()
 	checkbox = new BCheckBox(frame,"html",
 				_("Use HTML view"),NULL);
 	prefs->GetData("use_html",&bValue);
-	checkbox->SetValue(bValue);
-	box->AddChild(checkbox);
-	
-	frame.OffsetBy(0,22);
-	checkbox = new BCheckBox(frame,"check_inbox",
-				_("Open inbox when Scooby started up"),NULL);
-	prefs->GetData("check_inbox",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
@@ -280,6 +287,8 @@ HGeneralSettingView::Save()
 	prefs->SetData("use_html",(bool)checkBox->Value());
 	checkBox = cast_as(FindView("check_inbox"),BCheckBox);
 	prefs->SetData("check_inbox",(bool)checkBox->Value());
+	checkBox = cast_as(FindView("tree_mode"),BCheckBox);
+	prefs->SetData("tree_mode",(bool)checkBox->Value());
 	
 	menufield = cast_as(FindView("toolbar"),BMenuField);
 	menu = menufield->Menu();
