@@ -10,6 +10,7 @@
 #include "HWriteWindow.h"
 #include "ResourceUtils.h"
 #include "HMailList.h"
+#include "TrackerUtils.h"
 
 #include <String.h>
 #include <Debug.h>
@@ -98,6 +99,25 @@ HApp::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
+	// Move file
+	case M_MOVE_FILE:
+	{
+		entry_ref ref;
+		const char* path;
+		
+		int32 count;
+		type_code type;
+		message->GetInfo("refs",&type,&count);
+		for(int32 i = 0;i < count;i++)
+		{
+			if(message->FindRef("refs",i,&ref) == B_OK && 
+				message->FindString("path",i,&path) == B_OK)
+			{
+				MoveFile(ref,path);
+			}
+		}
+		break;
+	}	
 	// Change mail status
 	case M_CHANGE_MAIL_STATUS:
 	{
@@ -667,6 +687,28 @@ HApp::GetIcon(const char* icon_name)
 		bitmap = fCloseIMAPIcon;	
 	return bitmap;
 }
+
+/***********************************************************
+ * MoveFile
+ ***********************************************************/
+void
+HApp::MoveFile(entry_ref file_ref,const char *kDir_Path)
+{
+	// Restore old selection mail's status
+	if(fWindow->Lock())
+	{
+		fWindow->MailList()->MarkOldSelectionAsRead();
+		fWindow->Unlock();
+	}
+	//
+	if(BNode(&file_ref).InitCheck() != B_OK)
+		return;
+	BPath filePath(&file_ref);
+	BDirectory destDir(kDir_Path);
+
+	TrackerUtils().SmartMoveFile(file_ref,&destDir,"_");
+}
+
 
 /***********************************************************
  * Main

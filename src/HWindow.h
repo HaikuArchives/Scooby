@@ -103,7 +103,7 @@ protected:
 				
 				void	MoveMails(BMessage *message);
 				void	DeleteMails();
-				void	MoveFile(entry_ref file_ref,const char* dest_dir);
+				
 				void	ReplyMail(HMailItem *item,bool reply_all = false);
 				void	ForwardMail(HMailItem *item);
 				

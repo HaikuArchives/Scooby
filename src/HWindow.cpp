@@ -1220,48 +1220,6 @@ HWindow::FolderSelection()
 }
 
 /***********************************************************
- * MoveMails
- ***********************************************************/
-void
-HWindow::MoveMails(BMessage *message)
-{
-	entry_ref ref;
-	int32 count;
-	type_code type;
-	HMailItem *mail;
-	int32 i;
-		
-	message->GetInfo("mail",&type,&count);
-	if(count == 0)
-		return;
-	HFolderItem *to;
-	HFolderItem *from;
-	message->FindPointer("to",(void**)&to);
-	message->FindPointer("from",(void**)&from);
-	
-	ref = to->Ref();
-	BPath path(&ref);
-	
-	int32 old_selection=-1;
-	
-	fMailList->DeselectAll();
-	
-	for(i = 0;i < count;i++)
-	{			
-		message->FindPointer("mail",i,(void**)&mail);
-		old_selection = fMailList->IndexOf(mail);
-		ref = mail->Ref();
-		MoveFile(ref,path.Path());
-		BPath item_path(path.Path());
-		item_path.Append(BPath(&ref).Leaf());
-		::get_ref_for_path(item_path.Path(),&ref);
-	}
-	
-	if(old_selection >= 0)
-		fMailList->Select( old_selection + 1 );
-}
-
-/***********************************************************
  * InvokeMailItem
  ***********************************************************/
 void
@@ -1358,22 +1316,6 @@ HWindow::DeleteMails()
 	}
 }
 
-/***********************************************************
- * MoveFile
- ***********************************************************/
-void
-HWindow::MoveFile(entry_ref file_ref,const char *kDir_Path)
-{
-	// Restore old selection mail's status
-	fMailList->MarkOldSelectionAsRead();
-	//
-	if(BNode(&file_ref).InitCheck() != B_OK)
-		return;
-	BPath filePath(&file_ref);
-	BDirectory destDir(kDir_Path);
-
-	TrackerUtils().SmartMoveFile(file_ref,&destDir,"_");
-}
 
 /***********************************************************
  * AddToPeople
@@ -1859,6 +1801,52 @@ HWindow::DeleteFolder(int32 sel)
 }
 
 /***********************************************************
+ * MoveMails
+ ***********************************************************/
+void
+HWindow::MoveMails(BMessage *message)
+{
+	entry_ref ref;
+	int32 count;
+	type_code type;
+	HMailItem *mail;
+	int32 i;
+		
+	message->GetInfo("mail",&type,&count);
+	if(count == 0)
+		return;
+	HFolderItem *to;
+	HFolderItem *from;
+	message->FindPointer("to",(void**)&to);
+	message->FindPointer("from",(void**)&from);
+	
+	ref = to->Ref();
+	BPath path(&ref);
+	
+	int32 old_selection=-1;
+	
+	fMailList->DeselectAll();
+	
+	BMessage msg(M_MOVE_FILE);
+	
+	for(i = 0;i < count;i++)
+	{			
+		message->FindPointer("mail",i,(void**)&mail);
+		old_selection = fMailList->IndexOf(mail);
+		ref = mail->Ref();
+		msg.AddRef("refs",&ref);
+		msg.AddString("path",path.Path());
+		BPath item_path(path.Path());
+		item_path.Append(BPath(&ref).Leaf());
+		::get_ref_for_path(item_path.Path(),&ref);
+	}
+	
+	if(old_selection >= 0)
+		fMailList->Select( old_selection + 1 );
+	be_app->PostMessage(&msg);
+}
+
+/***********************************************************
  * FilterMail
  ***********************************************************/
 void
@@ -1888,7 +1876,11 @@ HWindow::FilterMails(HMailItem *item)
 	if(out_path.Compare(current_path.Path()) == 0 ||
 		out_path.Compare(default_path.Path()) == 0)
 		return;
-	MoveFile(ref,out_path.String());
+	
+	BMessage msg(M_MOVE_FILE);
+	msg.AddRef("refs",&ref);
+	msg.AddString("path",out_path.String());
+	be_app->PostMessage(&msg);
 }
 
 /***********************************************************
