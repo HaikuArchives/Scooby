@@ -1451,6 +1451,8 @@ HWindow::EmptyTrash()
 	BDirectory dir( &ref );
    	status_t err = B_NO_ERROR;
 	BEntry entry;
+	BPath path(&ref);
+	
 	while( err == B_OK )
 	{
 		if( (err = dir.GetNextRef( &ref )) == B_OK)
@@ -1458,10 +1460,7 @@ HWindow::EmptyTrash()
 			if(entry.SetTo(&ref) != B_OK)
 				continue;
 			if(entry.Exists())
-			{
 				utils.MoveToTrash(ref);
-				dir.Rewind();
-			}
 		}
 	}
 	if(fFolderList->CurrentSelection() == fFolderList->IndexOf(trash))
@@ -1499,7 +1498,6 @@ HWindow::AddCheckFromItems()
 			entry.GetName(name);
 			entry_ref ref;
 			entry.GetRef(&ref);
-			PRINT(("%s\n",name));
 			BMessage *msg = new BMessage(M_CHECK_FROM);
 			msg->AddRef("refs",&ref);
 			subMenu->AddItem(new BMenuItem(name,msg));
