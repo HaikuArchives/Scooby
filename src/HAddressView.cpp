@@ -4,6 +4,7 @@
 #include "HApp.h"
 #include "HPrefs.h"
 #include "ArrowButton.h"
+#include "IconMenuItem.h"
 
 #include <TextControl.h>
 #include <StringView.h>
@@ -157,7 +158,8 @@ HAddressView::InitGUI()
 	{
 		BString addr1,addr2,name,group;
 		entry_ref ref;
-//		MenuUtils utils;
+		BList peopleList;
+	
 	
 		while(query.GetNextRef(&ref) == B_OK)
 		{
@@ -177,50 +179,46 @@ HAddressView::InitGUI()
 				fAddrList.AddItem(strdup(addr1.String()));
 				BString title = name;
 				title << " <" << addr1 << ">";
-				BMessage *msg = new BMessage(M_ADDR_MSG);
-				msg->AddString("email",addr1);
-				msg->AddPointer("pointer",fTo);
-				msg->AddString("title",title);
-				AddPerson(toMenu,title.String(),group.String(),msg,0,0);
-				
-				msg = new BMessage(M_ADDR_MSG);
-				msg->AddString("email",addr1);
-				msg->AddPointer("pointer",fCc);
-				msg->AddString("title",title);
-				AddPerson(ccMenu,title.String(),group.String(),msg,0,0);
-				
-				msg = new BMessage(M_ADDR_MSG);
-				msg->AddString("email",addr1);
-				msg->AddPointer("pointer",fBcc);
-				msg->AddString("title",title);
-				AddPerson(bccMenu,title.String(),group.String(),msg,0,0);
-				
+			
+				AddPersonToList(peopleList,title.String(),group.String());
 			}
-			if(addr2.Length() > 0)
+		}
+		
+		// Sort people data
+		peopleList.SortItems(HAddressView::SortPeople);
+		// Build menus
+		BTextControl *control[3] = {fTo,fCc,fBcc};
+		BMenu *menus[3] = {toMenu,ccMenu,bccMenu};
+		int32 count = peopleList.CountItems();
+		PersonData *data;
+		bool needSeparator = false;
+		bool hasSeparator = false;
+		for(int32 k = 0;k < 3;k++)
+		{
+			for(int32 i = 0;i < count;i++)
 			{
-				fAddrList.AddItem(strdup(addr2.String()));
-				BString title = name;
-				title << " <" << addr2 << ">";
 				BMessage *msg = new BMessage(M_ADDR_MSG);
-				msg->AddPointer("pointer",fTo);
-				msg->AddString("title",title);
-				msg->AddString("email",addr2);
-				AddPerson(toMenu,title.String(),group.String(),msg,0,0);
-				
-				
-				msg = new BMessage(M_ADDR_MSG);
-				msg->AddPointer("pointer",fCc);
-				msg->AddString("email",addr2);
-				msg->AddString("title",title);
-				AddPerson(ccMenu,title.String(),group.String(),msg,0,0);
-				
-				msg = new BMessage(M_ADDR_MSG);
-				msg->AddString("email",addr2);
-				msg->AddPointer("pointer",fBcc);
-				msg->AddString("title",title);
-				AddPerson(bccMenu,title.String(),group.String(),msg,0,0);
-				
+				msg->AddPointer("pointer",control[k]);
+				data =  (PersonData*)peopleList.ItemAt(i);
+				msg->AddString("email",data->email);
+				if(needSeparator && !hasSeparator && strlen(data->group) == 0)
+				{
+					menus[k]->AddSeparatorItem();
+					hasSeparator = true;
+				}else
+					needSeparator = true;
+				AddPerson(menus[k],data->email,data->group,msg,0,0);
 			}
+			hasSeparator = false;
+			needSeparator = false;
+		}
+		// free all data
+		while(count > 0)
+		{
+			data =  (PersonData*)peopleList.RemoveItem(--count);
+			free(data->email);
+			free(data->group);
+			delete data;
 		}
 	}
 	BMenuField *field = new BMenuField(menuRect,"ToMenu","",toMenu,
@@ -531,6 +529,20 @@ HAddressView::FocusedView() const
  * AddPerson
  ***********************************************************/
 void
+HAddressView::AddPersonToList(BList &list,const char* email,const char* group)
+{
+	PersonData *data = new PersonData;
+	
+	data->email = strdup(email);
+	data->group = strdup(group);
+	
+	list.AddItem(data);
+}
+
+/***********************************************************
+ * AddPerson
+ ***********************************************************/
+void
 HAddressView::AddPerson(BMenu *menu
 							,const char* title
 							,const char* group
@@ -541,24 +553,24 @@ HAddressView::AddPerson(BMenu *menu
 	BMenu *subMenu(NULL);
 	ResourceUtils rutils;
 	MenuUtils utils;
-	BMenuItem *item;
 	
 	if(::strlen(group) > 0)
 	{
+		// Find group item
 		int32 count = menu->CountItems();
 		for(int32 i = 0;i < count;i++)
 		{
-			BMenu *tmpMenu = menu->SubmenuAt(i);
-			if(tmpMenu)
+			BMenuItem *tmpMenu = menu->ItemAt(i);
+			if(tmpMenu && tmpMenu->Submenu())
 			{
-				item = tmpMenu->Superitem();
-				if(item && ::strcmp(item->Label(),group) == 0)
+				if(::strcmp(tmpMenu->Label(),group) == 0)
 				{
-					subMenu = tmpMenu;
+					subMenu = tmpMenu->Submenu();
 					break;
 				}
 			}
 		}
+		// Add group item
 		if(!subMenu)
 		{
 			subMenu = new BMenu(group);
@@ -571,13 +583,43 @@ HAddressView::AddPerson(BMenu *menu
 			BFont font(be_plain_font);
 			font.SetSize(10);
 			subMenu->SetFont(&font);
-			utils.AddMenuItem(menu,subMenu,message,this,Window(),0,0
+			IconMenuItem *iconItem = new IconMenuItem(subMenu,message,0,0
 						,rutils.GetBitmapResource('BBMP',"OpenFolder"));
+			iconItem->SetTarget(this,Window());
+		
+			menu->AddItem(iconItem);
 		}
+		// Add item
 		utils.AddMenuItem(subMenu,title,msg,this,Window(),shortcut,modifiers
 						,rutils.GetBitmapResource('BBMP',"Person"));
 		
 	}else
 		utils.AddMenuItem(menu,title,msg,this,Window(),shortcut,modifiers
 						,rutils.GetBitmapResource('BBMP',"Person"));
+}
+
+/***********************************************************
+ * SortPeople
+ ***********************************************************/
+int
+HAddressView::SortPeople(const void *inData1,const void* inData2)
+{
+	const PersonData* data1 = *(const PersonData**)inData1;
+	const PersonData* data2 = *(const PersonData**)inData2;
+	
+	int32 len1 = ::strlen(data1->group);
+	int32 len2 = ::strlen(data2->group);
+	
+	if(len1 != 0 && len2 == 0)
+		return -1;
+	else if(len1 == 0 && len2 != 0)
+		return 1;		
+	else if(len1 != 0 && len2 != 0)
+	{
+		int32 result = ::strcasecmp(data1->group,data2->group);
+		if(result== 0)
+			return ::strcasecmp(data1->email,data2->email);
+		return result;
+	}
+	return ::strcasecmp(data1->email,data2->email);
 }

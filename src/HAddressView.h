@@ -15,6 +15,11 @@ enum{
 	M_SEL_GROUP = 'mSEG'
 };
 
+typedef struct PersonData{
+	char* group;
+	char* email;
+};
+
 class HAddressView: public BView {
 public:
 					HAddressView(BRect rect,bool readOnly = false);
@@ -42,6 +47,9 @@ protected:
 			void	AddPerson(BMenu *menu,const char* title,const char* group,BMessage *msg
 							, char shortcut = 0
 							, uint32 modifiers = 0);
+			void	AddPersonToList(BList &list,const char* email,const char* group);
+	static	int		SortPeople(const void* data1,const void* data2);	
+
 private:
 	BTextControl	*fSubject;
 	BTextControl	*fTo;
