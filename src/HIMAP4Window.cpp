@@ -59,7 +59,7 @@ HIMAP4Window::InitGUI()
 	BView *bg = new BView(Bounds(),"bg",B_FOLLOW_ALL,B_WILL_DRAW);
 	bg->SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
 	
-	const char* kLabels[] = {_("Name:"),_("Address:"),_("Port"),
+	const char* kLabels[] = {_("Name:"),_("Address:"),_("Port:"),
 							_("Login:"),_("Password:"),_("Folder:")};
 	const char* kNames[]  = {"name","address","port","login","password",
 							"folder"};
