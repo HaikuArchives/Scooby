@@ -2,6 +2,7 @@
 #define __HDESKBARVIEW_H__
 
 #include <View.h>
+#include <Message.h>
 
 enum{
 	M_SHOW_MSG = 'MSHO',
@@ -23,8 +24,11 @@ protected:
 		virtual void	MessageReceived(BMessage *message);
 				void	ChangeIcon(int32 icon);
 		virtual void	Pulse();
+		const char*		GetText(const char* text);
+				void	InitData(const char* lang);
 private:
 		BBitmap 		*fIcon;
 		int32			fCurrentIconState;
+		BMessage		*fStrings;
 };
 #endif

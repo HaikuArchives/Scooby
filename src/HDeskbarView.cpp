@@ -14,11 +14,14 @@
 #include <stdio.h>
 #include <Debug.h>
 #include <Beep.h>
+#include <stdlib.h>
+#include <FindDirectory.h>
+#include <Path.h>
 
 #include "HWindow.h"
 #include "MenuUtils.h"
 #include "HApp.h"
-
+#include "marcontrol.h"
 
 /***********************************************************
  * This is the exported function that will be used by Deskbar
@@ -35,6 +38,9 @@ HDeskbarView::HDeskbarView(BRect frame)
 		,fCurrentIconState(DESKBAR_NEW_ICON)
 {
 	fIcon = NULL;
+	char *lang = getenv("LANGUAGE");
+	if(lang)
+		InitData(lang);
 }
 
 /***********************************************************
@@ -61,6 +67,7 @@ HDeskbarView::HDeskbarView(BMessage *message)
  ***********************************************************/
 HDeskbarView::~HDeskbarView()
 {
+	delete fStrings;
 	delete fIcon;
 }
 
@@ -213,11 +220,11 @@ HDeskbarView::MouseDown(BPoint pos)
   	theMenu->SetFont(&font);
   	
   	MenuUtils utils;
-  	utils.AddMenuItem(theMenu,_("New Message"),M_NEW_MSG,NULL,NULL,0,0);
+  	utils.AddMenuItem(theMenu,GetText("New Message"),M_NEW_MSG,NULL,NULL,0,0);
   	theMenu->AddSeparatorItem();
-  	utils.AddMenuItem(theMenu,_("Check Now"),M_POP_CONNECT,NULL,NULL,0,0);
+  	utils.AddMenuItem(theMenu,GetText("Check Now"),M_POP_CONNECT,NULL,NULL,0,0);
   	theMenu->AddSeparatorItem();
-	utils.AddMenuItem(theMenu,_("Quit"),B_QUIT_REQUESTED,NULL,NULL,0,0);
+	utils.AddMenuItem(theMenu,GetText("Quit"),B_QUIT_REQUESTED,NULL,NULL,0,0);
   
 	BRect r ;
    	ConvertToScreen(&pos);
@@ -243,4 +250,55 @@ HDeskbarView::MouseDown(BPoint pos)
 	delete theMenu;
 	
 	BView::MouseDown(pos);
+}
+
+/***********************************************************
+ * InitMarc
+ ***********************************************************/
+void
+HDeskbarView::InitData(const char* lang)
+{
+	delete fStrings;
+	fStrings = NULL;
+	
+	BPath path;
+	::find_directory(B_USER_CONFIG_DIRECTORY,&path);
+	path.Append("locale");
+		
+	path.Append("takamatsu-scooby");
+	char *filename = new char[strlen(lang)+5];
+	::sprintf(filename,"%s.xml",lang);
+	path.Append(filename);
+	delete[] filename;
+	
+	if(BNode(path.Path()).InitCheck() == B_OK)
+	{
+		const char* p = path.Path();
+		
+		MarControl marc(1,&p);
+		 if (marc.Parse() != MAR_OK) 
+   			return; 
+		
+		BMessage *msg = marc.Message();
+		BMessage data;
+		msg->FindMessage(p,&data);
+		fStrings = new BMessage(data);	
+	}
+}
+
+
+/***********************************************************
+ * GetText
+ ***********************************************************/
+const char*
+HDeskbarView::GetText(const char* text)
+{
+	const char* p;
+	if(fStrings)
+	{
+		p = fStrings->FindString(text);
+		if(p)
+			return p;
+	}
+	return text;
 }
