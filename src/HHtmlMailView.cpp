@@ -35,33 +35,35 @@ HHtmlMailView::HHtmlMailView(BRect frame,const char* name,
 		,fFilePanel(NULL)
 {
 	BRect rect = Bounds();
-	HTabView *tabview = new HTabView(rect,"tabview");
+
+	const char* kTabNames[3] = {"Content","Header","Attachment"};
+	HTabView *tabview = new HTabView(rect,"tabview",kTabNames,3,B_FOLLOW_ALL);
 	tabview->SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
-	AddChild(tabview);	
 	
-	/*********** Content view ******************/
-	BTab *tab;
-	tab = new BTab();
-	rect = tabview->Bounds();
-	rect.right -= 1;
-	rect.bottom -= tabview->TabHeight()+2;
-	fHtmlView = new HHtmlView(rect,_("Content"),false,B_FOLLOW_ALL);
-	tabview->AddTab(fHtmlView,tab);	
-	/*********** Header view ******************/
-	tab = new BTab();
-	rect.right -= B_V_SCROLL_BAR_WIDTH;
-	fHeaderView = new CTextView(rect,"headerview",B_FOLLOW_ALL,B_WILL_DRAW);
+	BView* TabbedViews[3];
+	BRect ContentRect = tabview->GetContentArea();
+	fHtmlView = new HHtmlView(ContentRect,_("Content"),false,B_FOLLOW_ALL);
+	TabbedViews[0] = fHtmlView;
+	
+	BRect textRect = ContentRect;
+	textRect.right -= B_V_SCROLL_BAR_WIDTH;
+	fHeaderView = new CTextView(textRect,"headerview",B_FOLLOW_ALL,B_WILL_DRAW);
 	fHeaderView->MakeEditable(false);
 	fHeaderView->SetViewColor(tint_color(ui_color(B_PANEL_BACKGROUND_COLOR),B_LIGHTEN_1_TINT));
 	BScrollView *scroll = new BScrollView(_("Header"),fHeaderView,B_FOLLOW_ALL,0,true,true);
-	tabview->AddTab(scroll,tab);
-	/*********** Enclosure view ******************/
-	tab = new BTab();
+	TabbedViews[1] = scroll;
+	
 	BetterScrollView *bscroll;
-	fAttachmentList = new HAttachmentList(rect,&bscroll,"attachmentlist");
-	tabview->AddTab(bscroll,tab);	
-	tab->SetEnabled(false);
-	tab->SetLabel(_("Attachment"));
+	BRect attachlist = ContentRect;
+	attachlist.right -= B_V_SCROLL_BAR_WIDTH;
+	attachlist.bottom -= B_H_SCROLL_BAR_HEIGHT;
+
+	fAttachmentList = new HAttachmentList(attachlist,&bscroll,"attachmentlist");
+	TabbedViews[2] = bscroll;
+	
+	tabview->AddViews(TabbedViews);
+	tabview->SetTabEnabled(2,false);
+	AddChild(tabview);
 }
 
 /***********************************************************
@@ -198,7 +200,7 @@ HHtmlMailView::OpenAttachment(int32 sel )
 		if(::strncmp(item->ContentType(),"text",4) == 0)
 			is_text = true;
 		data_len = decode_base64(data, data, data_len, is_text);
-	}else if(encoding && ::strcasecmp(encoding,"base64") == 0){
+	}else if(encoding && ::strcasecmp(encoding,"quoted-printable") == 0){
 		data_len = Encoding().decode_quoted_printable(data,data,data_len,false);
 	}
 	file.Write(data,data_len);
@@ -302,11 +304,15 @@ HHtmlMailView::ResetAttachmentList()
 {
 	ClearList();
 	// Reset attachment tab
-	BTabView *tabview = cast_as(FindView("tabview"),BTabView);
+/*	BTabView *tabview = cast_as(FindView("tabview"),BTabView);
 	BTab *tab = tabview->TabAt(2);
 	tab->SetLabel(_("Attachment"));
 	tab->SetEnabled(false);
 	tabview->Invalidate();
+*/
+	HTabView *tabview = cast_as(FindView("tabview"),HTabView);
+	tabview->SetTabLabel(2,_("Attachment"));
+	tabview->SetTabEnabled(2,false);
 }
 
 /***********************************************************
@@ -430,11 +436,10 @@ HHtmlMailView::LoadMessage(BFile *file)
 			{
 				BString label(_("Attachment"));
 				label <<" [ " <<fAttachmentList->CountItems() << " ]";
-				BTabView *tabview = cast_as(FindView("tabview"),BTabView);
-				BTab *tab = tabview->TabAt(2);
-				tab->SetLabel(label.String() );
-				tab->SetEnabled(true);
-				tabview->Invalidate();
+				HTabView *tabview = cast_as(FindView("tabview"),HTabView);
+				
+				tabview->SetTabLabel(2,label.String() );
+				tabview->SetTabEnabled(2,true);
 			}
 			// Convert link target to blank window
 			//if(html)

@@ -26,6 +26,7 @@
 #include "HIMAP4Window.h"
 #include "HIMAP4Folder.h"
 #include "HHtmlMailView.h"
+#include "HTabView.h"
 #include "HAttachmentList.h"
 
 #include <Box.h>
@@ -1473,7 +1474,7 @@ HWindow::DispatchMessage(BMessage *message,BHandler *handler)
 		if(is_kind_of(fMailView,HMailView))
 			bar = fMailView->ScrollBar(B_VERTICAL);
 		else{
-			BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
+			HTabView *tabview = cast_as(fMailView->FindView("tabview"),HTabView);
 			html = true;
 			if(tabview->Selection() == 0)
 			{
@@ -1758,7 +1759,7 @@ HWindow::PrintMessage(BMessage *message)
 		msg.AddPointer("view",fMailView);
 	}else{
 		// HTML mode
-		BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
+		HTabView *tabview = cast_as(fMailView->FindView("tabview"),HTabView);
 		sel = tabview->Selection();
 		
 		if(sel < 0)

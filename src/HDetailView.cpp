@@ -82,7 +82,7 @@ HDetailView::InitGUI()
 										,new BMessage(M_EXPAND_ATTRIBUTES));
 			AddChild(arrow);
 		}
-		rect.OffsetBy(0,20);
+		rect.OffsetBy(0,21);
 	}
 	fSubject = cast_as(FindView("subject"),MultiLineTextControl);
 	fFrom = cast_as(FindView("from"),MultiLineTextControl);

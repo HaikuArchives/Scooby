@@ -1576,7 +1576,7 @@ HMailView::ByteLength(char c)
 {
 	if( !(c & 0x80) )
 		return 1;
-	if(c & 0x20)
+	if((c & 0x20)&&(c & 0x40))
 		return 3;
 	return 2;
 }

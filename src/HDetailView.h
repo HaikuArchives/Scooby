@@ -8,7 +8,7 @@
 class MultiLineTextControl;
 
 #define DETAIL_VIEW_HEIGHT 65
-#define DETAIL_VIEW_HEIGHT_EXPANDED 105
+#define DETAIL_VIEW_HEIGHT_EXPANDED 110
 
 enum{
 	M_MODIFIED 	= 'SUMD',
