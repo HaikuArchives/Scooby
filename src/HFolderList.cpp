@@ -1213,7 +1213,6 @@ HFolderList::GetFolderPath(HFolderItem *item,BMessage &msg)
 		PRINT(("N:%s R:%s\n",parent->FolderName(),((HIMAP4Folder*)parent)->RemoteFolderPath()));
 		parent = cast_as(Superitem(parent),HFolderItem);
 	}
-	PRINT(("PATH:%s\n",path.String()));
 	msg.AddString("path",path.String() );
 	return; 
 }

@@ -53,4 +53,6 @@ SRCS= ./src/HFolderItem.cpp\
 	./src/SmtpLooper.cpp\
 	./src/PopLooper.cpp\
 	./src/base64.c\
-	./src/utf7.c
+	./src/utf7.c\
+	./src/HWrapTextView.cpp\
+	./src/HRulerView.cpp

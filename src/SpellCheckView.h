@@ -1,11 +1,11 @@
 #ifndef __SPELLCHECKVIEW_H__
 
-#include "CTextView.h"
+#include "HWrapTextView.h"
 #include <String.h>
 #include <List.h>
 
 //! Spell checking view.
-class SpellCheckView :public CTextView {
+class SpellCheckView :public HWrapTextView {
 public:
 		//!Constructor.
 						SpellCheckView(BRect	frame,
@@ -57,6 +57,6 @@ private:
 	bool				fIsIM;						//!<Flag that avoid input from InputMethod.
 	bool				fDicInited;					//!<Flag that whether all dictionaries have been loaded.
 	
-	typedef	CTextView	_inherited;
+	typedef	HWrapTextView	_inherited;
 };
 #endif
