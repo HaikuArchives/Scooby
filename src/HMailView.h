@@ -111,6 +111,7 @@ protected:
 	static	bool	get_parameter(char*, char*, char*);
 	static	char*	find_boundary(char*, char*, int32);
 	static	void	HighlightQuote(BTextView *view);
+			void	Find(const char* text);
 	
 private:
 	bool			fIncoming;

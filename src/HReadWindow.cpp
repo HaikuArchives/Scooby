@@ -163,6 +163,13 @@ HReadWindow::InitMenu()
    	utils.AddMenuItem(aMenu,_("Paste"),B_PASTE,this,this,'V',0);
    	aMenu->AddSeparatorItem();
    	utils.AddMenuItem(aMenu,_("Select All"),B_SELECT_ALL,this,this,'A',0);
+   	aMenu->AddSeparatorItem();
+   	msg = new BMessage(M_SHOW_FIND_WINDOW);
+ 	msg->AddPointer("targetwindow",this);
+   	utils.AddMenuItem(aMenu,_("Find"),msg,be_app,be_app,'F',0);
+   	msg = new BMessage(M_FIND_NEXT_WINDOW);
+ 	msg->AddPointer("targetwindow",this);
+   	utils.AddMenuItem(aMenu,_("Find Next"),msg,be_app,be_app,'G',0);
    	menubar->AddItem(aMenu);
 	////------------------------- Message Menu ---------------------
 	aMenu = new BMenu(_("Message"));
