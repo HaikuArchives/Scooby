@@ -70,16 +70,20 @@ enum	MENUS	{/* app 	{M_NEW = SUBJECT_FIELD + 64, M_EDIT_SIGNATURE,
 								M_SIGNATURE,
 				/* encls*/ 	 M_ADD, M_REMOVE};
 
+//!Read and compose view for plain mode.
 class HMailView : public SpellCheckView {
 public:
-
+			//!Constructor.
 					HMailView(BRect, bool, BFile*);
-					~HMailView(void);
-			
+			//!Destructor.
+		virtual		~HMailView(void);
+			//!Reset view font.
 			void	ResetFont();
+			//!Reset all text_run_array.
 			void	ResetTextRunArray();
-			
+			//!Check whether header is shown.
 			bool	IsShowingHeader()const {return fHeader;}
+			//!Check whether raw message is shown.
 			bool	IsShowingRawMessage()const {return fRaw;}
 			
 			void	ClearList(void);
@@ -134,7 +138,7 @@ private:
 
 
 //====================================================================
-
+//!Attachment save panel.
 class TSavePanel : public BFilePanel {
 
 private:

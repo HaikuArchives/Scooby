@@ -19,32 +19,47 @@ enum{
 	M_SET_MAX_SIZE = 'mSMS'
 };
 
+//! SMTP client socket thread.
 class SmtpClient :public BLooper{
 public:
+			//!Constructor.
 						SmtpClient(BHandler *handler,BLooper *looper);
+			//!Destructor.
 	virtual				~SmtpClient();
-
-		status_t		Connect(const char* addr,
-								int16 port=25);
-		status_t		SendMail(const char* from,
-							const char* to,
-							const char* data);
+			//!Connect to SMTP server. Returns B_ERROR if failed to connect.
+		status_t		Connect(const char* addr //!<Server address.
+								,int16 port=25	//!<Server port.(default value is 25.)
+								);
+			//!Sent mail.	Returns B_ERROR if failed to send.
+		status_t		SendMail(const char* from 	//!<From address.
+								,const char* to		//!<To addresses.(adress_A,address_B)
+								,const char* data	//!<Data to be sent.
+								);
+			//!Send mail by HMailItem pointer. Returns B_ERROR if failed to send.
 		status_t		SendMail(HMailItem *item);
+			//!Quit SMTP sessison. Returns B_ERROR if failed to send QUIT command.
 		status_t		SmtpQuit();
-		
+			//!Close SMTP socket.
 			void		ForceQuit();
 protected:
+	//@{
+	//!Override functions.
 	virtual	void		MessageReceived(BMessage *message);
 	virtual bool		QuitRequested();
+	//@}
+			//!Receive one line from socket.
 			int32		ReceiveLine(BString &buf);
+			//!Send command to socket.
 			status_t	SendCommand(const char* cmd);
+			//!Post error.
 			void		PostError(const char* log);
+			//!Parse one E-mail address from input string.
 			void		ParseAddress(const char* in,BString& out);
 private:
-	BNetEndpoint		*fEndpoint;
-		BString			fLog;
-		BHandler		*fHandler;
-		BLooper			*fLooper;
+	BNetEndpoint		*fEndpoint;			//!<SMTP socket.
+		BString			fLog;				//!<The last command's output log.
+		BHandler		*fHandler;			//!<Target handler.
+		BLooper			*fLooper;			//!<Target looper.
 
 };
 #endif
