@@ -805,9 +805,13 @@ PopClient::IsSpam(const char* header)
 			if(*p == '<')
 			{
 				p++;
-				from = *p++;
-			}else
-				from += *p++;
+				if(*p != ' ')
+					from = *p;
+			}else{
+				if(*p != ' ')
+					from += *p;
+			}
+			p++;
 			if(*p == '\r' || *p == '\n' || *p == '>')
 				break;
 			if(*p == ' ' && from.FindFirst("@") != B_ERROR)
