@@ -381,8 +381,6 @@ HFilterView::SaveItem(int32 index,bool rename)
 	BMessage msg(B_SIMPLE_DATA);
 	menu = fFolderMenu->Menu();
 	msg.AddString("action_value",menu->FindMarked()->Label());
-	BMenuField *field = cast_as(FindView("attr"),BMenuField);
-	menu = field->Menu();
 
 	BView *view = cast_as(FindView("criteria_bg"),BView);
 	int32 count = view->CountChildren();
