@@ -104,6 +104,26 @@ HFolderList::WatchQueryFolder()
 
 
 /***********************************************************
+ * WatchMailFolder
+ ***********************************************************/
+void
+HFolderList::WatchMailFolder()
+{
+	// Watch mail Folder
+	BPath path;
+	::find_directory(B_USER_DIRECTORY,&path);
+	path.Append("mail");
+	entry_ref ref;
+	::get_ref_for_path(path.Path(),&ref);
+	
+	BEntry entry(&ref);
+	node_ref nref;
+	entry.GetNodeRef(&nref);
+	::watch_node(&nref,B_WATCH_DIRECTORY|B_WATCH_NAME,this,Window());
+}
+
+
+/***********************************************************
  * MessageReceived
  ***********************************************************/
 void
@@ -913,10 +933,14 @@ HFolderList::NodeMonitor(BMessage *message)
 	int32 opcode;
 	entry_ref ref,dir_ref;
 	const char *name;
-	BPath query_folder;
+	BPath path;
+	BPath query_folder,mail_folder;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&query_folder);
 	query_folder.Append(APP_NAME);
 	query_folder.Append(QUERY_FOLDER);
+	::find_directory(B_USER_DIRECTORY,&mail_folder);
+	mail_folder.Append("mail");
+	BNode file;
 	
 	if(message->FindInt32("opcode",&opcode) == B_OK)
 	{
@@ -940,10 +964,8 @@ HFolderList::NodeMonitor(BMessage *message)
 			to_path.SetTo(&to_dir,NULL,false);
 			from_path.SetTo(&from_dir,NULL,false);
 			
-			//PRINT(("To:%s\n",to_path.Path()));
-			//PRINT(("From:%s\n",from_path.Path()));
 			message->FindString("name", &name);
-			if( ::strcmp(to_path.Path(),query_folder.Path()) == 0)
+			if( to_path == query_folder)
 			{
 				::get_ref_for_path(to_path.Path(),&dir_ref);
 	
@@ -951,12 +973,38 @@ HFolderList::NodeMonitor(BMessage *message)
 				entry_ref ref;
 				::get_ref_for_path(to_path.Path(),&ref);
 				AddQuery(ref);
-			}else if(::strcmp(from_path.Path(),query_folder.Path()) == 0){
+			}
+			
+			if( to_path == mail_folder)
+			{
+				::get_ref_for_path(to_path.Path(),&dir_ref);
+	
+				to_path.Append(name);
+				
+				if(file.SetTo(to_path.Path()) != B_OK)
+					break;
+				if(!file.IsDirectory())
+					break;
+			
+				entry_ref ref;
+				::get_ref_for_path(to_path.Path(),&ref);
+				HFolderItem *folder = new HFolderItem(ref,this);
+				BMessage msg(M_ADD_FOLDER);
+				msg.AddPointer("item",folder);
+				Window()->PostMessage(&msg,this);
+			}
+			
+			if(from_path == query_folder){
 				node_ref old_nref;
 				old_nref.device = from_nref.device;
 				old_nref.node = node;
-				PRINT(("%ld\n",node));
 				RemoveQuery(old_nref);
+			}
+			if(from_path == mail_folder){
+				BMessage msg(M_REMOVE_FOLDER);
+				msg.AddInt64("node",node);
+				msg.AddInt32("device",from_nref.device);
+				Window()->PostMessage(&msg,this);
 			}
 			break;
 		}
@@ -969,7 +1017,22 @@ HFolderList::NodeMonitor(BMessage *message)
 			ref.set_name(name);
 			ino_t node;
 			message->FindInt64("node",&node);
-			AddQuery(ref);		
+			path.SetTo(&ref);
+			if(path.InitCheck() != B_OK)
+				break;
+			path.GetParent(&path);
+			if(path == mail_folder)
+			{
+				if(file.SetTo(&ref) != B_OK)
+					break;
+				if(!file.IsDirectory())
+					break;
+				HFolderItem *folder = new HFolderItem(ref,this);
+				BMessage msg(M_ADD_FOLDER);
+				msg.AddPointer("item",folder);
+				Window()->PostMessage(&msg,this);
+			}else
+				AddQuery(ref);		
 			break;
 		}
 		case B_ENTRY_REMOVED:

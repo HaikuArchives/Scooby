@@ -43,6 +43,7 @@ public:
 			status_t	RemoveQuery(node_ref &nref);
 				
 				void	WatchQueryFolder();
+				void	WatchMailFolder();
 				void	AddToMailList(HMailItem *item);
 				void	RemoveFromMailList(HMailItem *item,bool free = false);
 
