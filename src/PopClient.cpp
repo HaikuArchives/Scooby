@@ -14,7 +14,7 @@
 #include <Alert.h>
 
 #define CRLF "\r\n"
-#define MAX_RECIEVE_BUF_SIZE 5120
+#define MAX_RECIEVE_BUF_SIZE 1024000
 
 
 const bigtime_t kTimeout = 1000000*180; //timeout 180 secs
