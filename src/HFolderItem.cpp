@@ -274,7 +274,7 @@ HFolderItem::StartGathering()
 	if(fThread != -1)
 		return;
 	//PRINT(("Folder Gathering\n"));
-	fThread = ::spawn_thread(ThreadFunc,"MailGathering",B_NORMAL_PRIORITY,this);
+	fThread = ::spawn_thread(ThreadFunc,"MailGathering",B_LOW_PRIORITY,this);
 	::resume_thread(fThread);
 }
 
