@@ -20,6 +20,8 @@ USE_SPLOCALE = 0
 USE_ICONV = 0
 # Warnings
 WARNINGS = ALL
+# Linker flag required by BONE
+LDFLAGS = -nodefaultlibs
 # Sources
 -include .all_sources
 include .makefile.base
