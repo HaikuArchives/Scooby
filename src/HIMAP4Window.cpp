@@ -87,6 +87,12 @@ HIMAP4Window::InitGUI()
 			ctrl->SetDivider(kDivider);
 			if(i == 5)
 				ctrl->SetText("INBOX");
+			if(i == 0)
+			{
+				// Disallow charactors that could not use filename
+				ctrl->TextView()->DisallowChar('/');
+				ctrl->TextView()->DisallowChar(':');
+			}
 			bg->AddChild(ctrl);
 		}
 		rect.OffsetBy(0,25);
