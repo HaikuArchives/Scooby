@@ -1,5 +1,5 @@
 #include "SmtpClient.h"
-
+#include "HApp.h"
 #include "HMailItem.h"
 #include "Encoding.h"
 
@@ -181,6 +181,11 @@ SmtpClient::SendMail(HMailItem *item)
 		off_t size;
 		file.GetSize(&size);
 		char *buf = new char[size+1];
+		if(!buf)
+		{
+			(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+			return B_ERROR;
+		}
 		size = file.Read(buf,size);
 		buf[size] = '\0';
 		// parse header
