@@ -176,7 +176,6 @@ HMailList::SelectionChanged()
 	{
 		// set content view empty
 		Window()->PostMessage(M_SET_CONTENT);
-		_inherited::SelectionChanged();
 		return;
 	}
 	
@@ -489,8 +488,6 @@ HMailList::MouseDown(BPoint pos)
 	 	} 
 	 	delete theMenu;
 	 }else{
-	 	//DeselectAll();
-	 	PRINT(("Deselect\n"));
 	 	_inherited::MouseDown(point);
 	}
 }
