@@ -1343,12 +1343,6 @@ HWindow::ForwardMail(HMailItem *item)
 	ReadNodeAttrString(&file,B_MAIL_ATTR_SUBJECT,&subject);
 	
 	subject.Insert("Fwd:",0);
-	off_t size;
-	file.GetSize(&size);
-	char *buf = new char[size+1];
-	size = file.Read(buf,size);
-	buf[size] = '\0';
-	
 	BRect rect;
 	((HApp*)be_app)->Prefs()->GetData("write_window_rect",&rect);
 	MakeWriteWindow(subject.String()
@@ -1360,7 +1354,6 @@ HWindow::ForwardMail(HMailItem *item)
 					,item
 					,false
 					,true);
-	delete[] buf;
 }
 
 /***********************************************************
@@ -1446,12 +1439,6 @@ HWindow::ReplyMail(HMailItem *item,bool reply_all)
 		else
 			subject.Insert("Re: ",0);
 	}
-	off_t size;
-	file.GetSize(&size);
-	char *buf = new char[size+1];
-	size = file.Read(buf,size);
-	buf[size] = '\0';
-	
 	MakeWriteWindow(subject.String()
 					,to.String()
 					,NULL
@@ -1459,9 +1446,7 @@ HWindow::ReplyMail(HMailItem *item,bool reply_all)
 					,NULL
 					,NULL
 					,item
-					,true);
-					
-	delete[] buf;
+					,true);					
 }
 
 /***********************************************************
@@ -1910,17 +1895,11 @@ HWindow::Plain2BeMail(const char* path)
 	BFile input(path,B_READ_ONLY);
 	if(input.InitCheck() != B_OK)
 		return;
-	off_t size;
-	input.GetSize(&size);
-	char *all_content = new char[size+1];
-	size = input.Read(all_content,size);
-	all_content[size] = '\0';
-	
+	BString str;
+	str << input;
 	entry_ref folder_ref,file_ref;
 	bool del;
-	fPopClientView->SaveMail(all_content,&folder_ref,&del);
-	
-	delete[] all_content;
+	fPopClientView->SaveMail(str.String(),&folder_ref,&del);
 }
 
 /***********************************************************
