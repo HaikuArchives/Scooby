@@ -5,6 +5,7 @@
 #include "HPrefs.h"
 #include "ArrowButton.h"
 #include "IconMenuItem.h"
+#include "Utilities.h"
 
 #include <TextControl.h>
 #include <StringView.h>
@@ -167,20 +168,14 @@ HAddressView::InitGUI()
 			if(node.InitCheck() != B_OK)
 				continue;
 			
-			if(node.ReadAttrString("META:name",&name) != B_OK)
+			if(ReadNodeAttrString(&node,"META:name",&name) != B_OK)
 				continue;
-			if(node.ReadAttrString("META:email",&addr[0]) != B_OK)
-				addr[0] = "";
-			if(node.ReadAttrString("META:email2",&addr[1]) != B_OK)
-				addr[1] = "";
-			if(node.ReadAttrString("META:email3",&addr[2]) != B_OK)
-				addr[2] = "";
-			if(node.ReadAttrString("META:email4",&addr[3]) != B_OK)
-				addr[3] = "";
-			if(node.ReadAttrString("META:group",&group) != B_OK)
-				group = "";
-			if(node.ReadAttrString("META:nickname",&nick) != B_OK)
-				nick = "";
+			ReadNodeAttrString(&node,"META:email",&addr[0]);
+			ReadNodeAttrString(&node,"META:email2",&addr[1]);
+			ReadNodeAttrString(&node,"META:email3",&addr[2]);
+			ReadNodeAttrString(&node,"META:email4",&addr[3]);
+			ReadNodeAttrString(&node,"META:group",&group);
+			ReadNodeAttrString(&node,"META:nickname",&nick);
 			for(int32 i = 0;i < 4;i++)
 			{
 				if(addr[i].Length() > 0)
