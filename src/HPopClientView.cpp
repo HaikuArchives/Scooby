@@ -599,10 +599,10 @@ HPopClientView::FilterMail(const char* subject,
 	dir.Rewind();
 	BFile file;
 	BMessage filter;
-	int32 attr,op,action;
+	int32 attr,op,action,op2;
 	BString attr_value,action_value;
 	char* key(NULL);
-	bool hit = false;
+	bool hit = false,skip = false;
 	type_code type;
 	int32 count;
 	
@@ -614,13 +614,15 @@ HPopClientView::FilterMail(const char* subject,
 				continue;
 			filter.Unflatten(&file);
 			filter.GetInfo("attribute",&type,&count);
+			filter.FindString("action_value",&action_value);
+			filter.FindInt32("action",&action);	
 			for(int32 i = 0;i < count;i++)
 			{
 				filter.FindInt32("attribute",i,&attr);
 				filter.FindInt32("operation1",i,&op);
-				filter.FindInt32("action",i,&action);
+				filter.FindInt32("operation2",i,&op2);
+				
 				filter.FindString("attr_value",i,&attr_value);
-				filter.FindString("action_value",i,&action_value);
 				
 				switch(attr)
 				{
@@ -640,21 +642,31 @@ HPopClientView::FilterMail(const char* subject,
 					key = ::strdup(reply);
 					break;
 				}
+				
+				if(!skip)
+					hit = Filter(key,op,attr_value.String());
+				else
+					skip = false;
 			
-				hit = Filter(key,op,attr_value.String());
 				free( key );
 				key = NULL;
-				if(!hit )
+				// And condition
+				if(op2 == 0 && !hit )
 					break;
+				// Or condition
+				if(op2 == 1 && hit)
+					skip=true;	
 			}
 			if(hit)
 			{
+				PRINT(("MATCH\n"));
 				// action move
 				//if(action == 0)
 				//{	
 					::find_directory(B_USER_DIRECTORY,&path);
 					path.Append( MAIL_FOLDER );
 					path.Append(action_value.String());
+					PRINT(("%s\n",action_value.String()));
 					if(!path.Path())
 						goto no_hit;
 					outpath = path.Path();

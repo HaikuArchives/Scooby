@@ -33,7 +33,8 @@ protected:
 			
 			void	AddCriteria(int32 attr = -1,
 							int32 operation = 0,
-							const char* attr_value = NULL);
+							const char* attr_value = NULL,
+							int32 operation = 0);
 			void	RemoveCriteria();
 			void	RemoveAllCriteria();
 			void	RefreshCriteriaScroll();
