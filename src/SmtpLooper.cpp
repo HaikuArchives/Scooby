@@ -86,6 +86,7 @@ SmtpLooper::SendMail(HMailItem *item)
 		if(ReadNodeAttrString(&file,B_MAIL_ATTR_SMTP_SERVER,&smtp_server) != B_OK)
 		{
 			PRINT(("ERR:SMTP_SERVER\n"));
+			fLooper->PostMessage(M_SMTP_END,fHandler);
 			return B_ERROR;
 		}
 		file.ReadAttr(B_MAIL_ATTR_SMTP_AUTH,B_BOOL_TYPE,0,&smtp_auth,sizeof(bool));
@@ -95,10 +96,11 @@ SmtpLooper::SendMail(HMailItem *item)
 		
 		delete fSmtpClient;
 		fSmtpClient = new SmtpClient();
-		if(fSmtpClient->Connect(smtp_server.String()) != B_OK)
+		if(fSmtpClient->Connect(smtp_server.String(),25,smtp_auth) != B_OK)
 		{
 			PRINT(("ERR:CONNECT ERROR\n"));
 			PostError("Cound not connect to smtp server");
+			fLooper->PostMessage(M_SMTP_END,fHandler);
 			return B_ERROR;		
 		}
 		// SMTP auth -------------
@@ -115,6 +117,7 @@ SmtpLooper::SendMail(HMailItem *item)
 			if(file.SetTo(path.Path(),B_READ_ONLY) != B_OK)
 			{
 				Alert(B_STOP_ALERT,_("Account file %s is corrupted"),account.String());
+				fLooper->PostMessage(M_SMTP_END,fHandler);
 				return B_ERROR;
 			}
 			setting.Unflatten(&file);
@@ -129,6 +132,7 @@ SmtpLooper::SendMail(HMailItem *item)
 			if(err != B_OK)
 			{
 				Alert(B_STOP_ALERT,fSmtpClient->Log());
+				fLooper->PostMessage(M_SMTP_END,fHandler);
 				return err;
 			}
 		}
@@ -143,6 +147,7 @@ SmtpLooper::SendMail(HMailItem *item)
 		if(!buf)
 		{
 			Alert(B_STOP_ALERT,_("Memory was exhausted"),B_STOP_ALERT);
+			fLooper->PostMessage(M_SMTP_END,fHandler);
 			return B_ERROR;
 		}
 		size = file.Read(buf,size);
