@@ -60,14 +60,17 @@ enum{
 class HWindow: public BWindow {
 public:
 						HWindow(BRect rect,
-								const char* name,
-								const char* mail_addr=NULL);
+								const char* name);
 
 
 				int32	FolderSelection();
 				
 				void	MakeWriteWindow(const char* subject = NULL,
 									const char* to = NULL,
+									const char* cc = NULL,
+									const char* bcc = NULL,
+									const char* body = NULL,
+									const char* enclosure = NULL,
 									HMailItem *replyItem = NULL,
 									bool reply = false,
 									bool forward = false);

@@ -46,6 +46,10 @@ HWriteWindow::HWriteWindow(BRect rect
 							,const char* name
 							,const char* subject
 							,const char* to
+							,const char* cc
+							,const char* bcc
+							,const char* body
+							,const char* enclosure_path
 							,HMailItem *replyItem
 							,bool reply
 							,bool forward)
@@ -66,9 +70,26 @@ HWriteWindow::HWriteWindow(BRect rect
 	ctrl->MakeFocus(true);
 	if(to)
 		ctrl->SetText(to);
-	ctrl = cast_as(FindView("subject"),BTextControl);
+	if(bcc)
+	{
+		ctrl = cast_as(FindView("bcc"),BTextControl);
+		ctrl->SetText(bcc);
+	}
+	if(cc)
+	{
+		ctrl = cast_as(FindView("cc"),BTextControl);
+		ctrl->SetText(cc);
+	}
+	if(body)
+	{
+		BTextView *tview = cast_as(FindView("HMailView"),BTextView);
+		tview->SetText(body);
+	}
 	if(subject)
+	{
+		ctrl = cast_as(FindView("subject"),BTextControl);
 		ctrl->SetText(subject);
+	}
 	if(fReplyItem)
 	{
 		entry_ref ref = fReplyItem->Ref();
@@ -77,6 +98,12 @@ HWriteWindow::HWriteWindow(BRect rect
 		fTextView->LoadMessage(fReplyFile,reply,false,NULL);
 	}
 	
+	if(enclosure_path)
+	{
+		entry_ref enc_ref;
+		if(::get_ref_for_path(enclosure_path,&enc_ref) == B_OK)
+			fEnclosureView->AddEnclosure(enc_ref);
+	}
 	// SetWindowSizeLimit
 	float min_width,min_height,max_width,max_height;
 	GetSizeLimits(&min_width,&max_width,&min_height,&max_height);

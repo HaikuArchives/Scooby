@@ -33,6 +33,10 @@ public:
 					HWriteWindow(BRect rect,const char* name,
 								const char* subject = NULL,
 								const char* to = NULL,
+								const char* cc = NULL,
+								const char* bcc = NULL,
+								const char* body = NULL,
+								const char* enclosure_path = NULL,
 								HMailItem *replyItem = NULL,
 								bool reply = false,
 								bool forward = false);			

@@ -51,8 +51,7 @@
  * Constructor
  ***********************************************************/
 HWindow::HWindow(BRect rect,
-				const char* name,
-				const char* mail_addr)
+				const char* name)
 	:BWindow(rect,name,B_DOCUMENT_WINDOW,B_ASYNCHRONOUS_CONTROLS)
 	,fCheckIdleTime(time(NULL))
 	,fCurrentDeskbarIcon(DESKBAR_NORMAL_ICON)
@@ -61,8 +60,6 @@ HWindow::HWindow(BRect rect,
 	SetPulseRate(100000);
 	AddShortcut('/',0,new BMessage(B_ZOOM));
 	
-	if(mail_addr)
-		MakeWriteWindow(NULL,mail_addr);
 	InitMenu();
 	InitGUI();
 	PostMessage(M_GET_VOLUMES,fFolderList);
@@ -1474,6 +1471,10 @@ HWindow::ForwardMail(HMailItem *item)
 	((HApp*)be_app)->Prefs()->GetData("write_window_rect",&rect);
 	MakeWriteWindow(subject.String()
 					,NULL
+					,NULL
+					,NULL
+					,NULL
+					,NULL
 					,item
 					,false
 					,true);
@@ -1571,6 +1572,10 @@ HWindow::ReplyMail(HMailItem *item,bool reply_all)
 	
 	MakeWriteWindow(subject.String()
 					,to.String()
+					,NULL
+					,NULL
+					,NULL
+					,NULL
 					,item
 					,true);
 					
@@ -1677,6 +1682,10 @@ HWindow::InstallToDeskbar()
 void
 HWindow::MakeWriteWindow(const char* subject,
 						const char* to,
+						const char* cc,
+						const char* bcc,
+						const char* body,
+						const char* enclosure,
 						HMailItem *replyItem,
 						bool reply,
 						bool forward)
@@ -1686,6 +1695,10 @@ HWindow::MakeWriteWindow(const char* subject,
 	HWriteWindow *win = new HWriteWindow(rect,_("New Message")
 							,subject
 							,to
+							,cc
+							,bcc
+							,body
+							,enclosure
 							,replyItem
 							,reply
 							,forward);
