@@ -3,7 +3,7 @@
 
 #include <Debug.h>
 
-#define RULER_HEIGHT 15
+#define RULER_HEIGHT 16
 
 /***********************************************************
  * Constructor
