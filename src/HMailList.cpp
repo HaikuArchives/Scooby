@@ -152,6 +152,10 @@ HMailList::MessageReceived(BMessage *message)
 		}
 		break;
 	}
+	// To avoid endless loop
+	case B_SELECT_ALL:
+		Select(0,CountItems()-1);
+		break;
 	default:
 		_inherited::MessageReceived(message);
 	}
@@ -172,6 +176,7 @@ HMailList::SelectionChanged()
 	{
 		// set content view empty
 		Window()->PostMessage(M_SET_CONTENT);
+		_inherited::SelectionChanged();
 		return;
 	}
 	
@@ -483,8 +488,11 @@ HMailList::MouseDown(BPoint pos)
 				this->Window()->PostMessage(aMessage);
 	 	} 
 	 	delete theMenu;
-	 }else
+	 }else{
+	 	//DeselectAll();
+	 	PRINT(("Deselect\n"));
 	 	_inherited::MouseDown(point);
+	}
 }
 
 /***********************************************************

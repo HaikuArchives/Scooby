@@ -421,8 +421,8 @@ HWindow::MessageReceived(BMessage *message)
 		BView *view = CurrentFocus();
 		if(view)
 			PostMessage(message,view);
-		break;
 	}
+	break;
 	// Show write mail window
 	case M_NEW_MSG:
 		MakeWriteWindow();
