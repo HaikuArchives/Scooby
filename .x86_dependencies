@@ -84,8 +84,7 @@ $(OBJ_DIR)/HWriteWindow.o : ./src/HWriteWindow.cpp src/HWriteWindow.h \
  src/HEnclosureItem.h src/HMailItem.h libs/Santa/CLVEasyItem.h \
  libs/Santa/CLVListItem.h src/HMailView.h src/SpellCheckView.h \
  libs/Utils/CTextView.h libs/Utils/TrackerUtils.h src/HWindow.h \
- libs/Utils/HString.h src/Utilities.h src/StatusBar.h src/StatusItem.h \
- libs/Santa/DeepBevelView.h
+ libs/Utils/HString.h src/Utilities.h src/StatusBar.h src/StatusItem.h
 $(OBJ_DIR)/HDetailView.o : ./src/HDetailView.cpp src/HDetailView.h \
  libs/Utils/MenuUtils.h src/HApp.h libs/Santa/MultiLineTextControl.h \
  libs/Utils/ArrowButton.h
@@ -210,7 +209,5 @@ $(OBJ_DIR)/HSpamFilterView.o : ./src/HSpamFilterView.cpp src/HSpamFilterView.h \
  src/HApp.h libs/Utils/HFile.h
 $(OBJ_DIR)/SpellCheckView.o : ./src/SpellCheckView.cpp src/SpellCheckView.h \
  libs/Utils/CTextView.h
-$(OBJ_DIR)/StatusBar.o : ./src/StatusBar.cpp src/StatusBar.h src/StatusItem.h \
- libs/Santa/DeepBevelView.h
-$(OBJ_DIR)/StatusItem.o : ./src/StatusItem.cpp src/StatusItem.h \
- libs/Santa/DeepBevelView.h src/StatusBar.h
+$(OBJ_DIR)/StatusBar.o : ./src/StatusBar.cpp src/StatusBar.h src/StatusItem.h
+$(OBJ_DIR)/StatusItem.o : ./src/StatusItem.cpp src/StatusItem.h src/StatusBar.h
