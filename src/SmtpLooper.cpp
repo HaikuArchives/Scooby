@@ -193,10 +193,10 @@ SmtpLooper::ForceQuit()
 	if(!fSmtpClient)
 		return;
 	int sd = fSmtpClient->Socket();
-#ifndef BONE
-	::closesocket(sd);
-#else
+#if B_BEOS_BONE
 	::close(sd);
+#else
+	::closesocket(sd);
 #endif
 }
 

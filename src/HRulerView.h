@@ -29,3 +29,4 @@ private:
 	BRect				fOldCaretRect;
 };
 #endif
+
