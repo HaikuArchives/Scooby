@@ -120,10 +120,7 @@ HFolderList::WatchMailFolder()
 	BPath path;
 	::find_directory(B_USER_DIRECTORY,&path);
 	path.Append("mail");
-	entry_ref ref;
-	::get_ref_for_path(path.Path(),&ref);
-	
-	BEntry entry(&ref);
+	BEntry entry(path.Path(), true);
 	node_ref nref;
 	entry.GetNodeRef(&nref);
 	::watch_node(&nref,B_WATCH_DIRECTORY|B_WATCH_NAME,this,Window());
