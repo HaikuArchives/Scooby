@@ -63,6 +63,7 @@ private:
 		BBitmap*			fSentMailIcon;
 		BBitmap*			fRepliedMailIcon;
 		BBitmap*			fPendingIcon;
+		BBitmap*			fErrorIcon;
 		BBitmap*			fPriority1;
 		BBitmap*			fPriority2;
 		BBitmap*			fPriority4;
