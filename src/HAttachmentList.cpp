@@ -1,6 +1,7 @@
 #include "HAttachmentList.h"
 #include "CLVColumn.h"
 #include "HAttachmentItem.h"
+#include "HHtmlMailView.h"
 
 #include <PopUpMenu.h>
 #include <Menu.h>
@@ -120,16 +121,13 @@ HAttachmentList::InitiateDrag(BPoint  point,
 		
 		int32 selected; 
 		int32 sel_index = 0;
+		
 		while((selected = CurrentSelection(sel_index++)) >= 0)
 		{
 			item=cast_as(ItemAt(selected),HAttachmentItem);
 			if(!item)
 				continue;
 			msg.AddPointer("pointer",item);
-			msg.AddInt32("be:actions",B_COPY_TARGET);
-			entry_ref ref = item->FileRef();
-			msg.AddRef("refs",&ref);
-			//PRINT(("Sel:%d\n",selected));
 		}
 			
 		const char *subject = item->GetColumnContentText(1);

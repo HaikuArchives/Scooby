@@ -128,6 +128,14 @@ HHtmlMailView::MessageReceived(BMessage *message)
 			{
 				PRINT(("%s\n",name));
 				SaveAttachment(sel,ref,name);	
+			}else if(message->FindRef("directory",&ref) == B_OK){
+				
+				HAttachmentItem* item = cast_as(fAttachmentList->ItemAt(sel),HAttachmentItem);
+				if(!item)
+					continue;
+				name = item->Name();
+				PRINT(("%s\n",name));
+				SaveAttachment(sel,ref,(!name)?"Unknown":name);
 			}
 		}
 		break;
