@@ -910,6 +910,41 @@ HWindow::MessageReceived(BMessage *message)
 	case M_SAVE_ATTACHMENT:
 		PostMessage(message,fMailView);
 		break;
+	// Dropped to tracker
+	case 'MNOT':
+	{
+		BPoint drop_point = message->FindPoint("_old_drop_point_");
+		BRect rect = this->Frame();
+		if(rect.Contains(drop_point) == true)
+			break;
+		BMessage msg,reply;
+		
+		msg.what = B_GET_PROPERTY;
+		msg.AddSpecifier("Path");
+		if(message->SendReply(&msg,&reply) != B_OK)
+			break;
+		entry_ref ref;
+		if(reply.FindRef("result",&ref) == B_OK)
+		{
+			BView *view = fMailView->FindView("tabview");
+			/// Attachment file
+			if(CurrentFocus() == view)
+			{
+				HAttachmentList *list = cast_as(view->FindView("attachmentlist"),HAttachmentList);
+				if(!list)
+					break;
+				entry_ref dirRef;
+				BMessage saveMsg(B_REFS_RECEIVED);
+				BPath path(&ref);
+				saveMsg.AddString("name",path.Leaf());
+				path.GetParent(&path);
+				::get_ref_for_path(path.Path(),&dirRef);
+				saveMsg.AddRef("directory",&dirRef);
+				PostMessage(&saveMsg,view->Parent());
+			}
+		}	
+		break;
+	}
 	// Update toolbar buttons
 	case M_UPDATE_TOOLBUTTON:
 	{
