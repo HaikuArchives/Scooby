@@ -62,7 +62,7 @@ HWindow::HWindow(BRect rect,
 	
 	InitMenu();
 	InitGUI();
-	PostMessage(M_GET_VOLUMES,fFolderList);
+	PostMessage(M_GET_FOLDERS,fFolderList);
 	
 	// SetWindowSizeLimit
 	float min_width,min_height,max_width,max_height;
@@ -393,27 +393,8 @@ HWindow::MessageReceived(BMessage *message)
 	{
 	// Change mail status
 	case M_CHANGE_MAIL_STATUS:
-	{
-		BNode node;
-		entry_ref ref;
-		int32 sel,index = 0;
-		
-		const char* status;
-		if(message->FindString("status",&status) != B_OK)
-			break;
-		fMailList->SetOldSelection(NULL);
-		while( (sel = fMailList->CurrentSelection(index++)) >= 0)
-		{
-			HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
-			if(!item)
-				continue;
-			ref = item->Ref();
-			if(node.SetTo(&ref) != B_OK)
-				continue;
-			node.WriteAttr(B_MAIL_ATTR_STATUS,B_STRING_TYPE,0,status,::strlen(status)+1);
-		}
+		be_app->PostMessage(message);	
 		break;
-	}
 	// Show Open File Panel
 	case M_IMPORT_PLAIN_TEXT_MAIL:
 		ShowOpenPanel(M_CONVERT_PLAIN_TO_MAIL);
@@ -2101,6 +2082,7 @@ HWindow::AddToBlackList(int32 index)
 	file.Write("\n",1);
 	file.Write(from.String(),from.Length());
 }
+
 
 /***********************************************************
  * QuitRequested

@@ -11,7 +11,7 @@ public:
 							HMailCache(const char* path);
 	virtual					~HMailCache();
 
-			status_t		Open(BList &out,HFolderItem *item);	
+			status_t		Open(HFolderItem *item);	
 			status_t		Save(BList &list);
 			
 				int32		CountItems();

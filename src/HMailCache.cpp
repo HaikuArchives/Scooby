@@ -58,7 +58,7 @@ HMailCache::~HMailCache()
  * Open
  ***********************************************************/
 status_t
-HMailCache::Open(BList &outList,HFolderItem *folder)
+HMailCache::Open(HFolderItem *folder)
 {
 	BFile file(fPath,B_READ_ONLY);
 	if(file.InitCheck() != B_OK)
@@ -106,7 +106,7 @@ HMailCache::Open(BList &outList,HFolderItem *folder)
 		ReadString(memory,&reply);
 		ReadString(memory,&priority);
 		
-		outList.AddItem(item = new HMailItem(ref,status,subject,from,to,cc,reply,
+		folder->AddMail(item = new HMailItem(ref,status,subject,from,to,cc,reply,
 									int_data.when,priority,int_data.enclosure,
 									int_data.node,list));
 		delete[] status;
@@ -117,7 +117,6 @@ HMailCache::Open(BList &outList,HFolderItem *folder)
 		delete[] reply;
 		delete[] priority;
 		
-		::watch_node(&item->fNodeRef,B_WATCH_ATTR,(BHandler*)folder,(BLooper*)folder->Owner()->Window());
 		if(!item->IsRead())
 			unread++;
 	}

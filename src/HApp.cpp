@@ -9,6 +9,7 @@
 #include "HReadWindow.h"
 #include "HWriteWindow.h"
 #include "ResourceUtils.h"
+#include "HMailList.h"
 
 #include <String.h>
 #include <Debug.h>
@@ -20,7 +21,7 @@
 #include <ScrollBar.h>
 #include <Autolock.h>
 #include <stdlib.h>
-
+#include <E-mail.h>
 
 /***********************************************************
  * Constructor
@@ -97,6 +98,29 @@ HApp::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
+	// Change mail status
+	case M_CHANGE_MAIL_STATUS:
+	{
+		BNode node;
+		entry_ref ref;
+		int32 sel,index = 0;
+		HMailList *list = fWindow->MailList();
+		const char* status;
+		if(message->FindString("status",&status) != B_OK)
+			break;
+		while( (sel = list->CurrentSelection(index++)) >= 0)
+		{
+			HMailItem *item = cast_as(list->ItemAt(sel),HMailItem);
+			if(!item)
+				continue;
+			ref = item->Ref();
+			if(node.SetTo(&ref) != B_OK)
+				continue;
+			node.WriteAttr(B_MAIL_ATTR_STATUS,B_STRING_TYPE,0,status,::strlen(status)+1);
+		}
+		list->SetOldSelection(NULL);
+		break;
+	}
 	case M_POP_CONNECT:
 	case M_NEW_MSG:
 		fWindow->PostMessage(message);

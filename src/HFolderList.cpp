@@ -159,7 +159,7 @@ HFolderList::MessageReceived(BMessage *message)
 		window->Show();
 		break;
 	}
-	case M_GET_VOLUMES:
+	case M_GET_FOLDERS:
 	{
 		fThread = ::spawn_thread(GetFolders,"GetVolume",B_NORMAL_PRIORITY,this);
 		::resume_thread(fThread);
@@ -303,9 +303,7 @@ HFolderList::MessageReceived(BMessage *message)
 	{
 		int32 i;
 		if(message->FindInt32("index",&i) == B_OK)
-		{
 			InvalidateItem(i);
-		}
 		break;
 	}	
 	case B_NODE_MONITOR:
