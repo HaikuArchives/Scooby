@@ -456,7 +456,7 @@ HFolderItem::ReadFromCache()
 		//
 		
 		entry_ref ref;
-		const char *status,*subject,*from,*to,*cc,*priority;
+		const char *status,*subject,*from,*to,*cc,*reply,*priority;
 		int8 enclosure;
 		int64 when;
 		HMailItem *item;
@@ -469,6 +469,7 @@ HFolderItem::ReadFromCache()
 				msg.FindString("from",i,&from);
 				msg.FindString("to",i,&to);
 				msg.FindString("cc",i,&cc);
+				msg.FindString("reply",i,&reply);
 				msg.FindInt64("when",i,&when);
 				msg.FindString("priority",i,&priority);
 				msg.FindInt8("enclosure",i,&enclosure);
@@ -479,6 +480,7 @@ HFolderItem::ReadFromCache()
 													from,
 													to,
 													cc,
+													reply,
 													(time_t)when,
 													priority,
 													enclosure));
@@ -550,6 +552,7 @@ HFolderItem::CreateCache()
 			cache.AddString("from",item->fFrom);
 			cache.AddString("to",item->fTo);
 			cache.AddString("cc",item->fCC);
+			cache.AddString("reply",item->fReply);
 			cache.AddInt64("when",(int64)item->fWhen);
 			cache.AddString("priority",item->fPriority);
 			cache.AddInt8("enclosure",item->fEnclosure);
@@ -603,6 +606,7 @@ HFolderItem::AddMailsToCacheFile()
 			cache.AddString("from",item->fFrom);
 			cache.AddString("to",item->fTo);
 			cache.AddString("cc",item->fCC);
+			cache.AddString("reply",item->fReply);
 			cache.AddInt64("when",(int64)item->fWhen);
 			cache.AddString("priority",item->fPriority);
 		}

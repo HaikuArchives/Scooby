@@ -24,6 +24,7 @@ public:
 								BString &from,
 								BString &to,
 								BString &cc,
+								BString &reply,
 								BString &date,
 								BString &priority,
 								bool	&read,

@@ -12,6 +12,7 @@ public:
 									const char* from,
 									const char* to,
 									const char* cc,
+									const char* reply,
 									time_t when,
 									const char* priority,
 									int8 		enclosure,
