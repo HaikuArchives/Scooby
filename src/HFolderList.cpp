@@ -62,7 +62,6 @@ HFolderList::~HFolderList()
 		status_t err;
 		::wait_for_thread(fThread,&err);
 	}
-	DeleteAll();
 	SetInvocationMessage(NULL);
 }
 
@@ -354,11 +353,9 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 void
 HFolderList::DeleteAll()
 {
-	BAutolock lock(Window());
 	int32 count = fPointerList.CountItems();
-	
 	MakeEmpty();
-	
+	PRINT(("%d\n",count));
 	while(count>0)
 	{
 		HFolderItem *item = static_cast<HFolderItem*>(fPointerList.RemoveItem(--count));

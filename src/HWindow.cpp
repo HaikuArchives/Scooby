@@ -1441,6 +1441,9 @@ HWindow::QuitRequested()
 	// Save col size
 	fMailList->SaveColumns();
 	
+	// Delete all folder items
+	fFolderList->DeleteAll();
+	
 	be_app->PostMessage(B_QUIT_REQUESTED);
 	return BWindow::QuitRequested();
 }
