@@ -103,7 +103,7 @@ ifeq ($(CPU), x86)
 	ifeq ($(TYPE), DRIVER)
 		CFLAGS	+= -D_KERNEL_MODE=1 -no-fpic
 	else
-		CFLAGS +=
+		CFLAGS += -mcpu=pentium -march=pentium
 	endif
 
 #	SETTING: set the proper optimization level
