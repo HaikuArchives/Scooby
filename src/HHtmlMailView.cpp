@@ -309,7 +309,7 @@ HHtmlMailView::ResetAttachmentList()
 	ClearList();
 	// Reset attachment tab
 	HTabView *tabview = cast_as(FindView("tabview"),HTabView);
-	tabview->SetTabLabel(2,_("Attachment"));
+	tabview->SetTabLabel(2,_("Attachments"));
 	tabview->SetTabEnabled(2,false);
 }
 
@@ -435,7 +435,7 @@ HHtmlMailView::LoadMessage(BFile *file)
 			// Set attachment tab label
 			if(fAttachmentList->CountItems() > 0)
 			{
-				BString label(_("Attachment"));
+				BString label(_("Attachments"));
 				label <<" [ " <<fAttachmentList->CountItems() << " ]";
 				HTabView *tabview = cast_as(FindView("tabview"),HTabView);
 				
