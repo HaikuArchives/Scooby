@@ -286,64 +286,92 @@ void Alert(alert_type type,const char* fmt, ...)
 time_t MakeTime_t(const char* date)
 {
 	const char* mons[] = {"Jan","Feb","Mar","Apr","May"
-						,"Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
-	const char* wdays[] = {"Sun","Mon","Tue","Wed","Thu"
-						,"Fri","Sat"};
+                            ,"Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+
+	const char* wdays[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 	
 	char swday[5];
-	int wday;
+	int wday=0;
 	int day;
 	char smon[4];
 	int mon;
-	char stime[9];
+	//char stime[9];
 	int year;
 	int hour;
 	int min;
 	int sec;
 	int gmt_off = 0;
 	char offset[5];
-	::sscanf(date,"%s%d%s%d%s%s",swday,&day,smon,&year,stime,offset);
 	
-	// parse time
-	hour = atoi(stime);
-	min = atoi(stime+3);
-	sec = atoi(stime+6);
-	//PRINT(("TIME:%s\n",stime));
-	//PRINT(("H:%d M:%d S:%d\n",hour,min,sec ));
+	// Mon, 16 Oct 2000 00:50:04 +0900 or Mon, 16 Oct 00 00:50:04 +0900
+	int num_scan  = ::sscanf(date,"%3s,%d%3s%d %2d:%2d:%2d %5s"
+							,swday,&day,smon,&year,&hour,&min,&sec,offset);
+
+   	if(num_scan != 8)
+	{
+		// 9 Nov 2000 11:30:23 -0000 or  29 Jan 01 9:16:08 PM
+		num_scan = ::sscanf(date, "%d%3s%d %2d:%2d:%2d %5s"
+								,&day,smon,&year,&hour,&min,&sec,offset);
+		if(strcasecmp(offset,"PM") == 0)
+			hour += 12;
+		::strcpy(offset,"-0000");      
+		if(num_scan != 7)
+		{
+			// 01 Feb 01 12:22:42 PM
+			num_scan = sscanf(date, "%d %3s %3d %d %2d:%2d %5s",
+                                  &day, smon, &year, &hour, &min,&sec,offset);
+            if(strcasecmp(offset,"PM") == 0)
+				hour += 12;
+			if (num_scan != 7)
+			{
+			// Return current time if this can not parse date
+				PRINT(("Unknown date format\n"));
+					return time(NULL);
+			}
+		}
+	}
 	// month
 	for(mon = 0;mon < 12;mon++)
 	{
 		if(strncmp(mons[mon],smon,3) == 0)
 			break;
 	}
-	//PRINT(("MONTH:%s\n",smon));
-	//PRINT(("M:%d\n",mon));
 	// week of day
-	for(wday = 0;wday < 12;wday++)
+	if(num_scan == 8)
 	{
-		if(strncmp(wdays[wday],swday,3) == 0)
-			break;
+		for(wday = 0;wday < 12;wday++)
+		{
+			if(strncmp(wdays[wday],swday,3) == 0)
+				break;
+		}
 	}
-	//PRINT(("WEEK:%s\n",swday));
-	//PRINT(("W:%d\n",wday));
-	// offset 
+	// offset
 	char op = offset[0];
-	int off = atoi(offset+1);
+	float off = atof(offset+1);
 	if(op == '+')
-		gmt_off  = (off/100)*60*60;
-	if(op == '-')
-		gmt_off  = -(off/100)*60*60;
-	//PRINT(("GMT_OFF:%s\n",offset));
-	//PRINT(("G:%d\n",gmt_off));
+		gmt_off  = static_cast<int>((off/100.0)*60*60);
+	else if(op == '-')
+		gmt_off  = static_cast<int>(-(off/100.0)*60*60);
+	else
+		gmt_off = 0;
 	struct tm btime;
 	btime.tm_sec = sec;
 	btime.tm_min = min;
 	btime.tm_hour = hour;
 	btime.tm_mday = day;
 	btime.tm_mon = mon;
-	btime.tm_year = year-1900;
-	btime.tm_wday = wday;
+
+	if(year < 100)
+	{
+		if(year < 70)
+			year+=2000;
+		else
+			year+=1900;
+	}
+	btime.tm_year = year - 1900;
+	if(num_scan == 8)
+		btime.tm_wday = wday;
 	btime.tm_gmtoff = gmt_off;
-	return mktime(&btime);	
+	return mktime(&btime);
 }
  
