@@ -276,7 +276,7 @@ SmtpClient::SendMail(const char* from,
 			if(line_len == 0 && i == len-1)
 				break;
 			
-			if(line.Compare(".\r\n") == 0)
+			if(line[0] == '.')
 			{
 				line.Insert('.',1,0);
 				line_len = line.Length();
