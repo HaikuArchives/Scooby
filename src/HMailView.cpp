@@ -879,7 +879,16 @@ status_t HMailView::Save(BMessage *msg)
 				delete info;
 			}
 			PRINT(("Name:%s Type:%s\n",name,enclosure->content_type));
-			
+			// Unset execute bits for security
+			mode_t perm;
+			if(file.GetPermissions(&perm) == B_OK)
+			{
+				perm &= ~S_IXUSR;
+				perm &= ~S_IXGRP;
+				perm &= ~S_IXOTH;
+				file.SetPermissions(perm);
+			}
+			//
 			dir.FindEntry(name, &entry);
 			entry.GetRef(&enclosure->ref);
 			enclosure->have_ref = true;
