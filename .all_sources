@@ -50,4 +50,6 @@ SRCS= ./src/HFolderItem.cpp\
 	./src/StatusBar.cpp\
 	./src/StatusItem.cpp\
 	./src/LEDAnimation.cpp\
-	./src/AddOnMenu.cpp
+	./src/AddOnMenu.cpp\
+	./src/SmtpLooper.cpp\
+	./src/PopLooper.cpp

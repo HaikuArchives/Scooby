@@ -13,7 +13,6 @@ public:
 	virtual				~HString();
 	
 	int32				GetLine(int32 pos,BString* out);
-	void				Format(const char* format, ...);
-	
+	HString&			Format(const char* format, ...);
 };
 #endif
