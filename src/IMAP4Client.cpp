@@ -108,7 +108,7 @@ IMAP4Client::List(const char* folder_name,BList *namelist)
 	BAutolock lock(fSocketLocker);
 	BString cmd("LIST ");
 	
-	cmd << "\"" << "\" "; 
+	cmd << "\"/" << "\" "; 
 	if(folder_name && strlen(folder_name) > 0)
 		cmd << "\"" << folder_name << "/*\"";
 	else
