@@ -1,7 +1,7 @@
 #ifndef __HPREFWINDOW_H__
 #define __HPREFWINDOW_H__
 
-#include <Window.h>
+#include "MWindow.h"
 
 class HFilterView;
 class HAccountView;
@@ -14,7 +14,7 @@ enum{
 	M_ADD_FOLDERS = 'mADF'
 };
 
-class HPrefWindow :public BWindow {
+class HPrefWindow :public MWindow {
 public:
 					HPrefWindow(BRect rect);
 protected:
@@ -27,5 +27,7 @@ private:
 	HSignatureView*	fSignatureView;
 	HSpamFilterView*	fSpamFilterView;
 	HGeneralSettingView*		fGeneralView;
+	
+	typedef 	MWindow			_inherited;
 };
 #endif
