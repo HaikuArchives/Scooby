@@ -525,6 +525,11 @@ HPopClientView::SaveMail(const char* all_content,
 	
 	if(TrackerUtils().SmartCreateFile(&file,&destDir,subject.String(),"_") != B_OK)
 		PRINT(("Failed to save mail:%s",path.Leaf()));
+
+	// file type first (or queries won't work)
+	BNodeInfo ninfo(&file);
+	ninfo.SetType("text/x-email");
+
 	// write e-mail attributes
 	file.Write(all_content,strlen(all_content));
 	file.SetSize(strlen(all_content));
@@ -560,8 +565,6 @@ HPopClientView::SaveMail(const char* all_content,
 	}
 	file.WriteAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&when,sizeof(time_t));
 	
-	BNodeInfo ninfo(&file);
-	ninfo.SetType("text/x-email");
 	entry_ref ref;
 	::get_ref_for_path(path.Path(),&ref);
 	*folder_ref =ref;
