@@ -3,6 +3,7 @@
 
 #include <NetworkKit.h>
 #include <String.h>
+#include <Locker.h>
 
 enum{
 	IMAP_SESSION_CONTINUED = 0,
@@ -56,13 +57,24 @@ public:
 		//!Logout.
 		void		Logout();
 		//!Copy
-		status_t	Copy(int32 number,const char* dest_path);
+		status_t	Copy(const char* indexList //!<Mail index list like 1:4
+						,const char* dest_path //!<Destination folder.
+						);
 		//!Create new mailbox
-		status_t	Create(const char* path,const char* name);
+		status_t	Create(const char* name,const char* dest_path=NULL);
+		//!Delete mailbox.
+		status_t	Delete(const char* path);
+		//!Close mailbox
+		status_t	CloseMailBox();
 protected:
 		status_t	SendCommand(const char* str);
 		int32		ReceiveLine(BString &out);
 		int32		CheckSessionEnd(const char* line,int32 session);
+		
+		bool		Lock(){return fSocketLocker.Lock();}
+		void		Unlock(){return fSocketLocker.Unlock();}
+		
+		status_t	ReceiveResponse(BString &out);
 private:
 		typedef	BNetEndpoint	_inherited;
 		int32			fCommandCount;
@@ -72,5 +84,6 @@ private:
 		BString			fPassword;
 		BString			fFolderName;
 		time_t			fIdleTime;
+		BLocker			fSocketLocker;
 };
 #endif

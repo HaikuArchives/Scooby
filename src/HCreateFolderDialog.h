@@ -4,13 +4,15 @@
 #include <Window.h>
 #include <TextControl.h>
 
+class HFolderItem;
+
 //!Create folder dialog.
 class HCreateFolderDialog :public BWindow{
 public:
 		//! Constructor.
 					HCreateFolderDialog(BRect rect //!< Window frame rectanble.
 										,const char* title //!<Window title.
-										,const char* path //!< Path that folder to be created in.
+										,HFolderItem *parent=NULL //!< Path that folder to be created in.
 										);
 		//! Destructor.
 					~HCreateFolderDialog();
@@ -21,6 +23,6 @@ protected:
 			void	MessageReceived(BMessage *message);
 private:
 	BTextControl*	fNameControl;
-	char*			fParentPath;
+	HFolderItem		*fParentItem;
 };
 #endif

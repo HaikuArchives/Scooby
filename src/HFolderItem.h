@@ -38,6 +38,8 @@ public:
 			bool	IsReady()const {return (fThread == -1)?true:false;}		
 				//!If all mails were gathered, it returns true.
 			bool	IsDone()const {return fDone;}
+				//!
+			void	SetDone(bool done){fDone = done;}
 				//!Returns unread mail count.
 			int32	Unread()const {return fUnread;}
 				//!Returns all mail count.
@@ -87,6 +89,9 @@ public:
 			void	IncreaseChildItemCount() {fChildItems++;}
 				//!Not implemented yet.
 			void	RemoveSettings();
+				//!Delete folder.
+	virtual void	DeleteMe();
+
 protected:
 				//!Re-create mail cache file.
 			void	RefreshCache();

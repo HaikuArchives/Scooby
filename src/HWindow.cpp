@@ -23,7 +23,6 @@
 #include "HReadWindow.h"
 #include "HDeskbarView.h"
 #include "HIMAP4Item.h"
-#include "HIMAP4Window.h"
 #include "HIMAP4Folder.h"
 #include "HHtmlMailView.h"
 #include "HTabView.h"
@@ -565,16 +564,6 @@ HWindow::MessageReceived(BMessage *message)
 		HFolderItem *item = cast_as(fFolderList->ItemAt(sel),HFolderItem);
 		if(item && item->FolderType() != IMAP4_TYPE)
 			item->Launch();
-		else if(item && item->FolderType() == IMAP4_TYPE)
-		{
-			HIMAP4Folder *imap = cast_as(item,HIMAP4Folder);
-			if(!imap || imap->IsChildFolder())
-				break;
-			RectUtils utils;
-			BRect rect = utils.CenterRect(230,200);
-			HIMAP4Window *window = new HIMAP4Window(rect,this,imap);
-			window->Show();	
-		}
 		break;
 	}
 	// Set mail content
@@ -841,22 +830,10 @@ HWindow::MessageReceived(BMessage *message)
 		BRect rect;
 		rect = RectUtils().CenterRect(250,70);
 		int32 index = fFolderList->CurrentSelection();
-		char buf[B_PATH_NAME_LENGTH];
-		if(index < 0)
-		{
-			BPath mail_folder;
-			::find_directory(B_USER_DIRECTORY,&mail_folder);
-			mail_folder.Append("mail");
-			::strcpy(buf,mail_folder.Path());
-		}else{
-			HFolderItem *item = cast_as(fFolderList->ItemAt(index),HFolderItem);
-			if(!item)
-				break;
-			entry_ref ref = item->Ref();
-			BPath mail_folder(&ref);
-			::strcpy(buf,mail_folder.Path());
-		}
-		HCreateFolderDialog *dialog = new HCreateFolderDialog(rect,_("New Folder"),buf);
+		HFolderItem *item=NULL;
+		if(index>=0)
+			item = (HFolderItem*)fFolderList->ItemAt(index);
+		HCreateFolderDialog *dialog = new HCreateFolderDialog(rect,_("New Folder"),item);
 		dialog->Show();
 		break;
 	}
@@ -1788,29 +1765,7 @@ HWindow::DeleteFolder(int32 sel)
 	HFolderItem *item = cast_as(fFolderList->RemoveFolder(sel),HFolderItem);
 	if(!item)
 		return;
-	TrackerUtils utils;
-	
-	switch(item->FolderType())
-	{
-	case FOLDER_TYPE:
-	case QUERY_TYPE:
-		utils.MoveToTrash(item->Ref());
-		break;
-	case IMAP4_TYPE:
-	{
-		BPath path;
-		::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
-		path.Append(APP_NAME);
-		path.Append("Accounts");
-		path.Append("IMAP4");
-		path.Append(item->FolderName());
-		
-		entry_ref ref;
-		::get_ref_for_path(path.Path(),&ref);		
-		utils.MoveToTrash(ref);
-		break;
-	}
-	}
+	item->DeleteMe();
 	delete item;
 }
 

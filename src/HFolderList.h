@@ -20,7 +20,6 @@ M_MOVE_MAIL = 'MMOV',
 M_REMOVE_FROM_NODEMONITOR = 'MREI',
 M_ADD_FROM_NODEMONITOR = 'ADIT',
 M_OPEN_FOLDER = 'OpFD',
-M_ADD_IMAP4_FOLDER = 'aIM4',
 M_GATHER_ALL_MAILS = 'mGaM',
 M_REMOVE_FOLDER = 'mREF'
 };
@@ -90,6 +89,9 @@ protected:
 										HFolderList *list,
 										BMessage &out);
 		//!Dropped mail handling.
+		/**
+			Handing moving mails including IMAP4.
+		*/
 				void	WhenDropped(BMessage *message);
 		//!Select folder item by point.
 		status_t		SelectItem(const BPoint point);
