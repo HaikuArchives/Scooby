@@ -224,7 +224,7 @@ PopClient::Connect(const char* address,
 		PopQuit();
 	fLog = "";
 	fEndpoint = new BNetEndpoint();
-	
+	fEndpoint->SetTimeout(kTimeout);
 	status_t err;
 	err = fEndpoint->Connect(fHost.String(),fPort);
 	if(err != B_OK)
