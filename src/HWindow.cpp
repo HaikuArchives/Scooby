@@ -23,6 +23,8 @@
 #include "HReadWindow.h"
 #include "HDeskbarView.h"
 #include "HIMAP4Item.h"
+#include "HIMAP4Window.h"
+#include "HIMAP4Folder.h"
 
 #include <Box.h>
 #include <Beep.h>
@@ -490,7 +492,13 @@ send:
 			item->Launch();
 		else if(item && item->FolderType() == IMAP4_TYPE)
 		{
-			
+			HIMAP4Folder *imap = cast_as(item,HIMAP4Folder);
+			if(!imap)
+				break;
+			RectUtils utils;
+			BRect rect = utils.CenterRect(230,200);
+			HIMAP4Window *window = new HIMAP4Window(rect,this,imap);
+			window->Show();	
 		}
 		break;
 	}

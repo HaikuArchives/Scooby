@@ -19,6 +19,12 @@ public:
 	virtual	void		StartRefreshCache();
 	virtual void		StartGathering();
 	
+	const char*			Server()const {return fServer.String();}
+	const char*			Login() const {return fLogin.String();}
+			int			Port()const {return fPort;}
+	const char*			Password() const{return fPassword.String();}
+	const char*			FolderName() const{return fFolderName.String();}
+	
 			void		SetServer(const char* addr) {fServer = addr;}
 			void		SetLogin(const char* login) {fLogin = login;}
 			void		SetPort(int port) {fPort = port;}

@@ -3,16 +3,14 @@
 
 #include <Window.h>
 
+class HIMAP4Folder;
+
+
 class HIMAP4Window :public BWindow {
 public:
 						HIMAP4Window(BRect rect,
 									BHandler *handler,
-									const char* name = NULL,
-									const char* folder = NULL,
-									const char* server = NULL,
-									int			port = 0,
-									const char* login = NULL,
-									const char* password = NULL);
+									HIMAP4Folder* item = NULL);
 	virtual				~HIMAP4Window();
 protected:
 	virtual	void		MessageReceived(BMessage *message);
@@ -22,5 +20,6 @@ protected:
 private:
 			bool		fAddMode;
 			BHandler	*fHandler;
+		HIMAP4Folder*	fItem;
 };
 #endif
