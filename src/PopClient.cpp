@@ -828,7 +828,7 @@ PopClient::IsSpam(const char* header)
 	// Compare to blacklist	
 	for(int32 i = 0;i < fBlackListCount;i++)
 	{
-		if(from.Matches((const char*)fBlackList.ItemAt(i),true) == 0)
+		if(from.Matches((const char*)fBlackList.ItemAt(i),false))
 		{
 			PRINT(("SPAM:%s\n",(char*)fBlackList.ItemAt(i)));
 			return true;
