@@ -421,8 +421,9 @@ PopClient::Retr(int32 index,BString &content)
 	msg.AddInt32("index",index);
 	msg.AddInt32("rcv",0);
 	content = "";
+	size += 4;
 	char *buf = new char[size+1];
-	while(size > 0)
+	while(1)
 	{
 		if(fEndpoint->IsDataPending(kTimeout))
 		{
@@ -434,7 +435,7 @@ PopClient::Retr(int32 index,BString &content)
 			content += buf;
 			msg.ReplaceInt32("rcv",r);
 			PostMessage(&msg,fHandler);
-			if( ::strcmp(buf,"\n.\r") == 0)
+			if( ::strstr(buf,"\n.\r\n") )
 				break;
 		}
 	}
