@@ -1512,33 +1512,55 @@ HMailView::GetHardWrapedText(BString &out)
 	const char* text = Text();
 	out = "";
 	
-	float width = 0;
+	float lineWidth = 0;
 	BString c;
 	int32 length = TextLength();
 	float view_width = TextRect().Width();
-	int32 k = 0;
+	int32 linefeedCount = CountLines();
 	int32 nextbytes = 0;
+	int32 k = 0;
+	int32 *insertPos = new int32[linefeedCount];
+	
+	// Check positions to insert linefeeds
 	for(int32 i = 0;i < length;i++)
 	{
-		c = text[k++];
+		c = text[i];
 		nextbytes = ByteLength(c[0])-1;
 		
-		for(int32 j = 0;j < nextbytes;j++)
-			c += text[k++];	
+		for(int32 j = 1;j <= nextbytes;j++)
+			c += text[i+j];
 		i += nextbytes;
-		
-		width += fFont.StringWidth(c.String());
-		if(view_width <= width || c[0] == '\n')
+		lineWidth += fFont.StringWidth(c.String());
+		if(view_width <= lineWidth || c[0] == '\n')
 		{
-			width = 0;
+			lineWidth = 0;
 			if(c[0] != '\n')
 			{
-				out += '\n';
-				width = fFont.StringWidth(c.String());			
+				lineWidth = fFont.StringWidth(c.String());
+				int32 oldLen = i - c.Length();
+				for(int32 n = 0;n <oldLen;n++)
+				{
+					if(CanEndLine(oldLen-n))
+					{
+						insertPos[k++] = oldLen-n+1;
+						char *tmp = new char[n-1];
+						::strncpy(tmp,&text[oldLen-n+1],n-2);
+						tmp[n-2] = '\0';
+						c.Insert(tmp,0);
+						lineWidth = fFont.StringWidth(c.String());
+						delete[] tmp;
+						break;
+					}
+				}
 			}
 		}
-		out += c;
 	}
+	
+	// Insert linefeeds
+	out = text;
+	for(int32 i = 0;i < k;i++)
+		out.Insert('\n',1,insertPos[i]+i);
+	delete[] insertPos;
 	//PRINT(("%s\n",out.String()));
 }
 
