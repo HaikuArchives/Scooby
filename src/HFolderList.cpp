@@ -292,7 +292,9 @@ HFolderList::GetFolders(void* data)
 	
 	BMessage msg(M_ADD_FOLDER);
 	msg.MakeEmpty();
-
+	bool tree_mode;
+	((HApp*)be_app)->Prefs()->GetData("tree_mode",&tree_mode);
+	
 	BList folderList;
 	
 	while( (count = dir.GetNextDirents((dirent *)buf, 4096)) > 0 && !list->fCancel )
@@ -418,16 +420,19 @@ HFolderList::GetFolders(void* data)
 	// Send add list items message
 	if(!msg.IsEmpty())
 		list->Window()->PostMessage(&msg,list);
-	// Gather child folders
-	int32 folder_count = folderList.CountItems();
-	for(int32 i = 0;i < folder_count;i++)
+	if(tree_mode)
 	{
-		HFolderItem *item = (HFolderItem*)folderList.ItemAt(i);
-		entry_ref ref = item->Ref();
-		if(entry.SetTo(&ref) == B_OK)
-			GetChildFolders(entry,item,list);
-		if(list->fCancel)
-			break;
+		// Gather child folders
+		int32 folder_count = folderList.CountItems();
+		for(int32 i = 0;i < folder_count;i++)
+		{
+			HFolderItem *item = (HFolderItem*)folderList.ItemAt(i);
+			entry_ref ref = item->Ref();
+			if(entry.SetTo(&ref) == B_OK)
+				GetChildFolders(entry,item,list);
+			if(list->fCancel)
+				break;
+		}
 	}
 	list->fThread =  -1;
 	
