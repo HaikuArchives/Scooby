@@ -12,11 +12,12 @@
 int
 scandir(const char *name, struct dirent ***list, int (*selector)(struct dirent *), int (*sorter)(const void *, const void *))
 {
-    register struct dirent        **names; 
-    register struct dirent        *entp; 
-    register DIR          *dirp; 
-    register int           i; 
-    register int           size; 
+    struct dirent        **names; 
+    struct dirent        *entp; 
+    DIR          *dirp; 
+    int           i; 
+    int           size; 
+    int		dirent_size = sizeof(struct dirent);
 
     /* Get initial list space and open directory. */ 
     size = INITIAL_SIZE; 
@@ -43,17 +44,14 @@ scandir(const char *name, struct dirent ***list, int (*selector)(struct dirent *
 
             /* Copy the entry. */ 
             names[i - 1] = (struct dirent *)malloc(sizeof(struct dirent) 
-                                                + strlen(entp->d_name)+1); 
+                                                + entp->d_reclen+1); 
             if (names[i - 1] == NULL) { 
                 closedir(dirp); 
                 return -1; 
             } 
-            names[i - 1]->d_ino = entp->d_ino; 
-            names[i - 1]->d_reclen = entp->d_reclen; 
-            names[i - 1]->d_pino = entp->d_pino; 
-            names[i - 1]->d_dev = entp->d_dev;
-            names[i - 1]->d_pdev = entp->d_pdev;
-            (void)strcpy(names[i - 1]->d_name, entp->d_name); 
+            memcpy(names[i-1],entp,dirent_size);
+            memcpy(names[i - 1]->d_name, entp->d_name,entp->d_reclen); 
+        	names[i-1]->d_name[entp->d_reclen] = '\0';
         } 
 
     /* Close things off. */ 
