@@ -896,7 +896,7 @@ status_t HMailView::Save(BMessage *msg)
 			fFile->Seek(enclosure->file_offset, 0);
 			size = fFile->Read(data, enclosure->file_length);
 			data[enclosure->file_length] = '\0';
-			PRINT(("%s\n",data));
+			
 			if (enclosure->type == TYPE_BE_ENCLOSURE)
 				SaveBeFile(&file, data, size);
 			else {
