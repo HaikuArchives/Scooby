@@ -66,7 +66,10 @@ LEDAnimation::AnimationThread(void* data)
 		LED(B_CAPS_LOCK,false);
 		
 		LED(B_SCROLL_LOCK,true);	
-		LED(B_SCROLL_LOCK,false);				
+		LED(B_SCROLL_LOCK,false);
+		
+		LED(B_CAPS_LOCK,true);	
+		LED(B_CAPS_LOCK,false);				
 	}
 	anim->fThread = -1;
 	return 0;
