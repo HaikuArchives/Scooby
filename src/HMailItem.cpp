@@ -203,7 +203,7 @@ HMailItem::InitItem()
 			node.ReadAttrString(B_MAIL_ATTR_PRIORITY,&fPriority);
 		int32 priority = atoi(fPriority.String() );
 		fPriority = "";
-		fPriority = priority;
+		fPriority << priority;
 	
 		if(node.GetAttrInfo(B_MAIL_ATTR_ATTACHMENT,&attr) == B_OK)
 		{
