@@ -55,8 +55,6 @@ const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_MS_WINDOWS_1251_CONVERSION,
 								B_MS_WINDOWS_CONVERSION};
 
-const int32 kNumCharset = 18;
-
 const char kMimeBase[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 /***********************************************************
@@ -168,7 +166,8 @@ Encoding::ToMime(BString &inString, int32 encoding)
     
     // Find encoding
     int32 encoding_index = -1;
-    for(int32 i = 0;i < kNumCharset;i++)
+    int32 count = sizeof(kCharsets)/sizeof(kCharsets[0]);
+    for(int32 i = 0;i < count;i++)
     {
     	if(encoding == kEncodings[i] )
     	{
@@ -193,7 +192,8 @@ Encoding::ISO2UTF8(BString &str,int32 &encoding)
 {
 	// Find encoding
 	int32 encoding_index = -1;
-	for(int32 i = 0;i < kNumCharset;i++)
+	int32 count = sizeof(kCharsets)/sizeof(kCharsets[0]);
+	for(int32 i = 0;i < count;i++)
 	{
 		int32 index = str.IFindFirst(kCharsets[i]);
 		if(index != B_ERROR)
@@ -353,8 +353,9 @@ Encoding::p_Encoding(const char* charset)
 {
 	int32 i;
 	int32 encoding = -1;
+	int32 count = sizeof(kCharsets)/sizeof(kCharsets[0]);
 	
-	for(i = 0;i < kNumCharset;i++)
+	for(i = 0;i < count;i++)
 	{
 		if(::strncasecmp(charset,kCharsets[i],strlen(kCharsets[i])) == 0)
 		{
@@ -756,7 +757,8 @@ Encoding::unhex(char c)
 const char*
 Encoding::FindCharset(int32 conversion)
 {
-	for(int32 i = 0;i < kNumCharset;i++)
+	int32 count = sizeof(kCharsets)/sizeof(kCharsets[0]);
+	for(int32 i = 0;i < count;i++)
 	{
 		if(conversion == kEncodings[i])
 			return kCharsets[i];
@@ -770,7 +772,7 @@ Encoding::FindCharset(int32 conversion)
 int32
 Encoding::CountCharset() const
 {
-	return kNumCharset;
+	return sizeof(kCharsets)/sizeof(kCharsets[0]);
 }
 
 /***********************************************************
