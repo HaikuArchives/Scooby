@@ -348,7 +348,8 @@ IMAP4Client::FetchFields(int32 index,
 	}
 	//
 	BString cmd("FETCH ");
-	cmd << index << " (FLAGS BODY[HEADER.FIELDS (Subject From To Reply-To Date X-Priority Content-Type)])";
+	// Uning BODY.PEEK bellow instaead of BODY will not set the \Seen flag on the message. YES! :)
+	cmd << index << " (FLAGS BODY.PEEK[HEADER.FIELDS (Subject From To Reply-To Date X-Priority Content-Type)])";
 	subject = from = to = date = cc = reply = "";
 	attachment = read = false;
 	priority = "3 (Normal)";	
