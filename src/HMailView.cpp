@@ -32,7 +32,7 @@ const rgb_color kQuote3 = {0,150,150};
 const rgb_color kBlack = {0,0,0};
 
 HMailView::HMailView(BRect frame, bool incoming, BFile *file)
-		  :_inherited(frame, "", 
+		  :_inherited(frame, "HMailView", 
 		  	 B_FOLLOW_ALL, B_WILL_DRAW |B_NAVIGABLE)
 {
 	BFont	font = *be_plain_font;

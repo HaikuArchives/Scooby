@@ -133,7 +133,7 @@ HWriteWindow::InitMenu()
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
-	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,be_app,be_app,0,0,
+	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,be_app,be_app,'P',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"PageSetup"));
 	aMenu->AddSeparatorItem();					
 	utils.AddMenuItem(aMenu,_("Close"),B_QUIT_REQUESTED,this,this,'W',0);
@@ -519,6 +519,7 @@ HWriteWindow::MessageReceived(BMessage *message)
 		BMessage msg(*message);
 		msg.AddString("job_name",Title());
 		msg.AddPointer("view",fTextView);
+		msg.AddPointer("detail",fTopView);
 		be_app->PostMessage(&msg);
 		break;
 	}

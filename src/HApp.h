@@ -26,7 +26,7 @@ protected:
 		virtual void		ArgvReceived(int32 argc,char **argv);
 				bool		MakeMainWindow(const char* mail_addr=NULL,
 											bool hidden = false);
-				void		Print(BTextView *view,const char* job_name);
+				void		Print(BTextView *textview,BView *detail,const char* job_name);
 				void		PageSetup();
 				void		AddSoundEvent(const char* name);
 				void		RemoveTmpImapMails();

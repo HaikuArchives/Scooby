@@ -121,39 +121,32 @@ HMailList::MessageReceived(BMessage *message)
 	{
 		BList *list;
 		MarkOldSelectionAsRead();
+		// Save Columns
+		SaveColumnsAndPos();
+		MakeEmpty();
+		delete fCurrentFolder;
+		fCurrentFolder=NULL;
 		if(message->FindPointer("pointer",(void**)&list) == B_OK)
 		{
-			// Save Columns
-			SaveColumns();
 			// Refresh Columns
 			message->FindInt32("folder_type",&fFolderType);
 			entry_ref ref;
-			if(message->FindRef("refs",&ref) == B_OK)
-				RefreshColumns(ref);
-			// Add mails
-			if(list->CountItems()<=1)
+			BMessage settings;
+			if(message->FindRef("refs",&ref) != B_OK)
 			{
-				AddList(list);
-				SortItems();
-				break;
+				RefreshColumns(NULL);
 			}
-			HMailItem *item(NULL);
-			
-			item = (HMailItem*)list->LastItem();
-			list->RemoveItem(item);
-				
-			BScrollBar *bar = this->ScrollBar(B_VERTICAL);
-			bar->SetTarget((BView*)NULL);
-			
+			else
+			{
+				fCurrentFolder = new BEntry(&ref);
+				if (ReadSettings(ref, &settings) != B_OK) RefreshColumns(NULL);
+				else RefreshColumns(&settings);
+			}
+			//Add Mails
 			AddList(list);
-			
-			bar->SetTarget(this);
-			if(item)
-			{
-				AddItem(item);
-				list->AddItem(item);
-			}
 			SortItems();
+			//refresh scroll position
+			RefreshScrollPos(&settings);
 		}
 		break;
 	}
@@ -161,7 +154,6 @@ HMailList::MessageReceived(BMessage *message)
 		ColumnListView::MessageReceived(message);
 	}
 }
-
 
 
 /***********************************************************
@@ -215,7 +207,7 @@ HMailList::KeyDown(const char *bytes, int32 numBytes)
  * SaveColumns
  ***********************************************************/
 void
-HMailList::SaveColumns()
+HMailList::SaveColumnsAndPos()
 {
 	if(!fCurrentFolder)
 		return;
@@ -303,6 +295,8 @@ HMailList::SaveColumns()
 		msg.AddInt32(column_name,display_order[i]);
 		column_name[6]++;
 	}
+	
+	msg.AddPoint("scroll_pos", Bounds().LeftTop());
 	
 	msg.Flatten(&file);
 	entry_ref ref;
@@ -547,23 +541,13 @@ HMailList::InitiateDrag(BPoint  point,
 
 
 /***********************************************************
- * RefreshColumns
+ * ReadSettings
  ***********************************************************/
-void
-HMailList::RefreshColumns(entry_ref ref)
+status_t
+HMailList::ReadSettings(entry_ref ref, BMessage *msg)
 {
-	delete fCurrentFolder;
-	fCurrentFolder = new BEntry(&ref);
-	
-	int32 display_order[7];
-	float column_width[6];
-	char column_name[] = "column1";
-	char width_name[] = "width1";
-	int32 flags,sort_key=-1,sort_mode=0;
-	BMessage msg;
 	BPath path;
 	BFile file;
-	float width;
 	
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
@@ -596,45 +580,61 @@ HMailList::RefreshColumns(entry_ref ref)
 	
 	path.Append(name.String());
 	if(path.InitCheck() != B_OK)
-		goto default_column;
+		return B_ERROR;
 	if(file.SetTo(path.Path(),B_READ_ONLY) != B_OK)
-		goto default_column;
+		return B_ERROR;
 	
-	msg.Unflatten(&file);
-	msg.FindInt32("flags",&flags);
-	msg.FindInt32("sort_key",&sort_key);
-	msg.FindInt32("sort_mode",&sort_mode);
+	msg->Unflatten(&file);
+	return B_OK;
+}
+ 
+/***********************************************************
+ * RefreshColumns
+ ***********************************************************/
+void
+HMailList::RefreshColumns(BMessage *settings)
+{
+	int32 display_order[7];
+	float column_width[6];
+	char column_name[] = "column1";
+	char width_name[] = "width1";
+	int32 flags,sort_key=-1,sort_mode=0;
+	float width;
 	
-	
-	for(int32 i = 0;i < 7;i++)
+	if (settings)
 	{
-		display_order[i] = msg.FindInt32(column_name);
-		column_name[6]++;
+		settings->FindInt32("flags",&flags);
+		settings->FindInt32("sort_key",&sort_key);
+		settings->FindInt32("sort_mode",&sort_mode);
+		
+		for(int32 i = 0;i < 7;i++)
+		{
+			display_order[i] = settings->FindInt32(column_name);
+			column_name[6]++;
+		}
+		
+		for(int32 i = 0;i < 6;i++)
+		{
+			if(settings->FindFloat(width_name,&width) != B_OK)
+				width = (i < 4)?100:20;
+			column_width[i] = width;
+			width_name[5]++;
+		}
 	}
-	
-	for(int32 i = 0;i < 6;i++)
+	else
 	{
-		if(msg.FindFloat(width_name,&width) != B_OK)
-			width = (i < 4)?100:20;
-		column_width[i] = width;
-		width_name[5]++;
-	}
-	
-	SetColumns(flags,display_order,sort_key,sort_mode,column_width);
-	return;
-	
-default_column:
-	PRINT(("Enter default column\n"));
-	display_order[0] = 0;display_order[1] = 5;display_order[2] = 6;
-	display_order[3] = 1;display_order[4] = 2;display_order[5] = 3;
-	display_order[6] = 4;
-	
-	sort_key = 4;
-	sort_mode = 1;
-	flags = COLUMN_SUBJECT|COLUMN_FROM|COLUMN_TO|COLUMN_WHEN|COLUMN_PRIORITY|COLUMN_ATTACHMENT;
-	for(int32 i = 0;i < 6;i++)
-	{
-		column_width[i] = (i < 4)?100:20;
+		PRINT(("Enter default column\n"));
+		display_order[0] = 0;display_order[1] = 5;display_order[2] = 6;
+		display_order[3] = 1;display_order[4] = 2;display_order[5] = 3;
+		display_order[6] = 4;
+		
+		sort_key = 4;
+		sort_mode = 1;
+		flags = COLUMN_SUBJECT|COLUMN_FROM|COLUMN_TO|COLUMN_WHEN|COLUMN_PRIORITY|COLUMN_ATTACHMENT;
+		for(int32 i = 0;i < 6;i++)
+		{
+			column_width[i] = (i < 4)?100:20;
+		}
 	}
 	SetColumns(flags,display_order,sort_key,sort_mode,column_width);
 }
@@ -671,6 +671,17 @@ HMailList::SetColumns(int32 flags,
 		CLVColumn *col = ColumnAt(i+1);
 		col->SetWidth(column_width[i]);
 	}
+}
+
+/***********************************************************
+ * RefreshScrollPos
+ ***********************************************************/
+void
+HMailList::RefreshScrollPos(BMessage *settings)
+{
+	BPoint scroll_pos(0, 0);
+	settings->FindPoint("scroll_pos", &scroll_pos);
+	ScrollTo(scroll_pos);
 }
 
 /***********************************************************
