@@ -85,6 +85,12 @@ HReadWindow::InitGUI()
 	fMailView->MakeEditable(false);
 	BScrollView *scroll = new BScrollView("scroller",fMailView,B_FOLLOW_ALL,0,false,true);
 	AddChild(scroll);
+	
+	KeyMenuBar()->FindItem(B_CUT)->SetTarget(fMailView,this);
+	KeyMenuBar()->FindItem(B_COPY)->SetTarget(fMailView,this);
+	KeyMenuBar()->FindItem(B_PASTE)->SetTarget(fMailView,this);
+	KeyMenuBar()->FindItem(B_SELECT_ALL)->SetTarget(fMailView,this);
+	KeyMenuBar()->FindItem(B_UNDO)->SetTarget(fMailView,this);
 	/********** Toolbarの追加 ***********/
 	BRect toolrect = Bounds();
 	toolrect.top += (KeyMenuBar()->Bounds()).Height();
@@ -137,7 +143,16 @@ HReadWindow::InitMenu()
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,"Quit",B_QUIT_REQUESTED,be_app,be_app,'Q',0);
 	menubar->AddItem( aMenu );
-    
+	// Edit
+	aMenu = new BMenu("Edit");
+   	utils.AddMenuItem(aMenu,"Undo",B_UNDO,this,this,'Z',0);
+   	aMenu->AddSeparatorItem();
+   	utils.AddMenuItem(aMenu,"Cut",B_CUT,this,this,'X',0);
+   	utils.AddMenuItem(aMenu,"Copy",B_COPY,this,this,'C',0);
+   	utils.AddMenuItem(aMenu,"Paste",B_PASTE,this,this,'V',0);
+   	aMenu->AddSeparatorItem();
+   	utils.AddMenuItem(aMenu,"Select All",B_SELECT_ALL,this,this,'A',0);
+   	menubar->AddItem(aMenu);
 	////------------------------- Message Menu ---------------------
 	aMenu = new BMenu("Message");
 	utils.AddMenuItem(aMenu,"New Message",M_NEW_MSG,this,this,'N',0,
@@ -250,6 +265,18 @@ HReadWindow::MenusBeginning()
 	item->SetMarked(fMailView->IsShowingHeader());
 	item = KeyMenuBar()->FindItem(M_RAW);
 	item->SetMarked(fMailView->IsShowingRawMessage());
+	
+	// Cut & Copy	
+	int32 start,end;
+	fMailView->GetSelection(&start,&end);
+	KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
+	KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
+	if(start != end)
+		KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+	else
+		KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+	// Undo
+	KeyMenuBar()->FindItem(B_UNDO)->SetEnabled(false);
 }
 
 /***********************************************************
