@@ -102,7 +102,7 @@ protected:
 		//!Get folder's absolute path.
 				void	GetFolderPath(HFolderItem *item,BMessage &msg);
 		//!Load folders into list.
-				bool	LoadFolders(entry_ref &ref //!<Folder's entry_ref to be added.
+				void	LoadFolders(entry_ref &ref //!<Folder's entry_ref to be added.
 								,HFolderItem* parent //!<Parent item pointer.
 								,int32 indent //!<Current indent level.
 								,BMessage &rootFolders //!<Output data for root folders.
