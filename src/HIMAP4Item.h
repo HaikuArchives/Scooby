@@ -4,6 +4,7 @@
 #include "HMailItem.h"
 
 class IMAP4Client;
+class HIMAP4Folder;
 
 class HIMAP4Item :public HMailItem {
 public:
@@ -17,7 +18,8 @@ public:
 									const char* priority,
 									int8 		enclosure,
 									int32		index,
-									IMAP4Client	*client);
+									IMAP4Client	*client,
+									HIMAP4Folder *folder);
 						~HIMAP4Item();
 	//@{
 	//!Override function.
@@ -38,5 +40,6 @@ private:
 	BString				fContent;
 	bool				fGotContent;
 	int32				fHeaderLength;
+	HIMAP4Folder		*fFolder;
 };
 #endif

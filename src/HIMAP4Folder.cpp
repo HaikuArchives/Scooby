@@ -196,7 +196,7 @@ HIMAP4Folder::IMAPGetList()
 											priority.String(),
 											(attachment)?1:0,
 											i,
-											fClient
+											fClient,this
 											));
 		if(!read) fUnread++;
 	}
