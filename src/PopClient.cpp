@@ -269,6 +269,20 @@ PopClient::Retr(int32 index
 			}
 			size -= r;
 			content_len += r;
+			
+			// quick hack for email bodies that might contain a NULL in the
+			// middle of thier bodies. I am not sure if that is actually allowed,
+			// if it is, the correct fix would to be to use something besides a BString
+			// (as it does not allow for NULLs in it) as the contaier for the message
+			// body. -- Alan ( and Andreas ) 10 June 2001.
+			for (ssize_t i = 0; i < r; ++i)
+			{
+				if ( NULL == buf[i] )
+				{
+					buf[i]=' ';
+				}
+			}
+								
 			buf[r] = '\0';
 			content += buf;
 			
