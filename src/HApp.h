@@ -21,7 +21,8 @@ class HPrefs;
 
 enum{
 	M_SHOW_FIND_WINDOW = 'mSfW',
-	M_FIND_NEXT_WINDOW = 'mFnN'
+	M_FIND_NEXT_WINDOW = 'mFnN',
+	M_MOVE_FILE = 'mMvF'
 };
 
 #ifndef USE_SPLOCALE
@@ -53,6 +54,8 @@ protected:
 				
 				void		ShowFindWindow();
 				void		InitIcons();
+			
+				void		MoveFile(entry_ref file_ref,const char* dest_dir);
 
 #ifdef CHECK_NETPOSITIVE				
 			BMessageFilter	*fMessageFilter;
