@@ -1332,11 +1332,11 @@ HFolderList::RemoveFolder(int32 index)
 	switch(item->FolderType())
 	{
 	case QUERY_TYPE:
-		if(!HasItem(fQueryFolders))
+		if(!FullListHasItem(fQueryFolders))
 			RemoveItem(fQueryFolders);
 		break;
 	case IMAP4_TYPE:
-		if(!HasItem(fIMAP4Folders))
+		if(!FullListHasItem(fIMAP4Folders))
 			RemoveItem(fIMAP4Folders);
 		break;
 	}
@@ -1372,11 +1372,11 @@ HFolderList::RemoveFromMailList(HMailItem *item,bool free)
 int32
 HFolderList::GenarateFolderPathes(BMessage &msg)
 {
-	int32 count = CountItems();
+	int32 count = FullListCountItems();
 	int32 result_count = 0;
 	for(int32 i = 0; i < count;i++)
 	{
-		HFolderItem *item = cast_as(ItemAt(i),HFolderItem);
+		HFolderItem *item = cast_as(FullListItemAt(i),HFolderItem);
 		
 		if(strcmp(item->FolderName(),_("Local Folders")) == 0)
 			continue;
