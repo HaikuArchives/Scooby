@@ -22,6 +22,7 @@
 #include "OpenWithMenu.h"
 #include "HReadWindow.h"
 #include "HDeskbarView.h"
+#include "HIMAP4Item.h"
 
 #include <Box.h>
 #include <Beep.h>
@@ -485,8 +486,12 @@ send:
 		if(sel < 0)
 			break;
 		HFolderItem *item = cast_as(fFolderList->ItemAt(sel),HFolderItem);
-		if(item)
+		if(item && item->FolderType() != IMAP4_TYPE)
 			item->Launch();
+		else if(item && item->FolderType() == IMAP4_TYPE)
+		{
+			
+		}
 		break;
 	}
 	// Set mail content
@@ -1062,39 +1067,63 @@ HWindow::DeleteMails()
 		//fFolderList->SortItems();
 	}else
 		item = cast_as(fFolderList->ItemAt(folder),HFolderItem);
-		
-	int32 sel = fFolderList->CurrentSelection();
-	if(sel < 0)
-		return;
-	HFolderItem *from = cast_as(fFolderList->ItemAt(sel),HFolderItem);
-	if(from == item) 
-		return;
-	BMessage msg(M_MOVE_MAIL);
-	msg.AddPointer("from",from);
-	msg.AddPointer("to",item);
 	
-	int32 selected; 
-	int32 count_selected = 0;
-	int32 sel_index = 0;
-	int32 unread_mails = 0;
-	HMailItem *mail(NULL);
-	while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
+	// Local mails
+	if(item->FolderType() != IMAP4_TYPE)
 	{
-		mail=cast_as(fMailList->ItemAt(selected),HMailItem);
-		if(!item)
-			continue;
-		count_selected++;
-		msg.AddPointer("mail",mail);
-		msg.AddRef("refs",&mail->fRef);
-		if(!mail->IsRead())
-			unread_mails++;
+	
+		int32 sel = fFolderList->CurrentSelection();
+		if(sel < 0)
+			return;
+		HFolderItem *from = cast_as(fFolderList->ItemAt(sel),HFolderItem);
+		if(from == item) 
+			return;
+		BMessage msg(M_MOVE_MAIL);
+		msg.AddPointer("from",from);
+		msg.AddPointer("to",item);
+	
+		int32 selected; 
+		int32 count_selected = 0;
+		int32 sel_index = 0;
+		int32 unread_mails = 0;
+		HMailItem *mail(NULL);
+		while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
+		{
+			mail=cast_as(fMailList->ItemAt(selected),HMailItem);
+			if(!item)
+				continue;
+			count_selected++;
+			msg.AddPointer("mail",mail);
+			msg.AddRef("refs",&mail->fRef);
+			if(!mail->IsRead())
+				unread_mails++;
+		}
+		if(unread_mails>0)
+		{
+			from->SetName(from->Unread()-unread_mails);
+			fFolderList->InvalidateItem(sel);
+		}
+		PostMessage(&msg);
+	}else{
+		// Remote mails
+		int32 selected; 
+		int32 count_selected = 0;
+		int32 sel_index = 0;
+		int32 unread_mails = 0;
+		HIMAP4Item *mail(NULL);
+		while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
+		{
+			mail=cast_as(fMailList->RemoveItem(selected),HIMAP4Item);
+			if(!item)
+				continue;
+			count_selected++;
+			mail->Delete();
+			if(!mail->IsRead())
+				unread_mails++;
+			delete mail;
+		}
+		
 	}
-	if(unread_mails>0)
-	{
-		from->SetName(from->Unread()-unread_mails);
-		fFolderList->InvalidateItem(sel);
-	}
-	PostMessage(&msg);
 }
 
 /***********************************************************

@@ -47,7 +47,12 @@ SRCS= ./src/HFolderItem.cpp\
 		./src/HEnclosureItem.cpp\
 		./src/md5c.c\
 		./src/HDeskbarView.cpp\
-		./src/HReadWindow.cpp
+		./src/HReadWindow.cpp\
+		./src/HIMAP4Item.cpp\
+		./src/HIMAP4Folder.cpp\
+		./src/IMAP4Client.cpp\
+		./src/HIMAP4Window.cpp\
+		./src/HSimpleFolderItem.cpp
 #--------------------------------------------------------
 #	determine wheather running on x86 or ppc
 MACHINE=$(shell uname -m)

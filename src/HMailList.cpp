@@ -32,7 +32,7 @@ HMailList::HMailList(BRect frame,
 					B_MULTIPLE_SELECTION_LIST)
 	,fCurrentFolder(NULL)
 	,fScrollView(*scroll)
-	,fIsQuery(false)
+	,fFolderType(FOLDER_TYPE)
 {
 	AddColumn( new CLVColumn(NULL,22,CLV_LOCK_AT_BEGINNING|CLV_NOT_MOVABLE|
 		CLV_NOT_RESIZABLE|CLV_PUSH_PASS) );
@@ -122,7 +122,7 @@ HMailList::MessageReceived(BMessage *message)
 			// Save Columns
 			SaveColumns();
 			// Refresh Columns
-			message->FindBool("query",&fIsQuery);
+			message->FindInt32("folder_type",&fFolderType);
 			entry_ref ref;
 			if(message->FindRef("refs",&ref) == B_OK)
 				RefreshColumns(ref);
@@ -217,9 +217,13 @@ HMailList::SaveColumns()
 	path.Append(APP_NAME);
 	path.Append("Attribute");
 	::create_directory(path.Path(),0777);
-	if(fIsQuery)
+	if(fFolderType == QUERY_TYPE)
 	{
 		path.Append("Query");
+		::create_directory(path.Path(),0777);
+	}else if(fFolderType == IMAP4_TYPE)
+	{
+		path.Append("IMAP4");
 		::create_directory(path.Path(),0777);
 	}else{
 		const char* p;
@@ -558,10 +562,13 @@ HMailList::RefreshColumns(entry_ref ref)
 	path.Append(APP_NAME);
 	path.Append("Attribute");
 	::create_directory(path.Path(),0777);
-	if(fIsQuery)
+	if(fFolderType == QUERY_TYPE)
 	{
 		path.Append("Query");
 		::create_directory(path.Path(),0777);
+	}else if(fFolderType == IMAP4_TYPE){
+		path.Append("IMAP4");
+		::create_directory(path.Path(),0777);	
 	}else{
 		const char* p;
 		BPath folder_path(fCurrentFolder);

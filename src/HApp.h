@@ -29,6 +29,7 @@ protected:
 				void		Print(BTextView *view,const char* job_name);
 				void		PageSetup();
 				void		AddSoundEvent(const char* name);
+				void		RemoveTmpImapMails();
 private:		
 		BMessage*			fPrintSettings;
 		HWindow 			*fWindow;

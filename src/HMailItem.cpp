@@ -76,6 +76,38 @@ HMailItem::HMailItem(const entry_ref &ref,
 }
 
 /***********************************************************
+ * Constructor
+ ***********************************************************/
+HMailItem::HMailItem(const char* status,
+					const char*	subject,
+					const char* from,
+					const char* to,
+					time_t	  when,
+					const char* priority,
+					int8 enclosure)
+	:CLVEasyItem(0, false, false, 18.0)
+	,fStatus(status)
+	,fSubject(subject)
+	,fFrom(from)
+	,fTo(to)
+	,fCC("")
+	,fWhen(when)
+	,fPriority(priority)
+	,fEnclosure(enclosure)
+	,fDeleteMe(false)
+{
+	struct tm* time = localtime(&fWhen);
+	char *tmp = fDate.LockBuffer(24);
+	::strftime(tmp, 64,TIME_FORMAT, time);
+	fDate.UnlockBuffer();
+	SetColumnContent(1,fSubject.String());
+	SetColumnContent(2,fFrom.String());
+	SetColumnContent(3,fTo.String());
+	SetColumnContent(4,fDate.String());
+	ResetIcon();
+}
+
+/***********************************************************
  * Destructor
  ***********************************************************/
 HMailItem::~HMailItem()

@@ -232,6 +232,7 @@ HApp::AddSoundEvent(const char* name)
 bool
 HApp::QuitRequested()
 {
+	RemoveTmpImapMails();
 	return _inherited::QuitRequested();
 }
 
@@ -248,6 +249,21 @@ HApp::AboutRequested()
 			"E-Mail: atsushi@io.ocn.ne.jp"))->Show();
 }	
 
+/***********************************************************
+ * RemoveTmpImapMails
+ ***********************************************************/
+void
+HApp::RemoveTmpImapMails()
+{
+	BPath path;
+	::find_directory(B_COMMON_TEMP_DIRECTORY,&path);
+	path.Append("*.imap");
+	BString cmd("rm ");
+	cmd += path.Path();
+	cmd += " 2> /dev/null";
+	
+	::system(cmd.String());
+}
 
 /***********************************************************
  * Main

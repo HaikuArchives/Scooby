@@ -74,6 +74,6 @@ protected:
 private:
 	BEntry  			*fCurrentFolder;
 	BetterScrollView 	*fScrollView;
-	bool				fIsQuery;
+	int32				fFolderType;
 };
 #endif
