@@ -79,10 +79,6 @@ protected:
 			void	AddNewChildItem(entry_ref &ref);
 			void	RemoveChildItem(node_ref &nref);
 private:
-	/*************** Statusbar Update func ***************/
-	static	void	LineUpdate(StatusItem *item);
-	static	void	SizeUpdate(StatusItem *item);
-	/******************************************************/
 	HAddressView	*fTopView;
 	HMailView		*fTextView;
 	HEnclosureView	*fEnclosureView;
