@@ -251,6 +251,23 @@ HDaemonApp::MessageReceived(BMessage *message)
 		fHaveNewMails = false;
 		break;
 	}
+	case M_NEW_MESSAGE:
+	{
+		entry_ref ref;
+		if(be_roster->FindApp("text/x-email",&ref) != B_OK)
+			return;
+		int32 argc = 0;
+		char *argv[3];
+		argv[argc] = new char[strlen("mailto:")+1];
+		::strcpy(argv[argc++],"mailto:" );
+		argv[argc++] = NULL;
+		
+		be_roster->Launch(&ref,argc-1,argv);
+			
+		for(int32 k = 0;k < argc;k++)
+			delete[] argv[k];
+		break;
+	}
 	default:
 		BApplication::MessageReceived(message);
 	}
