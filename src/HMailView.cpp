@@ -1201,10 +1201,10 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 				encoding = offset + strlen(CONTENT_ENCODING);
 			}
 			offset += len;
+			if (offset >= data + size)
+				return TRUE;
 			if (*offset == '\r')
 				offset++;
-			if (offset > data + size)
-				return TRUE;
 		}
 		offset += len;
 
@@ -1579,9 +1579,18 @@ HMailView::linelen(char *str, int32 len, bool header)
 
 	for (loop = 0; loop < len; loop++) {
 		if (str[loop] == '\n') {
-			if ((!header) || (loop < 2) || ((header) && (str[loop + 1] != ' ') &&
-										  (str[loop + 1] != '\t')))
+			if (
+			     ((loop + 1) == len) ||
+			     (!header)           ||
+			     (loop < 2)          ||
+			     (
+			       (header)               &&
+			       (str[loop + 1] != ' ') &&
+			       (str[loop + 1] != '\t')
+			     )
+			   ) {
 				return loop + 1;
+			}
 		}
 	}
 	return len;
