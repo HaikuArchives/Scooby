@@ -668,13 +668,20 @@ HWindow::MessageReceived(BMessage *message)
 	{
 		int32 sel;
 		int32 i = 0;
+		BList itemList;
+		// Store item poniters to be filtered
 		while((sel = fMailList->CurrentSelection(i++)) >= 0)
 		{
 			HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
 			if(item )
-			{
-				FilterMails(item);
-			}
+				itemList.AddItem(item);
+		}
+		// Filter items
+		int32 count = itemList.CountItems();
+		for(int32 i = 0;i < count;i++)
+		{
+			HMailItem *item = (HMailItem*)itemList.ItemAt(i);
+			FilterMails(item);
 		}
 		break;
 	}
