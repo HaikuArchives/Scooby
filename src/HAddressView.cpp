@@ -503,6 +503,7 @@ HAddressView::ChangeAccount(const char* name)
 					BString str;
 					str << "\n" << sigfile;
 					view->Insert(view->TextLength(),str.String(),str.Length());
+					view->Select(0,0);
 				}
 			}
 		}
