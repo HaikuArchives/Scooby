@@ -175,7 +175,7 @@ HMailCache::Append(BList &list)
 	BMallocIO buf;
 	AddMails(list,buf);
 	
-	BFile file(fPath,B_WRITE_ONLY);
+	BFile file(fPath,B_READ_WRITE);
 	if(file.InitCheck() != B_OK)
 		return B_ERROR;
 	off_t size;
@@ -183,7 +183,7 @@ HMailCache::Append(BList &list)
 	HEADER header;
 	file.Read(&header,HEADER_SIZE);
 	header.count += list.CountItems();
-	file.Write(&header,HEADER_SIZE);
+	file.WriteAt(0,&header,HEADER_SIZE);
 	file.Seek(0,SEEK_END);
 	file.Write(buf.Buffer(),buf.BufferLength());
 	size += buf.BufferLength();
