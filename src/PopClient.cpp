@@ -452,8 +452,7 @@ PopClient::Retr(int32 index,BString &content)
 	msg.AddInt32("size",0);
 	content = "";
 	
-	int32 buf_size = (size>MAX_RECIEVE_BUF_SIZE)?MAX_RECIEVE_BUF_SIZE:size;
-	char *buf = new char[buf_size+1];
+	char *buf = new char[MAX_RECIEVE_BUF_SIZE+1];
 	if(!buf)
 	{
 		(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
@@ -465,14 +464,13 @@ PopClient::Retr(int32 index,BString &content)
 	{
 		if(fEndpoint->IsDataPending(kTimeout))
 		{
-			r = fEndpoint->Receive(buf,(buf_size>0)?buf_size:1);
+			r = fEndpoint->Receive(buf,MAX_RECIEVE_BUF_SIZE);
 			if(r <= 0)
 			{
 				PRINT(("Receive Err:%d %d %s\n",r,size,buf));
 				return B_ERROR;
 			}
 			size -= r;
-			buf_size = (size>MAX_RECIEVE_BUF_SIZE)?MAX_RECIEVE_BUF_SIZE:size;
 			content_len += r;
 			buf[r] = '\0';
 			content += buf;
