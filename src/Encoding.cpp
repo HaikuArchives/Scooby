@@ -22,9 +22,13 @@ const char *kCharsets[] ={"ISO-8859-1",
 								"ISO-8859-7",
 								"ISO-8859-8",
 								"ISO-8859-9",
+								"ISO-8859-10",
 								"ISO-2022-JP",
 								"koi8-r",
-								"euc-kr"};
+								"euc-kr",
+								"ISO-8859-13",
+								"ISO-8859-14",
+								"ISO-8859-15"};
 	
 const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_ISO2_CONVERSION,
@@ -35,9 +39,13 @@ const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_ISO7_CONVERSION,
 								B_ISO8_CONVERSION,
 								B_ISO9_CONVERSION,
+								B_ISO10_CONVERSION,
 								B_JIS_CONVERSION,
 								B_KOI8R_CONVERSION,
-								B_EUC_KR_CONVERSION};
+								B_EUC_KR_CONVERSION,
+								B_ISO13_CONVERSION,
+								B_ISO14_CONVERSION,
+								B_ISO15_CONVERSION};
 
 const int32 kNumCharset = 12;
 
@@ -326,7 +334,7 @@ Encoding::p_Encoding(const char* charset)
 	
 	for(i = 0;i < kNumCharset;i++)
 	{
-		if(::strncasecmp(charset,kCharsets[i],strlen(kCharsets[i])) == 0)
+		if(::strcasecmp(charset,kCharsets[i]) == 0)
 		{
 			encoding = kEncodings[i];
 			break;

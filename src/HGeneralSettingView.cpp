@@ -55,9 +55,14 @@ HGeneralSettingView::InitGUI()
 	menu->AddItem(new BMenuItem("ISO-8859-7",new BMessage(B_ISO7_CONVERSION)));
 	menu->AddItem(new BMenuItem("ISO-8859-8",new BMessage(B_ISO8_CONVERSION)));
 	menu->AddItem(new BMenuItem("ISO-8859-9",new BMessage(B_ISO9_CONVERSION)));
+	menu->AddItem(new BMenuItem("ISO-8859-10",new BMessage(B_ISO10_CONVERSION)));
+	
 	menu->AddItem(new BMenuItem("ISO-2022-JP",new BMessage(B_JIS_CONVERSION)));
 	menu->AddItem(new BMenuItem("KOI8-R",new BMessage(B_KOI8R_CONVERSION)));
 	menu->AddItem(new BMenuItem("EUC-KR",new BMessage(B_EUC_KR_CONVERSION)));
+	menu->AddItem(new BMenuItem("ISO-8859-13",new BMessage(B_ISO13_CONVERSION)));
+	menu->AddItem(new BMenuItem("ISO-8859-14",new BMessage(B_ISO14_CONVERSION)));
+	menu->AddItem(new BMenuItem("ISO-8859-15",new BMessage(B_ISO15_CONVERSION)));
 	
 	int32 encoding;
 	((HApp*)be_app)->Prefs()->GetData("encoding",&encoding);
