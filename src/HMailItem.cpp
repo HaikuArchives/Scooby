@@ -522,6 +522,16 @@ HMailItem::DrawItemColumn(BView* owner,
 		SetBackgroundColor(&col);
 	}
 	_inherited::DrawItemColumn(owner,item_column_rect,column_index,complete);
+	// Stroke line
+	rgb_color old_col = owner->HighColor();
+	owner->SetHighColor(tint_color(owner->ViewColor(),1.07F));
+	
+	BPoint start,end;
+	start.y = end.y = item_column_rect.bottom;
+	start.x = 0;
+	end.x = owner->Bounds().right;
+	owner->StrokeLine(start,end);
+	owner->SetHighColor(old_col); 
 }
 
 /***********************************************************
