@@ -1193,9 +1193,15 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 				}
 				len = offset - start;
 				offset = start;
-			}
-			else
+			}else
 				len = (data + size) - offset;
+			// Decode base64
+			if ((encoding) && (cistrstr(encoding, "base64")))
+			{
+				saved_len = len;
+				len = decode_base64(offset, offset, len, true);
+			}
+			// Convert to utf8
 			if (((is_text) && (!type)) || ((is_text) && (type) && (!cistrstr(type, "name=")))) {
 				utf8 = NULL;
 				saved_len = 0;
@@ -1217,11 +1223,6 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 					len = ::strlen(utf8);
 				}
 				
-				
-				if ((encoding) && (cistrstr(encoding, "base64"))) {
-					saved_len = len;
-					len = decode_base64(offset, offset, len, true);
-				}
 				if (utf8) {
 					result = strip_it(utf8, len, info);
 					delete[] utf8;
