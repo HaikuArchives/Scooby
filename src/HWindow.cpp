@@ -936,8 +936,6 @@ HWindow::MessageReceived(BMessage *message)
 				entry_ref dirRef;
 				BMessage saveMsg(B_REFS_RECEIVED);
 				BPath path(&ref);
-				saveMsg.AddString("name",path.Leaf());
-				path.GetParent(&path);
 				::get_ref_for_path(path.Path(),&dirRef);
 				saveMsg.AddRef("directory",&dirRef);
 				PostMessage(&saveMsg,view->Parent());
