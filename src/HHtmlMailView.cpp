@@ -39,7 +39,7 @@ HHtmlMailView::HHtmlMailView(BRect frame,const char* name,
 {
 	BRect rect = Bounds();
 
-	const char* kTabNames[3] = {"Body","Headers","Attachments"};
+	const char* kTabNames[3] = {_("Body"),_("Headers"),_("Attachments")};
 	HTabView *tabview = new HTabView(rect,"tabview",kTabNames,3,B_FOLLOW_ALL);
 	tabview->SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
 	
