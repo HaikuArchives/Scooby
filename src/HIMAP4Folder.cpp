@@ -35,7 +35,7 @@ HIMAP4Folder::HIMAP4Folder(const char* name,
 	,fPort(port)
 	,fLogin(login)
 	,fPassword(password)
-	,fRemoteFolderName(folder_name)
+	,fRemoteFolderPath(folder_name)
 	,fFolderGathered(false)
 	,fChildItem(false)
 {
@@ -78,7 +78,7 @@ HIMAP4Folder::StoreSettings()
 	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
 	
 	BMessage msg(B_SIMPLE_DATA);
-	msg.AddString("folder",fRemoteFolderName.String() );
+	msg.AddString("folder",fRemoteFolderPath.String() );
 	msg.AddString("server",fServer.String() );
 	msg.AddInt16("port",fPort);
 	msg.AddString("login",fLogin.String() );
@@ -153,7 +153,7 @@ HIMAP4Folder::IMAPGetList()
 	}
 	if(!fChildItem)
 		GatherChildFolders();
-	if(fRemoteFolderName.Length() == 0)
+	if(fRemoteFolderPath.Length() == 0)
 	{
 		if(fOwner->IndexOf(this) == fOwner->CurrentSelection())
 				fOwner->Window()->PostMessage(M_STOP_MAIL_BARBER_POLE);
@@ -161,7 +161,7 @@ HIMAP4Folder::IMAPGetList()
 	}	
 	
 	int32 mail_count = 0;
-	if( (mail_count = fClient->Select(fRemoteFolderName.String())) < 0)
+	if( (mail_count = fClient->Select(fRemoteFolderPath.String())) < 0)
 	{
 		(new BAlert("",_("Could not select remote folder"),_("OK")
 						,NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
@@ -260,7 +260,7 @@ HIMAP4Folder::GatherChildFolders()
 		return;
 	BList namelist,pointerList;
 	
-	int32 count = fClient->List(fRemoteFolderName.String(),&namelist);
+	int32 count = fClient->List(fRemoteFolderPath.String(),&namelist);
 	if(count <= 0)
 		return;
 	
@@ -295,8 +295,7 @@ HIMAP4Folder::GatherChildFolders()
 		// Convert UTF7 to UTF8
 		char *buf = new char[strlen(displayName)*4];
 		IMAP4UTF72UTF8(buf,displayName);
-		SetFolderName(buf);
-
+		
 		pointerList.AddItem((folder = new HIMAP4Folder(buf,(char*)namelist.ItemAt(i)
 											,server
 											,port
@@ -314,7 +313,7 @@ HIMAP4Folder::GatherChildFolders()
 	for(int32 i = 0;i < count;i++)
 	{
 		folder = (HIMAP4Folder*)pointerList.ItemAt(i);
-		index = FindParent(folder->FolderName(),folder->RemoteFolderName(),&pointerList);
+		index = FindParent(folder->FolderName(),folder->RemoteFolderPath(),&pointerList);
 		childMsg.AddPointer("parent",(index < 0)?this:(HIMAP4Folder*)pointerList.ItemAt(index));
 		childMsg.AddBool("expand",(index < 0)?true:false);
 		childMsg.AddPointer("item",folder);
@@ -344,10 +343,62 @@ HIMAP4Folder::FindParent(const char* name,const char* folder_path,BList *list)
 	for(int32 i = 0;i < count;i++)
 	{
 		folder = (HIMAP4Folder*)list->ItemAt(i);
-		if(strcmp(folder->RemoteFolderName(),path) == 0)
+		if(strcmp(folder->RemoteFolderPath(),path) == 0)
 			return i;
 	}
 	return -1;
+}
+
+/***********************************************************
+ * DeleteMe
+ ***********************************************************/
+void
+HIMAP4Folder::DeleteMe()
+{
+	fClient->Delete(fRemoteFolderPath.String());
+}
+
+/***********************************************************
+ * CreateChildFolder
+ ***********************************************************/
+void
+HIMAP4Folder::CreateChildFolder(const char* utf8)
+{
+	if(fClient->Create(utf8,fRemoteFolderPath.String()) == B_OK)	
+	{
+		char *name = new char[strlen(utf8)*4];
+		IMAP4UTF72UTF8(name,(char*)utf8);
+		BString path;
+		if(IsChildFolder())
+			path+=fRemoteFolderPath;
+		path+=name;
+		delete[] name;
+		
+		HIMAP4Folder *folder = new HIMAP4Folder(utf8
+												,path.String()
+												,fServer.String()
+												,fPort
+												,fLogin.String()
+												,fPassword.String()
+												,fOwner);
+		folder->SetAccountName(AccountName());
+		folder->SetChildFolder(true);
+		BMessage childMsg(M_ADD_UNDER_ITEM);
+		childMsg.AddPointer("item",folder);
+		childMsg.AddPointer("parent",this);
+		childMsg.AddBool("expand",false);
+		fOwner->Window()->PostMessage(&childMsg,fOwner);
+	}
+}
+
+/***********************************************************
+ * Move
+ ***********************************************************/
+status_t
+HIMAP4Folder::Move(const char* indexList,const char* dest_folder)
+{
+	fClient->Select(RemoteFolderPath());
+	return fClient->Copy(indexList,dest_folder);
 }
 
 /***********************************************************

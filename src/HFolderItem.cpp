@@ -8,6 +8,7 @@
 #include "Utilities.h"
 #include "ColumnListView.h"
 #include "HMailList.h"
+#include "TrackerUtils.h"
 
 #include <Path.h>
 #include <Node.h>
@@ -963,6 +964,16 @@ void
 HFolderItem::RemoveSettings()
 {
 	
+}
+
+/***********************************************************
+ * DeleteMe
+ ***********************************************************/
+void
+HFolderItem::DeleteMe()
+{
+	TrackerUtils utils;
+	utils.MoveToTrash(Ref());
 }
 
 /***********************************************************

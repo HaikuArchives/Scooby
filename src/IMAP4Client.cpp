@@ -1,9 +1,12 @@
 #include "IMAP4Client.h"
 #include "HApp.h"
+#include "utf7.h"
+
 #include <stdlib.h>
 #include <Alert.h>
 #include <Debug.h>
 #include <List.h>
+#include <Autolock.h>
 
 #define CRLF "\r\n";
 
@@ -73,6 +76,7 @@ IMAP4Client::Reconnect()
 status_t
 IMAP4Client::Login(const char* login,const char* password)
 {
+	BAutolock lock(fSocketLocker);
 	// for re-connect
 	fLogin = login; fPassword = password;
 	//
@@ -109,6 +113,7 @@ IMAP4Client::Login(const char* login,const char* password)
 status_t
 IMAP4Client::List(const char* folder_name,BList *namelist)
 {
+	BAutolock lock(fSocketLocker);
 	BString cmd("LIST ");
 	
 	cmd << "\"" << "\" "; 
@@ -168,6 +173,7 @@ IMAP4Client::List(const char* folder_name,BList *namelist)
 int32
 IMAP4Client::Select(const char* folder_name)
 {
+	BAutolock lock(fSocketLocker);
 	int32 r = 0,mail_count = -1;
 	
 	BString cmd("SELECT ");
@@ -219,25 +225,9 @@ IMAP4Client::Store(int32 index,const char* flags,bool add)
 		cmd += "-FLAGS ";
 	cmd << "(" << flags << ")";
 	BString out;
-	int32 state;
 	
 	if(SendCommand(cmd.String()) == B_OK)
-	{
-		int32 cmdNumber = fCommandCount;
-		
-		while(1)
-		{
-			ReceiveLine(out);
-			state = CheckSessionEnd(out.String(),cmdNumber);		
-			switch(state)
-			{
-			case IMAP_SESSION_OK:
-				return B_OK;
-			case IMAP_SESSION_BAD:
-				return B_ERROR;
-			}
-		}
-	}
+		return ReceiveResponse(out);
 	return B_ERROR;	
 }
 
@@ -299,25 +289,9 @@ IMAP4Client::Expunge()
 	}
 	//
 	BString out;
-	int32 state;
 	
 	if(SendCommand("EXPUNGE") == B_OK)
-	{
-		int32 cmdNumber = fCommandCount;
-		
-		while(1)
-		{
-			ReceiveLine(out);
-			state = CheckSessionEnd(out.String(),cmdNumber);		
-			switch(state)
-			{
-			case IMAP_SESSION_OK:
-				return B_OK;
-			case IMAP_SESSION_BAD:
-				return B_ERROR;
-			}
-		}
-	}
+		return ReceiveResponse(out);
 	return B_ERROR;
 }
 
@@ -336,6 +310,7 @@ IMAP4Client::FetchFields(int32 index,
 					bool	&read,
 					bool	&attachment)
 {
+	BAutolock lock(fSocketLocker);
 	// Check connection
 	if(!IsAlive())
 	{
@@ -421,6 +396,7 @@ IMAP4Client::FetchFields(int32 index,
 status_t
 IMAP4Client::FetchBody(int32 index,BString &outBody)
 {
+	BAutolock lock(fSocketLocker);
 	// Check connection
 	if(!IsAlive())
 	{
@@ -572,6 +548,7 @@ IMAP4Client::Logout()
 status_t
 IMAP4Client::SendCommand(const char* command)
 {
+	BAutolock lock(fSocketLocker);
 	BString out("");
 	status_t err = B_ERROR;
 	char *cmd = new char[strlen(command) + 15];
@@ -649,16 +626,126 @@ IMAP4Client::CheckSessionEnd(const char* str,int32 session)
  * Create
  ***********************************************************/
 status_t
-IMAP4Client::Create(const char* path,const char* name)
+IMAP4Client::Create(const char* name,const char* path)
 {
-	return B_OK;
+	// Check connection
+	if(!IsAlive())
+	{
+		PRINT(("Re-connect\n"));
+		status_t err = Reconnect();
+		if(err != B_OK)
+			return B_ERROR;
+	}
+	//
+	BString out;
+	BString cmd = "CREATE ";
+	if(path && ::strlen(path)>0)
+	{
+		cmd += path;
+		cmd += "/";
+	}
+	//Convert UTF8 to UTF7
+	char *buf = new char[strlen(name)*2];
+	UTF8IMAP4UTF7(buf,(char*)name);
+	cmd += buf;
+	delete[] buf;
+	
+	if(SendCommand(cmd.String()) == B_OK)
+		return ReceiveResponse(out);
+	return B_ERROR;
 }
 
 /***********************************************************
  * Copy
  ***********************************************************/
 status_t
-IMAP4Client::Copy(int32 number,const char* dest_path)
+IMAP4Client::Copy(const char* number,const char* dest_path)
 {
-	return B_OK;
+	// Check connection
+	if(!IsAlive())
+	{
+		PRINT(("Re-connect\n"));
+		status_t err = Reconnect();
+		if(err != B_OK)
+			return B_ERROR;
+	}
+	//
+	BString out;
+	BString cmd = "COPY ";
+	cmd << number << " " << dest_path;
+	if(SendCommand(cmd.String()) == B_OK)
+		return ReceiveResponse(out);
+	return B_ERROR;
+}
+
+/***********************************************************
+ * Delete mailbox
+ ***********************************************************/
+status_t
+IMAP4Client::Delete(const char* path)
+{
+	// Check connection
+	if(!IsAlive())
+	{
+		PRINT(("Re-connect\n"));
+		status_t err = Reconnect();
+		if(err != B_OK)
+			return B_ERROR;
+	}
+	//
+	BString out;
+	BString cmd = "DELETE ";
+	cmd += path;
+	if(SendCommand(cmd.String()) == B_OK)
+		return ReceiveResponse(out);
+	return B_ERROR;
+}
+
+/***********************************************************
+ * Close
+ ***********************************************************/
+status_t
+IMAP4Client::CloseMailBox()
+{
+	// Check connection
+	if(!IsAlive())
+	{
+		PRINT(("Re-connect\n"));
+		status_t err = Reconnect();
+		if(err != B_OK)
+			return B_ERROR;
+	}
+	//
+	BString out;
+	
+	if(SendCommand("CLOSE") == B_OK)
+		return ReceiveResponse(out);
+
+	return B_ERROR;
+}
+
+/***********************************************************
+ * ReceiveResponse
+ ***********************************************************/
+status_t
+IMAP4Client::ReceiveResponse(BString &out)
+{
+	BAutolock lock(fSocketLocker);
+	int32 cmdNumber = fCommandCount;
+	BString line;
+	int32 state;
+	while(1)
+	{
+		ReceiveLine(line);
+		out += line;
+		state = CheckSessionEnd(line.String(),cmdNumber);		
+		switch(state)
+		{
+		case IMAP_SESSION_OK:
+			return B_OK;
+		case IMAP_SESSION_BAD:
+			return B_ERROR;
+		}
+	}
+	return B_ERROR;
 }

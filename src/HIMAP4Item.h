@@ -41,6 +41,8 @@ public:
 		const char*		AccountName() const {return fFolder->AccountName();}
 			//!Returns true if mail contents have been downloaded. 
 			bool		IsDownloaded() const { return fGotContent;}
+			//!
+			void		SetFolder(HIMAP4Folder *folder){fFolder = folder;}
 protected:
 			void		CalcHeaderLength();
 private:

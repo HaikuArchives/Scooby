@@ -7,10 +7,10 @@
 #include "HApp.h"
 #include "HPrefs.h"
 #include "HIMAP4Folder.h"
-#include "HIMAP4Window.h"
 #include "RectUtils.h"
 #include "HWindow.h"
 #include "Utilities.h"
+#include "HIMAP4Item.h"
 
 #include <Window.h>
 #include <StorageKit.h>
@@ -138,14 +138,6 @@ HFolderList::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
-	case M_ADD_IMAP4_FOLDER:
-	{
-		RectUtils utils;
-		BRect rect = utils.CenterRect(230,200);
-		HIMAP4Window *window = new HIMAP4Window(rect,this);
-		window->Show();
-		break;
-	}
 	case M_GET_FOLDERS:
 	{
 		fThread = ::spawn_thread(GetFolders,"GetVolume",B_NORMAL_PRIORITY,this);
@@ -643,28 +635,73 @@ HFolderList::WhenDropped(BMessage *message)
 	HFolderItem *fromFolder = cast_as(ItemAt(from),HFolderItem);
 	HFolderItem *toFolder = cast_as(ItemAt(CurrentSelection()),HFolderItem);
 	
-	if(toFolder->FolderType() == IMAP4_TYPE)
+	if(!toFolder||fromFolder == toFolder)
 		return;
-	if(fromFolder == toFolder)
-		return;
+	// Remote->Remote
+	if(toFolder->FolderType() == IMAP4_TYPE&&fromFolder->FolderType() == IMAP4_TYPE){
+		HIMAP4Folder *fromIMAP = cast_as(fromFolder,HIMAP4Folder);
+		HIMAP4Folder *toIMAP = cast_as(toFolder,HIMAP4Folder);
+		// move between same account folders.
+		if(::strcmp(toIMAP->AccountName(),fromIMAP->AccountName())==0)
+		{
+			BString index;
+			HIMAP4Item *mail;
+			for(int32 i = 0;i < count;i++)
+			{
+				if(message->FindPointer("pointer",i,(void**)&mail) == B_OK)
+				{
+					if(index.Length()>0)
+						index += ":";
+					index << mail->Index();
+				}
+			}
+			if(index.Length()>0)
+			{
+				if(fromIMAP->Move(index.String(),toIMAP->RemoteFolderPath())==B_OK)
+				{
+					for(int32 i = 0;i < count;i++)
+					{
+						if(message->FindPointer("pointer",i,(void**)&mail) == B_OK)
+						{
+							mail->Delete();
+							fromIMAP->RemoveMail(mail);
+							RemoveFromMailList(mail,true);
+						}
+					}
+				}
+			}
+			// Refresh mail list;
+			toIMAP->EmptyMailList();
+			toIMAP->SetDone(false);
+		}// move between different account folders.
+		else{
+			
+		}
+	}//Local->Remote
+	else if(toFolder->FolderType() == FOLDER_TYPE&&fromFolder->FolderType() == IMAP4_TYPE){
 	
-	PRINT(("From:%d To:%d\n",from,CurrentSelection()));
 	
-	BMessage msg(M_MOVE_MAIL);
-	HMailItem *mail;
-	for(int32 i = 0;i < count;i++)
+	}// Local->Local or Remote->Local
+	else if(toFolder->FolderType() == FOLDER_TYPE)
 	{
-		if(message->FindPointer("pointer",i,(void**)&mail) == B_OK)
-			msg.AddPointer("mail",mail);
-	}
+		PRINT(("From:%d To:%d\n",from,CurrentSelection()));
 	
-	if(fromFolder&&toFolder)
-	{
-		msg.AddPointer("to",toFolder);
-		msg.AddPointer("from",fromFolder);
-		Window()->PostMessage(&msg);
-	}
+		BMessage msg(M_MOVE_MAIL);
+		HMailItem *mail;
+		for(int32 i = 0;i < count;i++)
+		{
+			if(message->FindPointer("pointer",i,(void**)&mail) == B_OK)
+				msg.AddPointer("mail",mail);
+		}
 	
+		if(fromFolder&&toFolder)
+		{
+			msg.AddPointer("to",toFolder);
+			msg.AddPointer("from",fromFolder);
+			Window()->PostMessage(&msg);
+		}
+	}
+	// Reset selection.
 	SelectWithoutGathering(from);
 }
 
@@ -822,14 +859,18 @@ HFolderList::MouseDown(BPoint pos)
     	 item = new BMenuItem(_("New Folder" B_UTF8_ELLIPSIS),new BMessage(M_CREATE_FOLDER_DIALOG),0,0);
     	 if(sel < 0)
     	 	item->SetEnabled(true);
-    	 else if(folder->FolderType() == FOLDER_TYPE)
+    	 else if(folder&&(folder->FolderType() == FOLDER_TYPE ||folder->FolderType() == IMAP4_TYPE ))
     	 	item->SetEnabled(true);
     	 else
     	 	item->SetEnabled(false);
     	 theMenu->AddItem(item);
     	 
     	 item = new BMenuItem(_("Delete Folder"),new BMessage(M_DELETE_FOLDER),0,0);
-    	 item->SetEnabled((sel<0)?false:true);
+    	 if(folder&&folder->FolderType() == IMAP4_TYPE && !((HIMAP4Folder*)folder)->IsChildFolder())
+    	 	item->SetEnabled(false);	
+    	 else
+    	 	item->SetEnabled((sel<0)?false:true);
+    	 
     	 theMenu->AddItem(item);
     	 /*
     	 theMenu->AddSeparatorItem();
@@ -858,12 +899,7 @@ HFolderList::MouseDown(BPoint pos)
     	{
     	 	BMessage*	aMessage = theItem->Message();
 			if(aMessage)
-			{
-				if(aMessage->what == M_ADD_IMAP4_FOLDER)
-					Window()->PostMessage(aMessage,this);
-				else
-					Window()->PostMessage(aMessage);
-	 		}
+				Window()->PostMessage(aMessage);
 	 	} 
 	 	delete theMenu;
 	 }else
@@ -1175,8 +1211,10 @@ HFolderList::GetFolderPath(HFolderItem *item,BMessage &msg)
 			break;
 		path.Insert("/",0);
 		path.Insert(parent->FolderName(),0);
+		PRINT(("N:%s R:%s\n",parent->FolderName(),((HIMAP4Folder*)parent)->RemoteFolderPath()));
 		parent = cast_as(Superitem(parent),HFolderItem);
 	}
+	PRINT(("PATH:%s\n",path.String()));
 	msg.AddString("path",path.String() );
 	return; 
 }
