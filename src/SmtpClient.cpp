@@ -103,9 +103,10 @@ SmtpClient::ReceiveLine(BString &line)
 	int32 len = 0,rcv;
 	char c = 0;
 	line = "";
-	if(fEndpoint->IsDataPending(timeout))
+	
+	while(c != '\n')
 	{
-		while(c != '\n')
+		if(fEndpoint->IsDataPending(timeout))
 		{
 			rcv = fEndpoint->Receive(&c,1);
 			if(rcv <=0)
@@ -114,7 +115,8 @@ SmtpClient::ReceiveLine(BString &line)
 			line << c;
 			if(c == '\n')
 				break;
-		}			
+		}else
+			break;			
 	}
 	return len;
 }
