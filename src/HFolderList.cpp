@@ -144,6 +144,10 @@ HFolderList::MessageReceived(BMessage *message)
 			message->FindPointer("item",i,(void**)&item);
 			message->FindPointer("parent",i,(void**)&parent);
 			AddUnder(item,parent);
+			
+			if(!parent->IsSuperItem())
+				parent->SetSuperItem(true);
+			
 			fPointerList.AddItem(item);
 			if(gather && item->FolderType() == FOLDER_TYPE)
 					item->StartGathering();
@@ -509,10 +513,6 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 				entry.GetRef(&ref);
 				childMsg.AddPointer("item",(item = new HFolderItem(ref,list)));
 				childMsg.AddPointer("parent",parentItem);
-				if(!parentItem->IsSuperItem())
-				{
-					parentItem->SetSuperItem(true);
-				}
 				GetChildFolders(entry,item,list,childMsg);			
 			}
 		} 

@@ -4,6 +4,7 @@
 #include "HIMAP4Item.h"
 #include "Encoding.h"
 #include "HWindow.h"
+#include "HFolderList.h"
 
 #include <Alert.h>
 #include <Bitmap.h>
@@ -32,6 +33,7 @@ HIMAP4Folder::HIMAP4Folder(const char* name,
 	,fLogin(login)
 	,fPassword(password)
 	,fRemoteFolderName(folder_name)
+	,fFolderGathered(false)
 {
 }
 
@@ -142,8 +144,7 @@ HIMAP4Folder::IMAPGetList()
 			return;	
 		}
 	}
-	
-	PRINT(("FolderName:%s\n",fRemoteFolderName.String()));
+	GatherChildFolders();
 	int32 mail_count = 0;
 	if( (mail_count = fClient->Select(fRemoteFolderName.String())) < 0)
 	{
@@ -232,6 +233,48 @@ HIMAP4Folder::IMAPConnect()
 		return B_ERROR;
 	}
 	return B_OK;
+}
+
+
+/***********************************************************
+ * GatherChildFolders
+ ***********************************************************/
+void
+HIMAP4Folder::GatherChildFolders()
+{
+	if(fFolderGathered)
+		return;
+	BList namelist;
+	
+	int32 count = fClient->List(fRemoteFolderName.String(),&namelist);
+	
+	BMessage childMsg(M_ADD_UNDER_ITEM);
+	char displayName[B_FILE_NAME_LENGTH];
+	int32 k= 0;
+	char *p;
+	for(int32 i = 0;i < count;i++)
+	{
+		char *name = (char*)namelist.ItemAt(i);
+		p = strstr(name,"/");
+		k= 0;
+		p++;
+		while(name[k] != '\0' && name[k] != '/')
+		{
+			displayName[k++] = *p++;	
+		}
+		displayName[k] = '\0';
+		childMsg.AddPointer("parent",this);
+		childMsg.AddPointer("item",new HIMAP4Folder(displayName,name
+											,fServer.String()
+											,fPort
+											,fLogin.String()
+											,fPassword.String()
+											,fOwner));
+		free( name );
+	}
+	if(!childMsg.IsEmpty())
+		fOwner->Window()->PostMessage(&childMsg,fOwner);
+	fFolderGathered = true;
 }
 
 /***********************************************************

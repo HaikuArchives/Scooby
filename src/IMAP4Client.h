@@ -17,8 +17,8 @@ public:
 	
 		status_t	Connect(const char* addr,int port);
 		status_t	Login(const char* login,const char* password);
-		status_t	List(const char* folder_name);
-		int32	Select(const char* folder_name); // return mail count
+		status_t	List(const char* folder_name,BList *namelist);
+		int32		Select(const char* folder_name); // return mail count
 		status_t	FetchFields(int32 index,
 								BString &subject,
 								BString &from,

@@ -3,11 +3,14 @@
 #include <stdlib.h>
 #include <Alert.h>
 #include <Debug.h>
+#include <List.h>
+
 #define CRLF "\r\n";
 
 #define xEOF    236
 
 const bigtime_t kIMAP4ClientTimeout = 1000000*60; // 60 sec
+
 
 /***********************************************************
  * Constructor.
@@ -90,7 +93,6 @@ IMAP4Client::Login(const char* login,const char* password)
 		r = ReceiveLine(out);
 		if(r <= 0)
 			break;
-		PRINT(("%s\n",out.String() ));
 		state = CheckSessionEnd(out.String(),cmdNumber);		
 		switch(state)
 		{
@@ -104,25 +106,62 @@ IMAP4Client::Login(const char* login,const char* password)
 }
 
 /***********************************************************
- * List ( *not implemented yet* )
+ * List
  ***********************************************************/
 status_t
-IMAP4Client::List(const char* folder_name)
+IMAP4Client::List(const char* folder_name,BList *namelist)
 {
 	BString cmd("LIST ");
-	cmd << "\"" << folder_name << "/\" ";
-	cmd += "\"%\"";
 	
+	cmd << "\"" << "\" "; 
+	if(folder_name && strlen(folder_name) > 0)
+		cmd << "\"" << folder_name << "/*\"";
+	else
+		cmd += "\"*\"";
 	BString out;
-	//SendCommand(cmd.String());
-	SendCommand("LIST \"\" \"INBOX\"\r\n");
-	ReceiveLine(out);
-	char c = 0;
+	SendCommand(cmd.String());
+	int32 cmdNumber = fCommandCount;
+	int32 state;
+	int32 folder_count = 0;
+	int32 pos,i;
+	char buf[B_FILE_NAME_LENGTH];
+	
 	while(1)
 	{
-		Receive(&c,1);
-		PRINT(("%c",c));
+		ReceiveLine(out);
+		state = CheckSessionEnd(out.String(),cmdNumber);		
+		switch(state)
+		{
+		case IMAP_SESSION_OK:
+			return folder_count;
+		case IMAP_SESSION_BAD:
+			return B_ERROR;
+		}
+		
+		// parse the following line 
+		// [* LIST () "/" "INBOX/BeOS"]   
+		i = 0;
+		pos = 0;
+		while(i < 3)
+		{
+			pos = out.FindFirst("\"",pos+1);
+			if(pos == B_ERROR)
+				return B_ERROR;
+			i++;
+		}
+		i = 0;
+		pos++;
+		if(pos != B_ERROR)
+		{
+			const char* data = out.String();
+			while(data[pos] != '"')
+				buf[i++] = data[pos++];
+			buf[i] = '\0';
+			namelist->AddItem(::strdup(buf));
+			folder_count++;
+		}
 	}
+	return B_ERROR;
 }
 
 /***********************************************************
@@ -146,7 +185,6 @@ IMAP4Client::Select(const char* folder_name)
 			r = ReceiveLine(out);
 			if(r <=0)
 				break;
-			PRINT(("%s\n",out.String()));
 			// get mail count
 			if(mail_count <0 && out.FindFirst("EXISTS") != B_NO_ERROR)
 				mail_count = atol(&out[2]);
@@ -182,7 +220,6 @@ IMAP4Client::Store(int32 index,const char* flags,bool add)
 	else
 		cmd += "-FLAGS ";
 	cmd << "(" << flags << ")";
-	PRINT(("%s\n",cmd.String() ));
 	BString out;
 	int32 state;
 	
@@ -193,7 +230,6 @@ IMAP4Client::Store(int32 index,const char* flags,bool add)
 		while(1)
 		{
 			ReceiveLine(out);
-			PRINT(("%s\n",out.String()));
 			state = CheckSessionEnd(out.String(),cmdNumber);		
 			switch(state)
 			{
@@ -241,7 +277,6 @@ IMAP4Client::MarkAsDelete(int32 index)
 			return B_ERROR;
 	}
 	//
-	PRINT(("test\n"));
 	return Store(index,"\\Deleted");	
 }
 
@@ -375,7 +410,6 @@ IMAP4Client::FetchBody(int32 index,BString &outBody)
 		if(r <=0)
 			return B_ERROR;
 			
-		PRINT(("%s\n",line.String()));
 		state = CheckSessionEnd(line.String(),session);
 				
 		switch(state)
@@ -481,12 +515,8 @@ IMAP4Client::Logout()
 {
 	BString out;
 
-	SendCommand("CLOSE");
-	ReceiveLine(out);
-	PRINT(("%s\n",out.String()));
 	SendCommand("LOGOUT");
 	ReceiveLine(out);
-	PRINT(("%s\n",out.String()));
 	
 	Close();
 }
@@ -507,7 +537,8 @@ IMAP4Client::SendCommand(const char* command)
 	}
 	::sprintf(cmd,"%.3ld %s\r\n",++fCommandCount,command);
 	int32 cmd_len = strlen(cmd);
-	//PRINT(("%s",cmd));
+	if(!strstr(cmd,"LOGIN"))
+		PRINT(("C:%s",cmd));
 	// Reset idle time
 	fIdleTime = time(NULL);
 	//
@@ -539,7 +570,7 @@ IMAP4Client::ReceiveLine(BString &out)
 	}else{
 		(new BAlert("",_("IMAP4 socket timeout."),_("OK")))->Go();
 	}
-	//PRINT(("%s\n",out.String()));
+	PRINT(("S:%s\n",out.String()));
 	return len;
 }
 
