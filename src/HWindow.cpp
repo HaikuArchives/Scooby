@@ -700,7 +700,7 @@ HWindow::MessageReceived(BMessage *message)
 		int32 i = 0;
 		while((sel = fMailList->CurrentSelection(i++)) >= 0)
 		{
-			HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
+			HMailItem *item = fMailList->MailAt(sel);
 			if(item)
 			{
 				ref = item->Ref();
@@ -724,7 +724,7 @@ HWindow::MessageReceived(BMessage *message)
 		// Store item poniters to be filtered
 		while((sel = fMailList->CurrentSelection(i++)) >= 0)
 		{
-			HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
+			HMailItem *item = fMailList->MailAt(sel);
 			if(item )
 				itemList.AddItem(item);
 		}
@@ -759,7 +759,7 @@ HWindow::MessageReceived(BMessage *message)
 			int32 sel = fMailList->CurrentSelection();
 			if(sel < 0)
 				break;	
-			item = cast_as(fMailList->ItemAt(sel),HMailItem);
+			item = fMailList->MailAt(sel);
 		}
 		ReplyMail(item,reply_all);
 		break;
@@ -777,7 +777,7 @@ HWindow::MessageReceived(BMessage *message)
 			int32 sel = fMailList->CurrentSelection();
 			if(sel < 0)
 				break;
-			item = cast_as(fMailList->ItemAt(sel),HMailItem);
+			item = fMailList->MailAt(sel);
 		}
 		ForwardMail(item);
 		break;
@@ -1218,7 +1218,7 @@ HWindow::InvokeMailItem()
 	
 	if(sel < 0)
 		return;
-	HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
+	HMailItem *item = fMailList->MailAt(sel);
 	entry_ref ref = item->Ref();
 	MakeReadWindow(ref,new BMessenger(fMailList,this));
 }
@@ -1269,7 +1269,7 @@ HWindow::DeleteMails()
 		HMailItem *mail(NULL);
 		while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
 		{
-			mail=cast_as(fMailList->ItemAt(selected),HMailItem);
+			mail=fMailList->MailAt(selected);
 			if(!item)
 				continue;
 			msg.AddPointer("mail",mail);
@@ -1320,7 +1320,7 @@ HWindow::AddToPeople()
 	
 	while((sel = fMailList->CurrentSelection(i++)) >= 0)
 	{
-		HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
+		HMailItem *item = fMailList->MailAt(sel);
 		if(item)
 		{
 			ref = item->Ref();
@@ -1887,7 +1887,7 @@ HWindow::PrintMessage(BMessage *message)
 	int32 sel = fMailList->CurrentSelection();
 	if(sel < 0)
 		return;
-	HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
+	HMailItem *item = fMailList->MailAt(sel);
 	BMessage msg(*message);
 	
 	if(is_kind_of(fMailView,HMailView))
@@ -2030,7 +2030,7 @@ HWindow::ShowOpenPanel(int32 what)
 void
 HWindow::AddToBlackList(int32 index)
 {
-	HMailItem *item = cast_as(fMailList->ItemAt(index),HMailItem);
+	HMailItem *item = fMailList->MailAt(index);
 	if(!item)
 		return;
 	BString from;
