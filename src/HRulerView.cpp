@@ -76,8 +76,15 @@ HRulerView::DrawRuler()
 void
 HRulerView::MouseDown(BPoint pos)
 {
-	fDragging = true;
-	SetMouseEventMask(B_POINTER_EVENTS,B_NO_POINTER_HISTORY);
+	float rightLimit = fTextView->RightLimit();
+	
+	BRect arrowRect;
+	arrowRect.Set(rightLimit-4,Bounds().top+8,rightLimit+4,Bounds().bottom);
+	if(arrowRect.Contains(pos))
+	{
+		fDragging = true;
+		SetMouseEventMask(B_POINTER_EVENTS,B_NO_POINTER_HISTORY);
+	}
 }
 
 /***********************************************************
