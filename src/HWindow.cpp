@@ -1055,15 +1055,8 @@ HWindow::MenusBeginning()
 		EnableMenuItem(item,true);
 	else
 		EnableMenuItem(item,false);
-	// Recreate check from items
-	// Delete all items
-	BMenu *subMenu = KeyMenuBar()->SubmenuAt(2);
-	subMenu = subMenu->SubmenuAt(1);
-	int32 count = subMenu->CountItems();
-	while(count>0)
-		delete subMenu->RemoveItem(--count);
+	// Rebuild check from items
 	AddCheckFromItems();
-	//
 }
 
 /***********************************************************
@@ -1753,9 +1746,14 @@ HWindow::EmptyTrash()
 void
 HWindow::AddCheckFromItems()
 {
-	// Delete all items
 	BMenu *subMenu = KeyMenuBar()->SubmenuAt(2);
+	if(!subMenu) return;
 	subMenu = subMenu->SubmenuAt(1);
+	if(!subMenu) return;
+	// Delete all items	
+	int32 count = subMenu->CountItems();
+	while(count>0)
+		delete subMenu->RemoveItem(--count);
 	// Add items
 	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
