@@ -95,8 +95,6 @@ public:
 			void	StopLoad(void);
 			void	SetContent(BFile*);
 	
-			void	GetHardWrapedText(BString &out);
-			int32	ByteLength(char c);
 	//@{
 	//!Override function.
 			void	KeyDown(const char*, int32);
