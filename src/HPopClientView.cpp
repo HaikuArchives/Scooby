@@ -224,7 +224,6 @@ HPopClientView::MessageReceived(BMessage *message)
 				if(index >= startpos)
 				{
 					msg.AddInt32("index",index);
-					PRINT(("%d\n",index));
 					fUidl = "";
 					if(fCanUseUIDL)
 					{
