@@ -130,9 +130,13 @@ SmtpClient::SendCommand(const char* cmd)
  * SendMail
  ***********************************************************/
 status_t
-SmtpClient::SendMail(const char* from,
-				const char* to,
-				const char* content)
+SmtpClient::SendMail(const char* from
+					,const char* to
+					,const char* content
+					,void (*TotalSize)(int32,void*)
+					,void (*SentSize)(int32,void*)
+					,void* cookie
+					)
 {
 	// Set mail from
 	BString cmd = "MAIL FROM: ";
@@ -177,6 +181,10 @@ SmtpClient::SendMail(const char* from,
 	// Content
 	BString line("");
 	len = ::strlen(content);
+	if(TotalSize)
+		TotalSize(len,cookie);
+		
+	int32 sent_len;
 	for(int32 i = 0;i < len;i++)
 	{
 		line += content[i];
@@ -197,9 +205,11 @@ SmtpClient::SendMail(const char* from,
 				line += "\r\n";
 				line_len = line.Length();
 			}
-			if(Send(line.String(),line_len)<=0)
+			if((sent_len = Send(line.String(),line_len))<=0)
 				goto err;
 			line="";
+			if(SentSize)
+				SentSize(sent_len,cookie);
 		}
 	}
 

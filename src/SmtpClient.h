@@ -26,6 +26,9 @@ public:
 		status_t		SendMail(const char* from 	//!<From address.
 								,const char* to		//!<To addresses.(adress_A,address_B)
 								,const char* data	//!<Data to be sent.
+								,void (*TotalSize)(int32,void*)=NULL  //!<Callback func update StatusBar max size.
+								,void (*SentSize)(int32,void*)=NULL   //!<Callback func update StatusBar value.
+								,void* cookie = NULL	//!< Cookie.
 								);
 		//!Returns the last SMTP command response log.
 		const char*		Log() const {return fLog.String();}

@@ -28,11 +28,6 @@ public:
 						SmtpLooper(BHandler *handler,BLooper *looper);
 			//!Destructor.
 						~SmtpLooper();
-			//!Sent mail.	Returns B_ERROR if failed to send.
-		status_t		SendMail(const char* from 	//!<From address.
-								,const char* to		//!<To addresses.(adress_A,address_B)
-								,const char* data	//!<Data to be sent.
-								);
 			//!Send mail by HMailItem pointer. Returns B_ERROR if failed to send.
 		status_t		SendMail(HMailItem *item);
 			//!Close SMTP socket.
@@ -46,6 +41,9 @@ protected:
 			//!Post error.
 			void		PostError(const char* log);
 private:
+		friend	void	SmtpTotalSize(int32 size,void *cookie); //!<Callback func update StatusBar max size.
+		friend	void	SmtpSentSize(int32 size,void *cookie); //!<Callback func update StatusBar value.
+		
 	SmtpClient			*fSmtpClient;			//!<SMTP socket.
 		BHandler		*fHandler;			//!<Target handler.
 		BLooper			*fLooper;			//!<Target looper.
