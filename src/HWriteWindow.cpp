@@ -732,16 +732,10 @@ HWriteWindow::MessageReceived(BMessage *message)
 		BFile file(&ref,B_READ_ONLY);
 		if(file.InitCheck() != B_OK)
 			return;
-		off_t size;
-		file.GetSize(&size);
-		char *buf = new char[size+1];
-		size = file.Read(buf,size);
-		buf[size] = '\0';
-		int32 length = strlen(buf);
+		BString str;
+		str << file;
 		int32 offset = fTextView->TextLength();
-		fTextView->Insert(offset,buf,length);
-		delete[] buf;
-		PRINT(("ADD SIGNATURE\n"));		
+		fTextView->Insert(offset,str.String(),str.Length());
 		break;
 	}
 	// Add enclosure
@@ -1425,13 +1419,9 @@ HWriteWindow::OpenTemplate(entry_ref& ref)
 	BFile file(&ref,B_READ_ONLY);
 	if(file.InitCheck() != B_OK)
 		return;
-	off_t size;
-	file.GetSize(&size);
-	char *buf = new char[size+1];
-	size = file.Read(buf,size);
-	buf[size] = '\0';
-	
-	fTextView->SetText(buf);
+	BString str;
+	str << file;
+	fTextView->SetText(str.String());
 }
 
 /***********************************************************
