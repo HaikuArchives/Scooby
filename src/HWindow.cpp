@@ -1261,7 +1261,8 @@ HWindow::ReplyMail(HMailItem *item,bool reply_all)
 		to << "," <<cc;	
 	}
 	
-	subject.Insert("Re:",0);
+	if( strncmp(subject.String(),"Re:",3) != 0)
+		subject.Insert("Re: ",0);
 	off_t size;
 	file.GetSize(&size);
 	char *buf = new char[size+1];
