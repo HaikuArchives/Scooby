@@ -152,16 +152,15 @@ HRulerView::Pulse()
 	int32 line_offset = fTextView->OffsetAt(fTextView->CurrentLine());
 	int32 start,end;
 	fTextView->GetSelection(&start,&end);
-	
+
 	int32 size= start-line_offset;
-	
-	if(size < 0)
+	if(size <= 0)
 		return;
+		
 	char *buf = new char[size+1];
 	if(!buf)
 		return;
-	fTextView->GetText(line_offset,start,buf);
-	
+	fTextView->GetText(line_offset,size,buf);// GetText adds a NULL.
 	float pos = fFont.StringWidth(buf)+4.0;
 	if(pos != fCaretPosition)
 	{
