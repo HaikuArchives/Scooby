@@ -17,6 +17,7 @@ enum{
 	SIMPLE_TYPE
 };
 
+class BListView;
 
 class HMailItem;
 
