@@ -1023,7 +1023,7 @@ HWindow::MenusBeginning()
  * CheckFrom
  ***********************************************************/
 void
-HWindow::CheckFrom(entry_ref ref)
+HWindow::CheckFrom(entry_ref &ref)
 {
 	// reset idle time
 	fCheckIdleTime = time(NULL);
