@@ -28,14 +28,14 @@ else
 			./libs/ComboBox/libComboBox_ppc.a
 endif
 #	set the directory where object files and binaries will be created
-	OBJ_DIR		:= obj.$(CPU)
+	OBJ_DIR		:= $(DIR)obj.$(CPU)
 
 #	create some default settings
 ifeq ($(NAME), )
 	NAME = NameThisApp
 endif
 # 	specify that the binary should be created in the object directory
-	TARGET		:= "$(NAME)"
+	TARGET		:= "$(DIR)$(NAME)"
 
 #	specify the mimeset tool
 	MIMESET		:= mimeset
