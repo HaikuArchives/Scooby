@@ -108,11 +108,13 @@ HApp::MessageReceived(BMessage *message)
 		int32 count;
 		type_code type;
 		message->GetInfo("refs",&type,&count);
+		PRINT(("Count:%d\n",count));
 		for(int32 i = 0;i < count;i++)
 		{
 			if(message->FindRef("refs",i,&ref) == B_OK && 
 				message->FindString("path",i,&path) == B_OK)
 			{
+				PRINT(("MOVE\n"));
 				MoveFile(ref,path);
 			}
 		}
@@ -701,8 +703,6 @@ HApp::MoveFile(entry_ref file_ref,const char *kDir_Path)
 		fWindow->Unlock();
 	}
 	//
-	if(BNode(&file_ref).InitCheck() != B_OK)
-		return;
 	BPath filePath(&file_ref);
 	BDirectory destDir(kDir_Path);
 

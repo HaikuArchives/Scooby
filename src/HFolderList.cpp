@@ -24,9 +24,6 @@
 #include <E-mail.h>
 #include <StopWatch.h>
 
-// Extra folder attribute
-#define	SCOOBY_FOLDER_EXPANDED "Scooby:FolderExpanded"
-//
 
 /***********************************************************
  * Constructor
