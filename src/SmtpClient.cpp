@@ -282,7 +282,7 @@ SmtpClient::SendMail(const char* from
 	for(int32 i = 0;i < len;i++)
 	{
 		char c = to[i];
-		if(c != ',')
+		if(c != ',' && c != ' ')
 			addr += (char)c;
 		if(c == ','||i == len-1)
 		{
