@@ -1,6 +1,7 @@
 #include "SmtpClient.h"
 #include "md5.h"
 #include "base64.h"
+#include "Encoding.h"
 
 #include <stdlib.h>
 #include <Debug.h>
@@ -267,6 +268,7 @@ SmtpClient::SendMail(const char* from
 					,void* cookie
 					)
 {
+	Encoding encoding;
 	// Set mail from
 	BString cmd = "MAIL FROM: ";
 
@@ -292,6 +294,9 @@ SmtpClient::SendMail(const char* from
 			const char* kText = addr.String();
 			
 			ParseAddress(kText,cmd);
+			// Convert to mime-B
+			encoding.UTF82Mime(cmd,encoding.DefaultEncoding());
+			//
 			if(SendCommand(cmd.String(),false) != B_OK)
 			{
 				PRINT(("Err: rcpt\n"));
