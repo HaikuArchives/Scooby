@@ -11,6 +11,7 @@ const bigtime_t kIMAP4ClientTimeout = 1000000*60; // 60 sec
 IMAP4Client::IMAP4Client()
 	:BNetEndpoint(SOCK_STREAM)
 	,fCommandCount(0)
+	,fIdleTime(0)
 {
 //	BNetDebug::Enable(true);
 	SetTimeout(kIMAP4ClientTimeout);
@@ -248,7 +249,6 @@ IMAP4Client::FetchFields(int32 index,
 		while(1)
 		{
 			r = ReceiveLine(line);
-			
 			if(r <=0)
 				break;
 			//PRINT(("%s\n",line.String() ));
@@ -327,8 +327,8 @@ IMAP4Client::FetchBody(int32 index,BString &outBody)
 	
 	if( SendCommand(cmd.String()) == B_OK)
 	{
-		r = ReceiveLine(line);
-		
+		while(line.FindFirst("FETCH") == B_ERROR)
+			r = ReceiveLine(line);
 		if(r <=0)
 			return B_ERROR;
 			
@@ -386,6 +386,7 @@ IMAP4Client::FetchBody(int32 index,BString &outBody)
 status_t
 IMAP4Client::Noop()
 {
+	PRINT(("Send Noop\n"));
 	BString out;
 	int32 index = fCommandCount+1;
 	
@@ -412,6 +413,11 @@ IMAP4Client::Noop()
 bool
 IMAP4Client::IsAlive()
 {
+	time_t now = time(NULL);
+	// If idle time is more than 10 min
+	// Check connection with NOOP command
+	if(difftime(now,fIdleTime) <= 600)
+		return true;
 	return (Noop() == B_OK)?true:false;
 }
 
@@ -437,6 +443,9 @@ IMAP4Client::SendCommand(const char* command)
 	::sprintf(cmd,"%.3ld %s\r\n",++fCommandCount,command);
 	int32 cmd_len = strlen(cmd);
 	//PRINT(("%s",cmd));
+	// Reset idle time
+	fIdleTime = time(NULL);
+	//
 	if( Send(cmd,cmd_len) == cmd_len)
 		err = B_OK;
 	delete[] cmd;
