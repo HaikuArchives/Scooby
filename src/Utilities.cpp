@@ -6,6 +6,7 @@
 #include <File.h>
 #include <stdio.h>
 #include <dirent.h>
+#include <MenuItem.h>
 
 void
 DisallowFilenameKeys(BTextView *textView)
@@ -71,4 +72,26 @@ int32 ReadLine(BFile *file,BString* out)
 			break;
 	}
 	return len;
+}
+
+
+void EnableMenuItem(BMenuItem *item,bool enabled)
+{
+	if(!item)
+		return;
+	item->SetEnabled(enabled);
+}
+
+void MarkMenuItem(BMenuItem *item,bool marked)
+{
+	if(!item)
+		return;
+	item->SetMarked(marked);
+}
+
+void SetMenuItemLabel(BMenuItem *item,const char* label)
+{
+	if(!item)
+		return;
+	item->SetLabel(label);
 }

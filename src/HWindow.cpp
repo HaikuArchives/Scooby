@@ -978,8 +978,7 @@ HWindow::MenusBeginning()
 	for(int32 i = 0;i < 6;i++)
 	{
 		item = KeyMenuBar()->FindItem(kAttr[i]);
-		if(item) 
-			item->SetMarked(fMailList->IsColumnShown(attr_col[i]));
+		MarkMenuItem(item,fMailList->IsColumnShown(attr_col[i]));
 	}
 	
 	bool mailSelected = (fMailList->CurrentSelection() <0)?false:true;
@@ -987,27 +986,20 @@ HWindow::MenusBeginning()
 	if(is_kind_of(fMailView,HMailView))
 	{
 		HMailView *view = cast_as(fMailView,HMailView);
-		item = KeyMenuBar()->FindItem(M_HEADER);
-		item->SetMarked(view->IsShowingHeader());
-		item->SetEnabled(mailSelected);
-		item = KeyMenuBar()->FindItem(M_RAW);
-		item->SetMarked(view->IsShowingRawMessage());
-		item->SetEnabled(mailSelected);
+
+		MarkMenuItem(KeyMenuBar()->FindItem(M_HEADER),view->IsShowingHeader());
+		EnableMenuItem(KeyMenuBar()->FindItem(M_HEADER),mailSelected);
+		MarkMenuItem(KeyMenuBar()->FindItem(M_RAW),view->IsShowingRawMessage());
+		EnableMenuItem(KeyMenuBar()->FindItem(M_RAW),mailSelected);
 	}else{
-		item = KeyMenuBar()->FindItem(M_HEADER);
-		item->SetMarked(false);
-		item->SetEnabled(false);
-		item = KeyMenuBar()->FindItem(M_RAW);
-		item->SetMarked(false);
-		item->SetEnabled(false);
+		EnableMenuItem(KeyMenuBar()->FindItem(M_HEADER),false);
+		MarkMenuItem(KeyMenuBar()->FindItem(M_HEADER),false);		
+		EnableMenuItem(KeyMenuBar()->FindItem(M_RAW),false);
+		MarkMenuItem(KeyMenuBar()->FindItem(M_RAW),false);
 	}
-	item = KeyMenuBar()->FindItem(M_FILTER_MAIL);
-	item->SetEnabled(mailSelected);
-	item = KeyMenuBar()->FindItem(M_PRINT_MESSAGE);
-	item->SetEnabled(mailSelected);
-	item = KeyMenuBar()->FindItem(M_ADD_TO_BLACK_LIST);
-	item->SetEnabled(mailSelected);
-	
+	EnableMenuItem(KeyMenuBar()->FindItem(M_FILTER_MAIL),mailSelected);
+	EnableMenuItem(KeyMenuBar()->FindItem(M_PRINT_MESSAGE),mailSelected);
+	EnableMenuItem(KeyMenuBar()->FindItem(M_ADD_TO_BLACK_LIST),mailSelected);
 	// Copy	
 	int32 start,end;
 	BTextControl *ctrl(NULL);
@@ -1021,9 +1013,9 @@ HWindow::MenusBeginning()
 			view->GetSelection(&start,&end);
 	
 			if(start != end)
-				KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+				EnableMenuItem(KeyMenuBar()->FindItem(B_COPY ),true);
 			else
-				KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+				EnableMenuItem(KeyMenuBar()->FindItem(B_COPY ),false);
 		}
 	}else if((ctrl = fDetailView->FocusedView())){
 		BTextView *textview = ctrl->TextView();
@@ -1031,31 +1023,31 @@ HWindow::MenusBeginning()
 		
 		if(start != end)
 		{
-			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(true);
-			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_CUT ),true);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_COPY ),true);
 		} else {
-			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
-			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_CUT ),false);
+			EnableMenuItem(KeyMenuBar()->FindItem(B_COPY ),false);
 		}
 	}
 	// Disabled items
-	KeyMenuBar()->FindItem(B_UNDO)->SetEnabled(false);
-	KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
-	KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
-	KeyMenuBar()->FindItem(M_POP_CONNECT)->SetEnabled(fFolderList->IsGatheredLocalFolders());
-	KeyMenuBar()->FindItem(M_CHECK_FROM)->SetEnabled(fFolderList->IsGatheredLocalFolders());
+	EnableMenuItem(KeyMenuBar()->FindItem(B_UNDO ),false);
+	EnableMenuItem(KeyMenuBar()->FindItem(B_CUT ),false);
+	EnableMenuItem(KeyMenuBar()->FindItem(B_PASTE ),false);
+	EnableMenuItem(KeyMenuBar()->FindItem(M_POP_CONNECT ),fFolderList->IsGatheredLocalFolders());
+	EnableMenuItem(KeyMenuBar()->FindItem(M_CHECK_FROM ),fFolderList->IsGatheredLocalFolders());
 	// Select All
 	item = KeyMenuBar()->FindItem(B_SELECT_ALL);
 	BView *view = CurrentFocus();
 	
 	if(is_kind_of(view,HMailList))
-		item->SetEnabled(true);
+		EnableMenuItem(item,true);
 	else if(is_kind_of(view,BTextView))
-		item->SetEnabled(true);
+		EnableMenuItem(item,true);
 	else if(ctrl)
-		item->SetEnabled(true);
+		EnableMenuItem(item,true);
 	else
-		item->SetEnabled(false);
+		EnableMenuItem(item,false);
 	// Recreate check from items
 	// Delete all items
 	BMenu *subMenu = KeyMenuBar()->SubmenuAt(2);
