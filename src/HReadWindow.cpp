@@ -81,11 +81,12 @@ HReadWindow::InitGUI()
 		rect.bottom -= B_H_SCROLL_BAR_HEIGHT;
 		HMailView *mailView = new HMailView(rect,true,NULL);
 		mailView->MakeEditable(false);
-		BScrollView *scroll = new BScrollView("scroller",mailView,B_FOLLOW_ALL,0,false,true);
+		BScrollView *scroll = new BScrollView("scroller",mailView,B_FOLLOW_ALL,B_WILL_DRAW,false,true);
 		AddChild(scroll);
 		//================ StatusBar ==================
 		BRect statusRect(Bounds());
 		statusRect.top = statusRect.bottom - B_H_SCROLL_BAR_HEIGHT;
+		statusRect.OffsetBy(0,1);
 		StatusBar *statusbar = new StatusBar(statusRect,NULL,B_FOLLOW_BOTTOM|B_FOLLOW_LEFT_RIGHT,B_WILL_DRAW);
 		AddChild(statusbar);
 		BString label;
