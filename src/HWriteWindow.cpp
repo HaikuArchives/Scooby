@@ -113,11 +113,7 @@ HWriteWindow::HWriteWindow(BRect rect
 		{
 			HString header;
 			BString line;
-			char *buf = header.LockBuffer(header_len+1);
-			fReplyFile->Read(buf,header_len);
-			buf[header_len] = '\0';
-			header.UnlockBuffer();		
-			
+			header << *fReplyFile;
 			int32 pos = 0;
 			BString charset;
 			
