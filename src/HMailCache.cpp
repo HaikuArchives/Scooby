@@ -85,7 +85,7 @@ HMailCache::Open(BList &outList,HFolderItem *folder)
 	INTEGER_DATA int_data;
 	ENTRY_REF_DATA ref_data;
 	HMailItem *item;
-	int32 unread = 0;
+	int32 unread = folder->Unread();
 	char *name,*status,*subject,*from,*to,*cc,*reply,*priority;
 	BWindow *window = folder->Owner()->Window();
 	BListView *list = cast_as(window->FindView("maillist"),BListView);
