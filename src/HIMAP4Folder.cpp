@@ -268,13 +268,7 @@ HIMAP4Folder::GatherChildFolders()
 	BMessage childMsg(M_ADD_UNDER_ITEM);
 	char displayName[B_FILE_NAME_LENGTH];
 	char *p;
-	
-	const char* server = fServer.String();
-	const char* login = fLogin.String();
-	const char* password = fPassword.String();
-	int16 port = fPort;
-	BListView *list = fOwner;
-	
+		
 	HIMAP4Folder *folder;
 	
 	for(int32 i = 0;i < count;i++)
