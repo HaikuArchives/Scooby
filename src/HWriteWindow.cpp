@@ -777,6 +777,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	::find_directory(B_USER_DIRECTORY,&path);
 	path.Append("mail");
 	path.Append(OUTBOX);
+	::create_directory(path.Path(),0777);
 	
 	BString filename = subject;
 	filename.ReplaceAll("/","_");
