@@ -277,6 +277,8 @@ HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name)
 		BNodeInfo ninfo(&file);
 		ninfo.SetType(item->ContentType());
 	}
+	delete[] buf;
+	delete[] data;
 }
 
 /***********************************************************
@@ -305,12 +307,6 @@ HHtmlMailView::ResetAttachmentList()
 {
 	ClearList();
 	// Reset attachment tab
-/*	BTabView *tabview = cast_as(FindView("tabview"),BTabView);
-	BTab *tab = tabview->TabAt(2);
-	tab->SetLabel(_("Attachment"));
-	tab->SetEnabled(false);
-	tabview->Invalidate();
-*/
 	HTabView *tabview = cast_as(FindView("tabview"),HTabView);
 	tabview->SetTabLabel(2,_("Attachment"));
 	tabview->SetTabEnabled(2,false);
