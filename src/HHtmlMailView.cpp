@@ -579,7 +579,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 				BString uri("");
 				while(text[i] != '\0'&& IsURI(text[i]))
 					uri += text[i++];
-				tmp += "<address>";
+				tmp += "<i>";
 				tmp += "<a href=\"";
 				tmp += uri;
 				tmp += "\"";
@@ -587,7 +587,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 				tmp += ">";
 				tmp += uri;
 				tmp += "</a>";
-				tmp += "</address>";
+				tmp += "</i>";
 				ConvertToHtmlCharactor(text[i],buf,&translate_space);
 				tmp += buf;
 			}else{

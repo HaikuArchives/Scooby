@@ -437,7 +437,7 @@ HFolderItem::StartCreateCache()
 /***********************************************************
  * ReadFromCache
  ***********************************************************/
-#define __CALC__
+//#define __CALC__
 #define __NEW_CACHE__
 status_t
 HFolderItem::ReadFromCache()
@@ -449,7 +449,7 @@ HFolderItem::ReadFromCache()
 #endif
 	BPath path(&fFolderRef);
 	BString name = path.Leaf();
-	name << ".cache";
+	name += ".cache";
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append("FolderCache");
@@ -948,7 +948,7 @@ bool
 HFolderItem::IsSelected()
 {
 	int32 sel =  fOwner->CurrentSelection();
-	if(sel < 0 && sel == fOwner->IndexOf(this))
+	if(sel < 0 || sel != fOwner->IndexOf(this))
 		return false;
 	return true;
 }
