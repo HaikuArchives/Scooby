@@ -31,6 +31,7 @@
 #include <Autolock.h>
 #include <MenuField.h>
 #include <Beep.h>
+#include <Clipboard.h>
 
 #define DRAFT_FOLDER "Drafts"
 #define TEMPLATE_FOLDER "Templates"
@@ -81,7 +82,6 @@ HWriteWindow::HWriteWindow(BRect rect
 	min_width = 400;
 	min_height = 300;
 	SetSizeLimits(min_width,max_width,min_height,max_height);
-	
 }
 
 /***********************************************************
@@ -139,7 +139,17 @@ HWriteWindow::InitMenu()
 	utils.AddMenuItem(aMenu,"Close",B_QUIT_REQUESTED,this,this,'W',0);
 	
     menubar->AddItem( aMenu ); 
-   
+    //  Edit
+   	aMenu = new BMenu("Edit");
+   	utils.AddMenuItem(aMenu,"Undo",B_UNDO,this,this,'Z',0);
+   	aMenu->AddSeparatorItem();
+   	utils.AddMenuItem(aMenu,"Cut",B_CUT,this,this,'X',0);
+   	utils.AddMenuItem(aMenu,"Copy",B_COPY,this,this,'C',0);
+   	utils.AddMenuItem(aMenu,"Paste",B_PASTE,this,this,'V',0);
+   	aMenu->AddSeparatorItem();
+   	utils.AddMenuItem(aMenu,"Select All",B_SELECT_ALL,this,this,'A',0);
+   	menubar->AddItem(aMenu);
+   	// Mail
 	aMenu = new BMenu("Mail");
 	utils.AddMenuItem(aMenu,"Send Now",M_SEND_NOW,this,this,'M',0,
 					rsrc_utils.GetBitmapResource('BBMP',"Send"));
@@ -224,8 +234,12 @@ HWriteWindow::InitGUI()
 	BScrollView *scroll = new BScrollView("scroll",fTextView,B_FOLLOW_ALL,
 										B_WILL_DRAW,true,true);
 	AddChild(scroll);
-	
-	
+	fTextView->SetDoesUndo(true);
+	KeyMenuBar()->FindItem(B_CUT)->SetTarget(fTextView,this);
+	KeyMenuBar()->FindItem(B_COPY)->SetTarget(fTextView,this);
+	KeyMenuBar()->FindItem(B_PASTE)->SetTarget(fTextView,this);
+	KeyMenuBar()->FindItem(B_SELECT_ALL)->SetTarget(fTextView,this);
+	KeyMenuBar()->FindItem(B_UNDO)->SetTarget(fTextView,this);
 	/********** Toolbarの追加 ***********/
 	BRect toolrect = Bounds();
 	toolrect.top += (KeyMenuBar()->Bounds()).Height();
@@ -519,6 +533,70 @@ HWriteWindow::MenusBeginning()
 	{
 		item->SetEnabled((list->CurrentSelection() <0 )?false:true);
 	}
+	int32 start,end;
+	
+	// Cut & Copy	
+	fTextView->GetSelection(&start,&end);
+	if(start != end)
+	{
+		KeyMenuBar()->FindItem(B_CUT)->SetEnabled(true);
+		KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+	} else {
+		KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
+		KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+	}
+	// Undo
+	item = KeyMenuBar()->FindItem(B_UNDO);
+	if(fTextView->DoesUndo())
+	{
+		item->SetEnabled(true);
+		bool redo;
+		switch(fTextView->UndoState(&redo))
+		{
+		case B_UNDO_UNAVAILABLE:
+			item->SetLabel("Can't Undo");
+			item->SetEnabled(false);
+			break;
+		case B_UNDO_TYPING:
+			item->SetLabel(redo?"Redo Typing":"Undo Typing");
+			break;
+		case B_UNDO_CUT:
+			item->SetLabel(redo?"Redo Cut":"Undo Cut");
+			break;
+		case B_UNDO_PASTE:
+			item->SetLabel(redo?"Redo Paste":"Undo Paste");
+			break;
+		case B_UNDO_CLEAR:
+			item->SetLabel(redo?"Redo Clear":"Undo Clear");
+			break;
+		case B_UNDO_DROP:
+			item->SetLabel(redo?"Redo Drop":"Undo Drop");
+			break;
+		}
+	}else{
+		item->SetLabel("Can't Undo");
+		item->SetEnabled(false);
+	}
+	// Paste
+	BMessage *clip = NULL;
+    	
+    if(be_clipboard->Lock())
+    {
+    	clip = be_clipboard->Data();
+    	
+    	if(clip == NULL)
+    		KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
+    	else{
+    		type_code type;
+    		int32 count;
+    		clip->GetInfo("text/plain",&type,&count);
+    		if(count != 0)
+    			KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(true);
+    		else
+    			KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
+    	}
+    	be_clipboard->Unlock();
+    }
 }
 
 /***********************************************************
