@@ -197,7 +197,7 @@ HApp::ArgvReceived(int32 argc,char** argv)
 	for(int32 i = 0;i < argc;i++)
 	{
 		char *p;
-		PRINT(("%d %s\n",i,argv[i]));
+		//PRINT(("%d %s\n",i,argv[i]));
 		if((p= strstr(argv[i],"mailto:")) )
 		{
 			p+=7;
