@@ -119,7 +119,7 @@ $(OBJ_DIR)/HFilterView.o : ./src/HFilterView.cpp src/HFilterView.h \
 $(OBJ_DIR)/HAddressView.o : ./src/HAddressView.cpp src/HAddressView.h \
  libs/Utils/MenuUtils.h libs/Utils/ResourceUtils.h src/HApp.h \
  src/HPrefs.h libs/Utils/HSetting.h libs/Utils/ArrowButton.h \
- libs/Utils/IconMenuItem.h
+ libs/Utils/IconMenuItem.h src/Utilities.h
 $(OBJ_DIR)/HCriteriaView.o : ./src/HCriteriaView.cpp src/HCriteriaView.h \
  src/HApp.h
 $(OBJ_DIR)/HAccountView.o : ./src/HAccountView.cpp src/HAccountView.h src/HApp.h \
