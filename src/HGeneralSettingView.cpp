@@ -19,18 +19,30 @@
 
 const char *kTimeFormat[] = {"%a, %d %b %Y %r",
 							"%a, %d %b %y %T",
+							"%m/%d/%Y %r",
 							"%d/%m/%Y %r",
+							"%m/%d/%y %T",
 							"%d/%m/%y %T",
 							"%Y/%m/%d %r",
+							"%Y/%d/%m %r",
 							"%y/%m/%d %T",
-							"%m/%d %d"};
-const char* kFormatedTime[] = {"Mon, 05 Feb 2001 04:33:10 PM",
-								"Mon, 05 Feb 01 16:33:10",
-								"05/02/2001 04:33:10 PM",
-								"05/02/01 16:33:10",
-								"2001/02/05 04:33:10 PM",
-								"01/02/05 16:33:10",
-								"02/05 16:33:10"};
+							"%y/%d/%m %T",
+							"%m/%d %d",
+							"%d/%m %d"
+							};
+const char* kFormatedTime[] = {"Mon, 15 Feb 2001 04:33:10 PM",
+								"Mon, 15 Feb 01 16:33:10",
+								"02/15/2001 04:33:10 PM",
+								"15/02/2001 04:33:10 PM",
+								"02/15/01 16:33:10",
+								"15/02/01 16:33:10",
+								"2001/02/15 04:33:10 PM",
+								"2001/15/02 04:33:10 PM",
+								"01/02/15 16:33:10",
+								"01/15/02 16:33:10",
+								"02/15 16:33:10",
+								"15/02 16:33:10"
+								};
 
 const char* kLabels[] = {"Cache mail folders",
 							"Create folder caches on startup (in background)",
@@ -147,8 +159,10 @@ HGeneralSettingView::InitGUI()
 	menu->Superitem()->SetLabel( label.String() ); 
 	
 	menu = new BMenu("sizemenu");
+	menu->AddItem(new BMenuItem(" 9",NULL));
 	menu->AddItem(new BMenuItem("10",NULL));
 	menu->AddItem(new BMenuItem("12",NULL));
+	menu->AddItem(new BMenuItem("13",NULL));
 	menu->AddItem(new BMenuItem("14",NULL));
 	menu->AddItem(new BMenuItem("18",NULL));
 	menu->AddItem(new BMenuItem("24",NULL));
