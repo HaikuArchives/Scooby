@@ -89,7 +89,8 @@ HAccountView::InitGUI()
 
 	while(err == B_OK)
 	{
-		if((err = dir.GetNextEntry(&entry)) == B_OK )
+		if((err = dir.GetNextEntry(&entry)) == B_OK 
+			&& !entry.IsDirectory())
 		{
 			char name[B_FILE_NAME_LENGTH+1];
 			entry.GetName(name);
