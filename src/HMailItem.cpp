@@ -355,7 +355,14 @@ int HMailItem::CompareItems(const CLVListItem *a_Item1,
 	else if(type2 == CLVColTruncateUserText || type2 == CLVColUserText)
 		text2 = Item2->GetUserText(KeyColumn,-1);
 	
-	return strcasecmp(text1,text2);
+	int pos1 = 0,pos2 = 0;
+	
+	if(strncasecmp(text1,"Re:",3) == 0)
+		pos1 = (text1[4]==' ')?4:3;
+	if(strncasecmp(text2,"Re:",3) == 0)
+		pos2 = (text2[4]==' ')?4:3;
+	
+	return strcasecmp(text1+pos1,text2+pos2);
 	}
 	return 0;
 }
