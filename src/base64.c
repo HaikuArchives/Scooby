@@ -7,7 +7,7 @@ static char index_64[128] = {
 	-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
 	-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
 	-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,62, -1,-1,-1,63,
-	52,53,54,55, 56,57,58,59, 60,61,-1,-1, -1,-1,-1,-1,
+	52,53,54,55, 56,57,58,59, 60,61,-1,-1, -1, 0,-1,-1,
 	-1, 0, 1, 2, 3, 4, 5, 6,  7, 8, 9,10,  11,12,13,14,
 	15,16,17,18, 19,20,21,22, 23,24,25,-1, -1,-1,-1,-1,
 	-1,26,27,28, 29,30,31,32, 33,34,35,36, 37,38,39,40,
@@ -69,7 +69,7 @@ ssize_t decode64(char *out,const char *_in, unsigned inlen)
 	
  	k=0;
  	// Eliminate invalid charactors.
- 	for(i = 0;i < inlen;i++)
+	for(i = 0;i < inlen;i++)
  	{
  		c1 = _in[i];
  		if(CHAR64(c1) == -1)
@@ -95,9 +95,9 @@ ssize_t decode64(char *out,const char *_in, unsigned inlen)
         c2 = *in++;
         if(CHAR64(c2) == -1 ) {PRINT(("Invalid2:%d\n",c2));}
         c3 = *in++;
-        if(CHAR64(c3) == -1 ) {PRINT(("Invalid3:%d\n",c3)); c3=0;}
+        if(CHAR64(c3) == -1 ) {PRINT(("Invalid3:%d\n",c3));}
         c4 = *in++;
-        if(CHAR64(c4) == -1 ) {PRINT(("Invalid4:%d\n",c4)); c4=0;}
+        if(CHAR64(c4) == -1 ) {PRINT(("Invalid4:%d\n",c4));}
         *out++ = (CHAR64(c1) << 2) | (CHAR64(c2) >> 4);
         len++;
         if (c3 != '=')
@@ -111,9 +111,7 @@ ssize_t decode64(char *out,const char *_in, unsigned inlen)
             }
         }
     }
-	
     *out='\0'; /* terminate string */
  	free(buf);
- 	
  	return len;
 }
