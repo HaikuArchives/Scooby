@@ -1,25 +1,53 @@
 # Application Name
 NAME = Scooby
+
 # Resources
 RSRCS= ./resources/Icon.rsrc ./resources/Resource.rsrc
+
 # Libraries
-LIBS= root be netapi net tracker mail
+REG_LIBS = root be tracker mail
+NET_LIBS = netapi net
+BONE_LIBS = bnetapi bind socket
+# if libbind.so exists, assume we are running BONE
+ifeq ($(wildcard /system/lib/libbind.so),)
+LIBS= $(REG_LIBS) $(NET_LIBS)
+else
+LIBS= $(REG_LIBS) $(BONE_LIBS)
+endif
+
 # Library path
 LIBPATHS= 
+
 # System include path
 SYSTEM_INCLUDE_PATHS =
+
 # Local include path 
 LOCAL_INCLUDE_PATHS = ./libs/ComboBox ./libs/Utils ./libs/Santa ./libs/Toolbar
+
 # OPTIMIZE
 OPTIMIZE= FULL
+
 # Defines
+# if libbind.so exists, assume we are running BONE
+ifeq ($(wildcard /system/lib/libbind.so),)
 DEFINES= DEBUG USE_SCANDIR
+else
+DEFINES= DEBUG USE_SCANDIR BONE
+endif
+
+# Linker flag required by BONE
+ifneq ($(wildcard /system/lib/libbind.so),)
+LDFLAGS= -nodefaultlibs
+endif
+
 # USE_SPLOCALE: Enable SpLocale supprt
 # USE_ICONV:	Enable iconv support
 USE_SPLOCALE = 0
 USE_ICONV = 0
+
 # Warnings
 WARNINGS = ALL
+
 # Sources
 -include .all_sources
 include .makefile.base
