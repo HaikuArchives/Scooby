@@ -313,7 +313,7 @@ HWriteWindow::InitMenu()
 
 	AddChildItem(aMenu,path.Path(),M_ADD_SIGNATURE,true);
 	menubar->AddItem( aMenu );
-	AddOnMenu *menu = new AddOnMenu(_("Add-Ons"),"Scooby/EditorAddOns",M_EDITOR_ADDON);
+	AddOnMenu *menu = new AddOnMenu(_("Add-Ons"),"Scooby/EditorAddOns",M_EDITOR_ADDON,true);
 	menu->Build();
 	menubar->AddItem(menu);
     AddChild(menubar);
