@@ -101,7 +101,8 @@ HWindow::InitMenu()
 	
 	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
-	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,be_app,be_app,0,0,
+	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,
+							be_app,be_app,'P',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"PageSetup"));
 	aMenu->AddSeparatorItem();
 	label = _("Preferences");
@@ -433,16 +434,15 @@ HWindow::MessageReceived(BMessage *message)
 	// Folder selection was changed 
 	case M_LOCAL_SELECTION_CHANGED:
 	{
-		fMailList->MakeEmpty();
 		fDetailView->SetInfo("","","");
 		PostMessage(M_SET_CONTENT,fMailView);
+		PostMessage(message,fMailList);
 		
 		int32 count;
 		type_code type;
 		message->GetInfo("pointer",&type,&count);
 		if(count>0)
 		{
-			PostMessage(message,fMailList);
 			fMailCaption->StopBarberPole();
 		}
 		break;
@@ -459,6 +459,7 @@ HWindow::MessageReceived(BMessage *message)
 		HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
 		BMessage msg(*message);
 		msg.AddPointer("view",fMailView);
+		msg.AddPointer("detail",fDetailView);
 		msg.AddString("job_name",item->fSubject.String());
 		be_app->PostMessage(&msg);
 		break;
@@ -1702,7 +1703,7 @@ HWindow::QuitRequested()
 	pos = fVSplitter->GetBarPosition();
 	((HApp*)be_app)->Prefs()->SetData("verticalsplit",pos);
 	// Save col size
-	fMailList->SaveColumns();
+	fMailList->SaveColumnsAndPos();
 	fMailList->MakeEmpty();
 	// Delete all folder items
 	fFolderList->DeleteAll();

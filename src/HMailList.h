@@ -47,7 +47,7 @@ public:
 					HMailList(BRect frame,BetterScrollView **scroll,const char* title);
 	virtual			~HMailList();
 	
-			void	SaveColumns();
+			void	SaveColumnsAndPos();
 			bool	IsColumnShown(ColumnType type);
 			void	SetColumnShown(ColumnType type,bool shown);
 			void	RemoveMails(BList *list);
@@ -66,12 +66,14 @@ protected:
 										int32 sort_key,
 										int32 sort_mode,
 										HMailItem *item);
-			void	RefreshColumns(entry_ref ref);
+			status_t ReadSettings(entry_ref ref, BMessage *msg);
+			void	RefreshColumns(BMessage *msg);
 			void	SetColumns(int32 flags,
 									int32 *display_order,
 									int32 sort_key,
 									int32 sort_mode,
-									float *column_width);	
+									float *column_width);
+			void	RefreshScrollPos(BMessage *msg);
 private:
 	BEntry  			*fCurrentFolder;
 	BetterScrollView 	*fScrollView;

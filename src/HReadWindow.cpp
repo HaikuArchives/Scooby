@@ -83,7 +83,7 @@ HReadWindow::InitGUI()
 	KeyMenuBar()->FindItem(B_SELECT_ALL)->SetTarget(fMailView,this);
 	*/
 	KeyMenuBar()->FindItem(B_UNDO)->SetTarget(fMailView,this);
-	/********** Toolbarの追加 ***********/
+	/********** Toolbar ***********/
 	BRect toolrect = Bounds();
 	toolrect.top += (KeyMenuBar()->Bounds()).Height();
 	toolrect.bottom = toolrect.top + kToolbarHeight;
@@ -128,7 +128,7 @@ HReadWindow::InitMenu()
 	aMenu = new BMenu(_("File"));
 	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
-	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,be_app,be_app,0,0,
+	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,be_app,be_app,'P',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"PageSetup"));
 	aMenu->AddSeparatorItem();					
 	utils.AddMenuItem(aMenu,_("Close"),B_QUIT_REQUESTED,this,this,'W',0);
@@ -209,6 +209,7 @@ HReadWindow::MessageReceived(BMessage *message)
 		BMessage msg(*message);
 		msg.AddString("job_name",fDetailView->Subject());
 		msg.AddPointer("view",fMailView);
+		msg.AddPointer("detail",fDetailView);
 		be_app->PostMessage(&msg);
 		break;
 	}
