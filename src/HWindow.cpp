@@ -1032,7 +1032,7 @@ HWindow::DeleteMails()
 	HFolderItem *item(NULL);
 	
 	int32 folder = fFolderList->FindFolder(ref);
-
+	
 	if(folder < 0)
 	{
 		fFolderList->AddItem((item = new HFolderItem(ref,fFolderList)));
@@ -1053,6 +1053,7 @@ HWindow::DeleteMails()
 	int32 selected; 
 	int32 count_selected = 0;
 	int32 sel_index = 0;
+	int32 unread_mails = 0;
 	HMailItem *mail(NULL);
 	while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
 	{
@@ -1062,8 +1063,14 @@ HWindow::DeleteMails()
 		count_selected++;
 		msg.AddPointer("mail",mail);
 		msg.AddRef("refs",&mail->fRef);
+		if(!mail->IsRead())
+			unread_mails++;
 	}
-	//fMailList->DeselectAll();
+	if(unread_mails>0)
+	{
+		from->SetName(from->Unread()-unread_mails);
+		fFolderList->InvalidateItem(sel);
+	}
 	PostMessage(&msg);
 }
 
