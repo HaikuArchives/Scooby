@@ -102,6 +102,8 @@ HReadWindow::InitGUI()
 	msg->AddBool("reply_all",true);
 	toolbox->AddButton("All",utils.GetBitmapResource('BBMP',"Reply To All"),msg,"Reply Message To All");
 	toolbox->AddButton("Fwd",utils.GetBitmapResource('BBMP',"Forward"),new BMessage(M_FORWARD_MESSAGE),"Forward Message");
+	toolbox->AddSpace();
+	toolbox->AddButton("Print",utils.GetBitmapResource('BBMP',"Printer"),new BMessage(M_PRINT_MESSAGE),_("Print"));
 	if(fMessenger)
 	{
 		toolbox->AddSpace();
