@@ -50,6 +50,8 @@ HFindWindow::HFindWindow(BRect rect,const char* name)
  ***********************************************************/
 HFindWindow::~HFindWindow()
 {
+	BTextControl *ctrl = cast_as(FindView("text"),BTextControl);
+	ctrl->SetModificationMessage(NULL);
 }
 
 /***********************************************************
