@@ -584,7 +584,7 @@ HWriteWindow::MessageReceived(BMessage *message)
 			BString text;
 			char *buf = text.LockBuffer(end-start+1);
 			fTextView->GetText(start,end-start,buf);
-			text.UnlockBuffer(end-start);
+			text.UnlockBuffer();
 			text.Insert(">",0);
 			text.ReplaceAll("\n","\n>");
 			int32 len = text.Length();

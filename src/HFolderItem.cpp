@@ -437,7 +437,7 @@ HFolderItem::StartCreateCache()
 /***********************************************************
  * ReadFromCache
  ***********************************************************/
-//#define __CALC__
+#define __CALC__
 #define __NEW_CACHE__
 status_t
 HFolderItem::ReadFromCache()

@@ -22,7 +22,7 @@ public:
 			int32		DataLength() {return fDataLen;}
 			int32		Offset() {return fFileOffset;}	
 
-				void	SetExtracted(bool extracted) {fExtracted = true;}
+				void	SetExtracted(bool extracted) {fExtracted = extracted;}
 				void	SetFileRef(entry_ref &ref) {fFileRef = ref;}
 				
 			entry_ref	FileRef() {return fFileRef;}
