@@ -22,6 +22,7 @@
 #include <Path.h>
 #include <Alert.h>
 #include <FindDirectory.h>
+#include <SupportDefs.h>
 
 
 /***********************************************************
@@ -70,11 +71,14 @@ HAddressView::~HAddressView()
 void
 HAddressView::InitGUI()
 {
-	const float kDivider = StringWidth("Subject:") +7;
+	float divider = StringWidth(_("Subject:")) + 20;
+	divider = max_c(divider , StringWidth(_("From:"))+20);
+	divider = max_c(divider , StringWidth(_("To:"))+20);
+	divider = max_c(divider , StringWidth(_("Bcc:"))+20);
 	
 	BRect rect = Bounds();
 	rect.top += 5;
-	rect.left += 20 + kDivider;
+	rect.left += 20 + divider;
 	rect.right = Bounds().right - 5;
 	rect.bottom = rect.top + 25;
 	
@@ -85,16 +89,16 @@ HAddressView::InitGUI()
 	for(int32 i = 0;i < 5;i++)
 	{
 		ctrl = new BTextControl(BRect(rect.left,rect.top
-								,(i == 1)?rect.right+kDivider:rect.right
+								,(i == 1)?rect.right+divider:rect.right
 								,rect.bottom)
 								,name[i],"","",NULL
 								,B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP,B_WILL_DRAW|B_NAVIGABLE);
 		
 		if(i == 1)
 		{
-			ctrl->SetLabel("Subject:");
-			ctrl->SetDivider(kDivider);
-			ctrl->MoveBy(-kDivider,0);
+			ctrl->SetLabel(_("Subject:"));
+			ctrl->SetDivider(divider);
+			ctrl->MoveBy(-divider,0);
 		}else{
 			ctrl->SetDivider(0);
 		}
@@ -133,9 +137,9 @@ HAddressView::InitGUI()
 	menuRect.bottom = menuRect.top + 25;
 	menuRect.right = menuRect.left + 16;
 	
-	BMenu *toMenu = new BMenu("To:");
-	BMenu *ccMenu = new BMenu("Cc:");
-	BMenu *bccMenu = new BMenu("Bcc:");
+	BMenu *toMenu = new BMenu(_("To:"));
+	BMenu *ccMenu = new BMenu(_("Cc:"));
+	BMenu *bccMenu = new BMenu(_("Bcc:"));
 	BQuery query;
 	BVolume volume;
 	BVolumeRoster().GetBootVolume(&volume);
@@ -239,7 +243,7 @@ HAddressView::InitGUI()
 	field->SetEnabled(!fReadOnly);
 	AddChild(field);
 	
-	BMenu *fromMenu = new BMenu("From:");
+	BMenu *fromMenu = new BMenu(_("From:"));
 	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
@@ -277,7 +281,7 @@ HAddressView::InitGUI()
 			item->SetMarked(true);
 		}
 	}else
-		(new BAlert("","Could not find mail accounts","OK",NULL,NULL,B_WIDTH_AS_USUAL,B_INFO_ALERT))->Go();
+		(new BAlert("",_("Could not find mail accounts"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_INFO_ALERT))->Go();
 		
 	fromMenu->SetRadioMode(true);
 	
