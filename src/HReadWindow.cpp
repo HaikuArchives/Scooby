@@ -16,6 +16,7 @@
 #include <ScrollView.h>
 #include <Beep.h>
 #include <Messenger.h>
+#include <ClassInfo.h>
 
 
 /***********************************************************
@@ -306,6 +307,14 @@ HReadWindow::MenusBeginning()
 	KeyMenuBar()->FindItem(B_UNDO)->SetEnabled(false);
 	KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
 	KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
+	// Select All
+	BView *view = CurrentFocus();
+	if(is_kind_of(view,BTextView))
+		item->SetEnabled(true);
+	else if(ctrl)
+		item->SetEnabled(true);
+	else
+		item->SetEnabled(false);
 }
 
 /***********************************************************
