@@ -253,6 +253,8 @@ HDaemonApp::MessageReceived(BMessage *message)
 				PlayNotifySound();
 			fChecking = false;
 			PRINT(("All check have been finished\n"));
+			RefreshAllCaches();
+			EmptyNewMailList();
 		}
 		break;
 	}
@@ -271,7 +273,6 @@ HDaemonApp::MessageReceived(BMessage *message)
 	case M_RESET_ICON:
 	{
 		fHaveNewMails = false;
-		EmptyNewMailList();
 		break;
 	}
 	case M_NEW_MESSAGE:
@@ -934,6 +935,72 @@ HDaemonApp::SetNextRecvPos(const char *uidl)
 	msg.Flatten(&file,&numBytes);
 	file.SetSize(numBytes);
 	PRINT(("UIDL:%s\n",uidl));
+}
+
+/***********************************************************
+ * RefreshAllCaches
+ ***********************************************************/
+void
+HDaemonApp::RefreshAllCaches()
+{
+	// Refresh folders structure cache
+	BPath path;
+	entry_ref foldersCacheRef;
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append("Scooby");
+	path.Append("Folders.cache");
+	::get_ref_for_path(path.Path(),&foldersCacheRef);
+	
+	BFile file(&foldersCacheRef,B_WRITE_ONLY|B_CREATE_FILE);
+	if(file.InitCheck() == B_OK)
+	{
+		BMessage foldersCache;
+		foldersCache.Unflatten(&file);
+	
+		int32 count;
+		type_code type;
+		entry_ref ref;
+		BEntry entry;
+		struct stat st;
+		time_t oldtime;
+				
+		foldersCache.GetInfo("refs",&type,&count);
+	
+		for(int32 i = 0;i < count;i++)
+		{
+			if(foldersCache.FindRef("refs",i,&ref) != B_OK)
+				continue;
+			if(entry.SetTo(&ref) != B_OK)
+				continue;
+			foldersCache.FindInt32("time",i,&oldtime);
+			entry.GetStat(&st);
+			if(st.st_mtime != oldtime)
+				foldersCache.ReplaceInt32("time",i,st.st_mtime);
+		}
+		file.Seek(0,SEEK_SET);
+		foldersCache.Flatten(&file);
+	}
+	// Refresh mail caches
+	int32 count = fNewMailList.CountItems();
+	entry_ref ref;
+	BEntry *entry;
+	for(int32 i = 0;i < count;i++)
+	{
+		entry = (BEntry*)fNewMailList.ItemAt(i);
+		if(!entry)
+			continue;
+		entry->GetRef(&ref);
+		RefreshMailCache(ref);
+	}
+}
+
+/***********************************************************
+ * RefreshMailCache
+ ***********************************************************/
+void
+HDaemonApp::RefreshMailCache(entry_ref &ref)
+{
+	
 }
 
 /***********************************************************
