@@ -19,17 +19,28 @@
  ***********************************************************/
 HIMAP4Window::HIMAP4Window(BRect rect,
 							BHandler *handler,
-							const char* name,
-							const char* folder,
-							const char* server,
-							int			port,
-							const char* login,
-							const char* password)
-	:BWindow(rect,_("IMAP4 Settings"),B_TITLED_WINDOW,B_NOT_RESIZABLE|B_NOT_ZOOMABLE)
+							HIMAP4Folder *item)
+	:BWindow(rect,_("IMAP4 Property"),B_TITLED_WINDOW,B_NOT_RESIZABLE|B_NOT_ZOOMABLE)
 	,fHandler(handler)
+	,fItem(item)
 {
-	fAddMode = (name)?false:true;
+	fAddMode = (item)?false:true;
 	InitGUI();
+	if(item)
+	{
+		SetText("address",item->Server());
+		SetText("login",item->Login());
+		SetText("password",item->Password());
+		SetText("folder",item->FolderName());
+		SetText("name",item->Name() );
+		BString port;
+		port << (int32)item->Port();
+		SetText("port",port.String());
+		
+		BTextControl *ctrl = cast_as(FindView("name"),BTextControl);
+		if(ctrl)
+			ctrl->SetEnabled(false);
+	}
 }
 
 /***********************************************************
@@ -118,7 +129,14 @@ HIMAP4Window::MessageReceived(BMessage *message)
 			view->Window()->PostMessage(&msg,view);
 						
 		}else{
-		
+			if(!fItem)
+				break;
+			fItem->SetServer(GetText("address"));
+			fItem->SetLogin(GetText("login"));
+			fItem->SetPassword(GetText("password"));
+			fItem->SetFolderName(GetText("folder"));
+			int port = atoi(GetText("address"));
+			fItem->SetPort(port);
 		}
 		this->PostMessage(B_QUIT_REQUESTED);
 		break;
