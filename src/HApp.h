@@ -1,5 +1,5 @@
-#ifndef __HOTMAIL_TRANSFER_H__
-#define __HOTMAIL_TRANSFER_H__
+#ifndef __HAPP_H__
+#define __HAPP_H__
 
 #include "LocaleApp.h"
 
@@ -10,7 +10,7 @@
 class HWindow;
 class HPrefs;
 
-class HApp :public BApplication{
+class HApp :public LocaleApp{
 public:
 							HApp();
 		virtual				~HApp();
@@ -33,6 +33,6 @@ private:
 		BMessage*			fPrintSettings;
 		HWindow 			*fWindow;
 		HPrefs				*fPref;
-		typedef	BApplication	_inherited;
+		typedef	LocaleApp	_inherited;
 };
 #endif

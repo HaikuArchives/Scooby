@@ -14,7 +14,7 @@
 /***********************************************************
  * Constructor
  ***********************************************************/
-HApp::HApp() :BApplication(APP_SIG)
+HApp::HApp() :LocaleApp(APP_SIG)
 	,fPrintSettings(NULL)
 	,fWindow(NULL)
 {
