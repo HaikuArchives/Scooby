@@ -418,14 +418,17 @@ void HMailView::MessageReceived(BMessage *msg)
 void HMailView::ResetTextRunArray()
 {
 	text_run_array array;
+	text_run	run;
 	BFont		font;
 	uint32		propa;
 	
 	GetFontAndColor(&font,&propa);
-	array.runs[0].offset = 0;
-	array.runs[0].color = kBlack;
-	array.runs[0].font = font;
-	SetRunArray(0,TextLength(),&array);
+	run.offset = 0;
+	run.font = font;
+	run.color = kBlack;
+	array.runs[0] = run;
+	array.count = 1;
+	SetRunArray(0,TextLength()-1,&array);
 }
 
 //--------------------------------------------------------------------
