@@ -86,6 +86,14 @@ HApp::MessageReceived(BMessage *message)
 		message->SendReply(&msg,(BHandler*)NULL,1000000);
 		break;
 	}
+	// create folder
+	case M_CREATE_FOLDER:
+	{
+		const char* path;
+		if(message->FindString("path",&path) == B_OK)
+			::create_directory(path,0777);
+		break;
+	}
 	default:
 		_inherited::MessageReceived(message);
 	}	

@@ -274,7 +274,7 @@ HFolderList::MessageReceived(BMessage *message)
 				continue;
 			
 			parent = cast_as(Superitem(item),HFolderItem);
-			RemoveItem(item);
+			item = RemoveFolder(index);
 
 			if(parent)
 			{
@@ -285,7 +285,6 @@ HFolderList::MessageReceived(BMessage *message)
 					InvalidateItem(FullListIndexOf(parent));
 				}
 			}
-			fPointerList.RemoveItem(item);
 			delete item;
 		}
 		break;
@@ -866,11 +865,11 @@ HFolderList::MouseDown(BPoint pos)
     	 
     	
     	 BMenuItem *item = new BMenuItem(_("Recreate Cache"),new BMessage(M_REFRESH_CACHE),0,0);
+    	 HFolderItem *folder= cast_as(FullListItemAt(sel),HFolderItem);
     	 
     	 if(sel < 0)
     	 	item->SetEnabled(false);
-    	 else{
-    	 	HFolderItem *folder= cast_as(FullListItemAt(sel),HFolderItem);
+    	 else{	
     	 	if(folder)
     	 	{
     	 		if(folder->FolderType() != SIMPLE_TYPE)
@@ -880,6 +879,20 @@ HFolderList::MouseDown(BPoint pos)
     	 	}else
     	 		item->SetEnabled(false);
     	 }
+    	 theMenu->AddItem(item);
+    	 theMenu->AddSeparatorItem();
+    	 
+    	 item = new BMenuItem(_("New Folder"),new BMessage(M_CREATE_FOLDER_DIALOG),0,0);
+    	 if(sel < 0)
+    	 	item->SetEnabled(true);
+    	 else if(folder->FolderType() == FOLDER_TYPE)
+    	 	item->SetEnabled(true);
+    	 else
+    	 	item->SetEnabled(false);
+    	 theMenu->AddItem(item);
+    	 
+    	 item = new BMenuItem(_("Delete Folders"),new BMessage(M_DELETE_FOLDER),0,0);
+    	 item->SetEnabled((sel<0)?false:true);
     	 theMenu->AddItem(item);
     	 theMenu->AddSeparatorItem();
     	 item = new BMenuItem(_("Add IMAP4 Folders"),new BMessage(M_ADD_IMAP4_FOLDER),0,0);
@@ -893,10 +906,6 @@ HFolderList::MouseDown(BPoint pos)
     	 	HFolderItem *folder = cast_as(FullListItemAt(sel),HFolderItem);
     	 	item->SetEnabled((folder->FolderType() == IMAP4_TYPE)?true:false);
     	 }
-    	 theMenu->AddItem(item);
-    	 theMenu->AddSeparatorItem();
-    	 item = new BMenuItem(_("Delete Folders"),new BMessage(M_DELETE_FOLDER),0,0);
-    	 item->SetEnabled((sel<0)?false:true);
     	 theMenu->AddItem(item);
     	 
     	 BRect r;
@@ -1318,7 +1327,7 @@ HFolderList::ProcessMails(BMessage *message)
 HFolderItem*
 HFolderList::RemoveFolder(int32 index)
 {
-	HFolderItem *item = cast_as(RemoveItem(index),HFolderItem);	
+	HFolderItem *item = cast_as(RemoveItem(index),HFolderItem);
 	fPointerList.RemoveItem(item);
 	switch(item->FolderType())
 	{

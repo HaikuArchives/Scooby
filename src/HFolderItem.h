@@ -63,6 +63,8 @@ public:
 	
 			int32	ChildItems() const {return fChildItems;}
 			void	IncreaseChildItemCount() {fChildItems++;}
+			
+			void	RemoveSettings();
 protected:
 			void	RefreshCache();	
 			void	StartCreateCache(); // Create cache with thread

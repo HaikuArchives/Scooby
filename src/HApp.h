@@ -10,6 +10,10 @@
 class HWindow;
 class HPrefs;
 
+enum{
+	M_CREATE_FOLDER = 'mCrF'
+};
+
 class HApp :public LocaleApp{
 public:
 							HApp();
