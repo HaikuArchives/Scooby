@@ -11,7 +11,7 @@ StatusItem::StatusItem(BRect rect,
 					const char* name,
 					const char* initialText,
 					void	(*func)(StatusItem* item))
-	:BView(rect,NULL,B_FOLLOW_LEFT,B_WILL_DRAW|B_PULSE_NEEDED)
+	:BView(rect,NULL,B_FOLLOW_LEFT|B_FOLLOW_BOTTOM,B_WILL_DRAW|B_PULSE_NEEDED)
 	,fLabel(initialText)
 {
 	fBackgroundColor = ui_color(B_PANEL_BACKGROUND_COLOR);

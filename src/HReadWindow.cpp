@@ -86,7 +86,7 @@ HReadWindow::InitGUI()
 		//================ StatusBar ==================
 		BRect statusRect(Bounds());
 		statusRect.top = statusRect.bottom - B_H_SCROLL_BAR_HEIGHT;
-		StatusBar *statusbar = new StatusBar(statusRect,NULL,B_FOLLOW_ALL,B_WILL_DRAW);
+		StatusBar *statusbar = new StatusBar(statusRect,NULL,B_FOLLOW_BOTTOM|B_FOLLOW_LEFT_RIGHT,B_WILL_DRAW);
 		AddChild(statusbar);
 		BString label;
 		label = _("Size");
