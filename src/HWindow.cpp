@@ -624,24 +624,6 @@ HWindow::MessageReceived(BMessage *message)
 			fDetailView->SetInfo(kSubject,kFrom,kDate,kCc,kTo);
 		else
 			fDetailView->SetInfo("","","","","");
-		
-		// recalc unread mails
-		/*bool read;
-		if(message->FindBool("read",&read) == B_OK)
-		{
-			if(read)
-				break;
-			int32 sel = fFolderList->CurrentSelection();
-			if(sel <0)
-				break;
-			HFolderItem *item = cast_as(fFolderList->ItemAt(sel),HFolderItem);
-			if(item)
-			{
-				item->SetName(item->Unread()-1);
-				fFolderList->InvalidateItem(sel);
-			}
-		}
-		*/
 		ChangeDeskbarIcon(DESKBAR_NORMAL_ICON);
 		break;
 	}

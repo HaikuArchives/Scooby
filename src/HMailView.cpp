@@ -409,6 +409,8 @@ void HMailView::MessageReceived(BMessage *msg)
 			BFile *file;
 			if(msg->FindPointer("pointer",(void**)&file) == B_OK)
 				SetContent(file);
+			else
+				SetContent(NULL);
 			break;
 		}	
 		case 'find':

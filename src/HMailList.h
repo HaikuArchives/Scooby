@@ -52,7 +52,7 @@ public:
 			void	SetColumnShown(ColumnType type,bool shown);
 			void	RemoveMails(BList *list);
 			void	AddMail(HMailItem *item);
-			int32	SelectionCount();
+			bool	HasSomeSelection();
 			void	MarkOldSelectionAsRead();
 			
 			void	SetOldSelection(HMailItem *item){fOldSelection = item;}
