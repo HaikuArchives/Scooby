@@ -168,19 +168,19 @@ HAddressView::InitGUI()
 			if(node.InitCheck() != B_OK)
 				continue;
 			
-			if(ReadNodeAttrString(&node,"META:name",&name) != B_OK)
-				continue;
+			ReadNodeAttrString(&node,"META:name",&name);		
 			ReadNodeAttrString(&node,"META:email",&addr[0]);
 			ReadNodeAttrString(&node,"META:email2",&addr[1]);
 			ReadNodeAttrString(&node,"META:email3",&addr[2]);
 			ReadNodeAttrString(&node,"META:email4",&addr[3]);
 			ReadNodeAttrString(&node,"META:group",&group);
 			ReadNodeAttrString(&node,"META:nickname",&nick);
+			
 			for(int32 i = 0;i < 4;i++)
 			{
 				if(addr[i].Length() > 0)
 				{
-					if(nick.Length() != 0)
+					if(nick.Length() > 0)
 					{
 						nick += " <";
 						nick += addr[i];
