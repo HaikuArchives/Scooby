@@ -81,7 +81,7 @@ HMailCache::Open(HFolderItem *folder)
 	if(header.version > VERSION)
 		return B_ERROR;
 	int32 count = header.count;
-	PRINT(("Version:%d\n",header.version));
+	//PRINT(("Version:%d\n",header.version));
 	INTEGER_DATA int_data;
 	ENTRY_REF_DATA ref_data;
 	HMailItem *item;
