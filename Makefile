@@ -77,7 +77,7 @@ ifeq ($(USE_SPLOCALE),1)
 	DEFINES += USE_SPLOCALE
 endif
 
-ifeq ($(USE_SPLOCALE),1)
+ifeq ($(USE_ICONV),1)
 	LIBS += iconv
 	LOCAL_INCLUDE_PATHS += /boot/home/config/include
 	DEFINES += USE_ICONV
