@@ -500,8 +500,10 @@ HFilterView::AddFolderItem(const BEntry& inEntry,BMenu *menu)
 			menu->AddItem( new BMenuItem(name.String(),NULL));
 			
 			AddFolderItem(entry,menu);
-		}else
-			break;
+		}else{
+			if(!entry.IsSymLink())
+				break;
+		}
 	}
 }
 
