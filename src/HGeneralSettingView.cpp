@@ -32,6 +32,24 @@ const char* kFormatedTime[] = {"Mon, 05 Feb 2001 04:33:10 PM",
 								"01/02/05 16:33:10",
 								"02/05 16:33:10"};
 
+const char* kLabels[] = {_("Cache mail folders"),
+							_("Create folder caches on startup (in background)"),
+							_("Open inbox on startup"),
+							_("Support mail sub-folders"),
+							_("Use Deskbar replicant"),
+							_("Always use HTML view"),
+							_("Always open links in new window (HTML view)"),
+							_("Use LED blinking")};
+
+const char* kNames[] = {"use_folder_cache",
+							"load_list_on_start_up",
+							"check_inbox",
+							"tree_mode",
+							"use_desktray",
+							"use_html",
+							"open_link_as_new_window",
+							"led_blink"};
+
 /***********************************************************
  * Constructor
  ***********************************************************/
@@ -188,57 +206,26 @@ HGeneralSettingView::InitGUI()
 	BStringView *stringView = new BStringView(frame2,"",_("mins"));
 	
 	const float x_offset = 300;
-	
-	frame.OffsetBy(x_offset,0);
+	frame.OffsetBy(x_offset,0);		
 	frame.right = box->Bounds().right-10;
-	checkbox = new BCheckBox(frame,"cache",_("Cache mail folders"),NULL);
-	prefs->GetData("use_folder_cache",&bValue);
-	checkbox->SetValue(bValue);
-	box->AddChild(checkbox);
 	
-	frame.OffsetBy(-x_offset,22);
-	checkbox = new BCheckBox(frame,"list_start",
-				_("Create folder caches on startup (in background)"),NULL);
-	prefs->GetData("load_list_on_start_up",&bValue);
-	checkbox->SetValue(bValue);
-	box->AddChild(checkbox);
+	int32 count = sizeof(kLabels)/sizeof(kLabels[0]);
+	for(int32 i = 0;i < count;i++)
+	{
+		checkbox = new BCheckBox(frame,kNames[i],kLabels[i],NULL);
+		prefs->GetData(kNames[i],&bValue);
+		checkbox->SetValue(bValue);
+		box->AddChild(checkbox);
+		if(i%2 != 0)
+			frame.OffsetBy(x_offset,0);
+		else
+			frame.OffsetBy(-x_offset,22);
+		
+		if(i == count-1 && i%2 != 0)
+				frame.OffsetBy(-x_offset,22);
+	}
 	
-	frame.OffsetBy(x_offset,0);
-	checkbox = new BCheckBox(frame,"check_inbox",
-				_("Open inbox on startup"),NULL);
-	prefs->GetData("check_inbox",&bValue);
-	checkbox->SetValue(bValue);
-	box->AddChild(checkbox);
-	
-	frame.OffsetBy(-x_offset,22);
-	checkbox = new BCheckBox(frame,"tree_mode",
-				_("Support mail sub-folders"),NULL);
-	prefs->GetData("tree_mode",&bValue);
-	checkbox->SetValue(bValue);
-	box->AddChild(checkbox);
-	
-	frame.OffsetBy(x_offset,0);
-	checkbox = new BCheckBox(frame,"desktray",
-				_("Use Deskbar replicant"),NULL);
-	prefs->GetData("use_desktray",&bValue);
-	checkbox->SetValue(bValue);
-	box->AddChild(checkbox);
-	
-	frame.OffsetBy(-x_offset,22);
-	checkbox = new BCheckBox(frame,"html",
-				_("Always use HTML view"),NULL);
-	prefs->GetData("use_html",&bValue);
-	checkbox->SetValue(bValue);
-	box->AddChild(checkbox);
-	
-	frame.OffsetBy(x_offset,0);
-	checkbox = new BCheckBox(frame,"open_new_window",
-				_("Always open links in new window (HTML view)"),NULL);
-	prefs->GetData("open_link_as_new_window",&bValue);
-	checkbox->SetValue(bValue);
-	box->AddChild(checkbox);
-	
-	int32 count = sizeof(kTimeFormat)/sizeof(kTimeFormat[0]);
+	count = sizeof(kTimeFormat)/sizeof(kTimeFormat[0]);
 	menu = new BMenu("time_format");
 	for(int32 i = 0;i < count;i++)
 		menu->AddItem(new BMenuItem(kFormatedTime[i],NULL));
@@ -256,13 +243,11 @@ HGeneralSettingView::InitGUI()
 	item = menu->FindItem(kFormatedTime[index]);
 	if(item)
 		item->SetMarked(true);
-	frame.OffsetBy(-x_offset,22);
 	field = new BMenuField(frame,"time_format",
 				_("Time format:"),menu);
 	field->SetDivider(StringWidth(_("Toolbar mode:")) + 8);
 	
 	box->AddChild(field);
-	
 	
 	frame.OffsetBy(0,22);
 	menu = new BMenu("toolbar_mode");
@@ -327,20 +312,13 @@ HGeneralSettingView::Save()
 	prefs->SetData("auto_check",(bool)checkBox->Value());
 	NumberControl *numCtrl = cast_as(FindView("minutes"),NumberControl);
 	prefs->SetData("check_minutes",numCtrl->Value());
-	checkBox = cast_as(FindView("list_start"),BCheckBox);
-	prefs->SetData("load_list_on_start_up",(bool)checkBox->Value());
-	checkBox = cast_as(FindView("cache"),BCheckBox);
-	prefs->SetData("use_folder_cache",(bool)checkBox->Value());
-	checkBox = cast_as(FindView("desktray"),BCheckBox);
-	prefs->SetData("use_desktray",(bool)checkBox->Value());
-	checkBox = cast_as(FindView("html"),BCheckBox);
-	prefs->SetData("use_html",(bool)checkBox->Value());
-	checkBox = cast_as(FindView("check_inbox"),BCheckBox);
-	prefs->SetData("check_inbox",(bool)checkBox->Value());
-	checkBox = cast_as(FindView("tree_mode"),BCheckBox);
-	prefs->SetData("tree_mode",(bool)checkBox->Value());
-	checkBox = cast_as(FindView("open_new_window"),BCheckBox);
-	prefs->SetData("open_link_as_new_window",(bool)checkBox->Value());
+	
+	int32 count = sizeof(kLabels)/sizeof(kLabels[0]);
+	for(int32 i = 0;i < count;i++)
+	{
+		checkBox = cast_as(FindView(kNames[i]),BCheckBox);
+		prefs->SetData(kNames[i],(bool)checkBox->Value());
+	}
 	
 	menufield = cast_as(FindView("toolbar"),BMenuField);
 	menu = menufield->Menu();
