@@ -20,6 +20,8 @@ public:
 					HFilterView(BRect rect);
 	virtual			~HFilterView();
 			void	InitGUI();
+			void	AddFolderItem(BMessage *msg);
+			
 protected:
 	virtual	void	MessageReceived(BMessage *message);
 	virtual	void	Pulse();
@@ -28,7 +30,6 @@ protected:
 			void	SaveItem(int32 index,bool rename=true);
 		status_t	OpenItem(const char* name);
 		
-			void	AddFolderItem(const BEntry& entry,BMenu *menu);
 			
 			void	AddCriteria(int32 attr = -1,
 							int32 operation = 0,

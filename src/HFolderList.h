@@ -43,13 +43,13 @@ public:
 				void	RemoveFromMailList(HMailItem *item,bool free = false);
 
 		HFolderItem*	RemoveFolder(int32 index);
+				int32	GenarateFolderPathes(BMessage &msg);
 protected:
 		virtual void 	MessageReceived(BMessage *message);		
 		static	int32 	GetFolders(void *data);
 		static	void	GetChildFolders(const BEntry &entry,
 										HFolderItem *parentItem,
-										HFolderList *list,
-										BMessage &outList);
+										HFolderList *list);
 		virtual void	SelectionChanged();
 		virtual void	Pulse();
 		virtual void	MouseDown(BPoint pos);
@@ -62,6 +62,7 @@ protected:
 				void	NodeMonitor(BMessage *message);
 				
 				void	ProcessMails(BMessage *message);
+				void	GetFolderPath(HFolderItem *item,BMessage &msg);
 private:
 		BEntry   	*fEntry;
 		uint32	 	fOutlineLevel;

@@ -9,7 +9,8 @@ class HSignatureView;
 class HGeneralSettingView;
 
 enum{
-	M_PREFS_CHANGED = 'MPCD'
+	M_PREFS_CHANGED = 'MPCD',
+	M_ADD_FOLDERS = 'mADF'
 };
 
 class HPrefWindow :public BWindow {
