@@ -260,7 +260,24 @@ HFilterView::MessageReceived(BMessage *message)
 void
 HFilterView::Pulse()
 {
-
+	BButton *delete_btn = cast_as(FindView("criteria_del"),BButton);
+	if(!delete_btn) return;
+	BView *view = FindView("criteria_bg");
+	if(!view) return;
+	
+	BView *focus(NULL);
+	int32 count = view->CountChildren();
+	
+	for(int32 i = 0;i < count;i++)
+	{
+		focus = view->ChildAt(i);
+		if(focus && focus->IsFocus() )
+		{
+			delete_btn->SetEnabled(true);
+			return;
+		}
+	}
+	delete_btn->SetEnabled(false);
 }
 
 /***********************************************************
@@ -315,8 +332,8 @@ HFilterView::SetEnableControls(bool enable)
 	
 	button = cast_as(FindView("criteria_add"),BButton);
 	button->SetEnabled(enable);
-	button = cast_as(FindView("criteria_del"),BButton);
-	button->SetEnabled(enable);
+	//button = cast_as(FindView("criteria_del"),BButton);
+	//button->SetEnabled(enable);
 	if(!enable)
 		RemoveAllCriteria();
 }
