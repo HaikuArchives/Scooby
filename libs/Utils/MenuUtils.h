@@ -31,7 +31,8 @@ class MenuUtils
 							, char shortcut = 0
 							, uint32 modifiers = 0
 							, BBitmap *bitmap = NULL
-							, bool copyBitmap = true);
+							, bool copyBitmap = true
+							, bool deleteInputBitmap = true);
 		void	AddMenuItem(BMenu* menu
 							, const char* name
 							, BMessage *message
@@ -40,7 +41,8 @@ class MenuUtils
 							, char shortcut = 0
 							, uint32 modifiers = 0
 							, BBitmap *bitmap = NULL
-							, bool copyBitmap = true);
+							, bool copyBitmap = true
+							, bool deleteInputBitmap = true);
 		void	AddMenuItem(BMenu* menu
 							, BMenu* submenu
 							, BMessage *message
@@ -49,7 +51,8 @@ class MenuUtils
 							, char shortcut = 0
 							, uint32 modifiers = 0
 							, BBitmap *bitmap = NULL
-							, bool copyBitmap = true);
+							, bool copyBitmap = true
+							, bool deleteInputBitmap = true);
 		void	AddMenuItem(BMenu* menu
 							, BMenu* submenu
 							, const uint32 what
@@ -58,7 +61,8 @@ class MenuUtils
 							, char shortcut = 0
 							, uint32 modifiers = 0
 							, BBitmap *bitmap = NULL
-							, bool copyBitmap = true);
+							, bool copyBitmap = true
+							, bool deleteInputBitmap = true);
 		void	SetFamilyAndStyle(BMenu* font_menu
 							,const char* family
 							,const char* style);

@@ -581,7 +581,7 @@ HAddressView::AddPerson(BMenu *menu
 			font.SetSize(10);
 			subMenu->SetFont(&font);
 			IconMenuItem *iconItem = new IconMenuItem(subMenu,message,0,0
-						,app->GetIcon("OpenFolder"));
+						,app->GetIcon("OpenFolder"),false);
 			iconItem->SetTarget(this,Window());
 		
 			menu->AddItem(iconItem);
