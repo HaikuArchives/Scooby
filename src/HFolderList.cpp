@@ -74,6 +74,8 @@ HFolderList::HFolderList(BRect frame,
 	SetItemSelectColor(true, selection_col);
 	
 	((HApp*)be_app)->Prefs()->GetData("load_list_on_start_up",&fGatherOnStartup);
+	((HApp*)be_app)->Prefs()->GetData("tree_mode",&fUseTreeMode);
+	
 }
 
 /***********************************************************
@@ -156,9 +158,7 @@ HFolderList::MessageReceived(BMessage *message)
 	}
 	case M_ADD_UNDER_ITEM:
 	{
-		bool tree_mode;
-		((HApp*)be_app)->Prefs()->GetData("tree_mode",&tree_mode);
-		if(!tree_mode)
+		if(!fUseTreeMode)
 			break;
 		
 		CLVColumn *expander_col = ColumnAt(0);
@@ -413,11 +413,6 @@ HFolderList::GetFolders(void* data)
 	//
    	entry.GetRef(&ref);
 	
-	
-	
-	bool tree_mode;
-	((HApp*)be_app)->Prefs()->GetData("tree_mode",&tree_mode);
-	
 	BList folderList;
 #ifndef USE_SCANDIR	
 	while( (count = dir.GetNextDirents((dirent *)buf, 4096)) > 0 && !list->fCancel )
@@ -442,7 +437,7 @@ HFolderList::GetFolders(void* data)
 				item = new HFolderItem(ref,list);
 				msg.AddPointer("item",item);
 				folderList.AddItem(item);
-				if(tree_mode)
+				if(fUseTreeMode)
 					GetChildFolders(entry,item,list,childMsg);
 			}
 		}
@@ -466,7 +461,7 @@ HFolderList::GetFolders(void* data)
 			item = new HFolderItem(ref,list);
 			msg.AddPointer("item",item);
 			folderList.AddItem(item);
-			if(tree_mode)
+			if(fUseTreeMode)
 				GetChildFolders(entry,item,list,childMsg);
 		}
 	}
@@ -1536,7 +1531,8 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 					childFolders.AddBool("expand",expanded);
 					parent->IncreaseChildItemCount();
 				}
-				LoadFolders(ref,item,childIndent,rootFolders,childFolders);
+				if(fUseTreeMode)
+					LoadFolders(ref,item,childIndent,rootFolders,childFolders);
 			}else if(indent == childIndent)
 				break;
 				
@@ -1578,7 +1574,8 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 						childFolders.AddBool("expand",expanded);
 						parent->IncreaseChildItemCount();
 					}
-					LoadFolders(childref,item,item->OutlineLevel(),rootFolders,childFolders);
+					if(fUseTreeMode)
+						LoadFolders(childref,item,item->OutlineLevel(),rootFolders,childFolders);
 				}
 			}
 		}

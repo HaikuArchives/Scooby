@@ -94,7 +94,7 @@ else
 	CPU = ppc
 	NAME = Scooby_ppc
 	LIBS += ./libs/Utils/libUtils_ppc.a ./libs/Santa/sgb_ppc.a \
-			./libs/Toolbar/libToolbar_ppc.a 
+			./libs/Toolbar/libToolbar_ppc.a mslcpp_4_0
 endif
 #	set the directory where object files and binaries will be created
 	OBJ_DIR		:= obj.$(CPU)

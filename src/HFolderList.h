@@ -94,6 +94,7 @@ private:
 		bool		fSkipMoveMail;
 		bool		fGatheredLocalFolders;
 		bool		fGatherOnStartup;
+		bool		fUseTreeMode;
 		
 		typedef ColumnListView	_inherited;
 };
