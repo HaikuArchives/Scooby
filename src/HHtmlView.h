@@ -5,6 +5,22 @@
 #include <View.h>
 #include <Shelf.h>
 
+enum EncodingMessages{
+	NETPOSITIVE_ISO1 = 'ISO1',
+	NETPOSITIVE_ISO2 = 'ISO2',
+	NETPOSITIVE_ISO5 = 'ISO5',
+	NETPOSITIVE_ISO7 = 'ISO7',
+	NETPOSITIVE_SJIS = 'SJIS',
+	NETPOSITIVE_JAPANESE_AUTO = 'AutJ',
+	NETPOSITIVE_EUC = 'EUC!',
+	NETPOSITIVE_UNICODE = 'UNIC',
+	NETPOSITIVE_UTF8 = 'UTF8',
+	NETPOSITIVE_MACROMAN = 'MacR',
+	NETPOSITIVE_KOI8R = 'KOI8',
+	NETPOSITIVE_MSDOS_886= 'D886',
+	NETPOSITIVE_WINDOWS_1251 = '1251'
+};
+
 class HHtmlView :public BView {
 public:
 					HHtmlView(BRect rect,
@@ -15,7 +31,7 @@ public:
 	virtual 		~HHtmlView();
 			
 			void	ShowURL(const char* url);
-			void	SetEncoding(int32 encoding_index);
+			void	SetEncoding(EncodingMessages encoding);
 		
 			void	Back();
 			void	Forward();
@@ -25,7 +41,7 @@ public:
 			
 			int32	GetDefaultEncoding();			
 protected:
-
+	
 private:
 	BView*			fNetPositiveView;
 	BShelf*			fShelf;
