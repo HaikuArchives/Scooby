@@ -886,33 +886,10 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	::create_directory(path.Path(),0777);
 	
 	BString filename = subject;
-	filename.ReplaceAll("/","_");
-	filename.ReplaceAll(":","_");
-	
-	path.Append( filename.String() );
-	
 	BFile file;
-	status_t err = B_ERROR;
-	int32 i = 1;
-	BString tmpsubject("");
-	while(err != B_OK)
-	{
-		err = file.SetTo(path.Path(),B_WRITE_ONLY|B_CREATE_FILE|B_FAIL_IF_EXISTS);
-		if(err == B_OK)
-			break;
-		path.GetParent(&path);
-		tmpsubject.SetTo( filename );
-		BString index("_");
-		index <<i++;
-		tmpsubject << index;
-		if(i > 50)
-		{
-			tmpsubject = "";
-			tmpsubject	<<time(NULL);		
-		}
-		path.Append(tmpsubject.String());
-	}
-	::get_ref_for_path(path.Path(),&ref);
+
+	BDirectory destDir(path.Path());
+	TrackerUtils().SmartCreateFile(&file,&destDir,filename.String(),"_");
 	// make smtp server
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
@@ -1025,7 +1002,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	encode.ConvertReturnsToCRLF(content);
 	
 	BString all_content = header;
-	all_content << content;
+	all_content += content;
 	
 	file.Write(all_content.String(),all_content.Length());
 	file.SetSize( all_content.Length() );
@@ -1041,7 +1018,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	file.WriteAttrString(B_MAIL_ATTR_REPLY,&reply);
 	file.WriteAttr(B_MAIL_ATTR_ATTACHMENT,B_BOOL_TYPE,0,&is_multipart,sizeof(bool));
 	BString attrPriority;
-	attrPriority << priority;
+	attrPriority += priority;
 	switch(priority)
 	{
 	case 1:
