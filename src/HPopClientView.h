@@ -31,6 +31,13 @@ public:
 			bool	IsRunning() const {return fIsRunning;}
 			
 			void	Cancel();
+			
+			void	FilterMail(const char* subject,
+							const char* from,
+							const char* to,
+							const char* cc,
+							const char* reply,
+							BString &outpath);
 protected:
 	virtual void	MessageReceived(BMessage *message);
 	virtual void	Draw(BRect updateRect);
@@ -42,12 +49,6 @@ protected:
 							entry_ref *folder_ref,
 							entry_ref *file_ref,
 							bool *is_delete);
-			void	FilterMail(const char* subject,
-							const char* from,
-							const char* to,
-							const char* cc,
-							const char* reply,
-							BString &outpath);
 			bool	Filter(const char* key,
 							int32 operation,
 							const char* value);

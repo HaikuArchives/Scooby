@@ -50,6 +50,7 @@ HMailItem::HMailItem(const entry_ref &ref,
 					  const char* from,
 					  const char* to,
 					  const char* cc,
+					  const char* reply,
 					  time_t 	  when,
 					  const char* priority,
 					  int8 enclosure)
@@ -60,6 +61,7 @@ HMailItem::HMailItem(const entry_ref &ref,
 	,fFrom(from)
 	,fTo(to)
 	,fCC(cc)
+	,fReply(reply)
 	,fWhen(when)
 	,fPriority(priority)
 	,fEnclosure(enclosure)
@@ -87,6 +89,7 @@ HMailItem::HMailItem(const char* status,
 					const char* from,
 					const char* to,
 					const char* cc,
+					const char* reply,
 					time_t	  when,
 					const char* priority,
 					int8 enclosure)
@@ -96,6 +99,7 @@ HMailItem::HMailItem(const char* status,
 	,fFrom(from)
 	,fTo(to)
 	,fCC(cc)
+	,fReply(reply)
 	,fWhen(when)
 	,fPriority(priority)
 	,fEnclosure(enclosure)

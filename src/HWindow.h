@@ -43,7 +43,8 @@ enum{
 	M_POP_CHECK = 'pCHC',
 	M_ADD_MAIL_TO_LIST = 'mAdL',
 	M_REMOVE_MAIL_FROM_LIST = 'mRmL',
-	M_STOP_MAIL_BARBER_POLE = 'mSoB'
+	M_STOP_MAIL_BARBER_POLE = 'mSoB',
+	M_FILTER_MAIL = 'mFiM'
 };
 
 class HWindow: public BWindow {
@@ -97,6 +98,8 @@ protected:
 			
 				void	AddCheckFromItems();
 				void	EmptyTrash();
+				
+				void	FilterMails(HMailItem *item);
 private:
 		HMailList*		fMailList;
 		HMailCaption*	fMailCaption;

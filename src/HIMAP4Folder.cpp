@@ -154,7 +154,7 @@ HIMAP4Folder::IMAPGetList()
 		return;
 	}
 	
-	BString subject,from,to,cc,date,priority;
+	BString subject,from,to,cc,reply,date,priority;
 	bool read,attachment;
 	Encoding encode;
 	
@@ -166,6 +166,7 @@ HIMAP4Folder::IMAPGetList()
 								from,
 								to,
 								cc,
+								reply,
 								date,
 								priority,
 								read,
@@ -184,6 +185,7 @@ HIMAP4Folder::IMAPGetList()
 											from.String(),
 											to.String(),
 											cc.String(),
+											reply.String(),
 											MakeTime_t(date.String()),
 											priority.String(),
 											(attachment)?1:0,

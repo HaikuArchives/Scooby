@@ -156,6 +156,8 @@ HWindow::InitMenu()
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("Move To Trash"),M_DELETE_MSG,this,this,'T',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
+	aMenu->AddSeparatorItem();
+    utils.AddMenuItem(aMenu,_("Filter"),M_FILTER_MAIL,this,this,0,0);
     aMenu->AddSeparatorItem();
     utils.AddMenuItem(aMenu,_("Show Header"),M_HEADER,this,this,'H',0);
     utils.AddMenuItem(aMenu,_("Show Raw Message"),M_RAW,this,this,0,0);
@@ -627,6 +629,21 @@ HWindow::MessageReceived(BMessage *message)
 			be_roster->Launch(app_sig,&msg);
 		break;
 	}
+	// Filter mails
+	case M_FILTER_MAIL:
+	{
+		int32 sel;
+		int32 i = 0;
+		while((sel = fMailList->CurrentSelection(i++)) >= 0)
+		{
+			HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
+			if(item )
+			{
+				FilterMails(item);
+			}
+		}
+		break;
+	}
 	// Empty trashcan
 	case M_EMPTY_TRASH:
 	{
@@ -796,7 +813,8 @@ HWindow::MenusBeginning()
 	item = KeyMenuBar()->FindItem(M_RAW);
 	item->SetMarked(fMailView->IsShowingRawMessage());
 	item->SetEnabled(mailSelected);
-	
+	item = KeyMenuBar()->FindItem(M_FILTER_MAIL);
+	item->SetEnabled(mailSelected);
 	// Copy	
 	int32 start,end;
 	BTextControl *ctrl(NULL);
@@ -998,9 +1016,6 @@ HWindow::FolderSelection()
 void
 HWindow::MoveMails(BMessage *message)
 {
-	// Restore old selection mail's status
-	fMailList->MarkOldSelectionAsRead();
-	//
 	entry_ref ref;
 	int32 count;
 	type_code type;
@@ -1155,6 +1170,9 @@ HWindow::DeleteMails()
 void
 HWindow::MoveFile(entry_ref file_ref,const char *kDir_Path)
 {
+	// Restore old selection mail's status
+	fMailList->MarkOldSelectionAsRead();
+	//
 	if(BNode(&file_ref).InitCheck() != B_OK)
 		return;
 	int32 i = 0;
@@ -1562,6 +1580,37 @@ HWindow::AddCheckFromItems()
 			subMenu->AddItem(new BMenuItem(name,msg));
 		}
 	}
+}
+
+/***********************************************************
+ * FilterMail
+ ***********************************************************/
+void
+HWindow::FilterMails(HMailItem *item)
+{
+	if(!item)
+		return;
+	BString out_path;
+	fPopClientView->FilterMail(item->fSubject.String(),
+								item->fFrom.String(),
+								item->fTo.String(),
+								item->fCC.String(),
+								item->fReply.String(),
+								out_path);
+	PRINT(("To:%s\n",out_path.String()));
+
+	BPath default_path,current_path;
+	::find_directory(B_USER_DIRECTORY,&default_path);
+	default_path.Append("mail");
+	default_path.Append("in");
+	entry_ref ref = item->Ref();
+	current_path.SetTo(&ref);
+	current_path.GetParent(&current_path);
+	
+	if(out_path.Compare(current_path.Path()) == 0 ||
+		out_path.Compare(default_path.Path()) == 0)
+		return;
+	MoveFile(ref,out_path.String());
 }
 
 /***********************************************************

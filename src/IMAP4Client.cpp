@@ -218,6 +218,7 @@ IMAP4Client::FetchFields(int32 index,
 					BString &from,
 					BString &to,
 					BString &cc,
+					BString &reply,
 					BString &date,
 					BString &priority,
 					bool	&read,
@@ -233,8 +234,8 @@ IMAP4Client::FetchFields(int32 index,
 	}
 	//
 	BString cmd("FETCH ");
-	cmd << index << " (FLAGS BODY[HEADER.FIELDS (Subject From To Date X-Priority Content-Type)])";
-	subject = from = to = date = cc = "";
+	cmd << index << " (FLAGS BODY[HEADER.FIELDS (Subject From To Reply-To Date X-Priority Content-Type)])";
+	subject = from = to = date = cc = reply = "";
 	attachment = read = false;
 	priority = "3 (Normal)";	
 	BString line;
@@ -275,6 +276,9 @@ IMAP4Client::FetchFields(int32 index,
 			// Cc,
 			else if(strncmp("Cc:",p,3) == 0)
 				cc = &p[4];
+			// Reply
+			else if(strncmp("Reply-To:",p,9) == 0)
+				reply = &p[10];
 			// Priority
 			else if(strncmp("X-Priority:",p,11) == 0)
 				priority = &p[12];
