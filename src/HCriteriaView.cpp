@@ -2,6 +2,7 @@
 #include "HApp.h"
 
 #include <Menu.h>
+#include <MenuField.h>
 #include <MenuItem.h>
 
 
@@ -59,10 +60,22 @@ HCriteriaView::InitGUI()
 	AddChild(fOpMenu);
 	
 	rect.OffsetBy(80,2);
-	rect.right= Bounds().right - 10;
+	rect.right= Bounds().right - 70;
 	fValue = new BTextControl(rect,"value","","",NULL);
 	fValue->SetDivider(0);
 	AddChild(fValue);
+	
+	rect.right = Bounds().right - 5;
+	rect.left = Bounds().right - 65;
+	menu = new BMenu("operator");
+	menu->AddItem(new BMenuItem(_("and"),NULL));
+	menu->AddItem(new BMenuItem(_("or"),NULL));
+	menu->ItemAt(0)->SetMarked(true);
+	menu->SetRadioMode(true);
+	menu->SetLabelFromMarked(true);
+	fOp2Menu= new BMenuField(rect,"op2","",menu);
+	fOp2Menu->SetDivider(0);
+	AddChild(fOp2Menu);
 }
 
 /***********************************************************
@@ -90,7 +103,8 @@ HCriteriaView::SetEnableControls(bool enable)
 void
 HCriteriaView::SetValue(int32 attr,
 						int32 operation,
-						const char* attr_value)
+						const char* attr_value,
+						int32 operation2)
 {
 	BMenu *menu = fAttrMenu->Menu();
 	BMenuItem *item;
@@ -105,6 +119,13 @@ HCriteriaView::SetValue(int32 attr,
 		item = menu->ItemAt(operation);
 		if(item) item->SetMarked(true);
 	}
+	menu = fOp2Menu->Menu();
+	if(menu)
+	{
+		item = menu->ItemAt(operation2);
+		if(item) item->SetMarked(true);
+	}
+	
 	fValue->SetText(attr_value);
 }
 
@@ -165,6 +186,19 @@ int32
 HCriteriaView::Operator() const
 {
 	BMenu *menu = fOpMenu->Menu();
+	BMenuItem *item = menu->FindMarked();
+	if(item)
+		return menu->IndexOf(item);
+	return 0;	
+}
+
+/***********************************************************
+ * Operator2
+ ***********************************************************/
+int32
+HCriteriaView::Operator2() const
+{
+	BMenu *menu = fOp2Menu->Menu();
 	BMenuItem *item = menu->FindMarked();
 	if(item)
 		return menu->IndexOf(item);

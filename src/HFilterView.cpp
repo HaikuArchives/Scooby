@@ -408,6 +408,7 @@ HFilterView::SaveItem(int32 index,bool rename)
 		msg.AddInt32("attribute", criteria->Attribute() );
 		msg.AddString("attr_value",criteria->AttributeValue());
 		msg.AddInt32("operation1",criteria->Operator());
+		msg.AddInt32("operation2",criteria->Operator2());
 	}
 	menu = fActionMenu->Menu();
 
@@ -446,15 +447,17 @@ HFilterView::OpenItem(const char* name)
 	int32 count;
 	type_code type;
 	msg.GetInfo("attribute",&type,&count);
-	int32 attr,op;
+	int32 attr,op,op2;
 	const char* attr_value;
 	
 	for(int32 i = 0;i < count;i++)
 	{
 		msg.FindInt32("attribute",i,&attr);
 		msg.FindInt32("operation1",i,&op);
+		msg.FindInt32("operation2",i,&op2);
+		
 		msg.FindString("attr_value",i,&attr_value);
-		AddCriteria(attr,op,attr_value);
+		AddCriteria(attr,op,attr_value,op2);
 	}
 	
 	if( msg.FindInt32("action",&value) == B_OK)
@@ -502,7 +505,8 @@ HFilterView::AddFolderItem(BMessage *msg)
 void
 HFilterView::AddCriteria(int32 attr,
 						int32 operation,
-						const char* attr_value)
+						const char* attr_value,
+						int32 operation2)
 {
 	BView *view = cast_as(FindView("criteria_bg"),BView);
 	int32 count = view->CountChildren();
@@ -515,7 +519,7 @@ HFilterView::AddCriteria(int32 attr,
 	view->AddChild(criteria);
 	
 	if(attr>=0)
-		criteria->SetValue(attr,operation,attr_value);
+		criteria->SetValue(attr,operation,attr_value,operation2);
 	RefreshCriteriaScroll();
 }
 
