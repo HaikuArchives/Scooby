@@ -99,7 +99,7 @@ HMailList::~HMailList()
 	int32 sel = CurrentSelection();
 	if(sel >= 0)
 	{
-		fOldSelection = cast_as(ItemAt(sel),HMailItem);
+		fOldSelection = MailAt(sel);
 		MarkOldSelectionAsRead();
 	}
 	SetInvocationMessage(NULL);
@@ -216,7 +216,7 @@ HMailList::SelectionChanged()
 		return;
 	}
 	
-	HMailItem *item = cast_as(ItemAt(sel),HMailItem);
+	HMailItem *item = MailAt(sel);
 	if(item)
 	{
 		BMessage msg(M_SET_CONTENT);
@@ -371,7 +371,7 @@ HMailList::CalcInsertPosition(int32 count,
 	int32 i;
 	for(i = 0;i < count;i++)
 	{
-		HMailItem *item = cast_as(ItemAt(i),HMailItem);
+		HMailItem *item = MailAt(i);
 		if(!item)
 			continue;
 		if( HMailItem::CompareItems((CLVListItem*)mail,
@@ -542,7 +542,7 @@ HMailList::InitiateDrag(BPoint  point,
 	if (wasSelected) 
 	{
 		BMessage msg(M_MAIL_DRAG);
-		HMailItem *item = cast_as(ItemAt(index),HMailItem);
+		HMailItem *item = MailAt(index);
 		if(!item)
 			return false;
 		BRect	theRect = this->ItemFrame(index);
@@ -554,7 +554,7 @@ HMailList::InitiateDrag(BPoint  point,
 		int32 sel_index = 0;
 		while((selected = CurrentSelection(sel_index++)) >= 0)
 		{
-			item=cast_as(ItemAt(selected),HMailItem);
+			item= MailAt(selected);
 			if(!item)
 				continue;
 			msg.AddPointer("pointer",item);
@@ -902,7 +902,7 @@ HMailList::GetProperty(BMessage *specifier, int32 form, const char *property,
 				// return all entries in MailList
 				for (int32 index = 0; index < count; index++)
 				{
-					item = (HMailItem*)ItemAt(index);
+					item = MailAt(index);
 					if(!item)
 						continue;
 					item_ref = item->Ref(); 
@@ -918,12 +918,12 @@ HMailList::GetProperty(BMessage *specifier, int32 form, const char *property,
 					if (specifier->FindInt32("index", &index) != B_OK)
 						break;
 					
-					if (!ItemAt(index)) {
+					if (!MailAt(index)) {
 						error = B_BAD_INDEX;
 						handled = true;
 						break;
 					}
-					item = (HMailItem*)ItemAt(index);
+					item = MailAt(index);
 					item_ref = item->Ref(); 
 					reply->AddRef("result", &item_ref);
 	
@@ -942,7 +942,7 @@ HMailList::GetProperty(BMessage *specifier, int32 form, const char *property,
 					int32 tmp=-1;
 					for(int32 i = 0;i < count;i++)
 					{
-						item = (HMailItem*)ItemAt(i);
+						item = MailAt(i);
 						if(!item)
 							continue;
 						if(item->Ref() == ref)
@@ -961,7 +961,7 @@ HMailList::GetProperty(BMessage *specifier, int32 form, const char *property,
 						handled = true;
 						break;
 					}					
-					item = (HMailItem*)ItemAt(tmp);
+					item = MailAt(tmp);
 					item_ref = item->Ref();
 					reply->AddRef("result",&item_ref);
 					reply->AddInt32("index",tmp);
@@ -976,4 +976,13 @@ HMailList::GetProperty(BMessage *specifier, int32 form, const char *property,
 		reply->AddInt32("error", error);
 
 	return handled;
+}
+
+/***********************************************************
+ * MailItemAt
+ ***********************************************************/
+HMailItem*
+HMailList::MailAt(int32 index)
+{
+	return cast_as(ItemAt(index),HMailItem);
 }
