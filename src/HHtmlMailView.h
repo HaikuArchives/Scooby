@@ -36,6 +36,9 @@ protected:
 			void	OpenAttachment(int32 i);
 			void	SaveAttachment(int32 i,entry_ref dir,const char* name);
 			bool	IsURI(char c);
+			
+			void	ResetScrollBar();
+			void	ResetAttachmentList();
 private:
 	HHtmlView*		fHtmlView;
 	CTextView*		fHeaderView;

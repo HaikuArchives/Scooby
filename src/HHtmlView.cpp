@@ -6,6 +6,8 @@
 #include <FindDirectory.h>
 #include <Node.h>
 #include <Path.h>
+#include <Roster.h>
+#include <Application.h>
 
 #define STARTUP_PAGE "netpositive:Startup.html"
 
@@ -21,10 +23,19 @@ HHtmlView::HHtmlView(BRect rect,
 	,fNetPositiveView(NULL)
 {
 	rect = Bounds();
+	// Get startup file file
+	app_info info;
+    be_app->GetAppInfo(&info); 
+    BPath path(&info.ref);
+    path.GetParent(&path);
+    path.Append("html/startup.html");
+    char *buf = new char[::strlen(path.Path())+8];
+    ::sprintf(buf,"file://%s",path.Path());
 	// Add Netpositive replicant
     BMessage message_replicant(B_ARCHIVED_OBJECT); 
     message_replicant.AddString("add_on",B_NETPOSITIVE_APP_SIGNATURE); 
-   	message_replicant.AddString("url",STARTUP_PAGE); 
+   	message_replicant.AddString("url",buf);
+   	delete[] buf; 
     message_replicant.AddBool("openAsText",0); 
     message_replicant.AddInt32("encoding",GetDefaultEncoding()); 
     message_replicant.AddString("class","NPBaseView"); 
