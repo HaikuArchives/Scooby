@@ -45,7 +45,7 @@ const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_EUC_KR_CONVERSION,
 								B_MS_WINDOWS_1251_CONVERSION};
 
-const int32 kNumCharset = 12;
+const int32 kNumCharset = 13;
 
 const char kMimeBase[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
