@@ -840,6 +840,9 @@ HWindow::MenusBeginning()
 	item->SetEnabled(mailSelected);
 	item = KeyMenuBar()->FindItem(M_FILTER_MAIL);
 	item->SetEnabled(mailSelected);
+	item = KeyMenuBar()->FindItem(M_PRINT_MESSAGE);
+	item->SetEnabled(mailSelected);
+	
 	// Copy	
 	int32 start,end;
 	BTextControl *ctrl(NULL);
