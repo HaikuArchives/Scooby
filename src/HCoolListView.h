@@ -26,7 +26,7 @@ public:
 				//!Destructor.
 	virtual		~HCoolListView();
 				//!Enable or disable hovering.
-	void		SetEnableHovering(bool enable){fHovering=enable;}
+	void		SetHovering(bool enable){fHovering=enable;}
 				//!Returns hovering was enabled or not.
 	bool		DoesHovering()const {return fHovering;}
 protected:

@@ -4,7 +4,7 @@
 #include <ClassInfo.h>
 #include <Window.h>
 
-const rgb_color highlight = {190,190,190,100};
+const rgb_color highlight = {190,190,250,100};
 
 /***********************************************************
  * Constructor
@@ -53,7 +53,7 @@ HCoolListView::MouseMoved(BPoint where,uint32 code,const BMessage *message)
 	BRect itemRect = ItemFrame(0);
 	float itemHeight = itemRect.Height()+1;
 	
-	itemRect.OffsetBy(0,-1);
+	//itemRect.OffsetBy(0,-1);
 	
 	if(fOldSelection >= 0 && (code == B_EXITED_VIEW || code == B_OUTSIDE_VIEW))
 	{

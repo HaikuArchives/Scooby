@@ -76,6 +76,8 @@ class CLVEasyItem : public CLVListItem
 		inline float GetTextOffset() {return text_offset;}
 		virtual const char* GetUserText(int32 column_index, float column_width) const;
 		void	SetTextColor(uchar red,uchar green,uchar blue);
+		void	SetBackgroundColor(rgb_color *color);
+		
 		BList m_column_types;	//List of int32's converted from CLVColumnTypes
 		BList m_column_content;	//List of char* (full content) or BBitmap*
 	private:
@@ -89,6 +91,7 @@ class CLVEasyItem : public CLVListItem
 	protected:
 		float text_offset;
 		rgb_color	fTextColor;
+		rgb_color	*fBackgroundColor;
 };
 
 
