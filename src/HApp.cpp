@@ -19,6 +19,7 @@
 #include <ClassInfo.h>
 #include <ScrollBar.h>
 #include <Autolock.h>
+#include <stdlib.h>
 
 
 /***********************************************************
