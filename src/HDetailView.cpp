@@ -113,3 +113,21 @@ HDetailView::SetInfo(const char* subject,
 	fFrom->SetText(from);
 	fWhen->SetText(when);
 }
+
+/***********************************************************
+ * FocusedView
+ ***********************************************************/
+BTextControl*
+HDetailView::FocusedView() const
+{
+	int32 count = CountChildren();
+	
+	BTextControl *child(NULL);
+	for(int32 i = 0;i < count;i++)
+	{
+		child = cast_as(ChildAt(i),BTextControl);
+		if(child && child->TextView()->IsFocus())
+			return child;
+	}
+	return NULL;
+}

@@ -23,6 +23,7 @@ public:
 							const char* from,
 							const char* when);
 	const char*		Subject();
+	BTextControl*	FocusedView() const;
 protected:
 			void	InitGUI();
 private:

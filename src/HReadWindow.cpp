@@ -85,11 +85,12 @@ HReadWindow::InitGUI()
 	fMailView->MakeEditable(false);
 	BScrollView *scroll = new BScrollView("scroller",fMailView,B_FOLLOW_ALL,0,false,true);
 	AddChild(scroll);
-	
+	/*
 	KeyMenuBar()->FindItem(B_CUT)->SetTarget(fMailView,this);
 	KeyMenuBar()->FindItem(B_COPY)->SetTarget(fMailView,this);
 	KeyMenuBar()->FindItem(B_PASTE)->SetTarget(fMailView,this);
 	KeyMenuBar()->FindItem(B_SELECT_ALL)->SetTarget(fMailView,this);
+	*/
 	KeyMenuBar()->FindItem(B_UNDO)->SetTarget(fMailView,this);
 	/********** Toolbarの追加 ***********/
 	BRect toolrect = Bounds();
@@ -220,6 +221,17 @@ HReadWindow::MessageReceived(BMessage *message)
 		be_app->PostMessage(&msg);
 		break;
 	}
+	// Edit menu items
+	case B_SELECT_ALL:
+	case B_PASTE:
+	case B_CUT:
+	case B_COPY:
+	{
+		BView *view = CurrentFocus();
+		if(view)
+			PostMessage(message,view);
+		break;
+	}
 	default:
 		BWindow::MessageReceived(message);
 	}
@@ -266,17 +278,34 @@ HReadWindow::MenusBeginning()
 	item = KeyMenuBar()->FindItem(M_RAW);
 	item->SetMarked(fMailView->IsShowingRawMessage());
 	
-	// Cut & Copy	
+	BTextControl *ctrl(NULL);
 	int32 start,end;
-	fMailView->GetSelection(&start,&end);
+	// Copy
+	if(CurrentFocus() == fMailView)
+	{	
+		fMailView->GetSelection(&start,&end);
+	
+		if(start != end)
+			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+		else
+			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+	}else if((ctrl = fDetailView->FocusedView())){
+		BTextView *textview = ctrl->TextView();
+		textview->GetSelection(&start,&end);
+		
+		if(start != end)
+		{
+			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(true);
+			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+		} else {
+			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
+			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+		}
+	}
+	// Disabled items
+	KeyMenuBar()->FindItem(B_UNDO)->SetEnabled(false);
 	KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
 	KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
-	if(start != end)
-		KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
-	else
-		KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
-	// Undo
-	KeyMenuBar()->FindItem(B_UNDO)->SetEnabled(false);
 }
 
 /***********************************************************
