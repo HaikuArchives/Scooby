@@ -430,9 +430,7 @@ HFolderList::GetFolders(void* data)
 			
 			if(entry.SetTo(&ref) != B_OK)
 				continue;
-			char link_path[B_PATH_NAME_LENGTH];
-			BSymLink link(path.Path());
-			if(B_BAD_VALUE == link.ReadLink(link_path,B_PATH_NAME_LENGTH)&& entry.IsDirectory())
+			if(entry.IsDirectory())
 			{
 				item = new HFolderItem(ref,list);
 				msg.AddPointer("item",item);
@@ -456,9 +454,7 @@ HFolderList::GetFolders(void* data)
 		ref.set_name(dent->d_name);
 		if(entry.SetTo(&ref) != B_OK)
 			continue;
-		char link_path[B_PATH_NAME_LENGTH];
-		BSymLink link(path.Path());
-		if(B_BAD_VALUE == link.ReadLink(link_path,B_PATH_NAME_LENGTH)&& entry.IsDirectory())
+		if(entry.IsDirectory())
 		{
 			item = new HFolderItem(ref,list);
 			msg.AddPointer("item",item);
@@ -719,8 +715,8 @@ HFolderList::WhenDropped(BMessage *message)
 	HMailItem *mail;
 	for(int32 i = 0;i < count;i++)
 	{
-		message->FindPointer("pointer",i,(void**)&mail);
-		msg.AddPointer("mail",mail);
+		if(message->FindPointer("pointer",i,(void**)&mail) == B_OK)
+			msg.AddPointer("mail",mail);
 	}
 	
 	if(fromFolder&&toFolder)

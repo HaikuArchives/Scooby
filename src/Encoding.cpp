@@ -88,7 +88,7 @@ Encoding::UTF82Mime(BString &str,int32 encoding)
 	BString mime("");
 	for(int32 i = 0;i < len;i++)
 	{
-		if( !isascii(kText[i]) && !isspace(kText[i]) )
+		if( !isascii(kText[i]) || isspace(kText[i]) )
 		{
 			is_mime = true;
 			mime += (char)kText[i];
@@ -103,7 +103,7 @@ Encoding::UTF82Mime(BString &str,int32 encoding)
 			out += kText[i];
 		}	
 	}
-	if(is_mime)
+	if(is_mime && mime.Length() > 0)
 	{
 		ToMime(mime,encoding);
 		out += mime;
@@ -130,18 +130,21 @@ Encoding::ToMime(BString &inString, int32 encoding)
 { 
 	int i = 0; 
 	BString outString("");
-	
+#ifndef USE_ICONV	
 	const char kJis_End[4] = {0x1b,0x28,0x42,'\0'};
-	
+#endif
 	ConvertFromUTF8(inString,encoding);
+	
 	// For japanese jis support	
+#ifndef USE_ICONV
 	if(encoding == B_JIS_CONVERSION)
 		inString += kJis_End;
+#endif
 	int32 inlen = inString.Length();
 	const char *in = inString.String();
-	char *out = outString.LockBuffer(inString.Length() *3);
- 
-	for (; inlen >= 3; inlen -= 3)
+	char *out = outString.LockBuffer(inlen *3);
+ 	
+ 	for (; inlen >= 3; inlen -= 3)
     {
     	out[i++] = kMimeBase[in[0] >> 2];
 		out[i++] = kMimeBase[((in[0] << 4) & 0x30) | (in[1] >> 4)];
@@ -483,6 +486,28 @@ Encoding::ConvertToUTF8(BString &text,const char* charset)
 void
 Encoding::ConvertToUTF8(char** text,int32 encoding)
 {
+#ifdef USE_ICONV
+	size_t inlen = ::strlen(*text) + 1;
+	
+	iconv_t cd;
+	cd = iconv_open("UTF-8",FindCharset(encoding));
+	if(cd == (iconv_t)(-1))
+		return;
+	size_t outlen = inlen*2;
+	char *outbuf = new char[outlen];
+	const char* inbuf = *text;
+	::memset(outbuf,0,outlen);
+	char *outbufp = outbuf;
+	size_t r = iconv(cd,&inbuf,&inlen,&outbufp,&outlen);
+	if(r < 0)
+	{
+		delete[] outbuf;
+		return;
+	}
+	delete[] *text;
+	*text = outbuf;
+	iconv_close(cd);
+#else
 	int32	sourceLen = strlen(*text);
 	int32	destLen = 4 * sourceLen;
 	
@@ -507,6 +532,7 @@ Encoding::ConvertToUTF8(char** text,int32 encoding)
 		*text = buf;
 	}else
 		delete[] buf;	
+#endif
 }
 
 /***********************************************************
@@ -515,6 +541,28 @@ Encoding::ConvertToUTF8(char** text,int32 encoding)
 void
 Encoding::ConvertFromUTF8(char** text,int32 encoding)
 {
+#ifdef USE_ICONV
+	size_t inlen = ::strlen(*text) + 1;
+	
+	iconv_t cd;
+	cd = iconv_open(FindCharset(encoding),"UTF-8");
+	if(cd == (iconv_t)(-1))
+		return;
+	size_t outlen = inlen*2;
+	char *outbuf = new char[outlen];
+	const char* inbuf = *text;
+	::memset(outbuf,0,outlen);
+	char *outbufp = outbuf;
+	size_t r = iconv(cd,&inbuf,&inlen,&outbufp,&outlen);
+	if(r < 0)
+	{
+		delete[] outbuf;
+		return;
+	}
+	delete[] *text;
+	*text = outbuf;
+	iconv_close(cd);
+#else
 	int32	sourceLen = strlen(*text);
 	int32	destLen = 4 * sourceLen;
 	
@@ -533,8 +581,10 @@ Encoding::ConvertFromUTF8(char** text,int32 encoding)
 	if(!err){
 		delete[] *text;
 		*text = buf;
+		PRINT(("Error: Could not convert from UTF8:%s\n",*text));
 	}else
 		delete[] buf;
+#endif
 }
 
 /***********************************************************
@@ -543,6 +593,28 @@ Encoding::ConvertFromUTF8(char** text,int32 encoding)
 void
 Encoding::ConvertToUTF8(BString& text,int32 encoding)
 {
+#ifdef USE_ICONV
+	size_t inlen = text.Length() + 1;
+	
+	iconv_t cd;
+	cd = iconv_open("UTF-8",FindCharset(encoding));
+	if(cd == (iconv_t)(-1))
+		return;
+	size_t outlen = inlen*2;
+	char *outbuf = new char[outlen];
+	const char* inbuf = text.String();
+	::memset(outbuf,0,outlen);
+	char *outbufp = outbuf;
+	size_t r = iconv(cd,&inbuf,&inlen,&outbufp,&outlen);
+	if(r < 0)
+	{
+		delete[] outbuf;
+		return;
+	}
+	text = outbuf;
+	delete[] outbuf;
+	iconv_close(cd);
+#else
 	int32	sourceLen = text.Length();
 	int32	destLen = 4 * sourceLen;
 	
@@ -575,6 +647,7 @@ Encoding::ConvertToUTF8(BString& text,int32 encoding)
 	::strncpy(inBuf,buf,destLen);
 	text.UnlockBuffer(destLen);
 	delete[] buf;
+#endif
 }
 
 /***********************************************************
@@ -583,6 +656,28 @@ Encoding::ConvertToUTF8(BString& text,int32 encoding)
 void
 Encoding::ConvertFromUTF8(BString& text,int32 encoding)
 {
+#ifdef USE_ICONV
+	size_t inlen = text.Length() + 1;
+	
+	iconv_t cd;
+	cd = iconv_open(FindCharset(encoding),"UTF-8");
+	if(cd == (iconv_t)(-1))
+		return;
+	size_t outlen = inlen*2;
+	char *outbuf = new char[outlen];
+	const char* inbuf = text.String();
+	::memset(outbuf,0,outlen);
+	char *outbufp = outbuf;
+	size_t r = iconv(cd,&inbuf,&inlen,&outbufp,&outlen);
+	if(r < 0)
+	{
+		delete[] outbuf;
+		return;
+	}
+	text = outbuf;
+	delete[] outbuf;
+	iconv_close(cd);
+#else
 	int32	sourceLen = text.Length();
 	int32	destLen = sourceLen;
 	
@@ -599,11 +694,11 @@ Encoding::ConvertFromUTF8(BString& text,int32 encoding)
 	char*	inBuf = text.LockBuffer(destLen+1);
 	
 	err = convert_from_utf8(encoding, inBuf, &sourceLen, buf, &destLen, &state);
-
 	if(err != B_OK)
 	{
 		delete[] buf;
 		text.UnlockBuffer();
+		PRINT(("Error: Could not convert from UTF8:%s\n",text.String()));
 		return;	
 	}
 	
@@ -614,6 +709,7 @@ Encoding::ConvertFromUTF8(BString& text,int32 encoding)
 	::strncpy(inBuf,buf,destLen);
 	text.UnlockBuffer(destLen);
 	delete[] buf;
+#endif
 }
 
 /***********************************************************

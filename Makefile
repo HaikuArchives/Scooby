@@ -3,7 +3,7 @@ NAME = Scooby
 # Resources
 RSRCS= ./resources/Icon.rsrc ./resources/Resource.rsrc
 # Libraries
-LIBS= root be textencoding netapi net tracker mail
+LIBS= root be netapi net tracker mail
 # Library path
 LIBPATHS= 
 # System include path
@@ -17,7 +17,7 @@ DEFINES= DEBUG USE_SCANDIR
 # USE_SPLOCALE: Enable SpLocale supprt
 # USE_ICONV:	Enable iconv support
 USE_SPLOCALE = 0
-USE_ICONV = 0
+USE_ICONV = 1
 # Warnings
 WARNINGS = ALL
 # Sources
@@ -81,6 +81,8 @@ ifeq ($(USE_ICONV),1)
 	LIBS += /boot/home/config/lib/libiconv.so
 	LOCAL_INCLUDE_PATHS += /boot/home/config/include
 	DEFINES += USE_ICONV
+else
+	LIBS += textencoding
 endif
 
 MACHINE=$(shell uname -m)
