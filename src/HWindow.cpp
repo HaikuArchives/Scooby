@@ -1439,7 +1439,7 @@ HWindow::ReplyMail(HMailItem *item,bool reply_all)
 	//
 	if( strncmp(subject.String(),"Re:",3) != 0)
 	{
-		if(subject[0] == ' ')
+		if(subject != "" && subject[0] == ' ')
 			subject.Insert("Re:",0);
 		else
 			subject.Insert("Re: ",0);
