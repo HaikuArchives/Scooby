@@ -476,7 +476,7 @@ Encoding::ConvertToUTF8(char** text,int32 encoding)
 	int32	sourceLen = strlen(*text);
 	int32	destLen = 4 * sourceLen;
 	
-	char*	buf = new char[destLen];
+	char*	buf = new char[destLen+1];
 	status_t	err = B_OK;
 	int32		state = 0;
 	
@@ -504,7 +504,7 @@ Encoding::ConvertFromUTF8(char** text,int32 encoding)
 	int32	sourceLen = strlen(*text);
 	int32	destLen = 4 * sourceLen;
 	
-	char*	buf = new char[destLen];
+	char*	buf = new char[destLen+1];
 	status_t	err = B_OK;
 	int32		state = 0;
 
