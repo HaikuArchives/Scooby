@@ -93,8 +93,10 @@ PopClient::MessageReceived(BMessage *message)
 				if(message->FindInt32("index",i,&index) != B_OK)
 					continue;
 				if( Retr(index,content) != B_OK)
+				{
 					PostError();
-				else{
+					break;	
+				}else{
 					BMessage msg(H_RETR_MESSAGE);
 					msg.AddString("content",content);
 					msg.AddInt32("index",index);
