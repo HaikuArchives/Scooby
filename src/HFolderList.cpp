@@ -1542,8 +1542,9 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		dirent *dent;
 		entry_ref childref;
 		BEntry childentry;
+		BDirectory dir(&inRef);
 		
-		while( (direntcount = dir.GetNextDirents((dirent *)buf, 4096)) > 0 && !list->fCancel )
+		while( (direntcount = dir.GetNextDirents((dirent *)buf, 4096)) > 0 && !this->fCancel )
 		{
 			offset = 0;
 			/* Now we step through the dirents. */ 
@@ -1609,6 +1610,6 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		for(int32 i = 0;i < direntcount;i++)
 			free(dirents[i++]);
 		free(dirents);
-	}
 #endif
+	}
 }
