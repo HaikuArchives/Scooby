@@ -76,13 +76,12 @@ PopClient::Login(const char* user,const char* password,bool apop)
 		MD5Digest((unsigned char*)timestamp.String(),md5sum);
 		
 		//md5_buffer(timestamp.String(),timestamp.Length(),buf);
-		BString cmd = "APOP ";
-		cmd += user;
-		cmd += " ";
-		cmd += md5sum;
-		cmd += CRLF;
+		
+		char *cmd = new char[strlen(user)+strlen(md5sum)+9];
+		::sprintf(cmd,"APOP %s %s\r\n",user,md5sum);
 	
-		err = SendCommand(cmd.String());
+		err = SendCommand(cmd);
+		delete[] cmd;
 		if(err != B_OK)
 		{
 			PRINT(( "ERR:%s\n",fLog.String()));
@@ -92,21 +91,21 @@ PopClient::Login(const char* user,const char* password,bool apop)
 	}
 normal:
 	// Send Username
-	BString cmd = "USER ";
-	cmd += user;
-	cmd += CRLF;
-	err = SendCommand(cmd.String());
+	char *cmd = new char[::strlen(user)+8];
+	::sprintf(cmd,"USER %s\r\n",user);
+	err = SendCommand(cmd);
+	delete[] cmd;
 	if(err != B_OK)
 	{
 		PRINT(( "ERR:%s\n",fLog.String()));
 		return err;
 	}	
 	// Send Password
-	cmd = "PASS ";
-	cmd += password;
-	cmd += CRLF;
+	cmd = new char[::strlen(password)+1];
+	::sprintf("PASS %s\r\n",password);
+	err = SendCommand(cmd);
+	delete[] cmd;
 	
-	err = SendCommand(cmd.String());
 	if(err != B_OK)
 	{
 		PRINT(( "ERR:%s\n",fLog.String()));
@@ -122,9 +121,7 @@ normal:
 status_t
 PopClient::Stat(int32 *mails,int32 *numBytes)
 {
-	BString cmd = "STAT";
-	cmd += CRLF;
-	if( SendCommand(cmd.String()) != B_OK)
+	if( SendCommand("STAT\r\n") != B_OK)
 		return B_ERROR;
 	
 	const char* log = fLog.String();
@@ -342,9 +339,7 @@ PopClient::Delete(int32 index)
 status_t
 PopClient::Last(int32 *index)
 {
-	BString cmd = "LAST";
-	cmd += CRLF;
-	if( SendCommand(cmd.String()) != B_OK)
+	if( SendCommand("LAST\r\n") != B_OK)
 		return B_ERROR;
 	
 	const char* log = fLog.String();
@@ -391,10 +386,7 @@ PopClient::Top(int32 index,int32 lines,BString &out)
 status_t
 PopClient::Rset()
 {
-	BString cmd = "RSET";
-	cmd += CRLF;
-	
-	if( SendCommand(cmd.String()) != B_OK)
+	if( SendCommand("RSET\r\n") != B_OK)
 		return B_ERROR;
 	return B_OK;	
 }
@@ -405,10 +397,7 @@ PopClient::Rset()
 status_t
 PopClient::PopQuit()
 {
-	BString cmd = "QUIT";
-	cmd += CRLF;
-	
-	if( SendCommand(cmd.String()) != B_OK)
+	if( SendCommand("QUIT\r\n") != B_OK)
 		return B_ERROR;
 	return B_OK;	
 }
