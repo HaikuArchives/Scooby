@@ -702,7 +702,7 @@ void
 Encoding::ConvertReturnsToLF(BString &str)
 {	
 	int32 len = str.Length();
-	char *text = str.LockBuffer(len+1);
+	char *text = str.LockBuffer(0);
 	ConvertReturnsToLF(text);
 	str.UnlockBuffer();	
 }
@@ -715,7 +715,7 @@ void
 Encoding::ConvertReturnsToCR(BString &str)
 {	
 	int32 len = str.Length();
-	char *text = str.LockBuffer(len+1);
+	char *text = str.LockBuffer(0);
 	ConvertReturnsToCR(text);
 	str.UnlockBuffer();	
 }
