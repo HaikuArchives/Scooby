@@ -296,7 +296,6 @@ void HMailView::KeyDown(const char *key, int32 count)
 				ScrollToSelection();
 			}
 			break;
-		
 		default:
 			_inherited::KeyDown(key, count);
 	}
@@ -412,6 +411,13 @@ void HMailView::MessageReceived(BMessage *msg)
 				SetContent(file);
 			break;
 		}	
+		case 'find':
+		{
+			const char* text;
+			if(msg->FindString("findthis",&text) == B_OK)
+				Find(text);
+			break;
+		}
 		default:
 			_inherited::MessageReceived(msg);
 	}
@@ -1677,6 +1683,38 @@ HMailView::find_boundary(char *buf, char *boundary, int32 len)
 	return offset;
 }
 
+/***********************************************************
+ * Find
+ ***********************************************************/
+void
+HMailView::Find(const char* inText)
+{
+	MakeFocus(true);
+	int32 len = TextLength();
+
+	int32 start,end;
+	GetSelection(&start,&end);
+	
+	const char* text = Text();
+	int32 targetLen = strlen(inText);
+	for(int32 i = end;i < len;i++)
+	{
+		// Find
+		if(::strncasecmp(&text[i],inText,targetLen) == 0)
+		{
+			PRINT(("hit:%d %d\n",i,i+targetLen));
+			Select(i,i+targetLen);
+			break;
+		}
+		// Not found
+		if(i == len-1)
+		{
+			beep();
+			Select(0,0);
+			break;
+		}
+	}
+}
 
 //====================================================================
 

@@ -5,6 +5,9 @@
 #include "HAboutWindow.h"
 #include "HPrefWindow.h"
 #include "HDeskbarView.h"
+#include "HFindWindow.h"
+#include "HReadWindow.h"
+#include "HWriteWindow.h"
 
 #include <String.h>
 #include <Debug.h>
@@ -15,6 +18,7 @@
 #include <ClassInfo.h>
 #include <ScrollBar.h>
 #include <Autolock.h>
+
 
 /***********************************************************
  * Constructor
@@ -36,6 +40,17 @@ HApp::HApp() :LocaleApp(APP_SIG)
 	fPref->LoadPrefs();
 	SetPulseRate(100000);
 	AddSoundEvent("New E-mail");
+
+	BRect rect(100,100,300,170);
+	fFindWindow = new HFindWindow(rect,_("Find"));
+	fFindWindow->Hide();
+	fFindWindow->Show();
+	
+#ifdef CHECK_NETPOSITIVE
+	fFilterAdded(false)
+	
+	fMessageFilter = new BMessageFilter(B_ANY_DELIVERY,B_ANY_SOURCE,MessageFilter);
+#endif
 }
 
 /***********************************************************
@@ -45,6 +60,9 @@ HApp::~HApp()
 {
 	delete fPref;
 	delete fPrintSettings;
+#ifdef CHECK_NETPOSITIVE
+	delete fMessageFilter;
+#endif
 }
 
 /***********************************************************
@@ -84,6 +102,61 @@ HApp::MessageReceived(BMessage *message)
 		BMessage msg(M_CHECK_SCOOBY_STATE);
 		msg.AddInt32("icon",fWindow->CurrentDeskbarIcon());
 		message->SendReply(&msg,(BHandler*)NULL,1000000);
+		break;
+	}
+	case M_SHOW_FIND_WINDOW:
+	{
+		ShowFindWindow();
+		BWindow *window;
+		BView *target(NULL);
+		if(message->FindPointer("targetwindow",(void**)&window) == B_OK)
+		{
+			bool html_mode;
+			fPref->GetData("use_html",&html_mode);
+			if(is_kind_of(window,HWindow))
+			{
+				if(!html_mode)
+					target = window->FindView("HMailView");
+				else
+					target = window->FindView("__NetPositive__HTMLView");
+			}else if(is_kind_of(window,HReadWindow)){
+				if(!html_mode)
+					target = window->FindView("HMailView");
+				else
+					target = window->FindView("__NetPositive__HTMLView");
+			}else if(is_kind_of(window,HWriteWindow)){
+				target = window->FindView("HMailView");
+			}
+		}	
+		
+		fFindWindow->SetTarget(target);
+		break;
+	}
+	case M_FIND_NEXT_WINDOW:
+	{
+		BWindow *window;
+		BView *target(NULL);
+		if(message->FindPointer("targetwindow",(void**)&window) == B_OK)
+		{
+			bool html_mode;
+			fPref->GetData("use_html",&html_mode);
+			if(is_kind_of(window,HWindow))
+			{
+				if(!html_mode)
+					target = window->FindView("HMailView");
+				else
+					target = window->FindView("__NetPositive__HTMLView");
+			}else if(is_kind_of(window,HReadWindow)){
+				if(!html_mode)
+					target = window->FindView("HMailView");
+				else
+					target = window->FindView("__NetPositive__HTMLView");
+			}else if(is_kind_of(window,HWriteWindow)){
+				target = window->FindView("HMailView");
+			}
+		}
+		fFindWindow->SetTarget(target);
+		fFindWindow->PostMessage('mFnd');
 		break;
 	}
 	default:
@@ -300,6 +373,9 @@ HApp::QuitRequested()
 		fWatchNetPositive = true;
 		return false;
 	}
+	// Quit FindWindow
+	fFindWindow->SetQuit(true);
+	fFindWindow->PostMessage(B_QUIT_REQUESTED);
 	// Remove all IMAP4 mails
 	RemoveTmpImapMails();
 	return _inherited::QuitRequested();
@@ -348,7 +424,18 @@ HApp::IsNetPositiveRunning()
 	{
 		window = WindowAt(i);
 		if(window && ::strcmp(window->Name(),"NetPositive") == 0)
+		{
+#ifdef CHECK_NETPOSITIVE
+			if(!fFilterAdded)
+			{
+				window->Lock();
+				window->AddCommonFilter(fMessageFilter);
+				window->Unlock();
+				fFilterAdded = true;
+			}
+#endif
 			return true;
+		}
 	}
 	return false;
 }
@@ -362,6 +449,46 @@ HApp::Pulse()
 	if(fWatchNetPositive && !IsNetPositiveRunning())
 	{
 		PostMessage(B_QUIT_REQUESTED);
+	}
+}
+
+#ifdef CHECK_NETPOSITIVE
+/***********************************************************
+ * MessageFilter
+ ***********************************************************/
+filter_result
+HApp::MessageFilter(BMessage *message,BHandler **target,BMessageFilter *messageFilter)
+{
+	if(message->what != '_PUL' && 
+		message->what != 'prog'&& 
+		message->what != '_MCH' &&
+		message->what != '_MMV' && 
+		message->what != '_UPD' && 
+		message->what != '_UKD' && 
+		message->what != '_KYD' && 
+		message->what != '_EVP')
+	{
+		if(::strcmp((*target)->Name(),"__NetPositive__HTMLView") == 0)
+		message->PrintToStream();
+	}
+	return B_DISPATCH_MESSAGE;
+}
+#endif
+
+/***********************************************************
+ * ShowFindWindow
+ ***********************************************************/
+void
+HApp::ShowFindWindow()
+{
+	if(fFindWindow->Lock())
+	{
+		if(fFindWindow->IsMinimized())
+			fFindWindow->Minimize(false);
+		if(fFindWindow->IsHidden())
+			fFindWindow->Show();
+		fFindWindow->Activate();
+		fFindWindow->Unlock();
 	}
 }
 

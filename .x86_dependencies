@@ -64,7 +64,8 @@ $(OBJ_DIR)/HWindow.o : ./src/HWindow.cpp src/HWindow.h libs/Utils/MenuUtils.h \
 $(OBJ_DIR)/HApp.o : ./src/HApp.cpp src/HApp.h libs/liblocale/LocaleApp.h \
  libs/Utils/RectUtils.h src/HWindow.h src/HPrefs.h \
  libs/Utils/HSetting.h libs/Utils/HAboutWindow.h src/HPrefWindow.h \
- src/HDeskbarView.h
+ src/HDeskbarView.h src/HFindWindow.h src/HReadWindow.h \
+ src/HWriteWindow.h
 $(OBJ_DIR)/HStatusView.o : ./src/HStatusView.cpp src/HStatusView.h \
  libs/Utils/ResourceUtils.h src/HFolderList.h \
  libs/Santa/ColumnListView.h libs/Santa/Colors.h \
@@ -206,4 +207,6 @@ $(OBJ_DIR)/Utilities.o : ./src/Utilities.cpp src/Utilities.h src/scandir.h
 $(OBJ_DIR)/scandir.o : ./src/scandir.c src/scandir.h
 $(OBJ_DIR)/HCreateFolderDialog.o : ./src/HCreateFolderDialog.cpp \
  src/HCreateFolderDialog.h src/Utilities.h src/HApp.h \
+ libs/liblocale/LocaleApp.h
+$(OBJ_DIR)/HFindWindow.o : ./src/HFindWindow.cpp src/HFindWindow.h src/HApp.h \
  libs/liblocale/LocaleApp.h
