@@ -480,6 +480,11 @@ HWriteWindow::InitGUI()
 	rect.right -= B_V_SCROLL_BAR_WIDTH;
 	rect.bottom = Bounds().bottom - B_H_SCROLL_BAR_HEIGHT*2;
 	fTextView = new HMailView(rect,false,NULL);
+	BScrollView *scroll = new BScrollView("scroll",fTextView,B_FOLLOW_ALL,
+										B_WILL_DRAW,true,true);
+	AddChild(scroll);
+	scroll->ScrollBar(B_VERTICAL)->ResizeBy(0,B_H_SCROLL_BAR_HEIGHT);
+	
 	bool ruler;
 	((HApp*)be_app)->Prefs()->GetData("use_ruler",&ruler);
 	
@@ -488,10 +493,6 @@ HWriteWindow::InitGUI()
 	((HApp*)be_app)->Prefs()->GetData("wrapping_limit",&limit);
 	fTextView->SetRightLimit(limit);
 	
-	BScrollView *scroll = new BScrollView("scroll",fTextView,B_FOLLOW_ALL,
-										B_WILL_DRAW,true,true);
-	AddChild(scroll);
-	scroll->ScrollBar(B_VERTICAL)->ResizeBy(0,B_H_SCROLL_BAR_HEIGHT);
 	fTextView->SetDoesUndo(true);
 	/********** Statusbar **************/
 	BRect statusRect(Bounds());
