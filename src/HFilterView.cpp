@@ -391,8 +391,14 @@ HFilterView::SaveItem(int32 index,bool rename)
 	}
 
 	BMessage msg(B_SIMPLE_DATA);
+	BMenuItem *menuitem;
 	menu = fFolderMenu->Menu();
-	msg.AddString("action_value",menu->FindMarked()->Label());
+	if(!(menuitem = menu->FindMarked()))
+	{
+		(new BAlert("",_("You need to set filter action"),_("OK")))->Go();
+		return;
+	}else
+		msg.AddString("action_value",menuitem->Label());
 
 	for(int32 i = 0;i < count;i++)
 	{
