@@ -946,14 +946,13 @@ HWindow::PopConnect()
 			entry_ref ref;
 			entry.GetRef(&ref);
 			if(AddPopServer(ref,sendMsg) != B_OK)
-				goto err;
+				(new BAlert("",_("Account file corrupted"),_("OK"),
+						NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		}
 	}
 	if(!sendMsg.IsEmpty())
 		PostMessage(&sendMsg,fPopClientView);
 	return;
-err:
-	(new BAlert("",_("Account file corrupted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 }
 
 /***********************************************************
