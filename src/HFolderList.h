@@ -4,6 +4,7 @@
 #include "ColumnListView.h"
 #include "HFolderItem.h"
 #include "HSimpleFolderItem.h"
+#include "HCoolListView.h"
 
 #include <Entry.h>
 
@@ -22,7 +23,7 @@ M_OPEN_FOLDER = 'OpFD',
 M_ADD_IMAP4_FOLDER = 'aIM4'
 };
 
-class HFolderList	:public	 ColumnListView {
+class HFolderList	:public	 HCoolListView {
 public:
 						HFolderList(BRect frame,
 									BetterScrollView **scroll,
@@ -75,5 +76,7 @@ private:
 	HSimpleFolderItem	*fIMAP4Folders;
 	HSimpleFolderItem	*fQueryFolders; 
 		bool		fSkipMoveMail;
+		
+		typedef HCoolListView	_inherited;
 };
 #endif

@@ -58,7 +58,8 @@ SRCS= ./src/HFolderItem.cpp\
 		./src/HAttachmentItem.cpp\
 		./src/HTabView.cpp\
 		./src/HHtmlView.cpp\
-		./src/HHtmlMailView.cpp
+		./src/HHtmlMailView.cpp\
+		./src/HCoolListView.cpp 
 #--------------------------------------------------------
 #	determine wheather running on x86 or ppc
 MACHINE=$(shell uname -m)
