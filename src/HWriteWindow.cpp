@@ -43,6 +43,8 @@
 
 #define ENCLOSUREVIEW_MINI_HEIGHT 40
 #define ENCLOSUREVIEW_MAX_HEIGHT 100
+#define ADDRESSVIEW_MINI_HEIGHT 78
+#define ADDRESSVIEW_MAX_HEIGHT 130
 
 const char *kBoundary="----=_NextPart_";
 
@@ -334,7 +336,7 @@ HWriteWindow::InitGUI()
 	prefs->GetData("expand_addr",&bValue);
 	
 	rect.bottom = rect.top;
-	rect.bottom += (bValue)?130:50;
+	rect.bottom += (bValue)?ADDRESSVIEW_MAX_HEIGHT:ADDRESSVIEW_MINI_HEIGHT;
 	
 	AddChild((fTopView = new HAddressView(rect)));
 	fTopView->InitGUI();
@@ -657,8 +659,8 @@ HWriteWindow::MessageReceived(BMessage *message)
 		BScrollView *view = cast_as(FindView("scroll"),BScrollView);
 		BRect rect = fTopView->Bounds();
 		
-		bool expand = (rect.Height() == 50)?true:false;
-		const int32 kAddrHeight = (expand)?ENCLOSUREVIEW_MAX_HEIGHT:-ENCLOSUREVIEW_MAX_HEIGHT;
+		bool expand = (rect.Height() == ADDRESSVIEW_MINI_HEIGHT)?true:false;
+		const int32 kAddrHeight = (expand)?ADDRESSVIEW_MAX_HEIGHT-ADDRESSVIEW_MINI_HEIGHT:-(ADDRESSVIEW_MAX_HEIGHT-ADDRESSVIEW_MINI_HEIGHT);
 		
 		fTopView->ResizeBy(0,kAddrHeight);
 		fEnclosureView->MoveBy(0,kAddrHeight);
@@ -1204,7 +1206,7 @@ HWriteWindow::QuitRequested()
 	
 	HPrefs *prefs = ((HApp*)be_app)->Prefs();
 	// Save view's enpansion
-	bool expand = (fTopView->Bounds().Height() == 50)?false:true;
+	bool expand = (fTopView->Bounds().Height() == ADDRESSVIEW_MINI_HEIGHT)?false:true;
 	prefs->SetData("expand_addr",expand);
 	
 	expand = (fEnclosureView->Bounds().Height() == ENCLOSUREVIEW_MINI_HEIGHT)?false:true;

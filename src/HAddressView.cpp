@@ -85,7 +85,7 @@ HAddressView::InitGUI()
 	
 	BTextControl *ctrl;
 	ResourceUtils rutils;
-	const char* name[] = {"to","subject","cc","bcc","from"};
+	const char* name[] = {"to","subject","from","cc","bcc"};
 	
 	for(int32 i = 0;i < 5;i++)
 	{
@@ -119,15 +119,15 @@ HAddressView::InitGUI()
 			fSubject = ctrl;
 			break;
 		case 2:
-			fCc = ctrl;
-			break;
-		case 3:
-			fBcc = ctrl;
-			break;
-		case 4:
 			fFrom = ctrl;
 			fFrom->SetEnabled(false);
 			fFrom->SetFlags(fFrom->Flags() & ~B_NAVIGABLE);
+			break;
+		case 3:
+			fCc = ctrl;
+			break;
+		case 4:
+			fBcc = ctrl;
 			break;
 		}
 	}
@@ -242,27 +242,12 @@ HAddressView::InitGUI()
 	rect.OffsetBy(0,28);
 	rect.left = Bounds().left + 5;
 	rect.right = rect.left + 16;
+	rect.top += 26;
 	rect.bottom = rect.top + 16;
 	ArrowButton *arrow = new ArrowButton(rect,"addr_arrow"
 										,new BMessage(M_EXPAND_ADDRESS));
 	AddChild(arrow);
-	
-	
-	menuRect.OffsetBy(0,25*2);
-	field = new BMenuField(menuRect,"CcMenu","",ccMenu,
-							B_FOLLOW_TOP|B_FOLLOW_LEFT,B_WILL_DRAW);
-	field->SetDivider(0);
-	field->SetEnabled(!fReadOnly);
-	AddChild(field);
-	
-	
-	menuRect.OffsetBy(0,25);
-	field = new BMenuField(menuRect,"BccMenu","",bccMenu,
-							B_FOLLOW_TOP|B_FOLLOW_LEFT,B_WILL_DRAW);
-	field->SetDivider(0);
-	field->SetEnabled(!fReadOnly);
-	AddChild(field);
-	
+	//==================== From menu
 	BMenu *fromMenu = new BMenu(_("From:"));
 	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
@@ -306,12 +291,29 @@ HAddressView::InitGUI()
 	}
 	fromMenu->SetRadioMode(true);
 	
-	menuRect.OffsetBy(0,25);
+	menuRect.OffsetBy(0,25*2);
 	field = new BMenuField(menuRect,"FromMenu","",fromMenu,
 							B_FOLLOW_TOP|B_FOLLOW_LEFT,B_WILL_DRAW);
 	field->SetDivider(0);
 	
 	AddChild(field);
+	//=================== CC menu
+	menuRect.OffsetBy(0,25);
+	field = new BMenuField(menuRect,"CcMenu","",ccMenu,
+							B_FOLLOW_TOP|B_FOLLOW_LEFT,B_WILL_DRAW);
+	field->SetDivider(0);
+	field->SetEnabled(!fReadOnly);
+	AddChild(field);
+
+	//=================== BCC menu	
+	menuRect.OffsetBy(0,25);
+	field = new BMenuField(menuRect,"BccMenu","",bccMenu,
+							B_FOLLOW_TOP|B_FOLLOW_LEFT,B_WILL_DRAW);
+	field->SetDivider(0);
+	field->SetEnabled(!fReadOnly);
+	AddChild(field);
+	
+
 }
 
 /***********************************************************
