@@ -88,7 +88,7 @@ Encoding::UTF82Mime(BString &str,int32 encoding)
 	BString mime("");
 	for(int32 i = 0;i < len;i++)
 	{
-		if( !isascii(kText[i]) || isspace(kText[i]) )
+		if( !isascii(kText[i]) )
 		{
 			is_mime = true;
 			mime += (char)kText[i];
