@@ -176,7 +176,7 @@ HPopClientView::MessageReceived(BMessage *message)
 	// conect success
 	case H_CONNECT_MESSAGE:
 	{	
-		fStringView->SetText("Login…");
+		fStringView->SetText("Login" B_UTF8_ELLIPSIS);
 		BMessage msg(H_LOGIN_MESSAGE);
 		msg.AddString("login",fLogin);
 		msg.AddString("password",fPassword);
@@ -186,7 +186,7 @@ HPopClientView::MessageReceived(BMessage *message)
 	}
 	// login success
 	case H_LOGIN_MESSAGE:
-		fStringView->SetText("UIDL…");
+		fStringView->SetText("UIDL" B_UTF8_ELLIPSIS);
 		fPopLooper->PostMessage(H_UIDL_MESSAGE);
 		break;
 	// list success
@@ -266,7 +266,7 @@ HPopClientView::MessageReceived(BMessage *message)
 			// POP3 server is not support UIDL command
 			fCanUseUIDL = false;
 			PRINT(("UIDL not supported\n"));
-			fStringView->SetText("LIST…");
+			fStringView->SetText("LIST" B_UTF8_ELLIPSIS);
 			fPopLooper->PostMessage(H_LIST_MESSAGE);
 		}
 		break;
@@ -408,7 +408,7 @@ HPopClientView::PopConnect(const char* name,
 	BString label(_("Connecting to"));
 	label += " ";
 	label += address;
-	label +=  "…";
+	label += B_UTF8_ELLIPSIS;
 	fStringView->SetText(label.String());
 	BMessage msg(H_CONNECT_MESSAGE);
 	msg.AddString("address",address);

@@ -333,7 +333,7 @@ HWriteWindow::InitMenu()
 	GetDraftsPath(path);
 	AddChildItem(subMenu,path.Path(),M_OPEN_DRAFT);
 	subMenu->AddSeparatorItem();
-	utils.AddMenuItem(subMenu,_("Edit drafts"),M_EDIT_DRAFTS,this,this);
+	utils.AddMenuItem(subMenu,_("Edit drafts" B_UTF8_ELLIPSIS),M_EDIT_DRAFTS,this,this);
 	
 	aMenu->AddItem(subMenu);
 	utils.AddMenuItem(aMenu,_("Save as draft"),M_SAVE_DRAFT,this,this,'S',B_SHIFT_KEY
@@ -346,7 +346,7 @@ HWriteWindow::InitMenu()
 	
 	AddChildItem(subMenu,path.Path(),M_OPEN_TEMPLATE);
 	subMenu->AddSeparatorItem();
-	utils.AddMenuItem(subMenu,_("Edit templates"),M_EDIT_TEMPLATES,this,this);
+	utils.AddMenuItem(subMenu,_("Edit templates" B_UTF8_ELLIPSIS),M_EDIT_TEMPLATES,this,this);
 	
 	aMenu->AddItem(subMenu);
 	utils.AddMenuItem(aMenu,_("Save as template"),M_SAVE_TEMPLATE,this,this,0,0);
@@ -354,7 +354,7 @@ HWriteWindow::InitMenu()
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
-	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,be_app,be_app,'P',B_SHIFT_KEY,
+	utils.AddMenuItem(aMenu,_("Page Setup" B_UTF8_ELLIPSIS),M_PAGE_SETUP_MESSAGE,be_app,be_app,'P',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"PageSetup"));
 	aMenu->AddSeparatorItem();					
 	utils.AddMenuItem(aMenu,_("Close"),B_QUIT_REQUESTED,this,this,'W',0);
@@ -374,7 +374,7 @@ HWriteWindow::InitMenu()
    	aMenu->AddSeparatorItem();
    	BMessage *msg = new BMessage(M_SHOW_FIND_WINDOW);
  	msg->AddPointer("targetwindow",this);
-   	utils.AddMenuItem(aMenu,_("Find"),msg,be_app,be_app,'F',0);
+   	utils.AddMenuItem(aMenu,_("Find" B_UTF8_ELLIPSIS),msg,be_app,be_app,'F',0);
    	msg = new BMessage(M_FIND_NEXT_WINDOW);
  	msg->AddPointer("targetwindow",this);
    	utils.AddMenuItem(aMenu,_("Find Next"),msg,be_app,be_app,'G',0);
@@ -392,7 +392,7 @@ HWriteWindow::InitMenu()
 	
 	aMenu = new BMenu(_("Message"));
 	subMenu = new BMenu(_("Attachments"));
-	utils.AddMenuItem(subMenu,_("Add Attachment"),M_ADD_ENCLOSURE,this,this,'A',B_SHIFT_KEY);
+	utils.AddMenuItem(subMenu,_("Add Attachment" B_UTF8_ELLIPSIS),M_ADD_ENCLOSURE,this,this,'A',B_SHIFT_KEY);
 	utils.AddMenuItem(subMenu,_("Remove Attachment"),M_DEL_ENCLOSURE,this,this,0,0);
 	aMenu->AddItem(subMenu);
 	subMenu = new BMenu(_("Priority"));

@@ -505,7 +505,7 @@ HMailList::MouseDown(BPoint pos)
     	theMenu->AddItem(statusMenu);
     	theMenu->AddSeparatorItem();
     	// Open with menu
-    	 OpenWithMenu *submenu = new OpenWithMenu(_("Open With…"),"text/x-email");
+    	 OpenWithMenu *submenu = new OpenWithMenu(_("Open With" B_UTF8_ELLIPSIS),"text/x-email");
     	 submenu->SetFont(&font);
 		// Get icon for executable file
 		BMimeType exe("application/x-vnd.Be-elfexecutable");

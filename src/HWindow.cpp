@@ -100,33 +100,30 @@ HWindow::InitMenu()
 	MenuUtils utils;
 	BMessage *msg;
 	ResourceUtils rsrc_utils;
-	BString label;
 //// ------------------------ File Menu ----------------------    
 	aMenu = new BMenu(_("File"));
-	utils.AddMenuItem(aMenu,_("New Folder"),M_CREATE_FOLDER_DIALOG,this,this,0,0,
+	utils.AddMenuItem(aMenu,_("New Folder" B_UTF8_ELLIPSIS),M_CREATE_FOLDER_DIALOG,this,this,0,0,
 						rsrc_utils.GetBitmapResource('BBMP',"OpenFolder"));
 	
-	utils.AddMenuItem(aMenu,_("Open Query Folder"),M_OPEN_QUERY,this,this,0,0,
+	utils.AddMenuItem(aMenu,_("Open Query Folder" B_UTF8_ELLIPSIS),M_OPEN_QUERY,this,this,0,0,
 							rsrc_utils.GetBitmapResource('BBMP',"OpenQuery"));
 	utils.AddMenuItem(aMenu,_("Empty Trash"),M_EMPTY_TRASH,this,this,'T',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();
 	subMenu = new BMenu(_("Import"));
-	utils.AddMenuItem(subMenu,_("Plain Text Mails"),M_IMPORT_PLAIN_TEXT_MAIL,this,this);
-	utils.AddMenuItem(subMenu,_("mbox"),M_IMPORT_MBOX,this,this);
+	utils.AddMenuItem(subMenu,_("Plain Text Mails" B_UTF8_ELLIPSIS),M_IMPORT_PLAIN_TEXT_MAIL,this,this);
+	utils.AddMenuItem(subMenu,_("mbox" B_UTF8_ELLIPSIS),M_IMPORT_MBOX,this,this);
 	aMenu->AddItem(subMenu);
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
-	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,
+	utils.AddMenuItem(aMenu,_("Page Setup" B_UTF8_ELLIPSIS),M_PAGE_SETUP_MESSAGE,
 							be_app,be_app,'P',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"PageSetup"));
 	aMenu->AddSeparatorItem();
-	label = _("Preferences");
-	label << "…";
-	utils.AddMenuItem(aMenu,label.String(),M_PREF_MSG,this,this);
+	utils.AddMenuItem(aMenu,_("Preferences" B_UTF8_ELLIPSIS),M_PREF_MSG,this,this);
 	aMenu->AddSeparatorItem();
-	utils.AddMenuItem(aMenu,_("About Scooby…"),B_ABOUT_REQUESTED,be_app,be_app);
+	utils.AddMenuItem(aMenu,_("About Scooby" B_UTF8_ELLIPSIS),B_ABOUT_REQUESTED,be_app,be_app);
 #ifndef USE_SPLOCALE
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("Quit"),B_QUIT_REQUESTED,this,this,'Q',0);
@@ -147,7 +144,7 @@ HWindow::InitMenu()
    	aMenu->AddSeparatorItem();
  	msg = new BMessage(M_SHOW_FIND_WINDOW);
  	msg->AddPointer("targetwindow",this);
-   	utils.AddMenuItem(aMenu,_("Find"),msg,be_app,be_app,'F',0);
+   	utils.AddMenuItem(aMenu,_("Find" B_UTF8_ELLIPSIS),msg,be_app,be_app,'F',0);
    	msg = new BMessage(M_FIND_NEXT_WINDOW);
  	msg->AddPointer("targetwindow",this);
    	utils.AddMenuItem(aMenu,_("Find Next"),msg,be_app,be_app,'G',0);
@@ -169,20 +166,20 @@ HWindow::InitMenu()
 	menubar->AddItem( aMenu );
 ////------------------------- Message Menu ---------------------
 	aMenu = new BMenu(_("Message"));
-	utils.AddMenuItem(aMenu,_("New Message"),M_NEW_MSG,this,this,'N',0,
+	utils.AddMenuItem(aMenu,_("New Message" B_UTF8_ELLIPSIS),M_NEW_MSG,this,this,'N',0,
 							rsrc_utils.GetBitmapResource('BBMP',"New Message"));
 	aMenu->AddSeparatorItem();
 	
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",false);
-	utils.AddMenuItem(aMenu,_("Reply"),msg,this,this,'R',0,
+	utils.AddMenuItem(aMenu,_("Reply" B_UTF8_ELLIPSIS),msg,this,this,'R',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Reply"));
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",true);
-	utils.AddMenuItem(aMenu,_("Reply To All"),msg,this,this,'R',B_SHIFT_KEY,
+	utils.AddMenuItem(aMenu,_("Reply To All" B_UTF8_ELLIPSIS),msg,this,this,'R',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"Reply To All"));
 							
-	utils.AddMenuItem(aMenu,_("Forward"),M_FORWARD_MESSAGE,this,this,'J',0,
+	utils.AddMenuItem(aMenu,_("Forward" B_UTF8_ELLIPSIS),M_FORWARD_MESSAGE,this,this,'J',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Forward"));
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("Move To Trash"),M_DELETE_MSG,this,this,'T',0,

@@ -158,7 +158,7 @@ HReadWindow::InitMenu()
 	aMenu = new BMenu(_("File"));
 	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
-	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,be_app,be_app,'P',B_SHIFT_KEY,
+	utils.AddMenuItem(aMenu,_("Page Setup" B_UTF8_ELLIPSIS),M_PAGE_SETUP_MESSAGE,be_app,be_app,'P',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"PageSetup"));
 	aMenu->AddSeparatorItem();					
 	utils.AddMenuItem(aMenu,_("Close"),B_QUIT_REQUESTED,this,this,'W',0);
@@ -177,27 +177,27 @@ HReadWindow::InitMenu()
    	aMenu->AddSeparatorItem();
    	msg = new BMessage(M_SHOW_FIND_WINDOW);
  	msg->AddPointer("targetwindow",this);
-   	utils.AddMenuItem(aMenu,_("Find"),msg,be_app,be_app,'F',0);
+   	utils.AddMenuItem(aMenu,_("Find" B_UTF8_ELLIPSIS),msg,be_app,be_app,'F',0);
    	msg = new BMessage(M_FIND_NEXT_WINDOW);
  	msg->AddPointer("targetwindow",this);
    	utils.AddMenuItem(aMenu,_("Find Next"),msg,be_app,be_app,'G',0);
    	menubar->AddItem(aMenu);
 	////------------------------- Message Menu ---------------------
 	aMenu = new BMenu(_("Message"));
-	utils.AddMenuItem(aMenu,_("New Message"),M_NEW_MSG,this,this,'N',0,
+	utils.AddMenuItem(aMenu,_("New Message" B_UTF8_ELLIPSIS),M_NEW_MSG,this,this,'N',0,
 							rsrc_utils.GetBitmapResource('BBMP',"New Message"));
 	aMenu->AddSeparatorItem();
 	
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",false);
-	utils.AddMenuItem(aMenu,_("Reply"),msg,this,this,'R',0,
+	utils.AddMenuItem(aMenu,_("Reply" B_UTF8_ELLIPSIS),msg,this,this,'R',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Reply"));
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",true);
-	utils.AddMenuItem(aMenu,_("Reply To All"),msg,this,this,'R',B_SHIFT_KEY,
+	utils.AddMenuItem(aMenu,_("Reply To All" B_UTF8_ELLIPSIS),msg,this,this,'R',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"Reply To All"));
 							
-	utils.AddMenuItem(aMenu,_("Forward"),M_FORWARD_MESSAGE,this,this,'J',0,
+	utils.AddMenuItem(aMenu,_("Forward" B_UTF8_ELLIPSIS),M_FORWARD_MESSAGE,this,this,'J',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Forward"));
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("Move To Trash"),M_DELETE_MSG,this,this,'T',0,
