@@ -271,6 +271,7 @@ HDaemonApp::MessageReceived(BMessage *message)
 	case M_RESET_ICON:
 	{
 		fHaveNewMails = false;
+		EmptyNewMailList();
 		break;
 	}
 	case M_NEW_MESSAGE:
@@ -469,6 +470,27 @@ HDaemonApp::RemoveDeskbarIcon()
 }
 
 /***********************************************************
+ * AddNewMail
+ ***********************************************************/
+void
+HDaemonApp::AddNewMail(BEntry *entry)
+{
+	fNewMailList.AddItem(entry);
+}
+
+/***********************************************************
+ * EmptyNewMailList
+ ***********************************************************/
+void
+HDaemonApp::EmptyNewMailList()
+{
+	int32 count = fNewMailList.CountItems();
+	
+	while(count>0)
+		delete fNewMailList.RemoveItem(--count);
+}
+
+/***********************************************************
  * PlayNotifySound
  ***********************************************************/
 void
@@ -611,6 +633,9 @@ HDaemonApp::SaveMail(const char* all_content,
 	entry_ref ref;
 	::get_ref_for_path(path.Path(),&ref);
 	*file_ref = ref;
+	
+	AddNewMail(new BEntry(file_ref));
+	
 	path.GetParent(&path);
 	::get_ref_for_path(path.Path(),&ref);
 	*folder_ref =ref;
@@ -917,8 +942,9 @@ HDaemonApp::SetNextRecvPos(const char *uidl)
 bool
 HDaemonApp::QuitRequested()
 {
-	//RemoveDeskbarIcon();
+	RemoveDeskbarIcon();
 	StopTimer();
+	EmptyNewMailList();
 	if(fPopClient)
 	{
 		fPopClient->PostMessage(B_QUIT_REQUESTED);
