@@ -26,7 +26,7 @@ protected:
 	
 private:
 		BString		fPredicate;
-		BQuery		*fQuery;
 		BMessenger  *fMessenger;
+		BList		fQueries;
 };
 #endif

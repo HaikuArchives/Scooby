@@ -26,12 +26,9 @@ HQueryItem::HQueryItem(const entry_ref &ref,
 						BListView *target)
 			:HFolderItem(ref,target)
 			,fPredicate("")
-			,fQuery(NULL)
 			,fMessenger(NULL)
 {
 	BNode node(&ref);
-	fQuery = new BQuery();
-	
 	fMessenger = new BMessenger((BHandler*)this,(BLooper*)target->Window());
 	BString type;
 	
@@ -58,8 +55,20 @@ HQueryItem::HQueryItem(const entry_ref &ref,
  ***********************************************************/
 HQueryItem::~HQueryItem()
 {
+	// Make sure the fetching thread isn't running
+	if(fThread >= 0)
+	{
+		status_t err;
+		fCancel = true;
+		::wait_for_thread(fThread,&err);
+		fThread = -1;
+	}
+
 	EmptyMailList();
-	delete fQuery;
+	while (fQueries.CountItems())
+	{
+		delete static_cast<BQuery *>(fQueries.RemoveItem((int32)0));
+	}
 	delete fMessenger;
 }
 
@@ -99,62 +108,82 @@ HQueryItem::StartGathering()
 void
 HQueryItem::Fetching()
 {
+	bool some_success = false;
 	BVolume volume;
-	BVolumeRoster().GetBootVolume(&volume);
-	fQuery->Clear();
-	fQuery->SetTarget(*fMessenger);
-	fQuery->SetVolume(&volume);
-	fQuery->SetPredicate(fPredicate.String());
+	BVolumeRoster roster;
 	
-	char type[B_MIME_TYPE_LENGTH+1];
-	BNode node;
-	HMailItem *item(NULL);
-	if(fQuery->Fetch() == B_OK)
+
+	while (fQueries.CountItems())
 	{
-		entry_ref ref;
-		char buf[4096];
-		dirent *dent;
-		int32 count;
-		int32 offset;
+		delete static_cast<BQuery *>(fQueries.RemoveItem((int32)0));
+	}
+	uint32 count_items = 0;
+
+
+	while (roster.GetNextVolume(&volume) == B_OK)
+	{
+		BQuery *query = new BQuery;
+		fQueries.AddItem((void*)query);
 	
-		while((count = fQuery->GetNextDirents((dirent *)buf, 4096)) > 0)
+		query->Clear();
+		query->SetTarget(*fMessenger);
+		query->SetVolume(&volume);
+		query->SetPredicate(fPredicate.String());
+		
+		char type[B_MIME_TYPE_LENGTH+1];
+		BNode node;
+		HMailItem *item(NULL);
+		if(query->Fetch() == B_OK)
 		{
-			offset = 0;
-			/* Now we step through the dirents. */ 
-			while (count-- > 0)
+			some_success = true;
+			entry_ref ref;
+			char buf[4096];
+			dirent *dent;
+			int32 count;
+			int32 offset;
+		
+			while (((count = query->GetNextDirents((dirent *)buf, 4096)) > 0) && (!fCancel))
 			{
-				dent = (dirent *)buf + offset;
-				offset +=  dent->d_reclen;
-				/* Skip . and .. directory */
-				if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
-					continue;
-				ref.device = dent->d_pdev;
-				ref.directory = dent->d_pino;
-				ref.set_name(dent->d_name);
-				if(node.SetTo(&ref) != B_OK)
-					continue;
-				node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH);
-				if(::strcmp(type,B_MAIL_TYPE) == 0)
+				offset = 0;
+				/* Now we step through the dirents. */ 
+				while (count-- > 0)
 				{
-					fMailList.AddItem(item = new HMailItem(ref));
-					if(item && !item->IsRead() )
-						fUnread++;
+					dent = (dirent *)buf + offset;
+					offset +=  dent->d_reclen;
+					/* Skip . and .. directory */
+					if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
+						continue;
+					ref.device = dent->d_pdev;
+					ref.directory = dent->d_pino;
+					ref.set_name(dent->d_name);
+					if(node.SetTo(&ref) != B_OK)
+						continue;
+					node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH);
+					if(::strcmp(type,B_MAIL_TYPE) == 0)
+					{
+						fMailList.AddItem(item = new HMailItem(ref));
+						if(item && !item->IsRead() )
+							count_items++;
+					}
 				}
 			}
-		}
+		}DEBUG_ONLY(
+		else{
+			PRINT(("Query fetching was failed\n"));
+			}
+		);
+	}
+
+	if (some_success)
+	{
 		fDone = true;
-		
 		// Set icon to open folder
 		BBitmap *icon = ((HApp*)be_app)->GetIcon("OpenQuery");
 		SetColumnContent(1,icon,2.0,false,false);
-		
-		SetUnreadCount(fUnread);
+		SetUnreadCount(count_items);
 		InvalidateMe();
-	}DEBUG_ONLY(
-	else{
-		PRINT(("Query fetching was failed\n"));
-		}
-	);
+	}
+
 	fThread = -1;
 }
 
