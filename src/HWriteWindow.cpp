@@ -16,6 +16,7 @@
 #include "TrackerUtils.h"
 #include "HWindow.h"
 #include "TrackerUtils.h"
+#include "HString.h"
 
 #include <MenuBar.h>
 #include <ClassInfo.h>
@@ -36,6 +37,9 @@
 
 #define DRAFT_FOLDER "Drafts"
 #define TEMPLATE_FOLDER "Templates"
+
+#define ENCLOSUREVIEW_MINI_HEIGHT 40
+#define ENCLOSUREVIEW_MAX_HEIGHT 80
 
 const char *kBoundary="----=_NextPart_";
 
@@ -95,7 +99,58 @@ HWriteWindow::HWriteWindow(BRect rect
 		entry_ref ref = fReplyItem->Ref();
 		// this file pointer will be deleted with HMailView
 		fReplyFile = new BFile(&ref,B_READ_ONLY);
+		// Find content-type
+		int32 header_len = -1;
+		fReplyFile->ReadAttr(B_MAIL_ATTR_HEADER,0,B_INT32_TYPE,&header_len,sizeof(int32));
+		if(header_len > 0)
+		{
+			HString header;
+			BString line;
+			char *buf = header.LockBuffer(header_len+1);
+			fReplyFile->Read(buf,header_len);
+			buf[header_len] = '\0';
+			header.UnlockBuffer();		
+			
+			int32 pos = 0;
+			BString charset;
+			
+			while(header.GetLine(pos,&line) > 0)
+			{
+				pos += line.Length();
+				//PRINT(("%s\n",line.String() ));
+				if(line.FindFirst("Content-Type:") == 0)
+				{
+					int32 n = line.IFindFirst("charset");
+					if(n == B_ERROR)
+					{
+						header.GetLine(pos,&line);
+						pos += line.Length();
+						n = line.IFindFirst("charset");
+						if(n == B_ERROR)
+							break;
+					}
+					n+=7;
+					while(line[n] == '=' ||line[n] == '\"' || line[n] == ' ')
+						n++;
+					while(line[n] != '\"' && line[n] != '\r'&& line[n] != '\n'&& line[n] != ' ')
+						charset += line[n++];
+					break;
+				}
+			}
+			//PRINT(("charset:%s %d\n",charset.String(),charset.Length() ));	
+			if(fEnclosureView->SetEncoding(charset.String()) != B_OK)
+			{
+				int32 encoding;
+				((HApp*)be_app)->Prefs()->GetData("encoding",&encoding);
+				fEnclosureView->SetEncoding(encoding);
+			}	
+		}
 		fTextView->LoadMessage(fReplyFile,reply,false,NULL);
+		
+	}else{
+		int32 encoding;
+		((HApp*)be_app)->Prefs()->GetData("encoding",&encoding);
+		fEnclosureView->SetEncoding(encoding);
 	}
 	
 	if(enclosure_path)
@@ -286,7 +341,7 @@ HWriteWindow::InitGUI()
 	prefs->GetData("expand_enclosure",&bValue);
 
 	rect.bottom = rect.top;
-	rect.bottom += (bValue)?80:20;
+	rect.bottom += (bValue)?ENCLOSUREVIEW_MAX_HEIGHT:ENCLOSUREVIEW_MINI_HEIGHT;
 	
 	AddChild((fEnclosureView = new HEnclosureView(rect)));
 	fEnclosureView->InitGUI();
@@ -561,7 +616,7 @@ HWriteWindow::MessageReceived(BMessage *message)
 	{	
 		BRect rect = fEnclosureView->Bounds();
 		BScrollView *view = cast_as(FindView("scroll"),BScrollView);
-		bool expand = (rect.Height() == 20)?true:false;
+		bool expand = (rect.Height() == ENCLOSUREVIEW_MINI_HEIGHT)?true:false;
 		const int32 kEnclosureHeight = (expand)?60:-60;
 		
 		
@@ -578,7 +633,7 @@ HWriteWindow::MessageReceived(BMessage *message)
 		BRect rect = fTopView->Bounds();
 		
 		bool expand = (rect.Height() == 50)?true:false;
-		const int32 kAddrHeight = (expand)?80:-80;
+		const int32 kAddrHeight = (expand)?ENCLOSUREVIEW_MAX_HEIGHT:-ENCLOSUREVIEW_MAX_HEIGHT;
 		
 		fTopView->ResizeBy(0,kAddrHeight);
 		fEnclosureView->MoveBy(0,kAddrHeight);
@@ -811,8 +866,8 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	BString encoded_subject(subject);
 	
 	Encoding encode;
-	int32 encoding;
-	((HApp*)be_app)->Prefs()->GetData("encoding",&encoding);
+	int32 encoding = fEnclosureView->GetEncoding();
+	
 	encode.UTF82Mime(encoded_subject,encoding);
 	
 	BString cc(fTopView->Cc());
@@ -1135,7 +1190,7 @@ HWriteWindow::QuitRequested()
 	bool expand = (fTopView->Bounds().Height() == 50)?false:true;
 	prefs->SetData("expand_addr",expand);
 	
-	expand = (fEnclosureView->Bounds().Height() == 20)?false:true;
+	expand = (fEnclosureView->Bounds().Height() == ENCLOSUREVIEW_MINI_HEIGHT)?false:true;
 	prefs->SetData("expand_enclosure",expand);
 	// Save Window Rect
 	prefs->SetData("write_window_rect",Frame());

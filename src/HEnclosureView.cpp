@@ -1,11 +1,15 @@
 #include "HEnclosureView.h"
 #include "HEnclosureItem.h"
 #include "HApp.h"
+#include "Encoding.h"
 
 #include <StringView.h>
 #include <ClassInfo.h>
 #include <ScrollView.h>
 #include <Debug.h>
+#include <Menu.h>
+#include <MenuItem.h>
+#include <MenuField.h>
 
 /***********************************************************
  * Constructor
@@ -38,9 +42,26 @@ HEnclosureView::InitGUI()
 {
 	BRect rect(Bounds());
 	rect.InsetBy(5,1);
-	rect.bottom = rect.top + 14;
+	rect.bottom = rect.top + 20;
+	rect.left+= 16;
 	
+	Encoding encode;
+	BMenu *menu = new BMenu("encode");
+	menu->SetRadioMode(true);
+	menu->SetLabelFromMarked(true);
+	int32 numCharset = encode.CountCharset();
+	for(int32 i = 0;i < numCharset;i++)
+		menu->AddItem(new BMenuItem(encode.Charset(i),new BMessage(encode.Conversion(i))));
+	BMenuField *field = new BMenuField(rect,"encoding",_("Encoding:"),menu);
+	field->SetDivider(field->StringWidth(_("Encoding:"))+14);
+	AddChild(field);
+	rect.left-= 16;
+	
+	
+	rect.top = rect.bottom + 5;
+	rect.bottom = rect.top + 14;
 	rect.right = rect.left + 16;
+	
 	fArrowButton = new ArrowButton(rect,"enc_arrow",new BMessage(M_EXPAND_ENCLOSURE));
 	AddChild(fArrowButton);
 	rect.left = rect.right + 3;
@@ -54,7 +75,7 @@ HEnclosureView::InitGUI()
 
 	const float kDivider = StringWidth(_("Subject:")) +5;
 	rect.OffsetBy(0,rect.Height()+7);
-	rect.bottom = rect.top + 50;
+	rect.bottom = rect.top + 45;
 	rect.right -= B_V_SCROLL_BAR_WIDTH;
 	rect.left = kDivider + 27;
 	fListView = new BListView(rect,"listview",B_SINGLE_SELECTION_LIST
@@ -133,4 +154,60 @@ HEnclosureView::KeyDown(const char* bytes,int32 numBytes)
 		}
 	}
 	BView::KeyDown(bytes,numBytes);
+}
+
+/***********************************************************
+ * SetEncoding
+ ***********************************************************/
+void
+HEnclosureView::SetEncoding(int32 encoding)
+{
+	BMenuField *field = cast_as(FindView("encoding"),BMenuField);
+	BMenu *menu = field->Menu();
+	BMenuItem* item = menu->FindItem(encoding);
+	if(item)
+		item->SetMarked(true);
+}
+
+/***********************************************************
+ * SetEncoding
+ ***********************************************************/
+status_t
+HEnclosureView::SetEncoding(const char* str)
+{
+	Encoding encode;
+	int32 encoding = -1;
+	int32 numCharset = encode.CountCharset();
+	for(int32 i = 0;i < numCharset;i++)
+	{
+		if(::strcasecmp(encode.Charset(i),str) == 0)
+		{
+			
+			encoding = encode.Conversion(i);
+			break;
+		}
+	}
+
+	BMenuField *field = cast_as(FindView("encoding"),BMenuField);
+	BMenu *menu = field->Menu();
+	BMenuItem* item = menu->FindItem(encoding);
+	if(!item)
+		return B_ERROR;
+		
+	item->SetMarked(true);
+	return B_OK;
+}
+
+/***********************************************************
+ * Encoding
+ ***********************************************************/
+int32
+HEnclosureView::GetEncoding()
+{
+	BMenuField *field = cast_as(FindView("encoding"),BMenuField);
+	BMenu *menu = field->Menu();
+	BMenuItem* item = menu->FindMarked();
+	if(!item)
+		return -1;
+	return item->Message()->what;
 }

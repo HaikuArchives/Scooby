@@ -133,7 +133,7 @@ SpellCheckView::InsertText(const char				*inText,
 		}
 	}else if(inLength > 1){
 		// Paste action and so on
-		PRINT(("Paste:%s\n",inText));
+		//PRINT(("Paste:%s\n",inText));
 		check = true;
 	}
 	int32 start=0,end=0;
