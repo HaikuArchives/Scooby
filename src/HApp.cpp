@@ -77,7 +77,7 @@ HApp::MessageReceived(BMessage *message)
 			break;
 		BMessage msg(M_CHECK_SCOOBY_STATE);
 		msg.AddInt32("icon",fWindow->CurrentDeskbarIcon());
-		message->SendReply(&msg);
+		message->SendReply(&msg,(BHandler*)NULL,1000000);
 		break;
 	}
 	default:
