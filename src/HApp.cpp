@@ -81,6 +81,7 @@ HApp::~HApp()
 	delete fCloseQueryIcon;
 	delete fOpenIMAPIcon;
 	delete fCloseIMAPIcon;
+	delete fPendingIcon;
 	//
 #ifdef CHECK_NETPOSITIVE
 	delete fMessageFilter;
@@ -572,6 +573,7 @@ HApp::InitIcons()
 	fRepliedMailIcon = utils.GetBitmapResource('BBMP',"Replied");
 	fForwardedMailIcon = utils.GetBitmapResource('BBMP',"Forwarded");
 	fEnclosureIcon = utils.GetBitmapResource('BBMP',"Enclosure");
+	fPendingIcon = utils.GetBitmapResource('BBMP',"Pending");
 	fPriority1 = utils.GetBitmapResource('BBMP',"1");
 	fPriority2 = utils.GetBitmapResource('BBMP',"2");
 	fPriority4 = utils.GetBitmapResource('BBMP',"4");
@@ -604,6 +606,8 @@ HApp::GetIcon(const char* icon_name)
 		bitmap = fForwardedMailIcon;
 	else if(strcmp(icon_name,"Enclosure")== 0)
 		bitmap = fEnclosureIcon;
+	else if(strcmp(icon_name,"Pending")== 0)
+		bitmap = fPendingIcon;
 	else if(strcmp(icon_name,"1")== 0)
 		bitmap = fPriority1;
 	else if(strcmp(icon_name,"2")== 0)
