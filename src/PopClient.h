@@ -17,7 +17,8 @@ enum{
 	H_ERROR_MESSAGE = 'HERR',
 	H_RESET_MESSAGE = 'HRES',
 	M_QUIT_FINISHED = 'HOKQ',
-	H_UIDL_MESSAGE = 'UIDL'
+	H_UIDL_MESSAGE = 'UIDL',
+	H_SET_MAX_SIZE = 'seMS'
 };
 
 class PopClient :public BLooper{

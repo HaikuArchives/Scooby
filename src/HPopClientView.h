@@ -82,5 +82,7 @@ private:
 	bool			fCanUseUIDL;
 	bool			fUseAPOP;
 	bool			fGotMails;
+	int32			fMailCurrentIndex;
+	int32			fMailMaxIndex;
 };
 #endif

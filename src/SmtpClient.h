@@ -14,7 +14,9 @@ class HMailItem;
 enum{
 	M_SMTP_CONNECT = 'mSTC',
 	M_SMTP_ERROR = 'mSER',
-	M_SMTP_END = 'mSED'
+	M_SMTP_END = 'mSED',
+	M_SEND_MAIL_SIZE = 'SmSS',
+	M_SET_MAX_SIZE = 'mSMS'
 };
 
 class SmtpClient :public BLooper{

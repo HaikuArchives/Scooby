@@ -77,6 +77,7 @@ HSmtpClientView::MessageReceived(BMessage *message)
 		message->GetInfo("pointer",&type,&count);
 		message->what = M_SMTP_CONNECT;
 		fSmtpClient->PostMessage(message);
+		StopProgress();
 		StartBarberPole();
 		fStringView->SetText("Sending Mails…");
 		break;
@@ -86,6 +87,7 @@ HSmtpClientView::MessageReceived(BMessage *message)
 	{
 		fIsRunning = false;
 		StopBarberPole();
+		StopProgress();
 		fStringView->SetText("");
 		if(fSmtpClient)
 			fSmtpClient->PostMessage(B_QUIT_REQUESTED);
@@ -101,6 +103,27 @@ HSmtpClientView::MessageReceived(BMessage *message)
 		beep();
 		(new BAlert("",err.String(),"OK",NULL,NULL,B_WIDTH_AS_USUAL
 											,B_STOP_ALERT))->Go();
+		break;
+	}
+	// Set Max Size
+	case M_SET_MAX_SIZE:
+	{
+		StopBarberPole();
+		int32 max_size;
+		if(message->FindInt32("max_size",&max_size) != B_OK)
+			break;
+		SetMaxValue(max_size);
+		SetValue(0);
+		StartProgress();
+		break;
+	}
+	// Send size
+	case M_SEND_MAIL_SIZE:
+	{
+		int32 size;
+		if(message->FindInt32("size",&size) != B_OK)
+			break;
+		Update(size);
 		break;
 	}
 	default:
@@ -145,7 +168,7 @@ HSmtpClientView::Draw(BRect updateRect)
 			DrawBitmap(fBarberPoleBits, destRect);
 		if (fShowingProgress)
 		{
-			SetHighColor(ui_color(B_KEYBOARD_NAVIGATION_COLOR));
+			SetHighColor(255,0,0);
 			float width = destRect.Width();
 			if(fMaxValue)
 				destRect.right = destRect.left + width * (fCurrentValue/fMaxValue);
