@@ -91,7 +91,7 @@ IMAP4Client::Login(const char* login,const char* password)
 }
 
 /***********************************************************
- * List
+ * List ( *not implemented yet* )
  ***********************************************************/
 status_t
 IMAP4Client::List(const char* folder_name)
@@ -160,16 +160,31 @@ IMAP4Client::Store(int32 index,const char* flags,bool add)
 	cmd << index << " ";
 	
 	if(add)
-		cmd += "+FLAGS.SILENT ";
+		cmd += "+FLAGS ";
 	else
-		cmd += "-FLAGS.SILENT ";
+		cmd += "-FLAGS ";
 	cmd << "(" << flags << ")";
-	
+	PRINT(("%s\n",cmd.String() ));
 	BString out;
+	int32 state;
+	
 	if(SendCommand(cmd.String()) == B_OK)
 	{
-		ReceiveLine(out);
-		//PRINT(("%s\n",out.String() ));
+		int32 cmdNumber = fCommandCount;
+		
+		while(1)
+		{
+			ReceiveLine(out);
+			PRINT(("%s\n",out.String()));
+			state = CheckSessionEnd(out.String(),cmdNumber);		
+			switch(state)
+			{
+			case IMAP_SESSION_OK:
+				return B_OK;
+			case IMAP_SESSION_BAD:
+				return B_ERROR;
+			}
+		}
 	}
 	return B_ERROR;	
 }
@@ -189,7 +204,8 @@ IMAP4Client::MarkAsRead(int32 index)
 			return B_ERROR;
 	}
 	//
-	return Store(index,"\\Seen");	
+	status_t err = Store(index,"\\Seen");
+	return err;
 }
 
 /***********************************************************
@@ -207,6 +223,7 @@ IMAP4Client::MarkAsDelete(int32 index)
 			return B_ERROR;
 	}
 	//
+	PRINT(("test\n"));
 	return Store(index,"\\Deleted");	
 }
 
@@ -295,10 +312,8 @@ IMAP4Client::FetchFields(int32 index,
 			{
 			case IMAP_SESSION_OK:
 				return B_OK;
-				break;
 			case IMAP_SESSION_BAD:
 				return B_ERROR;
-				break;
 			}
 		}
 	}
@@ -362,8 +377,8 @@ IMAP4Client::FetchBody(int32 index,BString &outBody)
 				content_size = atol(p);
 			}		
 		}
-		PRINT(("%d\n",content_size));
-			
+		// Include last ")" and CRLF.
+		content_size+=3; 
 		char *buf = new char[content_size+1];
 		
 		if(!buf)
@@ -374,18 +389,20 @@ IMAP4Client::FetchBody(int32 index,BString &outBody)
 		
 		while(content_size>0)
 		{
-			r = Receive(buf,(content_size<=0)?1:content_size);
+			r = Receive(buf,content_size);
 			buf[r] = '\0';
 			outBody += buf;
 			content_size -= r;
 		}
+		outBody.Truncate(outBody.Length()-3);
 		delete[] buf;
 		// Get Last line
 		r = ReceiveLine(line);
+		PRINT(("%s\n",line.String()));
 		if(r <=0)
 			return B_ERROR;
 		state = CheckSessionEnd(line.String(),session);
-				
+			
 		switch(state)
 		{
 		case IMAP_SESSION_OK:
@@ -444,7 +461,15 @@ IMAP4Client::IsAlive()
 void
 IMAP4Client::Logout()
 {
+	BString out;
+
+	SendCommand("CLOSE");
+	ReceiveLine(out);
+	PRINT(("%s\n",out.String()));
 	SendCommand("LOGOUT");
+	ReceiveLine(out);
+	PRINT(("%s\n",out.String()));
+	
 	Close();
 }
 

@@ -202,6 +202,7 @@ HIMAP4Folder::IMAPGetList()
 	delete icon;
 	SetName(fUnread);
 	InvalidateMe();
+	fThread = -1;
 	return;
 }
 
