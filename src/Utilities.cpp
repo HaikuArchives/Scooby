@@ -1,12 +1,17 @@
 #include "Utilities.h"
 #include "scandir.h"
+#include "StatusItem.h"
+#include "HApp.h"
 
 #include <String.h>
 #include <Debug.h>
 #include <File.h>
 #include <stdio.h>
 #include <dirent.h>
+#include <Window.h>
+#include <TextView.h>
 #include <MenuItem.h>
+#include <ClassInfo.h>
 
 void
 DisallowFilenameKeys(BTextView *textView)
@@ -94,4 +99,39 @@ void SetMenuItemLabel(BMenuItem *item,const char* label)
 	if(!item)
 		return;
 	item->SetLabel(label);
+}
+
+/***********************************************************
+ * LineUpdate
+ ***********************************************************/
+void LineUpdate(StatusItem *item)
+{
+	BWindow *window = item->Window();
+	BTextView *view = cast_as(window->FindView("HMailView"),BTextView);
+//	int32 lines = view->CountLines();
+	int32 current = view->CurrentLine();
+	int32 lineoffset = view->OffsetAt(current);
+	int32 start,end;
+	view->GetSelection(&start,&end);
+			
+	BString label;
+	label << _("Row") << ": " << current+1 <<"  Col: " << start-lineoffset;
+	item->SetLabel( label.String() );
+	item->ResizeToPreferred();
+}
+
+/***********************************************************
+ * SizeUpdate
+ ***********************************************************/
+void SizeUpdate(StatusItem *item)
+{
+	BWindow *window = item->Window();
+	BTextView *view = cast_as(window->FindView("HMailView"),BTextView);
+	int32 size = view->TextLength();
+	BString label;
+	label << _("Size") << ": " << size << " byte";
+	if(size != 0)
+		label += "s";
+	item->SetLabel( label.String() );
+	item->ResizeToPreferred();
 }

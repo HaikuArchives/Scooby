@@ -149,7 +149,7 @@ $(OBJ_DIR)/HReadWindow.o : ./src/HReadWindow.cpp src/HReadWindow.h \
  libs/Santa/BetterScrollView.h libs/Santa/ScrollViewCorner.h \
  src/HMailItem.h libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h \
  src/HAttachmentList.h libs/Utils/TrackerUtils.h src/HTabView.h \
- src/Utilities.h
+ src/Utilities.h src/StatusBar.h src/StatusItem.h
 $(OBJ_DIR)/HIMAP4Item.o : ./src/HIMAP4Item.cpp src/HIMAP4Item.h src/HMailItem.h \
  libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h src/IMAP4Client.h
 $(OBJ_DIR)/HIMAP4Folder.o : ./src/HIMAP4Folder.cpp src/HIMAP4Folder.h \
@@ -200,7 +200,8 @@ $(OBJ_DIR)/HCoolListView.o : ./src/HCoolListView.cpp src/HCoolListView.h \
  libs/Santa/ColumnListView.h libs/Santa/Colors.h \
  libs/Santa/CLVColumn.h libs/Santa/PrefilledBitmap.h \
  libs/Santa/BetterScrollView.h libs/Santa/ScrollViewCorner.h
-$(OBJ_DIR)/Utilities.o : ./src/Utilities.cpp src/Utilities.h src/scandir.h
+$(OBJ_DIR)/Utilities.o : ./src/Utilities.cpp src/Utilities.h src/scandir.h \
+ src/StatusItem.h src/HApp.h
 $(OBJ_DIR)/scandir.o : ./src/scandir.c src/scandir.h
 $(OBJ_DIR)/HCreateFolderDialog.o : ./src/HCreateFolderDialog.cpp \
  src/HCreateFolderDialog.h src/Utilities.h src/HApp.h

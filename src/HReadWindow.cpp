@@ -13,6 +13,7 @@
 #include "TrackerUtils.h"
 #include "HTabView.h"
 #include "Utilities.h"
+#include "StatusBar.h"
 
 #include <Menu.h>
 #include <MenuItem.h>
@@ -77,15 +78,27 @@ HReadWindow::InitGUI()
 	if(!html)
 	{
 		rect.right -= B_V_SCROLL_BAR_WIDTH;
+		rect.bottom -= B_H_SCROLL_BAR_HEIGHT;
 		HMailView *mailView = new HMailView(rect,true,NULL);
 		mailView->MakeEditable(false);
 		BScrollView *scroll = new BScrollView("scroller",mailView,B_FOLLOW_ALL,0,false,true);
 		AddChild(scroll);
+		//================ StatusBar ==================
+		BRect statusRect(Bounds());
+		statusRect.top = statusRect.bottom - B_H_SCROLL_BAR_HEIGHT;
+		StatusBar *statusbar = new StatusBar(statusRect,NULL,B_FOLLOW_ALL,B_WILL_DRAW);
+		AddChild(statusbar);
+		BString label;
+		label = _("Size");
+		label += ": 0 byte";
+		statusbar->AddItem("size",label.String(),SizeUpdate);
+		//=============================================
 		fMailView = cast_as(mailView,BView);
 	}else{	
 		rect.top -= 1;
 		HHtmlMailView *htmlMailView = new HHtmlMailView(rect,"scroller",false,B_FOLLOW_ALL);
 		AddChild(htmlMailView);
+		
 		fMailView = cast_as(htmlMailView,BView);
 	}
 	/*
