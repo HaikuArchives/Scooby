@@ -110,9 +110,9 @@ IMAP4Client::List(const char* folder_name,BList *namelist)
 	
 	cmd << "\"" << "\" "; 
 	if(folder_name && strlen(folder_name) > 0)
-		cmd << "\"" << folder_name << "/%\"";
+		cmd << "\"" << folder_name << "/*\"";
 	else
-		cmd += "\"%\"";
+		cmd += "\"*\"";
 	BString out;
 	SendCommand(cmd.String());
 	int32 cmdNumber = fCommandCount;
@@ -621,7 +621,6 @@ IMAP4Client::CheckSessionEnd(const char* str,int32 session)
 {
 	char session_end[9];
 	::sprintf(session_end,"%.7ld ",session);
-	
 	if( ::strncmp(session_end,str,8) == 0)
 	{
 		if( str[8] == 'O' && str[9] == 'K')
