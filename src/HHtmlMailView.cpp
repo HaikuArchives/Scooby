@@ -464,7 +464,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 	
 	char buf[10];
 	Encoding encode;
-
+	bool translate_space = false;
 	BString out("");
 	out += "<html>\n";
 	out += "<body bgcolor=\"#ffffff\">\n";
@@ -512,15 +512,15 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 						tmp += buf;
 					}else{
 						// Normal charactors
-						ConvertToHtmlCharactor(text[i++],buf);
+						ConvertToHtmlCharactor(text[i++],buf,&translate_space);
 						tmp += buf;
 					}
 				}
 				tmp += "</i></font>";
-				ConvertToHtmlCharactor(text[i],buf);
+				ConvertToHtmlCharactor(text[i],buf,&translate_space);
 				tmp += buf;
 			}else{
-				ConvertToHtmlCharactor(text[i],buf);
+				ConvertToHtmlCharactor(text[i],buf,&translate_space);
 				tmp += buf;
 			}
 			break;
@@ -543,10 +543,10 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 				tmp += "\">";
 				tmp += uri;
 				tmp += "</a>";
-				ConvertToHtmlCharactor(text[i],buf);
+				ConvertToHtmlCharactor(text[i],buf,&translate_space);
 				tmp += buf;
 			}else{
-				ConvertToHtmlCharactor(text[i],buf);
+				ConvertToHtmlCharactor(text[i],buf,&translate_space);
 				tmp += buf;
 			}
 			break;
@@ -561,7 +561,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 				tmp += buf;
 			}else{
 			// Normal charactors
-				ConvertToHtmlCharactor(text[i],buf);
+				ConvertToHtmlCharactor(text[i],buf,&translate_space);
 				tmp += buf;
 			}
 		}
@@ -582,7 +582,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
  * ConvertToHtmlCharactor
  ***********************************************************/
 void
-HHtmlMailView::ConvertToHtmlCharactor(char c,char *out)
+HHtmlMailView::ConvertToHtmlCharactor(char c,char *out,bool *translate_space)
 {
 	::memset(out,0,10);
 	// Special charactors
@@ -616,11 +616,17 @@ HHtmlMailView::ConvertToHtmlCharactor(char c,char *out)
 		::sprintf(out,"<br>%c",c);
 		break;
 	case ' ':
-		::strcpy(out,"&nbsp;");
-		break;
+		if(*translate_space)
+			::strcpy(out,"&nbsp;");		
+		else{
+			out[0] = c;
+			*translate_space = true;
+		}
+		return;
 	default:
 		out[0] = c;
 	}
+	*translate_space = false;
 }
 
 /***********************************************************
