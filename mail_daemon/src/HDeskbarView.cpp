@@ -233,8 +233,8 @@ HDeskbarView::MouseDown(BPoint pos)
   		theMenu->SetFont(&font);
   	
   		MenuUtils utils;
-  		utils.AddMenuItem(theMenu,fLabels[0],M_LAUNCH_SCOOBY,NULL,NULL,0,0);
-  		utils.AddMenuItem(theMenu,fLabels[3],M_NEW_MESSAGE,NULL,NULL,0,0);
+  		utils.AddMenuItem(theMenu,fLabels[3],M_LAUNCH_SCOOBY,NULL,NULL,0,0);
+  		utils.AddMenuItem(theMenu,fLabels[0],M_NEW_MESSAGE,NULL,NULL,0,0);
   		
   		theMenu->AddSeparatorItem();
   		utils.AddMenuItem(theMenu,fLabels[1],M_CHECK_NOW,NULL,NULL,0,0);
