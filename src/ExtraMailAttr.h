@@ -13,4 +13,6 @@
 #define B_MAIL_ATTR_ACCOUNT "MAIL:account"
 //! Use smtp auth or not.
 #define B_MAIL_ATTR_SMTP_AUTH "MAIL:smtp_auth"
+//!
+#define B_MAIL_ATTR_ENCODING "MAIL:encoding"
 #endif

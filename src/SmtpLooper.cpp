@@ -64,6 +64,8 @@ SmtpLooper::SendMail(HMailItem *item)
 	BFile file(&ref,B_READ_ONLY);
 	BPath path(&ref);
 	PRINT(("Path:%s\n",path.Path()));
+	Encoding encode;
+	int32 encoding;
 	
 	if(file.InitCheck() == B_OK)
 	{
@@ -78,7 +80,6 @@ SmtpLooper::SendMail(HMailItem *item)
 		}
 		file.ReadAttr(B_MAIL_ATTR_SMTP_AUTH,B_BOOL_TYPE,0,&smtp_auth,sizeof(bool));
 		ReadNodeAttrString(&file,B_MAIL_ATTR_ACCOUNT,&account);
-		
 		PRINT(("SMTP:%s\n",smtp_server.String()));
 		
 		delete fSmtpClient;
@@ -152,6 +153,13 @@ SmtpLooper::SendMail(HMailItem *item)
 		if(bcc.Length() > 0)
 			to << "," << bcc;
 		BString attrStatus("");
+		// Convert to mime-B
+		if(file.ReadAttr(B_MAIL_ATTR_ENCODING,B_INT32_TYPE,0,&encoding,sizeof(int32))>0)
+		{
+			encode.UTF82Mime(to,encoding);
+			encode.UTF82Mime(from,encoding);
+		}
+		//
 		if(fSmtpClient->SendMail(from.String(),to.String(),buf,SmtpTotalSize,SmtpSentSize,this) == B_OK)
 			attrStatus = "Sent";
 		else{

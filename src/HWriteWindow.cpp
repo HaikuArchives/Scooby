@@ -1193,7 +1193,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	file.WriteAttr(B_MAIL_ATTR_ATTACHMENT,B_BOOL_TYPE,0,&is_multipart,sizeof(bool));
 	file.WriteAttr(B_MAIL_ATTR_SMTP_AUTH,B_BOOL_TYPE,0,&smtp_auth,sizeof(bool));
 	file.WriteAttr(B_MAIL_ATTR_ACCOUNT,B_STRING_TYPE,0,path.Leaf(),strlen(path.Leaf())+1);
-	
+	file.WriteAttr(B_MAIL_ATTR_ENCODING,B_INT32_TYPE,0,&encoding,sizeof(int32));
 	BString attrPriority;
 	attrPriority += priority;
 	switch(priority)
