@@ -179,7 +179,8 @@ class ColumnListView : public BListView
 		void SortItems();
 		virtual CLVContainerView* CreateContainer(bool horizontal, bool vertical, bool scroll_view_corner,
 			border_style border, uint32 ResizingMode, uint32 flags);
-
+		bool	HighlightTextOnly() {return fHighlightTextOnly;}
+		void	SetHighlightTextOnly(bool enable) {fHighlightTextOnly = enable;}
 	private:
 		friend class CLVMainView;
 		friend class CLVColumn;
@@ -216,6 +217,7 @@ class ColumnListView : public BListView
 		rgb_color fSelectedItemColorWindowActive;
 		rgb_color fSelectedItemColorWindowInactive;
 		bool fWindowActive;
+		bool fHighlightTextOnly;
 };
 
 
