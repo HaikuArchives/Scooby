@@ -36,11 +36,9 @@ extern "C" _EXPORT BView* instantiate_deskbar_item();
 HDeskbarView::HDeskbarView(BRect frame)
 		:BView(frame,APP_NAME,B_FOLLOW_NONE,B_WILL_DRAW|B_PULSE_NEEDED)
 		,fCurrentIconState(DESKBAR_NEW_ICON)
+		,fStrings(NULL)
 {
 	fIcon = NULL;
-	char *lang = getenv("LANGUAGE");
-	if(lang)
-		InitData(lang);
 }
 
 /***********************************************************
@@ -57,8 +55,12 @@ BView* instantiate_deskbar_item(void)
 HDeskbarView::HDeskbarView(BMessage *message)
 	:BView(message)
 	,fCurrentIconState(DESKBAR_NEW_ICON)
+	,fStrings(NULL)
 {
 	fIcon = NULL;
+	char *lang = getenv("LANGUAGE");
+	if(lang)
+		InitData(lang);
 	ChangeIcon(DESKBAR_NORMAL_ICON);
 }
 
