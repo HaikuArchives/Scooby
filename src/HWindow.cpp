@@ -1440,7 +1440,7 @@ HWindow::QuitRequested()
 	((HApp*)be_app)->Prefs()->SetData("verticalsplit",pos);
 	// Save col size
 	fMailList->SaveColumns();
-	
+	fMailList->MakeEmpty();
 	// Delete all folder items
 	fFolderList->DeleteAll();
 	
