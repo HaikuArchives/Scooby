@@ -3,7 +3,6 @@
 #include "NumberControl.h"
 #include "HIMAP4Folder.h"
 #include "HFolderList.h"
-#include "PassControl.h"
 
 #include <View.h>
 #include <TextControl.h>
@@ -70,7 +69,6 @@ HIMAP4Window::InitGUI()
 	
 	BTextControl *ctrl;
 	NumberControl *nctrl;
-	PassControl	*pctrl;
 	for(int32 i = 0;i < 6;i++)
 	{
 		if(i == 2)
@@ -78,10 +76,6 @@ HIMAP4Window::InitGUI()
 			nctrl = new NumberControl(rect,kNames[i],kLabels[i],143,NULL);
 			nctrl->SetDivider(kDivider);
 			bg->AddChild(nctrl);
-		}else if(i == 4){
-			pctrl = new PassControl(rect,kNames[i],kLabels[i],"",NULL);
-			pctrl->SetDivider(kDivider);
-			bg->AddChild(pctrl);	
 		}else{
 			ctrl = new BTextControl(rect,kNames[i],kLabels[i],"",NULL);
 			ctrl->SetDivider(kDivider);
@@ -94,6 +88,8 @@ HIMAP4Window::InitGUI()
 				ctrl->TextView()->DisallowChar(':');
 			}
 			bg->AddChild(ctrl);
+			if(i == 4)
+				ctrl->TextView()->HideTyping(true);
 		}
 		rect.OffsetBy(0,25);
 	}
@@ -169,15 +165,8 @@ HIMAP4Window::SetText(const char* name,const char* text)
 const char*
 HIMAP4Window::GetText(const char* name)
 {
-	if(strcmp(name,"password") == 0)
-	{
-		PassControl *ctrl = cast_as(FindView(name),PassControl);
-		if(ctrl)
-			return ctrl->actualText();
-	}else{
-		BTextControl *ctrl = cast_as(FindView(name),BTextControl);
-		if(ctrl)
-			return ctrl->Text();
-	}
+	BTextControl *ctrl = cast_as(FindView(name),BTextControl);
+	if(ctrl)
+		return ctrl->Text();
 	return NULL;
 }
