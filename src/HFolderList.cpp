@@ -524,6 +524,7 @@ HFolderList::SelectionChanged()
 		{
 			theItem->StartGathering();
 			fWatching = true;
+			Window()->PostMessage(M_LOCAL_SELECTION_CHANGED);
 			return;
 		}		
 		fWatching = false;
@@ -536,8 +537,7 @@ HFolderList::SelectionChanged()
 		msg.AddInt32("folder_type",theItem->FolderType());
 		Window()->PostMessage(&msg);
 	}else{
-		BMessage msg(M_LOCAL_SELECTION_CHANGED);
-		Window()->PostMessage(&msg);
+		Window()->PostMessage(M_LOCAL_SELECTION_CHANGED);
 	}
 }
 

@@ -18,7 +18,8 @@ public:
 								  const char* reply,
 								  time_t 	  when,
 								  const char* priority,
-								  int8	enclosure);
+								  int8	enclosure,
+								  ino_t	node = 0);
 						
 						HMailItem(const char* status,
 								  const char* subject,
@@ -42,7 +43,6 @@ public:
 			void		RefreshTextColor();
 	virtual	void		RefreshEnclosureAttr();
 	virtual	entry_ref	Ref() {return fRef;}
-			node_ref	NodeRef() {return fNodeRef;}	
 //private:
 		entry_ref 	fRef;
 		BString		fStatus;

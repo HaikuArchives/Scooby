@@ -44,7 +44,8 @@ enum{
 	M_ADD_MAIL_TO_LIST = 'mAdL',
 	M_REMOVE_MAIL_FROM_LIST = 'mRmL',
 	M_STOP_MAIL_BARBER_POLE = 'mSoB',
-	M_FILTER_MAIL = 'mFiM'
+	M_FILTER_MAIL = 'mFiM',
+	M_INVALIDATE_MAIL = 'mIVm'
 };
 
 class HWindow: public BWindow {

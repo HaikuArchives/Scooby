@@ -75,6 +75,8 @@ protected:
 	
 	virtual void	MessageReceived(BMessage *message);
 			void	NodeMonitor(BMessage *message);
+			
+		HMailItem*	FindMail(node_ref &nref);
 protected:
 		BList		fMailList;
 		bool		fDone;

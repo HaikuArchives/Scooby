@@ -8,6 +8,7 @@
 #include "HWindow.h"
 #include "IconMenuItem.h"
 #include "OpenWithMenu.h"
+#include "HIMAP4Item.h"
 
 #include <StorageKit.h>
 #include <Window.h>
@@ -17,6 +18,7 @@
 #include <ClassInfo.h>
 #include <PopUpMenu.h>
 #include <MenuItem.h>
+#include <E-mail.h>
 
 /***********************************************************
  * Constructor
@@ -698,7 +700,13 @@ HMailList::MarkOldSelectionAsRead()
 			fOldSelection = NULL;
 			return;
 		}
-		fOldSelection->SetRead();
+		if( is_kind_of(fOldSelection,HIMAP4Item) )
+			fOldSelection->SetRead();
+		else{
+			entry_ref ref = fOldSelection->Ref();
+			BNode node(&ref);
+			node.WriteAttr(B_MAIL_ATTR_STATUS,B_STRING_TYPE,0,"Read",5);
+		}
 		InvalidateItem(IndexOf(fOldSelection));
 		fOldSelection = NULL;
 	}

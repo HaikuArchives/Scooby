@@ -4,6 +4,7 @@
 #include "HMailItem.h"
 #include "HPrefs.h"
 #include "HFolderList.h"
+#include "HWindow.h"
 
 #include <Path.h>
 #include <Node.h>
@@ -22,6 +23,7 @@
 #include <ClassInfo.h>
 #include <Autolock.h>
 #include <NodeMonitor.h>
+#include <StopWatch.h>
 
 #define ICON_COLUMN 1
 #define LABEL_COLUMN 2
@@ -47,7 +49,8 @@ HFolderItem::HFolderItem(const entry_ref &ref,BListView *target)
 	
 	BEntry entry(&ref);
 	entry.GetNodeRef(&fNodeRef);
-	::watch_node(&fNodeRef,B_WATCH_DIRECTORY|B_WATCH_NAME,this,target->Window());
+	::watch_node(&fNodeRef,B_WATCH_DIRECTORY|B_WATCH_NAME
+						,this,fOwner->Window());
 	
 	if(BPath(&ref).InitCheck() == B_OK)
 		fName = BPath(&ref).Leaf();
@@ -139,6 +142,8 @@ void
 HFolderItem::AddMail(HMailItem *item)
 {
 	fMailList.AddItem(item);
+	::watch_node(&item->fNodeRef,B_WATCH_ATTR
+						,this,fOwner->Window());
 	if(!item->IsRead())
 		SetName(fUnread+1);
 }
@@ -184,7 +189,21 @@ HFolderItem::RemoveMail(entry_ref& ref)
 HMailItem*
 HFolderItem::RemoveMail(node_ref &nref)
 {
-	node_ref old_nref;
+	HMailItem *item = FindMail(nref);
+	if(item)
+	{
+		fMailList.RemoveItem(item);
+		return item;
+	}
+	return NULL;
+}
+
+/***********************************************************
+ * FindMail
+ ***********************************************************/
+HMailItem*
+HFolderItem::FindMail(node_ref &nref)
+{
 	int32 count = fMailList.CountItems();
 	HMailItem **items = (HMailItem**)fMailList.Items();
 	
@@ -194,15 +213,8 @@ HFolderItem::RemoveMail(node_ref &nref)
 		HMailItem *item = (HMailItem*)items[i];
 		if(!item)
 			continue;
-		old_nref = item->NodeRef();
-		
-		if(old_nref == nref)
-		{
-			item = (HMailItem*)fMailList.RemoveItem(i);
-			if(!item->IsRead())
-				SetName(fUnread-1);
+		if(item->fNodeRef == nref)
 			return item;
-		}
 	}
 	return NULL;
 }
@@ -220,7 +232,9 @@ HFolderItem::AddMails(BList* list)
 	int32 unread = 0;
 	for(int32 i = 0;i < count;i++)
 	{
-		item = (HMailItem*)list->ItemAt(i);
+		item = (HMailItem*)list->ItemAtFast(i);
+		::watch_node(&item->fNodeRef,B_WATCH_ATTR
+						,this,fOwner->Window());
 		if(item&&!item->IsRead())
 			unread++;
 	}
@@ -237,7 +251,7 @@ HFolderItem::RemoveMails(BList* list)
 	HMailItem *item;
 	for(int32 i = 0;i < count;i++)
 	{
-		item = (HMailItem*)list->ItemAt(i);
+		item = (HMailItem*)list->ItemAtFast(i);
 		if(!item)
 			continue;
 		fMailList.RemoveItem(item);
@@ -306,6 +320,7 @@ HFolderItem::Gather()
 			if(::strcmp(type,"text/x-email") == 0)
 			{
 				fMailList.AddItem(item = new HMailItem(ref));
+				::watch_node(&item->fNodeRef,B_WATCH_ATTR,this,fOwner->Window());
 				if(item&&!item->IsRead())
 					fUnread++;
 			}
@@ -421,12 +436,15 @@ HFolderItem::StartCreateCache()
 /***********************************************************
  * ReadFromCache
  ***********************************************************/
+#define __CALC__
 status_t
 HFolderItem::ReadFromCache()
 {
 	if(!fUseCache)
 		return B_ERROR;
-		
+#ifdef __CALC__
+	BStopWatch stopWatch("Cache Timer");
+#endif
 	BPath path(&fFolderRef);
 	BString name = path.Leaf();
 	name << ".cache";
@@ -444,26 +462,32 @@ HFolderItem::ReadFromCache()
 		int32 count;
 		type_code type;
 		msg.GetInfo("refs",&type,&count);
-		
+#ifdef __CALC__
+		PRINT(("Unflattened: %9.4lf sec\n",stopWatch.Lap()/1000000.0));
+#endif	
 		// check entry in directory and refs count
-		BDirectory dir(&fFolderRef);
-		if(count + fMailList.CountItems() != dir.CountEntries() )
+		if(count + fMailList.CountItems() != BDirectory(&fFolderRef).CountEntries() )
 		{
 			PRINT(("Auto refresh\n"));
 			EmptyMailList();
 			return B_ERROR;
-		}
+		}		
 		//
 		
 		entry_ref ref;
 		const char *status,*subject,*from,*to,*cc,*reply,*priority;
 		int8 enclosure;
+		ino_t	node = 0;
 		int64 when;
 		HMailItem *item;
+#ifdef __CALC__
+		PRINT(("Start Adding: %9.4lf sec\n",stopWatch.Lap()/1000000.0));
+#endif
 		for(register int32 i = 0;i < count;i++)
 		{
 			if(msg.FindRef("refs",i,&ref) ==B_OK)
 			{
+				node = 0;
 				msg.FindString("subject",i,&subject);
 				msg.FindString("status",i,&status);
 				msg.FindString("from",i,&from);
@@ -473,7 +497,7 @@ HFolderItem::ReadFromCache()
 				msg.FindInt64("when",i,&when);
 				msg.FindString("priority",i,&priority);
 				msg.FindInt8("enclosure",i,&enclosure);
-		
+				msg.FindInt64("ino_t",i,&node);
 				fMailList.AddItem(item = new HMailItem(ref,
 													status,
 													subject,
@@ -483,11 +507,16 @@ HFolderItem::ReadFromCache()
 													reply,
 													(time_t)when,
 													priority,
-													enclosure));
-				if(item&&!item->IsRead())
+													enclosure,
+													node));
+				::watch_node(&item->fNodeRef,B_WATCH_ATTR,this,fOwner->Window());
+				if(!item->IsRead())
 					fUnread++;
 			}
 		}	
+#ifdef __CALC__
+		PRINT(("Done: %9.4lf sec\n",stopWatch.Lap()/1000000.0));
+#endif __CALC__
 		fDone = true;
 		// Set icon to open folder
 		BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"OpenFolder");
@@ -542,7 +571,7 @@ HFolderItem::CreateCache()
 		entry_ref ref;
 		for(register int32 i =0;i < count;i++)
 		{
-			item = (HMailItem*)fMailList.ItemAt(i);
+			item = (HMailItem*)fMailList.ItemAtFast(i);
 			if(!item)
 				continue;
 			ref = item->fRef;
@@ -556,6 +585,7 @@ HFolderItem::CreateCache()
 			cache.AddInt64("when",(int64)item->fWhen);
 			cache.AddString("priority",item->fPriority);
 			cache.AddInt8("enclosure",item->fEnclosure);
+			cache.AddInt64("ino_t",item->fNodeRef.node);
 			if(fCacheCancel)
 				break;
 		}
@@ -596,7 +626,7 @@ HFolderItem::AddMailsToCacheFile()
 		int32 count = fMailList.CountItems();
 		for(int32 i = 0;i < count;i++)
 		{
-			HMailItem *item = (HMailItem*)fMailList.ItemAt(i);
+			HMailItem *item = (HMailItem*)fMailList.ItemAtFast(i);
 			if(!item)
 				continue;
 			ref = item->fRef;
@@ -610,6 +640,7 @@ HFolderItem::AddMailsToCacheFile()
 			cache.AddInt64("when",(int64)item->fWhen);
 			cache.AddString("priority",item->fPriority);
 			cache.AddInt8("enclosure",item->fEnclosure);
+			cache.AddInt64("ino_t",item->fNodeRef.node);
 		}
 		
 		if(file.InitCheck() == B_OK)
@@ -707,7 +738,6 @@ HFolderItem::MessageReceived(BMessage *message)
 		NodeMonitor(message);
 		break;
 	default:
-		message->PrintToStream();
 		BHandler::MessageReceived(message);
 	}
 }
@@ -824,6 +854,31 @@ HFolderItem::NodeMonitor(BMessage *message)
 				delete item;
 			InvalidateMe();
 		}
+		break;
+		}
+	case B_ATTR_CHANGED:
+	{
+		node_ref nref;
+		message->FindInt64("node", &nref.node);
+		message->FindInt32("device",&nref.device);
+		
+		HMailItem *item = FindMail(nref);
+		bool read;
+		if(item)
+		{
+			//PRINT(("Attr Changed\n"));
+			read = item->IsRead();
+			item->RefreshStatus();
+			if(read != item->IsRead())
+			{
+				SetName((read)?fUnread+1:fUnread-1);
+				InvalidateMe();
+			}
+			BMessage msg(M_INVALIDATE_MAIL);
+			msg.AddPointer("mail",item);
+			fOwner->Window()->PostMessage(&msg);
+		}
+		
 		break;
 	}
 	}
