@@ -14,7 +14,7 @@ LOCAL_INCLUDE_PATHS = ./libs/Utils ./libs/Santa ./libs/Toolbar
 OPTIMIZE= FULL
 #OPTIMIZE= NONE
 # Defines
-DEFINES= DEBUG 
+DEFINES= DEBUG
 # Warnings
 WARNINGS = ALL
 # Sources

@@ -620,47 +620,7 @@ send:
 	// Empty trashcan
 	case M_EMPTY_TRASH:
 	{
-		TrackerUtils utils;
-		int32 count = fFolderList->CountItems();
-		HFolderItem *trash(NULL);
-		
-		for(int32 i = 0;i < count;i++)
-		{
-			HFolderItem *item = cast_as(fFolderList->ItemAt(i),HFolderItem);
-			if(::strcmp(item->Name(), TRASH_FOLDER ) == 0)
-				trash = item;
-		}
-		if(!trash)
-		{
-			BString str = "Could not find \"";
-			str << TRASH_FOLDER << "\" folder";
-			(new BAlert("",str.String(),"OK",NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
-			break;
-		}
-		
-		entry_ref ref = trash->Ref();
-		BDirectory dir( &ref );
-   		status_t err = B_NO_ERROR;
-		BEntry entry;
-		while( err == B_OK )
-		{
-			if( (err = dir.GetNextRef( &ref )) == B_OK)
-			{
-				if(entry.SetTo(&ref) != B_OK)
-					continue;
-				if(entry.Exists())
-				{
-					utils.MoveToTrash(ref);
-					dir.Rewind();
-				}
-			}
-		}
-		if(fFolderList->CurrentSelection() == fFolderList->IndexOf(trash))
-			fMailList->MakeEmpty();
-		
-		trash->EmptyMailList();
-		trash->Gather();
-		fFolderList->InvalidateItem(fFolderList->IndexOf(trash));
+		EmptyTrash();
 		break;
 	}
 	// Reply message
@@ -1463,6 +1423,54 @@ HWindow::RemoveFromDeskbar()
 		deskbar.RemoveItem( APP_NAME );
 }
 
+/***********************************************************
+ * EmptyTrash
+ ***********************************************************/
+void
+HWindow::EmptyTrash()
+{
+	TrackerUtils utils;
+	int32 count = fFolderList->CountItems();
+	HFolderItem *trash(NULL);
+		
+	for(int32 i = 0;i < count;i++)
+	{
+		HFolderItem *item = cast_as(fFolderList->ItemAt(i),HFolderItem);
+		if(::strcmp(item->Name(), TRASH_FOLDER ) == 0)
+			trash = item;
+	}
+	if(!trash)
+	{
+		BString str = "Could not find \"";
+		str << TRASH_FOLDER << "\" folder";
+		(new BAlert("",str.String(),"OK",NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		return;
+	}
+		
+	entry_ref ref = trash->Ref();
+	BDirectory dir( &ref );
+   	status_t err = B_NO_ERROR;
+	BEntry entry;
+	while( err == B_OK )
+	{
+		if( (err = dir.GetNextRef( &ref )) == B_OK)
+		{
+			if(entry.SetTo(&ref) != B_OK)
+				continue;
+			if(entry.Exists())
+			{
+				utils.MoveToTrash(ref);
+				dir.Rewind();
+			}
+		}
+	}
+	if(fFolderList->CurrentSelection() == fFolderList->IndexOf(trash))
+		fMailList->MakeEmpty();
+	
+	trash->EmptyMailList();
+	trash->Gather();
+	fFolderList->InvalidateItem(fFolderList->IndexOf(trash));	
+}
 
 /***********************************************************
  * AddCheckFromItems
