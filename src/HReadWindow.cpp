@@ -118,6 +118,8 @@ HReadWindow::InitGUI()
 	toolbox->AddButton("All",utils.GetBitmapResource('BBMP',"Reply To All"),msg,"Reply Message To All");
 	toolbox->AddButton("Fwd",utils.GetBitmapResource('BBMP',"Forward"),new BMessage(M_FORWARD_MESSAGE),"Forward Message");
 	toolbox->AddSpace();
+	toolbox->AddButton("Trash",utils.GetBitmapResource('BBMP',"Trash"),new BMessage(M_DELETE_MSG),_("Move To Trash"));
+	toolbox->AddSpace();
 	toolbox->AddButton("Print",utils.GetBitmapResource('BBMP',"Printer"),new BMessage(M_PRINT_MESSAGE),_("Print"));
 	if(fMessenger)
 	{
@@ -180,7 +182,10 @@ HReadWindow::InitMenu()
 	utils.AddMenuItem(aMenu,_("Forward"),M_FORWARD_MESSAGE,this,this,'J',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Forward"));
 	aMenu->AddSeparatorItem();
-	
+	utils.AddMenuItem(aMenu,_("Move To Trash"),M_DELETE_MSG,this,this,'T',0,
+							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
+	aMenu->AddSeparatorItem();
+    
     utils.AddMenuItem(aMenu,_("Show Header"),M_HEADER,this,this,'H',0);
     utils.AddMenuItem(aMenu,_("Show Raw Message"),M_RAW,this,this,0,0);
     menubar->AddItem( aMenu );
@@ -252,6 +257,43 @@ HReadWindow::MessageReceived(BMessage *message)
 	case M_SAVE_ATTACHMENT:
 		PostMessage(message,fMailView);
 		break;
+	// Delete mails
+	case M_DELETE_MSG:
+	{
+		Hide();
+		BPath path;
+		::find_directory(B_USER_DIRECTORY,&path);
+		path.Append("mail");
+		path.Append("Trash");
+		
+		if(path.InitCheck() != B_OK)
+		{
+			(new BAlert("",_("Could not find Trash directory"),_("OK"),
+							NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+			break;
+		}
+		entry_ref ref;
+		::get_ref_for_path(path.Path(),&ref);
+		
+		BEntry entry(&fRef);
+		if(entry.InitCheck() != B_OK)
+		{
+			PRINT(("%s:%s\n",__FILE__,"Cound not found this mail"));
+			break;
+		}
+		BDirectory dir(&ref);
+		char name[B_FILE_NAME_LENGTH];
+		entry.GetName(name);
+		char *newName = new char[::strlen(name)+10];
+		::strcpy(newName,name);
+		int32 i = 0;
+		while(entry.MoveTo(&dir,newName) != B_OK)
+			::sprintf(newName,"%s_%ld",name,i++);
+
+		delete[] newName;
+		PostMessage(B_QUIT_REQUESTED);
+		break;
+	}
 	default:
 		BWindow::MessageReceived(message);
 	}
