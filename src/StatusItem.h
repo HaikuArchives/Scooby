@@ -1,8 +1,7 @@
 #ifndef __STATUSITEM_H__
 #define __STATUSITEM_H__
 
-#include "DeepBevelView.h"
-
+#include <View.h>
 #include <String.h>
 #include <StringView.h>
 
