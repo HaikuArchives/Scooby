@@ -518,7 +518,7 @@ HWindow::MessageReceived(BMessage *message)
 	
 		if(sel < 0)
 			break;
-		HFolderItem *item = cast_as(fFolderList->FullListItemAt(sel),HFolderItem);
+		HFolderItem *item = cast_as(fFolderList->ItemAt(sel),HFolderItem);
 		if(item && item->FolderType() != IMAP4_TYPE)
 			item->Launch();
 		else if(item && item->FolderType() == IMAP4_TYPE)
@@ -763,7 +763,7 @@ HWindow::MessageReceived(BMessage *message)
 		if(sel<0)
 			break;
 		//HFolderItem *item = cast_as(fFolderList->ItemAt(sel),HFolderItem);
-		HFolderItem *item = (HFolderItem*)fFolderList->FullListItemAt(sel);
+		HFolderItem *item = (HFolderItem*)fFolderList->ItemAt(sel);
 		if(item)
 		{
 			fFolderList->SetWatching( true );
@@ -819,7 +819,7 @@ HWindow::MessageReceived(BMessage *message)
 			mail_folder.Append("mail");
 			::strcpy(buf,mail_folder.Path());
 		}else{
-			HFolderItem *item = cast_as(fFolderList->FullListItemAt(index),HFolderItem);
+			HFolderItem *item = cast_as(fFolderList->ItemAt(index),HFolderItem);
 			if(!item)
 				break;
 			entry_ref ref = item->Ref();
@@ -1202,12 +1202,12 @@ HWindow::DeleteMails()
 		fFolderList->AddItem((item = new HFolderItem(ref,fFolderList)));
 		//fFolderList->SortItems();
 	}else
-		item = cast_as(fFolderList->FullListItemAt(folder),HFolderItem);
+		item = cast_as(fFolderList->ItemAt(folder),HFolderItem);
 	
 	int32 sel = fFolderList->CurrentSelection();
 	if(sel < 0)
 		return;
-	HFolderItem *from = cast_as(fFolderList->FullListItemAt(sel),HFolderItem);
+	HFolderItem *from = cast_as(fFolderList->ItemAt(sel),HFolderItem);
 	if(from == item) 
 		return;
 	// Local mails
@@ -1397,7 +1397,7 @@ HWindow::SendPendingMails()
 	int32 folder_index = fFolderList->FindFolder(ref);
 	if(folder_index < 0)
 		return;
-	HFolderItem *folder = cast_as(fFolderList->FullListItemAt(folder_index),HFolderItem);
+	HFolderItem *folder = cast_as(fFolderList->ItemAt(folder_index),HFolderItem);
 	if(!folder)
 		return;
 	BList *maillist = folder->MailList();
@@ -1640,7 +1640,7 @@ HWindow::EmptyTrash()
 		
 	for(int32 i = 0;i < count;i++)
 	{
-		HFolderItem *item = cast_as(fFolderList->FullListItemAt(i),HFolderItem);
+		HFolderItem *item = cast_as(fFolderList->ItemAt(i),HFolderItem);
 		if(item && ::strcmp(item->FolderName(), TRASH_FOLDER ) == 0)
 			trash = item;
 	}
