@@ -341,6 +341,7 @@ HWindow::InitGUI()
 	AddChild(toolbox);
 	
 	fFolderList->WatchQueryFolder();
+	fFolderList->WatchMailFolder();
 	fMailList->MakeFocus(true);	
 	if(fMailView)
 		KeyMenuBar()->FindItem(B_UNDO)->SetTarget(fMailView,this);
