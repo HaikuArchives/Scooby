@@ -637,25 +637,28 @@ send:
 			break;
 		}
 		
-		if(!trash->IsDone())
-			trash->Gather();
-		BList *maillist = trash->MailList();
-		count = maillist->CountItems();
-		BNode node;
-		entry_ref ref;
-		for(int32 i = 0;i < count;i++)
+		entry_ref ref = trash->Ref();
+		BDirectory dir( &ref );
+   		status_t err = B_NO_ERROR;
+		BEntry entry;
+		while( err == B_OK )
 		{
-			HMailItem *mail = (HMailItem*)maillist->ItemAt(i);
-			if(!mail)
-				continue;
-			ref = mail->Ref();
-			if(node.SetTo(&ref) == B_OK)
-				utils.MoveToTrash(ref);
+			if( (err = dir.GetNextRef( &ref )) == B_OK)
+			{
+				if(entry.SetTo(&ref) != B_OK)
+					continue;
+				if(entry.Exists())
+				{
+					utils.MoveToTrash(ref);
+					dir.Rewind();
+				}
+			}
 		}
 		if(fFolderList->CurrentSelection() == fFolderList->IndexOf(trash))
 			fMailList->MakeEmpty();
+		
 		trash->EmptyMailList();
-		trash->SetName(0);
+		trash->Gather();
 		fFolderList->InvalidateItem(fFolderList->IndexOf(trash));
 		break;
 	}
