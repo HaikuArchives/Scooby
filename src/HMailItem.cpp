@@ -170,9 +170,9 @@ HMailItem::HMailItem(const char* status,
 	SetColumnContent(4,fDate.String());
 	
 	SetColumnContent(7,fCC.String());
-	BString str_size;
-	
-	str_size << size;
+	BString str_size("");
+	if(size > 0)
+		str_size << size;
 	SetColumnContent(8,str_size.String());
 	if(!account) fAccount="";
 	SetColumnContent(9,fAccount.String());
@@ -313,6 +313,8 @@ HMailItem::InitItem()
 			node.ReadAttrString(B_MAIL_ATTR_SUBJECT,&fSubject);
 		if(node.GetAttrInfo(B_MAIL_ATTR_CC,&attr) == B_OK)
 			node.ReadAttrString(B_MAIL_ATTR_CC,&fCC);
+		if(node.GetAttrInfo(B_MAIL_ATTR_ACCOUNT,&attr) == B_OK)
+			node.ReadAttrString(B_MAIL_ATTR_ACCOUNT,&fAccount);	
 		if(node.GetAttrInfo(B_MAIL_ATTR_FROM,&attr) == B_OK)
 			node.ReadAttrString(B_MAIL_ATTR_FROM,&fFrom);
 		if(node.GetAttrInfo(B_MAIL_ATTR_TO,&attr) == B_OK)
@@ -343,6 +345,21 @@ HMailItem::InitItem()
 		SetColumnContent(3,fTo.String());
 		SetColumnContent(4,fDate.String());
 		SetColumnContent(7,fCC.String());
+		SetColumnContent(9,fAccount.String());
+		node.GetSize((off_t*)&fSize);
+		HString str_size,suffix("bytes");
+		float display_size = fSize;
+		if(display_size >= 1024 && display_size < 1048576)
+		{
+			suffix = "KB";
+			display_size = display_size/1024.0;	
+		}else if(display_size >= 1048576){
+			suffix = "MB";
+			display_size = display_size/1048576.0;
+		}
+		str_size.Format("%7.2f %s",display_size,suffix.String());
+		SetColumnContent(8,str_size.String());
+		
 		//SetColumnContent(5,fPriority.String(),false);
 		ResetIcon();
 	}
