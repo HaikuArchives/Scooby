@@ -51,7 +51,9 @@ public:
 		HFolderItem*	RemoveFolder(int32 index);
 				int32	GenarateFolderPathes(BMessage &msg);
 				bool	IsGatheredLocalFolders() const {return fGatheredLocalFolders;}
-
+				
+				void	SaveFolderStructure();
+				BMessage	*fFoldersCache;
 protected:
 		virtual void 	MessageReceived(BMessage *message);		
 		static	int32 	GetFolders(void *data);
@@ -72,6 +74,9 @@ protected:
 				
 				void	ProcessMails(BMessage *message);
 				void	GetFolderPath(HFolderItem *item,BMessage &msg);
+				
+				bool	LoadFolders(entry_ref &ref,HFolderItem* parent,
+							int32 indent,BMessage &rootFolders,BMessage &childFolders);
 private:
 		BEntry   	*fEntry;
 		uint32	 	fOutlineLevel;
@@ -89,6 +94,7 @@ private:
 		bool		fSkipMoveMail;
 		bool		fGatheredLocalFolders;
 		bool		fGatherOnStartup;
+		
 		typedef ColumnListView	_inherited;
 };
 #endif

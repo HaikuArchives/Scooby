@@ -135,8 +135,8 @@ Encoding::ToMime(BString &inString, int32 encoding)
 #endif
 	ConvertFromUTF8(inString,encoding);
 	
-	// For japanese jis support	
 #ifndef USE_ICONV
+	// For japanese jis support	
 	if(encoding == B_JIS_CONVERSION)
 		inString += kJis_End;
 #endif

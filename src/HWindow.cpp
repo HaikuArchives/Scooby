@@ -2102,6 +2102,7 @@ HWindow::QuitRequested()
 	fMailList->SaveColumnsAndPos();
 	fMailList->MakeEmpty();
 	// Delete all folder items
+	fFolderList->SaveFolderStructure();
 	fFolderList->DeleteAll();
 	
 	be_app->PostMessage(B_QUIT_REQUESTED);

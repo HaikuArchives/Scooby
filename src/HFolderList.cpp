@@ -136,21 +136,6 @@ HFolderList::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
-	case M_GATHER_ALL_MAILS:
-	{
-		/*bool gather;
-		((HApp*)be_app)->Prefs()->GetData("load_list_on_start_up",&gather);
-		if(!gather)
-			break;
-		int32 count = fPointerList.CountItems();
-		for(int32 i = 0;i < count;i++)
-		{
-			HFolderItem *item = (HFolderItem*)fPointerList.ItemAt(i);
-			if(item && item->FolderType() == FOLDER_TYPE)
-				item->StartGathering();		
-		}*/
-		break;
-	}
 	case M_ADD_IMAP4_FOLDER:
 	{
 		RectUtils utils;
@@ -390,23 +375,42 @@ HFolderList::GetFolders(void* data)
 	BPath path;
 	find_directory(B_USER_DIRECTORY,&path);
 	path.Append("mail");
-	BDirectory dir( path.Path());
-	status_t err = B_NO_ERROR;
-	BEntry entry(path.Path());
 	entry_ref ref;
-	HFolderItem *item;
-	char name[B_FILE_NAME_LENGTH];
-	//
-   	entry.GetRef(&ref);
-	char buf[4096];
-	dirent *dent;
-	int32 count;
-	int32 offset;
+	::get_ref_for_path(path.Path(),&ref);
 	
 	BMessage msg(M_ADD_FOLDER);
 	msg.MakeEmpty();
 	BMessage childMsg(M_ADD_UNDER_ITEM);
 	childMsg.MakeEmpty();
+	
+	BDirectory dir( path.Path());
+	char buf[4096];
+	dirent *dent;
+	int32 count;
+	status_t err = B_NO_ERROR;
+	int32 offset;
+	BEntry entry(path.Path());
+	char name[B_FILE_NAME_LENGTH];
+	
+	BPath cachePath;
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&cachePath);
+	cachePath.Append(APP_NAME);
+	cachePath.Append("Folders.cache");
+	
+	BFile cacheFile(cachePath.Path(),B_READ_ONLY);
+	list->fFoldersCache = new BMessage();
+	list->fFoldersCache->Unflatten(&cacheFile);
+	
+	list->LoadFolders(ref,NULL,0,msg,childMsg);
+
+	delete list->fFoldersCache;
+#if 0
+	entry_ref ref;
+	HFolderItem *item;	
+	//
+   	entry.GetRef(&ref);
+	
+	
 	
 	bool tree_mode;
 	((HApp*)be_app)->Prefs()->GetData("tree_mode",&tree_mode);
@@ -466,6 +470,7 @@ HFolderList::GetFolders(void* data)
 	for(i = 0;i < count;i++)
 		free(dirents[i++]);
 	free(dirents);
+#endif
 #endif
 	/********* QUERY ***********/
 	err = B_OK;
@@ -1414,4 +1419,152 @@ HFolderList::GetFolderPath(HFolderItem *item,BMessage &msg)
 	}
 	msg.AddString("path",path.String() );
 	return; 
+}
+
+/***********************************************************
+ * SaveFolderStructure
+ ***********************************************************/
+void
+HFolderList::SaveFolderStructure()
+{
+	BPath path;
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append(APP_NAME);
+	path.Append("Folders.cache");
+	
+	BFile file(path.Path(),B_CREATE_FILE|B_WRITE_ONLY);
+	if(file.InitCheck() != B_OK)
+		return;
+	BMessage msg;
+	HFolderItem *item;
+	entry_ref ref;
+	struct stat st;
+	BEntry entry;
+	
+	int32 count = FullListCountItems();
+	PRINT(("count:%d\n",count));
+	
+	// Save mail folder
+	::find_directory(B_USER_DIRECTORY,&path);
+	path.Append("mail");
+	::get_ref_for_path(path.Path(),&ref);
+	entry.SetTo(&ref);
+	entry.GetStat(&st);
+	msg.AddRef("refs",&ref);
+	msg.AddInt32("time",st.st_mtime);
+	msg.AddInt32("indent",0);
+	
+	for(int32 i = 0;i < count;i++)
+	{
+		item = cast_as(FullListItemAt(i),HFolderItem);
+		if(!item || item->FolderType() != FOLDER_TYPE)
+			continue;
+		PRINT(("%s\n",item->FolderName()));
+		ref = item->Ref();
+		entry.SetTo(&ref);
+		entry.GetStat(&st);
+		msg.AddRef("refs",&ref);
+		msg.AddInt32("time",st.st_mtime);
+		msg.AddInt32("indent",item->OutlineLevel());
+	}
+	msg.Flatten(&file);
+}
+
+/***********************************************************
+ * LoadFolders
+ ***********************************************************/
+bool
+HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
+						,BMessage &rootFolders,BMessage &childFolders)
+{
+	entry_ref ref;
+	struct stat st;
+	BEntry entry;
+	int32 count;
+	int32 indent;
+	type_code type;
+	time_t modified_time;
+	HFolderItem *item;
+	
+	fFoldersCache->GetInfo("refs",&type,&count);
+	bool useCache = false;
+	int32 i = 0;
+	for(i = 0;i < count;i++)
+	{
+		fFoldersCache->FindRef("refs",i,&ref);
+		if(ref != inRef)
+			continue;
+		if(entry.SetTo(&ref) != B_OK)
+			return false;
+		fFoldersCache->FindInt32("time",i,&modified_time);
+		fFoldersCache->FindInt32("indent",i,&indent);
+		entry.GetStat(&st);
+		if(st.st_mtime == modified_time)
+		{
+			useCache = true;
+			break;
+		}
+	}
+	
+	// not modified folders
+	if(useCache)
+	{
+		int32 childIndent;
+		for(i = i+1;i < count;i++)
+		{
+			if(fFoldersCache->FindRef("refs",i,&ref)!= B_OK)
+				break;	
+			if(entry.SetTo(&ref) != B_OK)
+				continue;
+			fFoldersCache->FindInt32("time",i,&modified_time);
+			fFoldersCache->FindInt32("indent",i,&childIndent);
+			if(childIndent == indent+1)
+			{
+				if(!parent)
+				{
+					rootFolders.AddPointer("item",item = new HFolderItem(ref,this));
+				}else{
+					childFolders.AddPointer("item",item = new HFolderItem(ref,this));
+					childFolders.AddPointer("parent",parent);
+					parent->IncreaseChildItemCount();
+				}
+				LoadFolders(ref,item,childIndent,rootFolders,childFolders);
+			}else if(indent == childIndent)
+				break;
+				
+		}
+	}else{
+		BDirectory dir(&inRef);
+		int32 direntcount,i=0;
+		struct dirent **dirents = NULL;
+		struct dirent *dent;
+		entry_ref childref;
+		BEntry childentry;
+		BPath childpath(&inRef);
+		PRINT(("FolderCacheRefresh:%s\n",childpath.Path()));
+		direntcount = GetAllDirents(childpath.Path(),&dirents,true);
+		while(direntcount>i)
+		{
+			dent = dirents[i++];
+			
+			childref.device = dent->d_pdev;
+			childref.directory = dent->d_pino;
+			childref.set_name(dent->d_name);
+			if(childentry.SetTo(&childref) != B_OK)
+				continue;
+			if(!parent)
+			{
+				rootFolders.AddPointer("item",item = new HFolderItem(childref,this));
+			}else{
+				childFolders.AddPointer("item",(item = new HFolderItem(childref,this)));
+				childFolders.AddPointer("parent",parent);
+				parent->IncreaseChildItemCount();
+			}
+			LoadFolders(childref,item,item->OutlineLevel(),rootFolders,childFolders);
+		}
+		// free all dirents
+		for(int32 i = 0;i < direntcount;i++)
+			free(dirents[i++]);
+		free(dirents);
+	}
 }
