@@ -188,6 +188,7 @@ HMailList::SelectionChanged()
 		fOldSelection = item;
 		Window()->PostMessage(&msg);
 		item->RefreshEnclosureAttr();		
+		item->RefreshStatus();
 		InvalidateItem(sel);
 	}
 }
