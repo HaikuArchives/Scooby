@@ -415,7 +415,6 @@ PopClient::Retr(int32 index,BString &content)
 	// Get mail content size 
 	if(index != 0)
 	{	
-		PRINT(("Retr answer doesn't contain mail size\n"));
 		if(List(index,size_list) != B_OK) {
 			PRINT(("%s\n",fLog.String() ));
 			size = 1;
