@@ -23,7 +23,6 @@
 #include "HWindow.h"
 #include "MenuUtils.h"
 #include "HApp.h"
-#include "LocaleUtils.h"
 
 /***********************************************************
  * This is the exported function that will be used by Deskbar
@@ -61,10 +60,10 @@ HDeskbarView::HDeskbarView(BMessage *message)
 	,fIcon(NULL)
 	,fCurrentIconState(DESKBAR_NEW_ICON)
 {
-	LocaleUtils utils(APP_SIG);
+	//LocaleUtils utils(APP_SIG);
 	const char* kLabels[] = {"New Message","Check Now","Quit"};
 	for(int32 i = 0;i < 3;i++)
-		fLabels[i] = strdup( utils.GetText(kLabels[i]));
+		fLabels[i] = strdup( _(kLabels[i]));
 	ChangeIcon(DESKBAR_NORMAL_ICON);
 }
 

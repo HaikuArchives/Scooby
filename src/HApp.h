@@ -2,7 +2,8 @@
 #define __HAPP_H__
 
 #ifndef USE_SPLOCALE
-	#include "LocaleApp.h"
+	#include <Application.h>
+	#define _(String) (String)
 #else
 	#include "SpLocaleApp.h"
 	#define _( String ) SpTranslate( String )
@@ -24,7 +25,7 @@ enum{
 };
 
 #ifndef USE_SPLOCALE
-class HApp :public LocaleApp{
+class HApp :public BApplication{
 #else
 class HApp :public SpLocaleApp{
 #endif
@@ -87,7 +88,7 @@ private:
 		BBitmap*			fCloseIMAPIcon;
 		//
 #ifndef USE_SPLOCALE
-		typedef	LocaleApp	_inherited;
+		typedef	BApplication	_inherited;
 #else
 		typedef SpLocaleApp _inherited;	
 #endif
