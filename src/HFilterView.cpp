@@ -395,7 +395,7 @@ HFilterView::SaveItem(int32 index,bool rename)
 	menu = fFolderMenu->Menu();
 	if(!(menuitem = menu->FindMarked()))
 	{
-		(new BAlert("",_("You need to set filter action"),_("OK")))->Go();
+		(new BAlert("",_("You have to set filter action"),_("OK")))->Go();
 		return;
 	}else
 		msg.AddString("action_value",menuitem->Label());
