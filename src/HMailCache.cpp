@@ -1,6 +1,7 @@
 #include "HMailCache.h"
 #include "HMailItem.h"
 #include "HFolderItem.h"
+#include "HApp.h"
 
 #include <File.h>
 #include <Entry.h>
@@ -8,7 +9,7 @@
 #include <NodeMonitor.h>
 #include <ListView.h>
 #include <stdlib.h>
-
+#include <Alert.h>
 
 #define VERSION 1
 
@@ -65,7 +66,7 @@ HMailCache::Open(BList &outList,HFolderItem *folder)
 	char *buf = new char[size+1];
 	if(!buf)
 	{
-		PRINT(("Memory exhausted\n"));
+		(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		return B_ERROR;
 	}
 	size = file.Read(buf,size);
