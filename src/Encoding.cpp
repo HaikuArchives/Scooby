@@ -88,7 +88,7 @@ Encoding::UTF82Mime(BString &str,int32 encoding)
 	BString mime("");
 	for(int32 i = 0;i < len;i++)
 	{
-		if( !isascii(kText[i]) )
+		if( !isascii(kText[i]) && !isspace(kText[i]) )
 		{
 			is_mime = true;
 			mime += (char)kText[i];
@@ -298,7 +298,7 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
    		return;
    // MIME-Q
    if(quoted_printable)
-   		len = decode_quoted_printable(buf,buf,len,false);	
+   		len = decode_quoted_printable(buf,buf,len,true);	
    else	{
    // MIME-B
 #ifndef USE_BASE64DECODER
