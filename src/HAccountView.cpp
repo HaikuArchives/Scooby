@@ -180,7 +180,7 @@ HAccountView::InitGUI()
 	rect.left = rect.right - 80;
 	rect.top = rect.bottom - 20;
 	
-	button = new BButton(rect,"apply",_("Apply Change"),new BMessage(M_ACCOUNT_SAVE_CHANGED));
+	button = new BButton(rect,"apply",_("Apply Changes"),new BMessage(M_ACCOUNT_SAVE_CHANGED));
 	AddChild(button);
 	
 	SetEnableControls(false);

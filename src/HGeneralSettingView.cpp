@@ -82,7 +82,7 @@ HGeneralSettingView::InitGUI()
 									"encode",
 									_("Default encoding:"),
 									menu);
-	field->SetDivider(StringWidth(_("Default encoding:"))+5);
+	field->SetDivider(StringWidth(_("Default encoding:"))+8);
 	
 	box->AddChild(field);
 	AddChild(box);
@@ -116,7 +116,7 @@ HGeneralSettingView::InitGUI()
 								"font",
 								_("Font:"),
 								menu);
-	field->SetDivider(StringWidth(_("Font Size:"))+5);
+	field->SetDivider(StringWidth(_("Font Size:"))+8);
 	box->AddChild(field);
 	BString label("");
 	label << family << "  " << style;
@@ -145,7 +145,7 @@ HGeneralSettingView::InitGUI()
 								"size",
 								_("Font Size:"),
 								menu);
-	field->SetDivider(StringWidth(_("Font Size:"))+5);
+	field->SetDivider(StringWidth(_("Font Size:"))+8);
 	box->AddChild(field);
 	
 	AddChild(box);
@@ -160,10 +160,10 @@ HGeneralSettingView::InitGUI()
 	frame.OffsetTo(B_ORIGIN);
 	frame.OffsetBy(10,10);
 	frame.InsetBy(5,5);
-	frame.right = frame.left + StringWidth(_("Check mail every")) + 25;
+	frame.right = frame.left + StringWidth(_("Check for new mail every")) + 20;
 	frame.bottom = frame.top + 17;
 	
-	BCheckBox *checkbox = new BCheckBox(frame,"check",_("Check mail every"),NULL);
+	BCheckBox *checkbox = new BCheckBox(frame,"check",_("Check for new mail every"),NULL);
 	bool bValue;
 	prefs->GetData("auto_check",&bValue);
 	checkbox->SetValue(bValue);
@@ -171,7 +171,7 @@ HGeneralSettingView::InitGUI()
 	
 	BRect frame2(frame);
 	frame2.OffsetBy(frame2.Width(),0);
-	frame2.right = frame2.left + 50;
+	frame2.right = frame2.left + 25;
 	int32 minutes;
 	prefs->GetData("check_minutes",&minutes);
 	NumberControl *numberCtrl = new NumberControl(frame2,"minutes","",minutes,NULL);
@@ -179,55 +179,55 @@ HGeneralSettingView::InitGUI()
 	numberCtrl->SetAlignment(B_ALIGN_LEFT,B_ALIGN_RIGHT);
 	box->AddChild(numberCtrl);
 	frame2.OffsetBy(frame2.Width()+5,0);
-	BStringView *stringView = new BStringView(frame2,"",_("minutes"));
+	BStringView *stringView = new BStringView(frame2,"",_("mins"));
 	
 	const float x_offset = 300;
 	
 	frame.OffsetBy(x_offset,0);
 	frame.right = box->Bounds().right-10;
-	checkbox = new BCheckBox(frame,"cache",_("Use folder cache"),NULL);
+	checkbox = new BCheckBox(frame,"cache",_("Cache mail folders"),NULL);
 	prefs->GetData("use_folder_cache",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
 	frame.OffsetBy(-x_offset,22);
 	checkbox = new BCheckBox(frame,"list_start",
-				_("Create all mail lists on start up"),NULL);
+				_("Create folder caches on startup (in background)"),NULL);
 	prefs->GetData("load_list_on_start_up",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
 	frame.OffsetBy(x_offset,0);
 	checkbox = new BCheckBox(frame,"check_inbox",
-				_("Open inbox when Scooby started up"),NULL);
+				_("Open inbox on startup"),NULL);
 	prefs->GetData("check_inbox",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
 	frame.OffsetBy(-x_offset,22);
 	checkbox = new BCheckBox(frame,"tree_mode",
-				_("Use folder tree support"),NULL);
+				_("Support mail sub-folders"),NULL);
 	prefs->GetData("tree_mode",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
 	frame.OffsetBy(x_offset,0);
 	checkbox = new BCheckBox(frame,"desktray",
-				_("Use deskbar replicant"),NULL);
+				_("Use Deskbar replicant"),NULL);
 	prefs->GetData("use_desktray",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
 	frame.OffsetBy(-x_offset,22);
 	checkbox = new BCheckBox(frame,"html",
-				_("Use HTML view"),NULL);
+				_("Always use HTML view"),NULL);
 	prefs->GetData("use_html",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
 	frame.OffsetBy(x_offset,0);
 	checkbox = new BCheckBox(frame,"open_new_window",
-				_("Always open like in new window(HTML view)"),NULL);
+				_("Always open links in new window (HTML view)"),NULL);
 	prefs->GetData("open_link_as_new_window",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
@@ -253,7 +253,7 @@ HGeneralSettingView::InitGUI()
 	frame.OffsetBy(-x_offset,22);
 	field = new BMenuField(frame,"time_format",
 				_("Time format:"),menu);
-	field->SetDivider(StringWidth(_("Time format:"))+3);
+	field->SetDivider(StringWidth(_("Toolbar mode:")) + 8);
 	
 	box->AddChild(field);
 	
@@ -270,7 +270,7 @@ HGeneralSettingView::InitGUI()
 	if(item)
 		item->SetMarked(true);
 	field = new BMenuField(frame,"toolbar",_("Toolbar mode:"),menu);
-	field->SetDivider(StringWidth(_("Toolbar mode:")) + 3);
+	field->SetDivider(StringWidth(_("Toolbar mode:")) + 8);
 	box->AddChild(field);
 	
 	box->AddChild(stringView);
