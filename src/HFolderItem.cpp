@@ -738,7 +738,6 @@ HFolderItem::NodeMonitor(BMessage *message)
 		path.SetTo(&ref);
 		if(!path.Path())
 			break;
-		PRINT(("%s\n",path.Path()));
 		if(node.SetTo(&ref) != B_OK)
 			break;
 		ninfo.SetTo(&node);
