@@ -1232,38 +1232,38 @@ HWindow::InvokeMailItem()
 void
 HWindow::DeleteMails()
 {
-	BPath path;
-	::find_directory(B_USER_DIRECTORY, &path, true);
-	path.Append("mail");
-	path.Append( TRASH_FOLDER );
-	
-	entry_ref ref;
-	::get_ref_for_path(path.Path(),&ref);
-	
-	HFolderItem *item(NULL);
-	
-	int32 folder = fFolderList->FindFolder(ref);
-	
-	if(folder < 0)
-	{
-		fFolderList->AddItem((item = new HFolderItem(ref,fFolderList)));
-		//fFolderList->SortItems();
-	}else
-		item = cast_as(fFolderList->ItemAt(folder),HFolderItem);
-	
 	int32 sel = fFolderList->CurrentSelection();
 	if(sel < 0)
 		return;
 	HFolderItem *from = cast_as(fFolderList->ItemAt(sel),HFolderItem);
-	if(from == item) 
-		return;
 	// Local mails
 	if(from->FolderType() != IMAP4_TYPE)
 	{
+	
+		BPath path;
+		::find_directory(B_USER_DIRECTORY, &path, true);
+		path.Append("mail");
+		path.Append( TRASH_FOLDER );
+	
+		entry_ref ref;
+		::get_ref_for_path(path.Path(),&ref);
+	
+		HFolderItem *to(NULL);
+	
+		int32 folder = fFolderList->FindFolder(ref);
+		
+		if(folder < 0) // Could not find trash folder
+			fFolderList->AddItem((to = new HFolderItem(ref,fFolderList)));
+		else
+			to = cast_as(fFolderList->ItemAt(folder),HFolderItem);
+		
+		// If from and to folder are same, skip moving
+		if(from == to) 
+			return;
 		
 		BMessage msg(M_MOVE_MAIL);
 		msg.AddPointer("from",from);
-		msg.AddPointer("to",item);
+		msg.AddPointer("to",to);
 	
 		int32 selected; 
 		int32 last_selected = -1;
@@ -1273,7 +1273,7 @@ HWindow::DeleteMails()
 		while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
 		{
 			mail=fMailList->MailAt(selected);
-			if(!item)
+			if(!mail)
 				continue;
 			msg.AddPointer("mail",mail);
 			msg.AddRef("refs",&mail->fRef);
@@ -1287,9 +1287,8 @@ HWindow::DeleteMails()
 	}else{
 		// IMAP4 mails
 		int32 selected; 
-		int32 count_selected = 0;
 		int32 sel_index = 0;
-		//int32 unread_mails = 0;
+		int32 unread_mails = 0;
 		HIMAP4Item *mail(NULL);
 		
 		while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
@@ -1297,10 +1296,9 @@ HWindow::DeleteMails()
 			mail=cast_as(fMailList->RemoveItem(selected),HIMAP4Item);
 			if(!mail)
 				continue;
-			count_selected++;
 			mail->Delete();
-			//if(!mail->IsRead())
-			//	unread_mails++;
+			if(!mail->IsRead())
+				unread_mails++;
 			from->RemoveMail( mail );
 			delete mail;
 		}
