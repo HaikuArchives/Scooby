@@ -141,21 +141,28 @@ HAttachmentList::InitiateDrag(BPoint  point,
 		bitmap->Lock();
 		view->SetHighColor(0,0,0,0);
 		view->FillRect(view->Bounds());
-		
+		theRect = view->Bounds();
 		view->SetDrawingMode(B_OP_ALPHA);
 		view->SetHighColor(0,0,0,128);
 		view->SetBlendingMode(B_CONSTANT_ALPHA,B_ALPHA_COMPOSITE);
+		
+		BFont font;
+		font_height fheight;
+		GetFont(&font);	
+		font.GetHeight(&fheight);
+		float fontHeight = ceil(fheight.ascent) + ceil(fheight.descent);
+		view->SetFont(&font);
+		view->MovePenTo(theRect.left+20, theRect.bottom - (theRect.Height()-fontHeight)/2);
+		if(subject)
+			view->DrawString( subject );
+		
 		const BBitmap *icon = item->GetColumnContentBitmap(0);
+		fontHeight = icon->Bounds().Height();
+		view->MovePenTo(theRect.left, theRect.top + (theRect.Height()-fontHeight)/2);
 		if(icon)
 			view->DrawBitmap(icon);
 		
-		BFont font;
-		GetFont(&font);	
-		view->SetFont(&font);
-		view->MovePenTo(theRect.left+18, theRect.bottom-3);
 		
-		if(subject)
-			view->DrawString( subject );
 		bitmap->Unlock();
 		
 		DragMessage(&msg, bitmap, B_OP_ALPHA,
