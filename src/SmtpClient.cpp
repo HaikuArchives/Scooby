@@ -1,18 +1,28 @@
 #include "SmtpClient.h"
+#include "md5.h"
 
 #include <stdlib.h>
 #include <Debug.h>
+#include <E-mail.h>
 
 #define CRLF "\r\n"
 #define xEOF    236
 
 #define SMTP_RESPONSE_SIZE 8192
 
+enum AuthType{
+	LOGIN=1,
+	PLAIN=1<<2,
+	CRAM_MD5=1<<3,
+	DIGEST_MD5=1<<4
+};
+
 /***********************************************************
  * Constructor
  ***********************************************************/
 SmtpClient::SmtpClient()
 	:BNetEndpoint()
+	,fAuthType(0)
 {
 }
 
@@ -29,7 +39,7 @@ SmtpClient::~SmtpClient()
  * Connect
  ***********************************************************/
 status_t
-SmtpClient::Connect(const char* address,int16 port,bool esmpt)
+SmtpClient::Connect(const char* address,int16 port,bool esmtp)
 {
 	if(_inherited::Connect(address,port) != B_OK)
 	{
@@ -41,7 +51,7 @@ SmtpClient::Connect(const char* address,int16 port,bool esmpt)
 	ReceiveResponse(line);
 	
 	BString cmd;
-	if(!esmpt)
+	if(!esmtp)
 		cmd = "HELO ";
 	else
 		cmd = "EHLO ";
@@ -50,6 +60,24 @@ SmtpClient::Connect(const char* address,int16 port,bool esmpt)
 	{
 		PRINT(("Err:%s\n",fLog.String()));
 		return B_ERROR;
+	}
+	
+	// Check auth type
+	if(esmtp)
+	{
+		const char* res = fLog.String();
+		char* p;
+		if((p=::strstr(res,"250-AUTH")))
+		{
+			if(::strstr(p,"LOGIN"))
+				fAuthType |= LOGIN;
+			if(::strstr(p,"PLAIN"))
+				fAuthType |= PLAIN;	
+			if(::strstr(p,"CRAM-MD5"))
+				fAuthType |= CRAM_MD5;
+			if(::strstr(p,"DIGEST-MD5"))
+				fAuthType |= DIGEST_MD5;
+		}
 	}
 	PRINT(("SMTP:Connect success\n"));
 	return B_OK;
@@ -61,7 +89,83 @@ SmtpClient::Connect(const char* address,int16 port,bool esmpt)
 status_t
 SmtpClient::Login(const char* login,const char* password)
 {
-	return B_OK;
+	if(fAuthType==0)
+		return B_ERROR;
+		
+	char hex_digest[33];
+	BString out;
+	if(fAuthType&CRAM_MD5)
+	{
+		SendCommand("AUTH CRAM-MD5\r\n");
+		const char* res = fLog.String();
+		
+		if(strncmp(res,"334",3)!=0)
+			return B_ERROR;
+		char *base = new char[::strlen(&res[4])+1];
+		::strcpy(base,res+4);
+		int32 baselen = ::strlen(base);
+		baselen = ::decode_base64(base,base,baselen);
+		base[baselen] = '\0';
+		
+		int32 passlen = strlen(password);
+		::MD5HexHmac(hex_digest,
+				(const unsigned char*)base,
+				(int)baselen,
+				(const unsigned char*)password,
+				(int)passlen);
+		printf("%s\n%s\n",base,hex_digest);
+		delete[] base;
+		
+		char *resp = new char[(strlen(hex_digest)+strlen(login))*2+3];
+		
+		::sprintf(resp,"%s %s",login,hex_digest);
+		baselen = ::encode_base64(resp,resp,strlen(resp));
+		resp[baselen]='\0';
+		::strcat(resp,"\r\n");
+		SendCommand(resp);
+		
+		delete[] resp;
+		
+		res = fLog.String();
+		if(atol(res)<500)
+			return B_OK;
+		
+	}else if(fAuthType&DIGEST_MD5){
+	
+	}else if(fAuthType&LOGIN){
+		SendCommand("AUTH LOGIN\r\n");
+		const char* res = fLog.String();
+		
+		if(strncmp(res,"334",3)!=0)
+			return B_ERROR;
+		// Send login name as base64
+		int32 len;
+		char* login64 = new char[::strlen(login)*2+3];
+		::strcpy(login64,login);
+		len = ::encode_base64(login64,login64,strlen(login));
+		login64[len]='0';
+		::strcat(login64,"\r\n");
+		SendCommand(login64);
+		delete [] login64;
+		
+		res = fLog.String();
+		if(strncmp(res,"334",3)!=0)
+			return B_ERROR;
+		// Send password as base64
+		login64 = new char[::strlen(password)*2+3];
+		::strcpy(login64,login);
+		len = ::encode_base64(login64,login64,strlen(password));
+		login64[len]='0';
+		::strcat(login64,"\r\n");
+		SendCommand(login64);
+		
+		res = fLog.String();
+		if(atol(res)<500)
+			return B_OK;
+	}else if(fAuthType&PLAIN){
+	
+	}	
+	return B_ERROR;
 }
 
 /***********************************************************
@@ -90,6 +194,7 @@ SmtpClient::ReceiveResponse(BString &out)
 	}else{
 		fLog = "SMTP socket timeout.";
 	}
+	PRINT(("S:%s\n",out.String()));
 	return len;
 }
 
@@ -111,8 +216,7 @@ SmtpClient::SendCommand(const char* cmd)
 		
 		if(len <= 0)
 			return B_ERROR;
-		PRINT(("%s\n",fLog.String()));
-		if(fLog.Length() > 4 && fLog[3] == ' ')
+		if(fLog.Length() > 4 && (fLog[3] == ' '||fLog[3] == '-'))
 		{
 			const char* top = fLog.String();
 			int32 num = atol( top );
