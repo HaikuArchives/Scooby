@@ -52,7 +52,7 @@ HIMAP4Item::SetRead()
 		return;
 
 	fClient->MarkAsRead(fMailIndex);
-	fFolder->SetName(fFolder->Unread()-1);
+	fFolder->SetUnreadCount(fFolder->Unread()-1);
 	fFolder->InvalidateMe();
 	fStatus = "Read";
 	ResetIcon();
@@ -68,7 +68,7 @@ HIMAP4Item::Delete()
 	PRINT(("IMAP MAIL DELETED\n"));
 	if(fStatus.Compare("New") == 0)
 	{
-		fFolder->SetName(fFolder->Unread()-1);
+		fFolder->SetUnreadCount(fFolder->Unread()-1);
 		fFolder->InvalidateMe();
 	}
 }

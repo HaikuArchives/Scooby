@@ -642,6 +642,9 @@ HFolderList::WhenDropped(BMessage *message)
 	
 	HFolderItem *fromFolder = cast_as(ItemAt(from),HFolderItem);
 	HFolderItem *toFolder = cast_as(ItemAt(CurrentSelection()),HFolderItem);
+	
+	if(toFolder->FolderType() == IMAP4_TYPE)
+		return;
 	if(fromFolder == toFolder)
 		return;
 	
@@ -737,10 +740,7 @@ void
 HFolderList::SelectWithoutGathering(int32 index)
 {
 	fSkipGathering = true;
-	HFolderItem *item = cast_as(ItemAt(index),HFolderItem);
-	int32 type = item->FolderType();
-	if(type == FOLDER_TYPE || type == QUERY_TYPE)
-		Select(index);
+	Select(index);
 	fSkipGathering = false;
 }
 
