@@ -1456,8 +1456,8 @@ HFolderList::SaveFolderStructure()
 	msg.AddRef("refs",&ref);
 	msg.AddInt32("time",st.st_mtime);
 	msg.AddInt32("indent",0);
+	msg.AddBool("expanded",false);
 	
-	bool expanded;
 	for(int32 i = 0;i < count;i++)
 	{
 		item = cast_as(FullListItemAt(i),HFolderItem);
@@ -1470,9 +1470,7 @@ HFolderList::SaveFolderStructure()
 		msg.AddRef("refs",&ref);
 		msg.AddInt32("time",st.st_mtime);
 		msg.AddInt32("indent",item->OutlineLevel());
-		expanded= IsExpanded(FullListIndexOf(item));
-		
-		node.WriteAttr(SCOOBY_FOLDER_EXPANDED,B_BOOL_TYPE,0,&expanded,sizeof(bool));
+		msg.AddBool("expanded",IsExpanded(FullListIndexOf(item)));
 	}
 	msg.Flatten(&file);
 }
@@ -1495,6 +1493,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 	
 	fFoldersCache->GetInfo("refs",&type,&count);
 	bool useCache = false;
+	bool expanded = false;
 	int32 i = 0;
 	// Find cached info and compare modification time
 	for(i = 0;i < count;i++)
@@ -1506,6 +1505,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 			return false;
 		fFoldersCache->FindInt32("time",i,&modified_time);
 		fFoldersCache->FindInt32("indent",i,&indent);
+		fFoldersCache->FindBool("expanded",i,&expanded);
 		entry.GetStat(&st);
 		if(st.st_mtime == modified_time)
 		{
@@ -1513,12 +1513,6 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 			break;
 		}
 	}
-	// Check expanded
-	bool expand;
-	BNode node(&inRef);
-	if(node.ReadAttr(SCOOBY_FOLDER_EXPANDED,B_BOOL_TYPE,0,&expand,sizeof(bool)) <=0)
-		expand = false;
-	
 	// not modified folders
 	if(useCache)
 	{
@@ -1539,7 +1533,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 				}else{
 					childFolders.AddPointer("item",item = new HFolderItem(ref,this));
 					childFolders.AddPointer("parent",parent);
-					childFolders.AddBool("expand",expand);
+					childFolders.AddBool("expand",expanded);
 					parent->IncreaseChildItemCount();
 				}
 				LoadFolders(ref,item,childIndent,rootFolders,childFolders);
@@ -1581,7 +1575,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 					}else{
 						childFolders.AddPointer("item",(item = new HFolderItem(childref,this)));
 						childFolders.AddPointer("parent",parent);
-						childFolders.AddBool("expand",expand);
+						childFolders.AddBool("expand",expanded);
 						parent->IncreaseChildItemCount();
 					}
 					LoadFolders(childref,item,item->OutlineLevel(),rootFolders,childFolders);
