@@ -192,7 +192,7 @@ void
 HApp::ArgvReceived(int32 argc,char** argv)
 {
 	bool send = false;
-	BString subject,to,cc,bcc,body,enclosure_path;
+	BString subject,to,cc,bcc,body,enclosure_path,path;
 	
 	for(int32 i = 0;i < argc;i++)
 	{
@@ -225,23 +225,29 @@ HApp::ArgvReceived(int32 argc,char** argv)
 		}else if( strcmp(argv[i],"--help") == 0){
 			printf(" usage: Scooby [ mailto:<address> ] [ -subject \"<text>\" ] [ ccto:<address> ] [ bccto:<address> ] [ -body \"<body text>\" ] [ enclosure:<path> ] [ <message to read> ...]\n");
 			exit(0);
-		}
+		}else
+			path = argv[i];
 	}
 	
-	if(send)
+	MakeMainWindow(true);
+	if(fWindow->Lock())
 	{
-		MakeMainWindow(true);
-		
-		if(fWindow->Lock())
+		if(send)
 		{
+		
 			fWindow->MakeWriteWindow(subject.String() // subject to cc bcc body	 enclosure_path
 									,to.String()
 									,cc.String()
 									,bcc.String()
 									,body.String()
 									,enclosure_path.String());
-			fWindow->Unlock();
+		
+		}else{
+			entry_ref ref;
+			if(::get_ref_for_path(path.String(),&ref) == B_OK)
+				fWindow->MakeReadWindow(ref);
 		}
+		fWindow->Unlock();
 	}
 	_inherited::ArgvReceived(argc,argv);
 }
