@@ -12,7 +12,9 @@
 #include <TextView.h>
 #include <MenuItem.h>
 #include <ClassInfo.h>
+#include <fs_attr.h>
 #include <Alert.h>
+#include <Node.h>
 
 void
 DisallowFilenameKeys(BTextView *textView)
@@ -214,4 +216,34 @@ next:;
 	}
 done:;
 	return(NULL);
+}
+
+/***********************************************************
+ * ReadNodeAttrString
+ *	ReadAttrString is little weak, So check attr before read.
+ ***********************************************************/
+status_t
+ReadNodeAttrString(BNode *node,const char* attrName,BString *out,const char* defaultValue)
+{
+	// reset output string.
+	out->SetTo("");
+	
+	attr_info attr;
+	status_t err = B_OK;
+	// check whether it has the attribute.
+	if(node->GetAttrInfo(attrName,&attr) == B_OK && attr.type == B_STRING_TYPE)
+	{
+		if(attr.size > 0)
+			err = node->ReadAttrString(attrName,out);
+			
+	}else{
+		// if it doesn't have attr, write default value.
+		if(defaultValue)
+		{
+			node->WriteAttr(attrName,B_STRING_TYPE,0,defaultValue,::strlen(defaultValue)+1);
+			out->SetTo(defaultValue);
+		}else
+			err = B_ERROR;
+	}
+	return err;	
 }

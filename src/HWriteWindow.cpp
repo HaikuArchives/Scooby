@@ -155,7 +155,7 @@ HWriteWindow::HWriteWindow(BRect rect
 		char replyLabel[1024];
 		BString from;
 		time_t t;
-		fReplyFile->ReadAttrString(B_MAIL_ATTR_FROM,&from);
+		ReadNodeAttrString(fReplyFile,B_MAIL_ATTR_FROM,&from);
 		fReplyFile->ReadAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&t,sizeof(time_t));
 		
 		const char* kTimeFormat;
@@ -213,13 +213,13 @@ HWriteWindow::HWriteWindow(BRect rect,const char* name,entry_ref &ref)
 	
 		for(int32 i = 0;i < 4;i++)
 		{	
-			if(file.ReadAttrString(kAttr[i],&attrString) == B_OK)
+			if(ReadNodeAttrString(&file,kAttr[i],&attrString) == B_OK)
 			{
 				ctrl = cast_as(FindView(kFieldLabels[i]),BTextControl);
 				ctrl->SetText(attrString.String());
 			}
 		}
-		if(file.ReadAttrString(B_MAIL_ATTR_FROM,&attrString) == B_OK)
+		if(ReadNodeAttrString(&file,B_MAIL_ATTR_FROM,&attrString) == B_OK)
 			fTopView->SetFrom(attrString.String());
 	}
 	// Read file
@@ -974,7 +974,7 @@ HWriteWindow::WriteReplyStatus()
 	if(!fReplyFile || !fReplyItem)
 		return;
 	BString status;
-	fReplyFile->ReadAttrString(B_MAIL_ATTR_STATUS,&status);
+	ReadNodeAttrString(fReplyFile,B_MAIL_ATTR_STATUS,&status);
 	if(fReply)
 		status = "Replied";
 	else if(fForward)
@@ -1455,7 +1455,7 @@ HWriteWindow::OpenDraft(entry_ref ref)
 	for(int32 i = 0;i < 4;i++)
 	{
 		PRINT(("%s\n",kAttr_Name[i]));
-		err = file->ReadAttrString(kAttr_Name[i],&attr);
+		err = ReadNodeAttrString(file,kAttr_Name[i],&attr);
 		control = cast_as(fTopView->FindView(kAttr_Name[i]),BTextControl);
 		if(control && err == B_OK && attr.Length() >0)
 			control->SetText(attr.String());

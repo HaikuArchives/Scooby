@@ -1321,7 +1321,7 @@ HWindow::AddToPeople()
 			BNode node(&ref);
 			if(node.InitCheck() != B_OK)
 				continue;
-			node.ReadAttrString(B_MAIL_ATTR_FROM,&from);
+			ReadNodeAttrString(&node,B_MAIL_ATTR_FROM,&from);
 			
 			int32 index = from.FindFirst("<");
 			BString name("");
@@ -1379,7 +1379,7 @@ HWindow::ForwardMail(HMailItem *item)
 	if(file.InitCheck() != B_OK)
 		return;
 	BString subject("");
-	file.ReadAttrString(B_MAIL_ATTR_SUBJECT,&subject);
+	ReadNodeAttrString(&file,B_MAIL_ATTR_SUBJECT,&subject);
 	
 	subject.Insert("Fwd:",0);
 	off_t size;
@@ -1454,10 +1454,10 @@ HWindow::ReplyMail(HMailItem *item,bool reply_all)
 	if(file.InitCheck() != B_OK)
 		return;
 	BString to(""),subject(""),reply(""),cc("");
-	file.ReadAttrString(B_MAIL_ATTR_FROM,&to);
-	file.ReadAttrString(B_MAIL_ATTR_CC,&cc);
-	file.ReadAttrString(B_MAIL_ATTR_SUBJECT,&subject);
-	file.ReadAttrString(B_MAIL_ATTR_REPLY,&reply);
+	ReadNodeAttrString(&file,B_MAIL_ATTR_FROM,&to);
+	ReadNodeAttrString(&file,B_MAIL_ATTR_CC,&cc);
+	ReadNodeAttrString(&file,B_MAIL_ATTR_SUBJECT,&subject);
+	ReadNodeAttrString(&file,B_MAIL_ATTR_REPLY,&reply);
 	
 	if(reply.Length() > 0)
 		to = reply;
@@ -1660,7 +1660,7 @@ HWindow::MakeReadWindow(entry_ref ref,BMessenger *messenger)
 	BNode node(&ref);
 	BRect rect;
 
-	node.ReadAttrString(B_MAIL_ATTR_STATUS,&status);
+	ReadNodeAttrString(&node,B_MAIL_ATTR_STATUS,&status);
 	
 	if(status.Compare("Sent")==0 ||
 		 status.Compare("Pending") == 0||

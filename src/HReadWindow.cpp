@@ -326,11 +326,11 @@ HReadWindow::LoadMessage(entry_ref ref)
 	}
 	BString from,subject,cc,to;
 	time_t when;
-	file->ReadAttrString(B_MAIL_ATTR_FROM,&from);
-	file->ReadAttrString(B_MAIL_ATTR_SUBJECT,&subject);
+	ReadNodeAttrString(file,B_MAIL_ATTR_FROM,&from);
+	ReadNodeAttrString(file,B_MAIL_ATTR_SUBJECT,&subject);
 	file->ReadAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&when,sizeof(time_t));
-	file->ReadAttrString(B_MAIL_ATTR_CC,&cc);
-	file->ReadAttrString(B_MAIL_ATTR_TO,&to);
+	ReadNodeAttrString(file,B_MAIL_ATTR_CC,&cc);
+	ReadNodeAttrString(file,B_MAIL_ATTR_TO,&to);
 	
 	const char* kTimeFormat = "%a, %m/%d/%Y, %r";
 	char *buf = new char[64];
@@ -519,7 +519,7 @@ HReadWindow::SetRead()
 	if(node.InitCheck() == B_OK)
 	{
 		BString status;
-		node.ReadAttrString(B_MAIL_ATTR_STATUS,&status);
+		ReadNodeAttrString(&node,B_MAIL_ATTR_STATUS,&status);
 		if(status.Compare("New") == 0)
 		{
 			status = "Read";

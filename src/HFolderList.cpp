@@ -1022,7 +1022,7 @@ HFolderList::AddQuery(entry_ref ref)
 			return B_ERROR;
 	}	
 	BString type;
-	node.ReadAttrString("BEOS:TYPE",&type);
+	ReadNodeAttrString(&node,"BEOS:TYPE",&type);
 	if(type.Compare("application/x-vnd.Be-query") != 0)
 		return B_ERROR;
 	

@@ -9,6 +9,7 @@
 #include "IconMenuItem.h"
 #include "OpenWithMenu.h"
 #include "HIMAP4Item.h"
+#include "Utilities.h"
 
 #include <StorageKit.h>
 #include <Window.h>
@@ -805,7 +806,7 @@ HMailList::MarkOldSelectionAsRead()
 			entry_ref ref = fOldSelection->Ref();
 			BNode node(&ref);
 			BString status;
-			node.ReadAttrString(B_MAIL_ATTR_STATUS,&status);
+			ReadNodeAttrString(&node,B_MAIL_ATTR_STATUS,&status);
 			if(status.Compare("New") == 0)
 				node.WriteAttr(B_MAIL_ATTR_STATUS,B_STRING_TYPE,0,"Read",5);
 		}
