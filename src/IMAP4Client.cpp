@@ -449,8 +449,11 @@ IMAP4Client::FetchBody(int32 index,BString &outBody)
 		outBody.Truncate(outBody.Length()-3);
 		delete[] buf;
 		// Get Last line
-		r = ReceiveLine(line);
-		PRINT(("%s\n",line.String()));
+		while (CheckSessionEnd(line.String(),session) == IMAP_SESSION_CONTINUED)
+		{
+			r = ReceiveLine(line);
+			PRINT(("%s\n",line.String()));
+		}
 		if(r <=0)
 			return B_ERROR;
 		state = CheckSessionEnd(line.String(),session);
