@@ -414,6 +414,12 @@ HAddressView::SetFrom(const char* in_address)
 			{
 				entry.GetName(name);
 				ChangeAccount(name);
+				// Set From menu
+				BMenuField *field = cast_as(FindView("FromMenu"),BMenuField);
+				BMenu *menu = field->Menu();
+				BMenuItem *item = menu->FindItem(name);
+				if(item)
+					item->SetMarked(true);
 				break;
 			}
 		}
