@@ -4,6 +4,7 @@
 #include <String.h>
 #include <Region.h>
 #include <iostream>
+#include "HApp.h"
 #include "ResourceUtils.h"
 
 /***********************************************************
@@ -23,11 +24,11 @@ HMailCaption::HMailCaption(BRect rect,const char* name,BListView *target)
 	
 	//
 	rect1.top += 2;
-	rect1.bottom = rect1.top + 10;
+	rect1.bottom = rect1.top + 11;
 	rect1.left = rect.left + 1;
 	rect1.right = Bounds().right - BarberPoleOuterRect().Width() - 5;
 	
-	view = new BStringView(rect1,"","no items");
+	view = new BStringView(rect1,"",_("no items"));
 	view->SetAlignment(B_ALIGN_LEFT);
 	this->AddChild(view);
 	//this->Draw(this->Bounds());
@@ -119,11 +120,11 @@ HMailCaption::SetNumber(int32 num)
 
 	BString str("");
 	if(num == 1)
-		str << num << " item";
+		str << num << " "<< _("item");
 	else if(num == 0)
-		str = "no items";
+		str = _("no items");
 	else
-		str << num << " items";
+		str << num << " "<< _("items");
 	view->SetText(str.String());
 }
 

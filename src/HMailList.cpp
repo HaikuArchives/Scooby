@@ -38,7 +38,7 @@ HMailList::HMailList(BRect frame,
 		CLV_NOT_RESIZABLE|CLV_PUSH_PASS) );
 	SetSortFunction(HMailItem::CompareItems);
 	
-	const char* label[] = {"Subject","From","To","When","P","A"};
+	const char* label[] = {_("Subject"),_("From"),_("To"),_("When"),_("P"),_("A")};
 	CLVColumn*			column;
 	for(int32 i = 0;i < 6;i++)
 	{
@@ -421,36 +421,36 @@ HMailList::MouseDown(BPoint pos)
     	 
     	 msg = new BMessage(M_REPLY_MESSAGE);
     	 msg->AddBool("reply_all",false);
-    	 item = new IconMenuItem("Reply",msg,'R',0,
+    	 item = new IconMenuItem(_("Reply"),msg,'R',0,
     	 						utils.GetBitmapResource('BBMP',"Reply"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
     	 
      	 msg = new BMessage(M_REPLY_MESSAGE);
     	 msg->AddBool("reply_all",true);
-    	 item = new IconMenuItem("Reply To All",msg,'R',B_SHIFT_KEY,
+    	 item = new IconMenuItem(_("Reply To All"),msg,'R',B_SHIFT_KEY,
     	 						utils.GetBitmapResource('BBMP',"Reply To All"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
     	 
-    	 item = new IconMenuItem("Forward",new BMessage(M_FORWARD_MESSAGE),'J',0,
+    	 item = new IconMenuItem(_("Forward"),new BMessage(M_FORWARD_MESSAGE),'J',0,
     	 						utils.GetBitmapResource('BBMP',"Forward"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
     	 theMenu->AddSeparatorItem();
-    	 item = new IconMenuItem("Trash",new BMessage(M_DELETE_MSG),'T',0,
+    	 item = new IconMenuItem(_("Move To Trash"),new BMessage(M_DELETE_MSG),'T',0,
     	 						utils.GetBitmapResource('BBMP',"Trash"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
     	// Add to people menu
     	theMenu->AddSeparatorItem();
-    	item = new IconMenuItem("Save as People",new BMessage(M_ADD_TO_PEOPLE),0,0,
+    	item = new IconMenuItem(_("Save as People"),new BMessage(M_ADD_TO_PEOPLE),0,0,
     	 						utils.GetBitmapResource('BBMP',"Person"));
     	item->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(item);
     	theMenu->AddSeparatorItem();
     	// Open with menu
-    	 OpenWithMenu *submenu = new OpenWithMenu("Open With…","text/x-email");
+    	 OpenWithMenu *submenu = new OpenWithMenu(_("Open With…"),"text/x-email");
     	 submenu->SetFont(&font);
 		// Get icon for executable file
 		BMimeType exe("application/x-vnd.Be-elfexecutable");

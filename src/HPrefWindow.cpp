@@ -16,7 +16,7 @@
  * Constructor
  ***********************************************************/
 HPrefWindow::HPrefWindow(BRect win_rect)
-	:BWindow(win_rect,"Preferences",B_TITLED_WINDOW_LOOK,B_MODAL_APP_WINDOW_FEEL,
+	:BWindow(win_rect,_("Preferences"),B_TITLED_WINDOW_LOOK,B_MODAL_APP_WINDOW_FEEL,
 		B_NOT_RESIZABLE|B_NOT_ZOOMABLE|B_ASYNCHRONOUS_CONTROLS|B_NOT_CLOSABLE)
 {
 	//this->AddShortcut(B_RETURN,0,new BMessage(M_APPLY_MESSAGE));	
@@ -32,21 +32,21 @@ HPrefWindow::HPrefWindow(BRect win_rect)
 //*********** Other Setting ******************/
 	tab = new BTab();
 	tabview->AddTab(fGeneralView = new HGeneralSettingView(frame),tab);
-	tab->SetLabel("General");
+	tab->SetLabel(_("General"));
 	
 //*********** Account Setting ******************/
 	tab = new BTab();
 	tabview->AddTab(fAccountView = new HAccountView(frame),tab);
-	tab->SetLabel("Account");
+	tab->SetLabel(_("Account"));
 
 //*********** Filter Setting ******************/
 	tab = new BTab();
 	tabview->AddTab(fFilterView = new HFilterView(frame),tab);
-	tab->SetLabel("Filters");
+	tab->SetLabel(_("Filters"));
 //*********** Signature Setting ******************/
 	tab = new BTab();
 	tabview->AddTab(fSignatureView = new HSignatureView(frame),tab);
-	tab->SetLabel("Signature");
+	tab->SetLabel(_("Signature"));
 	
 	AddChild(tabview);
 	
@@ -61,7 +61,7 @@ HPrefWindow::HPrefWindow(BRect win_rect)
 	bgrect.left = bgrect.right - 80;
 	bgrect.bottom -= 5;
 
-	BButton *button = new BButton(bgrect,"close","Close",new BMessage(B_QUIT_REQUESTED));
+	BButton *button = new BButton(bgrect,"close",_("Close"),new BMessage(B_QUIT_REQUESTED));
 	bgview->AddChild(button);
 	this->AddChild(bgview);
 }

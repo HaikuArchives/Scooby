@@ -70,11 +70,11 @@ HFilterView::InitGUI()
 	frame.top = frame.bottom + 5;
 	frame.right= frame.left + 50;
 	BButton *button;
-	button = new BButton(frame,"del","Delete",new BMessage(M_DEL_FILTER_MSG));
+	button = new BButton(frame,"del",_("Delete"),new BMessage(M_DEL_FILTER_MSG));
 	button->SetEnabled(false);
 	AddChild(button);
 	frame.OffsetBy(55,0);
-	button = new BButton(frame,"add","Add",new BMessage(M_ADD_FILTER_MSG));
+	button = new BButton(frame,"add",_("Add"),new BMessage(M_ADD_FILTER_MSG));
 	AddChild(button);
 	
 	rect.OffsetBy(rect.Width()+30,0);
@@ -82,7 +82,7 @@ HFilterView::InitGUI()
 	rect.right= Bounds().right - B_V_SCROLL_BAR_WIDTH*2;
 	
 	box = new BBox(rect,"cri");
-	box->SetLabel("Criteria");
+	box->SetLabel(_("Criteria"));
 	frame.OffsetTo(B_ORIGIN);
 	frame= box->Bounds();
 	frame.InsetBy(2,0);
@@ -103,11 +103,11 @@ HFilterView::InitGUI()
 	sbar->SetRange(0,0);
 	frame.OffsetBy(B_V_SCROLL_BAR_WIDTH,frame.Height()+2);
 	frame.bottom = frame.top + 25;
-	frame.left = frame.right - 30;
-	button = new BButton(frame,"criteria_del","Del",new BMessage(M_DEL_CRITERIA_MSG));
+	frame.left = frame.right - 40;
+	button = new BButton(frame,"criteria_del",_("Delete"),new BMessage(M_DEL_CRITERIA_MSG));
 	box->AddChild(button);
 	frame.OffsetBy(-frame.Width()-5,0);
-	button = new BButton(frame,"criteria_add","Add",new BMessage(M_ADD_CRITERIA_MSG));
+	button = new BButton(frame,"criteria_add",_("Add"),new BMessage(M_ADD_CRITERIA_MSG));
 	box->AddChild(button);
 	button->SetEnabled(false);
 
@@ -116,13 +116,13 @@ HFilterView::InitGUI()
 	rect.OffsetBy(0,rect.Height());
 	rect.bottom = rect.top + 45;
 	box = new BBox(rect,"act");
-	box->SetLabel("Action");
+	box->SetLabel(_("Action"));
 	rect = box->Bounds();
 	rect.top += 15;
 	rect.left+=10;
 	rect.bottom = rect.top + 25;
 	BMenu *menu  = new BMenu("action");
-	menu->AddItem( new BMenuItem("Move to",NULL));
+	menu->AddItem( new BMenuItem(_("Move to"),NULL));
 	menu->SetRadioMode(true);
 	menu->ItemAt(0)->SetMarked(true);
 	menu->SetLabelFromMarked(true);
@@ -160,7 +160,7 @@ HFilterView::InitGUI()
 	rect.bottom = Bounds().bottom-55;
 	rect.top = rect.bottom - 25;
 	rect.OffsetBy(30,0);
-	fNameControl = new BTextControl(rect,"name","Name:","",NULL);
+	fNameControl = new BTextControl(rect,"name",_("Name:"),"",NULL);
 	fNameControl->SetDivider(StringWidth("Name:")+5);
 	AddChild(fNameControl);
 	
@@ -170,7 +170,7 @@ HFilterView::InitGUI()
 	rect.left = rect.right - 80;
 	rect.top = rect.bottom - 20;
 	
-	button = new BButton(rect,"apply","Apply Change",new BMessage(M_FILTER_SAVE_CHANGED));
+	button = new BButton(rect,"apply",_("Apply Change"),new BMessage(M_FILTER_SAVE_CHANGED));
 	AddChild(button);
 	
 	// Load saved filters
@@ -366,7 +366,7 @@ HFilterView::SaveItem(int32 index,bool rename)
 			BEntry entry(path.Path());
 			if(entry.Rename(name.String()) != B_OK)
 			{
-				(new BAlert("","Could not rename filer file","OK"))->Go();
+				(new BAlert("",_("Could not rename filer file"),_("OK")))->Go();
 				return;
 			}
 			entry.GetPath(&path);
@@ -389,7 +389,7 @@ HFilterView::SaveItem(int32 index,bool rename)
 	if(count == 0)
 	{
 		beep();
-		(new BAlert("","You should create one or more criteria. ","OK",
+		(new BAlert("",_("You should create one or more criteria."),_("OK"),
 						NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		return;
 	}

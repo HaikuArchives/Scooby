@@ -1,5 +1,6 @@
 #include "HDetailView.h"
 #include "MenuUtils.h"
+#include "HApp.h"
 
 #include <TextControl.h>
 #include <StringView.h>
@@ -42,7 +43,11 @@ HDetailView::~HDetailView()
 void
 HDetailView::InitGUI()
 {
-	const float kDivider = StringWidth("Subject:") +5;
+	float divider = StringWidth(_("Subject:")) +5;
+	float divider2 = StringWidth(_("From:"));
+	divider = (divider < divider2)?divider2:divider;
+	divider2 = StringWidth(_("When:"));
+	divider = (divider < divider2)?divider2:divider; 
 	
 	BRect rect = Bounds();
 	rect.top += 3;
@@ -53,7 +58,7 @@ HDetailView::InitGUI()
 	BTextControl *ctrl;
 
 	const char* name[] = {"subject","from","when"};
-	const char* label[] = {"Subject:","From:","When:"};
+	const char* label[] = {_("Subject:"),_("From:"),_("When:")};
 	
 	for(int32 i = 0;i < 3;i++)
 	{
@@ -63,7 +68,7 @@ HDetailView::InitGUI()
 								,name[i],label[i],"",NULL
 								,B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP,B_WILL_DRAW|B_NAVIGABLE);
 		
-		ctrl->SetDivider(kDivider);
+		ctrl->SetDivider(divider);
 
 		AddChild(ctrl);
 	

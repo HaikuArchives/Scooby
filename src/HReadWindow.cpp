@@ -135,47 +135,47 @@ HReadWindow::InitMenu()
 	ResourceUtils rsrc_utils;
 	BMessage *msg;
 //// ------------------------ File Menu ----------------------    
-	aMenu = new BMenu("File");
-	utils.AddMenuItem(aMenu,"Print Message",M_PRINT_MESSAGE,this,this,'P',0,
+	aMenu = new BMenu(_("File"));
+	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
-	utils.AddMenuItem(aMenu,"Page Setup…",M_PAGE_SETUP_MESSAGE,be_app,be_app,0,0,
+	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,be_app,be_app,0,0,
 							rsrc_utils.GetBitmapResource('BBMP',"PageSetup"));
 	aMenu->AddSeparatorItem();					
-	utils.AddMenuItem(aMenu,"Close",B_QUIT_REQUESTED,this,this,'W',0);
+	utils.AddMenuItem(aMenu,_("Close"),B_QUIT_REQUESTED,this,this,'W',0);
 	aMenu->AddSeparatorItem();
-	utils.AddMenuItem(aMenu,"Quit",B_QUIT_REQUESTED,be_app,be_app,'Q',0);
+	utils.AddMenuItem(aMenu,_("Quit"),B_QUIT_REQUESTED,be_app,be_app,'Q',0);
 	menubar->AddItem( aMenu );
 	// Edit
-	aMenu = new BMenu("Edit");
-   	utils.AddMenuItem(aMenu,"Undo",B_UNDO,this,this,'Z',0);
+	aMenu = new BMenu(_("Edit"));
+   	utils.AddMenuItem(aMenu,_("Undo"),B_UNDO,this,this,'Z',0);
    	aMenu->AddSeparatorItem();
-   	utils.AddMenuItem(aMenu,"Cut",B_CUT,this,this,'X',0);
-   	utils.AddMenuItem(aMenu,"Copy",B_COPY,this,this,'C',0);
-   	utils.AddMenuItem(aMenu,"Paste",B_PASTE,this,this,'V',0);
+   	utils.AddMenuItem(aMenu,_("Cut"),B_CUT,this,this,'X',0);
+   	utils.AddMenuItem(aMenu,_("Copy"),B_COPY,this,this,'C',0);
+   	utils.AddMenuItem(aMenu,_("Paste"),B_PASTE,this,this,'V',0);
    	aMenu->AddSeparatorItem();
-   	utils.AddMenuItem(aMenu,"Select All",B_SELECT_ALL,this,this,'A',0);
+   	utils.AddMenuItem(aMenu,_("Select All"),B_SELECT_ALL,this,this,'A',0);
    	menubar->AddItem(aMenu);
 	////------------------------- Message Menu ---------------------
-	aMenu = new BMenu("Message");
-	utils.AddMenuItem(aMenu,"New Message",M_NEW_MSG,this,this,'N',0,
+	aMenu = new BMenu(_("Message"));
+	utils.AddMenuItem(aMenu,_("New Message"),M_NEW_MSG,this,this,'N',0,
 							rsrc_utils.GetBitmapResource('BBMP',"New Message"));
 	aMenu->AddSeparatorItem();
 	
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",false);
-	utils.AddMenuItem(aMenu,"Reply",msg,this,this,'R',0,
+	utils.AddMenuItem(aMenu,_("Reply"),msg,this,this,'R',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Reply"));
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",true);
-	utils.AddMenuItem(aMenu,"Reply To All",msg,this,this,'R',B_SHIFT_KEY,
+	utils.AddMenuItem(aMenu,_("Reply To All"),msg,this,this,'R',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"Reply To All"));
 							
-	utils.AddMenuItem(aMenu,"Forward",M_FORWARD_MESSAGE,this,this,'J',0,
+	utils.AddMenuItem(aMenu,_("Forward"),M_FORWARD_MESSAGE,this,this,'J',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Forward"));
 	aMenu->AddSeparatorItem();
 	
-    utils.AddMenuItem(aMenu,"Show Header",M_HEADER,this,this,'H',0);
-    utils.AddMenuItem(aMenu,"Show Raw Message",M_RAW,this,this,0,0);
+    utils.AddMenuItem(aMenu,_("Show Header"),M_HEADER,this,this,'H',0);
+    utils.AddMenuItem(aMenu,_("Show Raw Message"),M_RAW,this,this,0,0);
     menubar->AddItem( aMenu );
 	
     AddChild(menubar);

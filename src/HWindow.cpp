@@ -86,78 +86,79 @@ HWindow::InitMenu()
 	MenuUtils utils;
 	BMessage *msg;
 	ResourceUtils rsrc_utils;
+	BString label;
 //// ------------------------ File Menu ----------------------    
-	aMenu = new BMenu("File");
-	utils.AddMenuItem(aMenu,"Open Query Folder",M_OPEN_QUERY,this,this,0,0,
+	aMenu = new BMenu(_("File"));
+	utils.AddMenuItem(aMenu,_("Open Query Folder"),M_OPEN_QUERY,this,this,0,0,
 							rsrc_utils.GetBitmapResource('BBMP',"OpenQuery"));
-	utils.AddMenuItem(aMenu,"Empty Trash",M_EMPTY_TRASH,this,this,'T',B_SHIFT_KEY,
+	utils.AddMenuItem(aMenu,_("Empty Trash"),M_EMPTY_TRASH,this,this,'T',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();
 	
-	utils.AddMenuItem(aMenu,"Print Message",M_PRINT_MESSAGE,this,this,'P',0,
+	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
-	utils.AddMenuItem(aMenu,"Page Setup…",M_PAGE_SETUP_MESSAGE,be_app,be_app,0,0,
+	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,be_app,be_app,0,0,
 							rsrc_utils.GetBitmapResource('BBMP',"PageSetup"));
 	aMenu->AddSeparatorItem();
-	utils.AddMenuItem(aMenu,"Preferences…",M_PREF_MSG,this,this);
+	label = _("Preferences");
+	label << "…";
+	utils.AddMenuItem(aMenu,label.String(),M_PREF_MSG,this,this);
 	aMenu->AddSeparatorItem();
-	BString aboutLabel = "About ";
-	aboutLabel << APP_NAME << " …";
-	utils.AddMenuItem(aMenu,aboutLabel.String(),B_ABOUT_REQUESTED,be_app,be_app);
+	utils.AddMenuItem(aMenu,_("About Scooby…"),B_ABOUT_REQUESTED,be_app,be_app);
 	aMenu->AddSeparatorItem();
-	utils.AddMenuItem(aMenu,"Quit",B_QUIT_REQUESTED,this,this,'Q',0);
+	utils.AddMenuItem(aMenu,_("Quit"),B_QUIT_REQUESTED,this,this,'Q',0);
     menubar->AddItem( aMenu );
     // Edit
-	aMenu = new BMenu("Edit");
-   	utils.AddMenuItem(aMenu,"Undo",B_UNDO,this,this,'Z',0);
+	aMenu = new BMenu(_("Edit"));
+   	utils.AddMenuItem(aMenu,_("Undo"),B_UNDO,this,this,'Z',0);
    	aMenu->AddSeparatorItem();
-   	utils.AddMenuItem(aMenu,"Cut",B_CUT,this,this,'X',0);
-   	utils.AddMenuItem(aMenu,"Copy",B_COPY,this,this,'C',0);
-   	utils.AddMenuItem(aMenu,"Paste",B_PASTE,this,this,'V',0);
+   	utils.AddMenuItem(aMenu,_("Cut"),B_CUT,this,this,'X',0);
+   	utils.AddMenuItem(aMenu,_("Copy"),B_COPY,this,this,'C',0);
+   	utils.AddMenuItem(aMenu,_("Paste"),B_PASTE,this,this,'V',0);
    	aMenu->AddSeparatorItem();
-   	utils.AddMenuItem(aMenu,"Select All",B_SELECT_ALL,this,this,'A',0);
+   	utils.AddMenuItem(aMenu,_("Select All"),B_SELECT_ALL,this,this,'A',0);
    	menubar->AddItem(aMenu);
 ////------------------------- Mail Menu ---------------------
-	aMenu = new BMenu("Mail");
-   	utils.AddMenuItem(aMenu,"Check Mail",M_POP_CONNECT,this,this,'M',0,
+	aMenu = new BMenu(_("Mail"));
+   	utils.AddMenuItem(aMenu,_("Check Mail"),M_POP_CONNECT,this,this,'M',0,
    							rsrc_utils.GetBitmapResource('BBMP',"Check Mail"));
 	// account
-	BMenu *subMenu = new BMenu("Check Mail From");
+	BMenu *subMenu = new BMenu(_("Check Mail From"));
 
 	aMenu->AddItem(subMenu);
 	aMenu->AddSeparatorItem();
 	//
 	
-	utils.AddMenuItem(aMenu,"Send Peding Messages",M_SEND_PENDING_MAILS,this,this,0,0,
+	utils.AddMenuItem(aMenu,_("Send Peding Messages"),M_SEND_PENDING_MAILS,this,this,0,0,
 							rsrc_utils.GetBitmapResource('BBMP',"Send"));
 	menubar->AddItem( aMenu );
 ////------------------------- Message Menu ---------------------
-	aMenu = new BMenu("Message");
-	utils.AddMenuItem(aMenu,"New Message",M_NEW_MSG,this,this,'N',0,
+	aMenu = new BMenu(_("Message"));
+	utils.AddMenuItem(aMenu,_("New Message"),M_NEW_MSG,this,this,'N',0,
 							rsrc_utils.GetBitmapResource('BBMP',"New Message"));
 	aMenu->AddSeparatorItem();
 	
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",false);
-	utils.AddMenuItem(aMenu,"Reply",msg,this,this,'R',0,
+	utils.AddMenuItem(aMenu,_("Reply"),msg,this,this,'R',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Reply"));
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",true);
-	utils.AddMenuItem(aMenu,"Reply To All",msg,this,this,'R',B_SHIFT_KEY,
+	utils.AddMenuItem(aMenu,_("Reply To All"),msg,this,this,'R',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"Reply To All"));
 							
-	utils.AddMenuItem(aMenu,"Forward",M_FORWARD_MESSAGE,this,this,'J',0,
+	utils.AddMenuItem(aMenu,_("Forward"),M_FORWARD_MESSAGE,this,this,'J',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Forward"));
 	aMenu->AddSeparatorItem();
-	utils.AddMenuItem(aMenu,"Move To Trash",M_DELETE_MSG,this,this,'T',0,
+	utils.AddMenuItem(aMenu,_("Move To Trash"),M_DELETE_MSG,this,this,'T',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
     aMenu->AddSeparatorItem();
-    utils.AddMenuItem(aMenu,"Show Header",M_HEADER,this,this,'H',0);
-    utils.AddMenuItem(aMenu,"Show Raw Message",M_RAW,this,this,0,0);
+    utils.AddMenuItem(aMenu,_("Show Header"),M_HEADER,this,this,'H',0);
+    utils.AddMenuItem(aMenu,_("Show Raw Message"),M_RAW,this,this,0,0);
     menubar->AddItem( aMenu );
 ////------------------------- Attr Menu ---------------------
-	aMenu = new BMenu("Attributes");
-	const char* kAttr[] = {"Subject","From","To","When","Priority","Attachment"};
+	aMenu = new BMenu(_("Attributes"));
+	const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachment")};
 	ColumnType attr_col[] = {COL_SUBJECT,COL_FROM,COL_TO,COL_WHEN,COL_PRIORITY,COL_ATTACHMENT};
 	for(int32 i = 0;i < 6;i++)
 	{
@@ -292,23 +293,23 @@ HWindow::InitGUI()
 	HToolbar *toolbox = new HToolbar(toolrect,B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP);
 	if(kToolbarHeight == 50)
 		toolbox->UseLabel(true);
-	toolbox->AddButton("Check",utils.GetBitmapResource('BBMP',"Check Mail"),new BMessage(M_POP_CONNECT),"Check Mail");
+	toolbox->AddButton("Check",utils.GetBitmapResource('BBMP',"Check Mail"),new BMessage(M_POP_CONNECT),_("Check Mail"));
 	//toolbox->AddButton("Send",utils.GetBitmapResource('BBMP',"Send"),new BMessage(M_SEND_PENDING_MAILS),"Send Pending Mails");
 	toolbox->AddSpace();
-	toolbox->AddButton("New",utils.GetBitmapResource('BBMP',"New Message"),new BMessage(M_NEW_MSG),"New Message");
+	toolbox->AddButton("New",utils.GetBitmapResource('BBMP',"New Message"),new BMessage(M_NEW_MSG),_("New Message"));
 	BMessage *msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",false);
 	toolbox->AddButton("Reply",utils.GetBitmapResource('BBMP',"Reply"),msg,"Reply Message");
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",true);
-	toolbox->AddButton("All",utils.GetBitmapResource('BBMP',"Reply To All"),msg,"Reply Message To All");
-	toolbox->AddButton("Fwd",utils.GetBitmapResource('BBMP',"Forward"),new BMessage(M_FORWARD_MESSAGE),"Forward Message");
+	toolbox->AddButton("All",utils.GetBitmapResource('BBMP',"Reply To All"),msg,_("Reply To All"));
+	toolbox->AddButton("Fwd",utils.GetBitmapResource('BBMP',"Forward"),new BMessage(M_FORWARD_MESSAGE),_("Forward Message"));
 	toolbox->AddSpace();
-	toolbox->AddButton("Trash",utils.GetBitmapResource('BBMP',"Trash"),new BMessage(M_DELETE_MSG),"Delete Message");
+	toolbox->AddButton("Trash",utils.GetBitmapResource('BBMP',"Trash"),new BMessage(M_DELETE_MSG),_("Move To Trash"));
 	
 	toolbox->AddSpace();
-	toolbox->AddButton("Next",utils.GetBitmapResource('BBMP',"Next"),new BMessage(M_SELECT_NEXT_MAIL),"Next Message");
-	toolbox->AddButton("Prev",utils.GetBitmapResource('BBMP',"Prev"),new BMessage(M_SELECT_PREV_MAIL),"Prev Message");
+	toolbox->AddButton("Next",utils.GetBitmapResource('BBMP',"Next"),new BMessage(M_SELECT_NEXT_MAIL),_("Next Message"));
+	toolbox->AddButton("Prev",utils.GetBitmapResource('BBMP',"Prev"),new BMessage(M_SELECT_PREV_MAIL),_("Prev Message"));
 	
 	AddChild(toolbox);
 	
@@ -542,7 +543,7 @@ send:
 	}
 	case M_ATTR_MSG:
 	{
-		const char* kAttr[] = {"Subject","From","To","When","Priority","Attachment"};
+		const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachment")};
 
 		int32 col;
 		if(message->FindInt32("attr",&col) == B_OK)
@@ -751,7 +752,7 @@ send:
 void
 HWindow::MenusBeginning()
 {
-	const char* kAttr[] = {"Subject","From","To","When","Priority","Attachment"};
+	const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachment")};
 	ColumnType attr_col[] = {COL_SUBJECT,COL_FROM,COL_TO,COL_WHEN,COL_PRIORITY,COL_ATTACHMENT};
 	BMenuItem *item;
 	for(int32 i = 0;i < 6;i++)
@@ -841,7 +842,7 @@ HWindow::CheckFrom(entry_ref ref)
 		PostMessage(&sendMsg,fPopClientView);
 	return;
 err:
-	(new BAlert("","Account file is corrupted","OK",NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+	(new BAlert("",_("Account file is corrupted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 }
 /***********************************************************
  * PopConnect
@@ -1378,7 +1379,7 @@ HWindow::MakeWriteWindow(const char* subject,
 {
 	BRect rect;
 	((HApp*)be_app)->Prefs()->GetData("write_window_rect",&rect);
-	HWriteWindow *win = new HWriteWindow(rect,"New Mail"
+	HWriteWindow *win = new HWriteWindow(rect,_("New Message")
 							,subject
 							,to
 							,replyItem
@@ -1445,9 +1446,7 @@ HWindow::EmptyTrash()
 	}
 	if(!trash)
 	{
-		BString str = "Could not find \"";
-		str << TRASH_FOLDER << "\" folder";
-		(new BAlert("",str.String(),"OK",NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		(new BAlert("",_("Could not find Trash folder"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		return;
 	}
 		
@@ -1517,7 +1516,7 @@ HWindow::QuitRequested()
 {	
 	if(fPopClientView->IsRunning())
 	{
-		int32 btn = (new BAlert("","POP3 session is running","Force Quit","OK",NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		int32 btn = (new BAlert("","POP3 session is running",_("Force Quit"),_("Wait"),NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		if(btn == 0)
 			fPopClientView->Cancel();
 		else
@@ -1525,7 +1524,7 @@ HWindow::QuitRequested()
 	}
 	if(fSmtpClientView->IsRunning())
 	{
-		int32 btn = (new BAlert("","SMTP session is running","Force Quit","OK",NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		int32 btn = (new BAlert("","SMTP session is running",_("Force Quit"),_("Wait"),NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		if(btn == 0)
 			fSmtpClientView->Cancel();
 		else

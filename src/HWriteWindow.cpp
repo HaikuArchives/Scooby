@@ -108,76 +108,76 @@ HWriteWindow::InitMenu()
 	BPath path;
 	ResourceUtils rsrc_utils;
 //// ------------------------ File Menu ----------------------    
-	aMenu = new BMenu("File");
+	aMenu = new BMenu(_("File"));
 	
-	subMenu = new BMenu("Open draft");
+	subMenu = new BMenu(_("Open draft"));
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append(DRAFT_FOLDER);
 	
 	AddChildItem(subMenu,path.Path(),M_OPEN_DRAFT);
 	aMenu->AddItem(subMenu);
-	utils.AddMenuItem(aMenu,"Save as draft",M_SAVE_DRAFT,this,this,'S',B_SHIFT_KEY);
+	utils.AddMenuItem(aMenu,_("Save as draft"),M_SAVE_DRAFT,this,this,'S',B_SHIFT_KEY);
 	
 	aMenu->AddSeparatorItem();
 	
-	subMenu = new BMenu("Open template");
+	subMenu = new BMenu(_("Open template"));
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append(TEMPLATE_FOLDER);
 	
 	AddChildItem(subMenu,path.Path(),M_OPEN_TEMPLATE);
 	aMenu->AddItem(subMenu);
-	utils.AddMenuItem(aMenu,"Save as template",M_SAVE_TEMPLATE,this,this,0,0);
+	utils.AddMenuItem(aMenu,_("Save as template"),M_SAVE_TEMPLATE,this,this,0,0);
 	
 	aMenu->AddSeparatorItem();
-	utils.AddMenuItem(aMenu,"Print Message",M_PRINT_MESSAGE,this,this,'P',0,
+	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
-	utils.AddMenuItem(aMenu,"Page Setup…",M_PAGE_SETUP_MESSAGE,be_app,be_app,0,0,
+	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,be_app,be_app,0,0,
 							rsrc_utils.GetBitmapResource('BBMP',"PageSetup"));
 	aMenu->AddSeparatorItem();					
-	utils.AddMenuItem(aMenu,"Close",B_QUIT_REQUESTED,this,this,'W',0);
-	utils.AddMenuItem(aMenu,"Quit",B_QUIT_REQUESTED,be_app,be_app,'Q',0);
+	utils.AddMenuItem(aMenu,_("Close"),B_QUIT_REQUESTED,this,this,'W',0);
+	utils.AddMenuItem(aMenu,_("Quit"),B_QUIT_REQUESTED,be_app,be_app,'Q',0);
 	
     menubar->AddItem( aMenu ); 
     //  Edit
-   	aMenu = new BMenu("Edit");
-   	utils.AddMenuItem(aMenu,"Undo",B_UNDO,this,this,'Z',0);
+   	aMenu = new BMenu(_("Edit"));
+   	utils.AddMenuItem(aMenu,_("Undo"),B_UNDO,this,this,'Z',0);
    	aMenu->AddSeparatorItem();
-   	utils.AddMenuItem(aMenu,"Cut",B_CUT,this,this,'X',0);
-   	utils.AddMenuItem(aMenu,"Copy",B_COPY,this,this,'C',0);
-   	utils.AddMenuItem(aMenu,"Paste",B_PASTE,this,this,'V',0);
+   	utils.AddMenuItem(aMenu,_("Cut"),B_CUT,this,this,'X',0);
+   	utils.AddMenuItem(aMenu,_("Copy"),B_COPY,this,this,'C',0);
+   	utils.AddMenuItem(aMenu,_("Paste"),B_PASTE,this,this,'V',0);
    	aMenu->AddSeparatorItem();
-   	utils.AddMenuItem(aMenu,"Select All",B_SELECT_ALL,this,this,'A',0);
+   	utils.AddMenuItem(aMenu,_("Select All"),B_SELECT_ALL,this,this,'A',0);
    	menubar->AddItem(aMenu);
    	// Mail
-	aMenu = new BMenu("Mail");
-	utils.AddMenuItem(aMenu,"Send Now",M_SEND_NOW,this,this,'M',0,
+	aMenu = new BMenu(_("Mail"));
+	utils.AddMenuItem(aMenu,_("Send Now"),M_SEND_NOW,this,this,'M',0,
 					rsrc_utils.GetBitmapResource('BBMP',"Send"));
-	utils.AddMenuItem(aMenu,"Send Later",M_SEND_LATER,this,this,'L',0,
+	utils.AddMenuItem(aMenu,_("Send Later"),M_SEND_LATER,this,this,'L',0,
 					rsrc_utils.GetBitmapResource('BBMP',"Send Later"));
 	menubar->AddItem( aMenu );
 	
-	aMenu = new BMenu("Message");
-	subMenu = new BMenu("Enclosure");
-	utils.AddMenuItem(subMenu,"Add Enclosure…",M_ADD_ENCLOSURE,this,this,'A',B_SHIFT_KEY);
-	utils.AddMenuItem(subMenu,"Remove Enclosure",M_DEL_ENCLOSURE,this,this,0,0);
+	aMenu = new BMenu(_("Message"));
+	subMenu = new BMenu(_("Enclosure"));
+	utils.AddMenuItem(subMenu,_("Add Enclosure…"),M_ADD_ENCLOSURE,this,this,'A',B_SHIFT_KEY);
+	utils.AddMenuItem(subMenu,_("Remove Enclosure"),M_DEL_ENCLOSURE,this,this,0,0);
 	aMenu->AddItem(subMenu);
-	subMenu = new BMenu("Priority");
+	subMenu = new BMenu(_("Priority"));
 	subMenu->SetRadioMode(true);
-	utils.AddMenuItem(subMenu,"Highest",(uint32)0,this,this);
-	utils.AddMenuItem(subMenu,"High",(uint32)0,this,this);
-	utils.AddMenuItem(subMenu,"Normal",(uint32)0,this,this);
-	utils.AddMenuItem(subMenu,"Low",(uint32)0,this,this);
-	utils.AddMenuItem(subMenu,"Lowest",(uint32)0,this,this);
-	item = subMenu->FindItem("Normal");
+	utils.AddMenuItem(subMenu,_("Highest"),(uint32)0,this,this);
+	utils.AddMenuItem(subMenu,_("High"),(uint32)0,this,this);
+	utils.AddMenuItem(subMenu,_("Normal"),(uint32)0,this,this);
+	utils.AddMenuItem(subMenu,_("Low"),(uint32)0,this,this);
+	utils.AddMenuItem(subMenu,_("Lowest"),(uint32)0,this,this);
+	item = subMenu->FindItem(_("Normal"));
 	if(item)
 		item->SetMarked(true);
 	aMenu->AddItem(subMenu);
 	menubar->AddItem( aMenu );
 	
 	
-	aMenu = new BMenu("Signature");
+	aMenu = new BMenu(_("Signature"));
 	
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
@@ -350,13 +350,13 @@ HWriteWindow::MessageReceived(BMessage *message)
 		if(message->FindPointer("pointer",(void**)&control) == B_OK)
 		{
 			// Subject
-			if( ::strcmp(control->Label(),"Subject:") == 0)
+			if( ::strcmp(control->Label(),_("Subject:")) == 0)
 			{
 				const char *text = control->Text();
 				if( ::strlen(text) > 0)
 					SetTitle(text);
 				else
-					SetTitle("New Message");
+					SetTitle(_("New Message"));
 			}else if(!fSkipComplete&&::strcmp(control->Name(),"from") != 0){
 				BTextView *view = control->TextView();
 				const char* text = view->Text();
