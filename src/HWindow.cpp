@@ -592,7 +592,7 @@ HWindow::MessageReceived(BMessage *message)
 	case M_SET_CONTENT:
 	{
 		entry_ref ref;
-		
+
 		if(message->FindRef("refs",&ref) != B_OK)
 		{
 			PostMessage(M_SET_CONTENT,fMailView);
@@ -841,7 +841,7 @@ HWindow::MessageReceived(BMessage *message)
 	{
 		HMailItem *item(NULL);
 		bool is_delete;
-		PRINT(("dafd\n"));
+		
 		if(message->FindPointer("mail",(void**)&item) == B_OK)
 		{
 			message->FindBool("delete",&is_delete);
@@ -1248,20 +1248,25 @@ HWindow::MoveMails(BMessage *message)
 	ref = to->Ref();
 	BPath path(&ref);
 	
+	int32 old_selection=-1;
+	
+	fMailList->DeselectAll();
+	
 	for(i = 0;i < count;i++)
 	{			
 		message->FindPointer("mail",i,(void**)&mail);
-		
+		old_selection = fMailList->IndexOf(mail);
 		ref = mail->Ref();
 		MoveFile(ref,path.Path());
 		BPath item_path(path.Path());
 		item_path.Append(BPath(&ref).Leaf());
 		::get_ref_for_path(item_path.Path(),&ref);
 	}
-	
-	int32 old_selection = fMailList->CurrentSelection();
-	fMailList->DeselectAll();
-	fMailList->Select( old_selection );
+	// To avoid NetPositive's dead lock
+	// Can't select next mail
+	//
+	if(old_selection > 0)
+		fMailList->Select( old_selection + 1 );
 }
 
 /***********************************************************
@@ -1334,8 +1339,8 @@ HWindow::DeleteMails()
 			last_selected = selected;
 		}
 		// Select the next mail
-		if(last_selected >= 0)
-			fMailList->Select(last_selected+1);
+		//if(last_selected >= 0)
+		//	fMailList->Select(last_selected+1);
 		
 		PostMessage(&msg);
 	}else{
