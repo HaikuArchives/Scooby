@@ -908,7 +908,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 			}
 		}
 		break;
-		}
+	}
 	case B_ATTR_CHANGED:
 	{
 		PRINT(("ATTR CHANGED\n"));
@@ -916,12 +916,13 @@ HFolderItem::NodeMonitor(BMessage *message)
 		bool read;
 		if(item)
 		{
-			read = item->IsRead();
 			// Refresh mail file status with real node
 			item->RefreshStatus();
-			// if the status was changed, change unreaded mail count
-			if(read != item->IsRead())
-				SetUnreadCount((!item->IsRead())?fUnread+1:fUnread-1);
+			if(item->IsRead())
+				SetUnreadCount(fUnread-1);
+			else
+				SetUnreadCount(fUnread+1);
+				
 			InvalidateMe();
 			// post invalidate item message to window
 			BMessage msg(M_INVALIDATE_MAIL);
@@ -932,7 +933,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 		}
 		break;
 	}
-	}
+	}	// switch
 }
 
 /***********************************************************
