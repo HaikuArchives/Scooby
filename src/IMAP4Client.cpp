@@ -1,5 +1,7 @@
 #include "IMAP4Client.h"
+#include "HApp.h"
 #include <stdlib.h>
+#include <Alert.h>
 #include <Debug.h>
 #define CRLF "\r\n";
 
@@ -363,6 +365,13 @@ IMAP4Client::FetchBody(int32 index,BString &outBody)
 		PRINT(("%d\n",content_size));
 			
 		char *buf = new char[content_size+1];
+		
+		if(!buf)
+		{
+			(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+			return B_ERROR;
+		}
+		
 		while(content_size>0)
 		{
 			r = Receive(buf,(content_size<=0)?1:content_size);
@@ -448,6 +457,11 @@ IMAP4Client::SendCommand(const char* command)
 	BString out("");
 	status_t err = B_ERROR;
 	char *cmd = new char[strlen(command) + 7];
+	if(!cmd)
+	{
+		(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		return B_ERROR;
+	}
 	::sprintf(cmd,"%.3ld %s\r\n",++fCommandCount,command);
 	int32 cmd_len = strlen(cmd);
 	//PRINT(("%s",cmd));
