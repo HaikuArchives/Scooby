@@ -32,7 +32,7 @@ OPTIMIZE= FULL
 ifeq ($(wildcard /system/lib/libbind.so),)
 DEFINES= DEBUG=1 USE_SCANDIR=1
 else
-DEFINES= DEBU=1G USE_SCANDIR=1 B_BEOS_BONE=1
+DEFINES= DEBUG=1 USE_SCANDIR=1 B_BEOS_BONE=1
 endif
 
 # Linker flag required by BONE
