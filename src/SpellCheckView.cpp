@@ -158,6 +158,8 @@ void
 SpellCheckView::DeleteText(int32 fromOffset, int32 toOffset)
 {
 	_inherited::DeleteText(fromOffset,toOffset);
+	if(!fEnabled)
+		return;
 	int32 start=0,end=0;
 	FindWord((fromOffset >0)?fromOffset-1:fromOffset,&start,&end);
 	PRINT(("DEL:%d %d %d %d\n",start,end,toOffset,fromOffset));
