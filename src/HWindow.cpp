@@ -21,6 +21,7 @@
 #include "HToolbarButton.h"
 #include "OpenWithMenu.h"
 #include "HReadWindow.h"
+#include "HDeskbarView.h"
 
 #include <Box.h>
 #include <Beep.h>
@@ -44,6 +45,7 @@ HWindow::HWindow(BRect rect,
 				const char* mail_addr)
 	:BWindow(rect,name,B_DOCUMENT_WINDOW,B_ASYNCHRONOUS_CONTROLS)
 	,fCheckIdleTime(time(NULL))
+	,fDeskbarWindow(NULL)
 {
 	SetPulseRate(100000);
 	
@@ -410,7 +412,7 @@ send:
 				//fMailList->SortItems();
 			}
 			fFolderList->InvalidateItem(index);
-		}	
+		}
 		break;
 	}
 	// Invoke mail
@@ -491,7 +493,6 @@ send:
 	// Set mail content
 	case M_SET_CONTENT:
 	{
-		//PostMessage(message,fMailView);
 		entry_ref ref;
 		if(message->FindRef("refs",&ref) != B_OK)
 		{
@@ -533,6 +534,8 @@ send:
 				fFolderList->InvalidateItem(sel);
 			}
 		}
+		
+		ChangeDeskbarIcon(DESKBAR_NORMAL_ICON);
 		break;
 	}
 	case M_PREF_MSG:
@@ -702,11 +705,20 @@ send:
 		fMailView->ResetFont();
 		break;
 	}
-	
+	// Select sibling mails
 	case M_SELECT_NEXT_MAIL:
 	case M_SELECT_PREV_MAIL:
 		PostMessage(message,fMailList);
 		break;
+	// Get deskbar view pointer
+	case M_DESKBAR_INSTALLED:
+	{
+		HDeskbarView *view;
+		if(message->FindPointer("deskbar_view",(void**)&view) != B_OK)
+			break;
+		fDeskbarWindow = view->Window();
+		break;
+	}
 	// Update toolbar buttons
 	case M_UPDATE_TOOLBUTTON:
 	{
@@ -1503,6 +1515,32 @@ HWindow::AddCheckFromItems()
 			subMenu->AddItem(new BMenuItem(name,msg));
 		}
 	}
+}
+
+/***********************************************************
+ * ChangeDeskbarIcon
+ ***********************************************************/
+void
+HWindow::ChangeDeskbarIcon(int32 icon)
+{
+	// Check whether scooby icon have already installed
+	BDeskbar deskbar;
+	if(!deskbar.HasItem( APP_NAME ))
+		return;
+	if(!fDeskbarWindow)
+	{
+		PRINT(("don't have Deskbar window pointer\n"));
+		return;
+	}
+	BView *view = fDeskbarWindow->FindView(APP_NAME);
+	if(!view)
+	{
+		PRINT(("Could not find deskbar view\n"));
+		return;
+	}	
+	BMessage msg(M_CHANGE_DESKBAR_ICON);
+	msg.AddInt32("icon",icon);
+	fDeskbarWindow->PostMessage(&msg,view);
 }
 
 /***********************************************************

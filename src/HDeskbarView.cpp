@@ -10,6 +10,10 @@
 #include <Alert.h>
 #include <Messenger.h>
 #include <NodeInfo.h>
+#include <Resources.h>
+#include <stdio.h>
+#include <Debug.h>
+#include <Beep.h>
 
 #include "HWindow.h"
 #include "MenuUtils.h"
@@ -28,6 +32,7 @@ extern "C" _EXPORT BView* instantiate_deskbar_item();
  ***********************************************************/
 HDeskbarView::HDeskbarView(BRect frame)
 		:BView(frame,APP_NAME,B_FOLLOW_NONE,B_WILL_DRAW)
+		,fCurrentIconState(DESKBAR_NEW_ICON)
 {
 	fIcon = NULL;
 }
@@ -45,8 +50,10 @@ BView* instantiate_deskbar_item(void)
  ***********************************************************/
 HDeskbarView::HDeskbarView(BMessage *message)
 	:BView(message)
+	,fCurrentIconState(DESKBAR_NEW_ICON)
 {
 	fIcon = NULL;
+	ChangeIcon(DESKBAR_NORMAL_ICON);
 }
 
 /***********************************************************
@@ -66,8 +73,17 @@ HDeskbarView::Instantiate(BMessage *data)
 {
 	if (!validate_instantiation(data, "HDeskbarView"))
 		return NULL;	
-
-	return new HDeskbarView(data);
+	HDeskbarView *view = new HDeskbarView(data);
+	
+	// Send this pointer to Scooby
+	BMessenger scooby(APP_SIG);
+	if(scooby.IsValid())
+	{
+		BMessage msg(M_DESKBAR_INSTALLED);
+		msg.AddPointer("deskbar_view",view);
+		scooby.SendMessage(&msg);
+	}
+	return view;
 }
 
 /***********************************************************
@@ -96,15 +112,6 @@ HDeskbarView::Draw(BRect /*updateRect*/)
 	FillRect(BRect(0.0,0.0,15.0,15.0));
 	SetHighColor(oldColor);
 	SetDrawingMode(B_OP_OVER);
-	if(fIcon == NULL)
-	{
-		entry_ref ref;
-		if(be_roster->FindApp(APP_SIG,&ref) == B_OK)
-		{
-			fIcon = new BBitmap(BRect(0.0,0.0,15.0,15.0),B_COLOR_8_BIT,true);
-			BNodeInfo::GetTrackerIcon(&ref,fIcon,B_MINI_ICON);
-		}
-	}
 	if(fIcon)
 		DrawBitmap(fIcon,BRect(0.0,0.0,15.0,15.0));
 	SetDrawingMode(B_OP_COPY);			
@@ -117,29 +124,71 @@ HDeskbarView::Draw(BRect /*updateRect*/)
 void
 HDeskbarView::MessageReceived(BMessage *message)
 {
-	if(message->WasDropped())
-		WhenDropped(message);
-	else
+	switch(message->what)
+	{
+	case M_CHANGE_DESKBAR_ICON:
+	{
+		int32 icon;
+		if(message->FindInt32("icon",&icon) == B_OK)
+			ChangeIcon(icon);	
+		break;
+	}
+	default:
 		BView::MessageReceived(message);
+	}
 }
 
 /***********************************************************
- * WhenDropped
+ * ChangeIcon
  ***********************************************************/
 void
-HDeskbarView::WhenDropped(BMessage *message)
+HDeskbarView::ChangeIcon(int32 icon)
 {
-	message->PrintToStream();
-	const char* text;
-	if( message->FindString("be:url",&text) == B_OK)
+	if(fCurrentIconState == icon)
+		return;
+		
+	BBitmap *new_icon(NULL);
+	
+	switch(icon)
 	{
-		BMessenger messenger(APP_SIG);
-		BMessage msg(B_REFS_RECEIVED),reply;
-		
-		msg.AddString("be:url",text);
-		
-		messenger.SendMessage(&msg,&reply);
+	case DESKBAR_NORMAL_ICON:
+	{
+		entry_ref ref;
+		if(be_roster->FindApp(APP_SIG,&ref) == B_OK)
+		{
+			new_icon = new BBitmap(BRect(0.0,0.0,15.0,15.0),B_COLOR_8_BIT,true);
+			BNodeInfo::GetTrackerIcon(&ref,new_icon,B_MINI_ICON);
+		}
+		break;
 	}
+	case DESKBAR_NEW_ICON:
+	{
+		entry_ref ref;
+		if(be_roster->FindApp(APP_SIG,&ref) == B_OK)
+		{
+			// Load icon from Scooby's resource
+			BFile file(&ref,B_READ_ONLY);
+			if(file.InitCheck() != B_OK)
+				break;
+			BResources rsrc(&file);
+			size_t len;
+			const void *data = rsrc.LoadResource('BBMP',"Got mails", &len);
+			if(len == 0)
+				break;
+			BMemoryIO stream(data, len);
+			stream.Seek(0, SEEK_SET);
+			BMessage archive;
+			if (archive.Unflatten(&stream) != B_OK)
+				break;
+			new_icon = new BBitmap(&archive);
+		}
+		break;
+	}
+	}
+	
+	fCurrentIconState = icon;
+	delete fIcon;
+	fIcon = new_icon;
 }
 
 /***********************************************************

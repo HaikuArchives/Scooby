@@ -21,6 +21,7 @@
 #include <NodeInfo.h>
 #include <Alert.h>
 #include <Beep.h>
+#include <ClassInfo.h>
 
 #define DIVIDER 120
 //#define MAIL_FOLDER "Mail"
@@ -954,7 +955,12 @@ HPopClientView::SetValue(float value)
 void
 HPopClientView::PlayNotifySound()
 {
+	// Play notification sound
 	system_beep("New E-mail");
+	// Change deskbar icon
+	HWindow *window = cast_as(Window(),HWindow);
+	if(window)
+		window->ChangeDeskbarIcon(DESKBAR_NEW_ICON);
 }
 
 /***********************************************************
