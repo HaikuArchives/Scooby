@@ -828,12 +828,12 @@ HFolderList::MouseDown(BPoint pos)
     	 	item->SetEnabled(false);
     	 theMenu->AddItem(item);
     	 
-    	 item = new BMenuItem(_("Delete Folders"),new BMessage(M_DELETE_FOLDER),0,0);
+    	 item = new BMenuItem(_("Delete Folder"),new BMessage(M_DELETE_FOLDER),0,0);
     	 item->SetEnabled((sel<0)?false:true);
     	 theMenu->AddItem(item);
     	 /*
     	 theMenu->AddSeparatorItem();
-    	 item = new BMenuItem(_("Add IMAP4 Folders"),new BMessage(M_ADD_IMAP4_FOLDER),0,0);
+    	 item = new BMenuItem(_("Add IMAP4 Folder" B_UTF8_ELLIPSIS),new BMessage(M_ADD_IMAP4_FOLDER),0,0);
     	 item->SetEnabled((sel<0)?true:false);
     	 theMenu->AddItem(item);
     	 item = new BMenuItem(_("IMAP4 Folder Properties"),new BMessage(M_OPEN_FOLDER),0,0);
