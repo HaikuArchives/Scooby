@@ -28,6 +28,7 @@
 #include "HHtmlMailView.h"
 #include "HTabView.h"
 #include "HAttachmentList.h"
+#include "HMailItem.h"
 
 #include <Box.h>
 #include <Beep.h>
