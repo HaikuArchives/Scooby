@@ -493,6 +493,9 @@ HPopClientView::SaveMail(const char* all_content,
 		p = ::strtok('\0',kToken);
 	}
 	delete[] tmp;
+	
+	if(subject.Length() == 0)
+		subject = "Untitled";
 	if(strstr(header.String(),"Content-Type: multipart"))
 		is_multipart = true;
 	
