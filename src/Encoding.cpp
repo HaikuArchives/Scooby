@@ -679,7 +679,7 @@ Encoding::ConvertFromUTF8(BString& text,int32 encoding)
 	iconv_close(cd);
 #else
 	int32	sourceLen = text.Length();
-	int32	destLen = sourceLen;
+	int32	destLen = sourceLen*2;
 	
 	status_t	err = B_OK;
 	int32		state = 0;
