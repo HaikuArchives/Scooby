@@ -1845,6 +1845,7 @@ HWindow::FilterMails(HMailItem *item)
 								item->fTo.String(),
 								item->fCC.String(),
 								item->fReply.String(),
+								item->fAccount.String(),
 								out_path);
 	PRINT(("To:%s\n",out_path.String()));
 	if(BPath(out_path.String()).InitCheck() != B_OK)

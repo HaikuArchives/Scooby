@@ -39,6 +39,7 @@ HCriteriaView::InitGUI()
 	menu->AddItem(new BMenuItem(_("From"),NULL));
 	menu->AddItem(new BMenuItem(_("Cc"),NULL));
 	menu->AddItem(new BMenuItem(_("Reply-To"),NULL));
+	menu->AddItem(new BMenuItem(_("Account"),NULL));
 	menu->ItemAt(0)->SetMarked(true);
 	menu->SetRadioMode(true);
 	menu->SetLabelFromMarked(true);

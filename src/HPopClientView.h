@@ -37,6 +37,7 @@ public:
 							const char* to,
 							const char* cc,
 							const char* reply,
+							const char* account,
 							BString &outpath);
 
 			void	SaveMail(const char* content,

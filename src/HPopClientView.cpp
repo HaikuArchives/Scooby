@@ -516,6 +516,7 @@ HPopClientView::SaveMail(const char* all_content,
 				from.String(),
 				to.String(),
 				cc.String(),
+				fAccountName.String(),
 				reply.String(),
 				folder_path);
 	//PRINT(("path:%s\n",folder_path.String() ));
@@ -582,6 +583,7 @@ HPopClientView::FilterMail(const char* subject,
 							const char* to,
 							const char* cc,
 							const char* reply,
+							const char* account,
 							BString &outpath)
 {
 	BPath	path;
@@ -639,6 +641,9 @@ HPopClientView::FilterMail(const char* subject,
 					break;
 				case 4:
 					key = ::strdup(reply);
+					break;
+				case 5:
+					key = ::strdup(account);
 					break;
 				}
 				
