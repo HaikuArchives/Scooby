@@ -356,7 +356,7 @@ HWindow::MessageReceived(BMessage *message)
 		HMailItem *mail(NULL);
 		if(message->FindPointer("pointer",(void**)&mail) == B_OK)
 		{
-			entry_ref ref = mail->Ref();
+/*			entry_ref ref = mail->Ref();
 			BPath path(&ref);
 			path.GetParent(&path);
 			entry_ref folder_ref;
@@ -369,14 +369,8 @@ HWindow::MessageReceived(BMessage *message)
 			item = cast_as(fFolderList->ItemAt(fol),HFolderItem);
 			if(!item)
 				goto send;
-		
-			item->AddMail(mail);
-			if(fol == fFolderList->CurrentSelection())
-			{
-				fMailList->AddItem(mail);
-				fMailList->SortItems();
-			}
-send:
+			*/
+//send:
 			// send 
 			bool send_now;
 			message->FindBool("send",&send_now);
@@ -389,31 +383,36 @@ send:
 		}
 		break;
 	}
-	// Receive new  mail
-	case M_RECEIVE_MAIL:
-	{
-		entry_ref folder_ref,file_ref;
-		if(message->FindRef("folder_ref",&folder_ref) == B_OK &&
-			message->FindRef("file_ref",&file_ref) == B_OK)
+	// Add mails
+	case M_ADD_MAIL_TO_LIST:
+	{	
+		HMailItem *mail;
+		int32 count;
+		type_code type;
+		message->GetInfo("mail",&type,&count);
+		for(int32 i = 0;i < count;i++)
 		{
-			int32 index = fFolderList->FindFolder(folder_ref);
-			if(index <0)
-				break;
-	
-			HFolderItem *item = cast_as(fFolderList->ItemAt(index),HFolderItem);
-			if(!item)
-				break;
-			
-			HMailItem *mail = new HMailItem(file_ref);
-			item->AddMail( mail );
-			item->SetName(item->Unread()+1);
-			if(index == fFolderList->CurrentSelection())
-			{
+			if(message->FindPointer("mail",i,(void**)&mail) == B_OK)
 				fMailList->AddMail(mail);
-				//fMailList->AddItem(mail);
-				//fMailList->SortItems();
-			}
-			fFolderList->InvalidateItem(index);
+		}
+		break;
+	}
+	// Remove mails
+	case M_REMOVE_MAIL_FROM_LIST:
+	{
+		HMailItem *mail;
+		int32 count;
+		type_code type;
+		bool free;
+		
+		message->GetInfo("mail",&type,&count);
+		for(int32 i = 0;i < count;i++)
+		{
+			if(message->FindPointer("mail",i,(void**)&mail) == B_OK)
+				fMailList->RemoveItem(mail);
+			message->FindBool("free",i,&free);
+			if(free)
+				delete mail;
 		}
 		break;
 	}
@@ -435,8 +434,15 @@ send:
 		fMailList->MakeEmpty();
 		fDetailView->SetInfo("","","");
 		PostMessage(M_SET_CONTENT,fMailView);
-		PostMessage(message,fMailList);
-		fMailCaption->StopBarberPole();
+		
+		int32 count;
+		type_code type;
+		message->GetInfo("pointer",&type,&count);
+		if(count>0)
+		{
+			PostMessage(message,fMailList);
+			fMailCaption->StopBarberPole();
+		}
 		break;
 	}
 	// delete mail
@@ -1015,7 +1021,7 @@ HWindow::MoveMails(BMessage *message)
 		BPath item_path(path.Path());
 		item_path.Append(BPath(&ref).Leaf());
 		::get_ref_for_path(item_path.Path(),&ref);
-		
+		/*
 		AddList.AddItem(new HMailItem(ref,
 										mail->fStatus.String(),
 										mail->fSubject.String(),
@@ -1025,15 +1031,15 @@ HWindow::MoveMails(BMessage *message)
 										mail->fWhen,
 										mail->fPriority.String(),
 										mail->fEnclosure
-										));
+										));*/
 	}
 	
 	
-	to->AddMails(&AddList);
-	from->RemoveMails(&DelList);
+	//to->AddMails(&AddList);
+	//from->RemoveMails(&DelList);
 	int32 old_selection = fMailList->CurrentSelection();
 	fMailList->DeselectAll();
-	fMailList->RemoveMails(&DelList);
+	//fMailList->RemoveMails(&DelList);
 	fMailList->Select( old_selection );
 }
 
@@ -1064,6 +1070,8 @@ HWindow::DeleteMails()
 	path.Append("mail");
 	path.Append( TRASH_FOLDER );
 	
+	fMailList->MarkOldSelectionAsRead();
+	
 	entry_ref ref;
 	::get_ref_for_path(path.Path(),&ref);
 	
@@ -1081,7 +1089,6 @@ HWindow::DeleteMails()
 	// Local mails
 	if(item->FolderType() != IMAP4_TYPE)
 	{
-	
 		int32 sel = fFolderList->CurrentSelection();
 		if(sel < 0)
 			return;
@@ -1115,7 +1122,7 @@ HWindow::DeleteMails()
 		}
 		PostMessage(&msg);
 	}else{
-		// Remote mails
+		// IMAP4 mails
 		int32 selected; 
 		int32 count_selected = 0;
 		int32 sel_index = 0;
@@ -1150,10 +1157,13 @@ HWindow::MoveFile(entry_ref file_ref,const char *kDir_Path)
 	BString name = filePath.Leaf();
 	
 	BString toName = name;
-
+	
 	BEntry entry(&file_ref);
 	while(entry.MoveTo(&destDir,toName.String(),false) != B_OK)
-		toName << "_" << i;
+	{
+		toName = name;
+		toName << "_" << ++i;
+	}
 }
 
 /***********************************************************
@@ -1574,7 +1584,7 @@ HWindow::QuitRequested()
 	Unlock();
 	fMailView->StopLoad();
 	Lock();
-	
+	fMailList->MarkOldSelectionAsRead();
 	RemoveFromDeskbar();
 	// Save Window Rect
 	((HApp*)be_app)->Prefs()->SetData("window_rect",Frame());

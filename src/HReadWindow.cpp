@@ -25,23 +25,13 @@
 HReadWindow::HReadWindow(BRect rect,entry_ref ref,BMessenger *messenger)
 	:BWindow(rect,"",B_DOCUMENT_WINDOW,0)
 	,fMessenger(messenger)
+	,fRef(ref)
 	,fCurrentIndex(0)
 	,fEntryList(NULL)
 {
 	InitMenu();
 	InitGUI();
 
-	BNode node(&ref);
-	if(node.InitCheck() == B_OK)
-	{
-		BString status;
-		node.ReadAttrString(B_MAIL_ATTR_STATUS,&status);
-		if(status.Compare("New") == 0)
-		{
-			status = "Read";
-			node.WriteAttrString(B_MAIL_ATTR_STATUS,&status);
-		}
-	}
 	LoadMessage(ref);
 	
 	if(fMessenger)
@@ -352,6 +342,7 @@ HReadWindow::InitIndex()
 void
 HReadWindow::SiblingItem(int32 how_far)
 {
+	SetRead();
 	if(!fEntryList)
 	{
 		beep();
@@ -362,7 +353,7 @@ HReadWindow::SiblingItem(int32 how_far)
 	{
 		Select(ref);
 		LoadMessage(ref);
-		
+		fRef = ref;
 		fCurrentIndex += how_far;
 	}else
 		beep();
@@ -408,12 +399,33 @@ HReadWindow::DispatchMessage(BMessage *message,BHandler *handler)
 	}
 	BWindow::DispatchMessage(message,handler);
 }
+
+/***********************************************************
+ * SetRead
+ ***********************************************************/
+void
+HReadWindow::SetRead()
+{
+	BNode node(&fRef);
+	if(node.InitCheck() == B_OK)
+	{
+		BString status;
+		node.ReadAttrString(B_MAIL_ATTR_STATUS,&status);
+		if(status.Compare("New") == 0)
+		{
+			status = "Read";
+			node.WriteAttrString(B_MAIL_ATTR_STATUS,&status);
+		}
+	}
+}
+
 /***********************************************************
  * QuitRequested
  ***********************************************************/
 bool
 HReadWindow::QuitRequested()
 {
+	SetRead();
 	((HApp*)be_app)->Prefs()->SetData("read_win_rect",Frame());
 	return BWindow::QuitRequested();
 }

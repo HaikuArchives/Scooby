@@ -33,6 +33,8 @@ protected:
 			void		InitIndex();
 			void		Select(entry_ref ref);
 			void		SiblingItem(int32 far);
+			
+			void		SetRead();
 		
 private:
 	HMailView*			fMailView;

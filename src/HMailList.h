@@ -53,6 +53,7 @@ public:
 			void	RemoveMails(BList *list);
 			void	AddMail(HMailItem *item);
 			int32	SelectionCount();
+			void	MarkOldSelectionAsRead();
 protected:
 	virtual void 	MessageReceived(BMessage *message);	
 	virtual	bool	InitiateDrag(BPoint point, 
@@ -75,5 +76,6 @@ private:
 	BEntry  			*fCurrentFolder;
 	BetterScrollView 	*fScrollView;
 	int32				fFolderType;
+	HMailItem			*fOldSelection;
 };
 #endif

@@ -38,7 +38,8 @@ public:
 	virtual	void		RefreshStatus();
 			void		RefreshTextColor();
 	virtual	void		RefreshEnclosureAttr();
-	virtual	entry_ref			Ref() {return fRef;}
+	virtual	entry_ref	Ref() {return fRef;}
+			node_ref	NodeRef() {return fNodeRef;}	
 //private:
 		entry_ref 	fRef;
 		BString		fStatus;
@@ -51,5 +52,6 @@ public:
 		BString		fPriority;
 		int8		fEnclosure;
 		bool		fDeleteMe;
+		node_ref	fNodeRef;
 };
 #endif

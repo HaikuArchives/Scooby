@@ -278,11 +278,11 @@ HPopClientView::MessageReceived(BMessage *message)
 			entry_ref folder_ref,file_ref;
 			bool is_delete;
 			SaveMail(content,&folder_ref,&file_ref,&is_delete);
-			BMessage msg(M_RECEIVE_MAIL);
+			/*BMessage msg(M_RECEIVE_MAIL);
 			msg.AddRef("folder_ref",&folder_ref);
 			msg.AddRef("file_ref",&file_ref);
 			Window()->PostMessage(&msg);
-			
+			*/
 			if(is_delete)
 				fDeleteMails.AddInt32("index",index);
 			

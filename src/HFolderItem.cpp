@@ -20,6 +20,8 @@
 #include <Entry.h>
 #include <FindDirectory.h>
 #include <ClassInfo.h>
+#include <Autolock.h>
+#include <NodeMonitor.h>
 
 #define ICON_COLUMN 1
 #define LABEL_COLUMN 2
@@ -28,7 +30,7 @@
  * Constructor
  ***********************************************************/
 HFolderItem::HFolderItem(const entry_ref &ref,BListView *target)
-	: CLVEasyItem(0, false, false, 20.0)
+	: CLVEasyItem(0, false, false, 20.0),BHandler()
 	,fDone(false)
 	,fUnread(0)
 	,fThread(-1)
@@ -40,12 +42,18 @@ HFolderItem::HFolderItem(const entry_ref &ref,BListView *target)
 	,fRefreshThread(-1)
 	,fFolderType(FOLDER_TYPE)
 {	
+	BAutolock lock(target->Window());
+	target->Window()->AddHandler( (BHandler*)this );
+	
+	BEntry entry(&ref);
+	entry.GetNodeRef(&fNodeRef);
+	::watch_node(&fNodeRef,B_WATCH_DIRECTORY|B_WATCH_NAME,this,target->Window());
+	
 	if(BPath(&ref).InitCheck() == B_OK)
 		fName = BPath(&ref).Leaf();
 	else
 		fName = "Unknown";
 	fMailList.MakeEmpty();
-	BEntry entry(&ref);
 	
 	BBitmap *icon(NULL);
 	if(!entry.IsDirectory())
@@ -95,6 +103,8 @@ HFolderItem::HFolderItem(const char* name,int32 type,BListView *target)
  ***********************************************************/
 HFolderItem::~HFolderItem()
 {
+	::stop_watching(this,fOwner->Window());
+	
 	status_t err;
 	
 	if(fThread >= 0)
@@ -130,6 +140,8 @@ void
 HFolderItem::AddMail(HMailItem *item)
 {
 	fMailList.AddItem(item);
+	if(!item->IsRead())
+		SetName(fUnread+1);
 }
 
 /***********************************************************
@@ -139,22 +151,30 @@ void
 HFolderItem::RemoveMail(HMailItem* item)
 {
 	fMailList.RemoveItem(item);
+	if(!item->IsRead())
+		SetName(fUnread-1);
 }
 
 /***********************************************************
  * RemoveMail
  ***********************************************************/
 HMailItem*
-HFolderItem::RemoveMail(entry_ref ref)
+HFolderItem::RemoveMail(entry_ref& ref)
 {
 	int32 count = fMailList.CountItems();
-	for(int32 i = 0;i< count;i++)
+	HMailItem **items = (HMailItem**)fMailList.Items();
+	for(register int32 i = 0;i< count;i++)
 	{
-		HMailItem *item = (HMailItem*)fMailList.ItemAt(i);
+		HMailItem *item = (HMailItem*)items[i];
 		if(!item)
 			continue;
 		if(item->Ref() == ref)
-			return (HMailItem*)fMailList.RemoveItem(i);
+		{
+			item = (HMailItem*)fMailList.RemoveItem(i);
+			if(!item->IsRead())
+				SetName(fUnread-1);
+			return item;
+		}
 	}
 	return NULL;
 }
@@ -163,20 +183,28 @@ HFolderItem::RemoveMail(entry_ref ref)
  * RemoveMail
  ***********************************************************/
 HMailItem*
-HFolderItem::RemoveMail(node_ref nref)
+HFolderItem::RemoveMail(node_ref &nref)
 {
 	node_ref old_nref;
 	int32 count = fMailList.CountItems();
+	HMailItem **items = (HMailItem**)fMailList.Items();
+	
+	PRINT(("N:%ld\n",nref.node));
+		
 	for(int32 i = 0;i< count;i++)
 	{
-		HMailItem *item = (HMailItem*)fMailList.ItemAt(i);
+		HMailItem *item = (HMailItem*)items[i];
 		if(!item)
 			continue;
-		entry_ref ref = item->Ref();
-		BEntry entry(&ref);
-		entry.GetNodeRef(&old_nref);
-		if(old_nref.node == nref.node)
-			return (HMailItem*)fMailList.RemoveItem(i);
+		old_nref = item->NodeRef();
+		
+		if(old_nref == nref)
+		{
+			item = (HMailItem*)fMailList.RemoveItem(i);
+			if(!item->IsRead())
+				SetName(fUnread-1);
+			return item;
+		}
 	}
 	return NULL;
 }
@@ -191,12 +219,14 @@ HFolderItem::AddMails(BList* list)
 	
 	int32 count = list->CountItems();
 	HMailItem *item;
+	int32 unread = 0;
 	for(int32 i = 0;i < count;i++)
 	{
 		item = (HMailItem*)list->ItemAt(i);
 		if(item&&!item->IsRead())
-			fUnread++;
+			unread++;
 	}
+	SetName(fUnread+unread);
 }
 
 /***********************************************************
@@ -421,6 +451,7 @@ HFolderItem::ReadFromCache()
 		BDirectory dir(&fFolderRef);
 		if(count + fMailList.CountItems() != dir.CountEntries() )
 		{
+			PRINT(("Auto refresh\n"));
 			EmptyMailList();
 			return B_ERROR;
 		}
@@ -658,6 +689,142 @@ HFolderItem::Launch()
 	BMessage reply ; 
 	tracker.SendMessage( &msg, &reply ); 
 	//be_roster->Launch(&fFolderRef);
+}
+
+/***********************************************************
+ * MessageReceived
+ ***********************************************************/
+void
+HFolderItem::MessageReceived(BMessage *message)
+{
+	switch(message->what)
+	{
+	case B_QUERY_UPDATE:
+	case B_NODE_MONITOR:
+		NodeMonitor(message);
+		break;
+	default:
+		message->PrintToStream();
+		BHandler::MessageReceived(message);
+	}
+}
+
+/***********************************************************
+ * NodeMonitor
+ ***********************************************************/
+void
+HFolderItem::NodeMonitor(BMessage *message)
+{
+	int32 opcode;
+	const char  *name;
+	entry_ref ref;
+	HMailItem *item;
+	BPath path;
+	BPath myPath(&fFolderRef);
+	int32 my_path_len = strlen(myPath.Path() );
+	BNode node;
+	char mime_type[B_MIME_TYPE_LENGTH];
+	BNodeInfo ninfo;
+		
+	if(message->FindInt32("opcode",&opcode) != B_OK)	
+		return;
+	message->FindInt32("device", &ref.device); 
+	message->FindInt64("directory", &ref.directory); 
+	message->FindString("name", &name);
+	
+	
+	switch(opcode)
+	{
+	case B_ENTRY_CREATED:
+		ref.set_name(name);
+		path.SetTo(&ref);
+		if(!path.Path())
+			break;
+		PRINT(("%s\n",path.Path()));
+		if(node.SetTo(&ref) != B_OK)
+			break;
+		ninfo.SetTo(&node);
+		ninfo.GetType(mime_type);
+		if(::strcmp(mime_type,B_MAIL_TYPE) != 0)
+			break;
+		AddMail((item = new HMailItem(ref)));
+		if( fOwner->CurrentSelection() == fOwner->IndexOf(this) )
+		{
+			((HFolderList*)fOwner)->AddToMailList(item);
+		}
+		InvalidateMe();
+		break;
+	case B_ENTRY_REMOVED:
+	{
+		node_ref nref;
+		message->FindInt32("device", &nref.device);
+		message->FindInt64("node", &nref.node);
+		
+		HMailItem *item = RemoveMail(nref);
+		if(fOwner->IndexOf(this) == fOwner->CurrentSelection())
+			((HFolderList*)fOwner)->RemoveFromMailList(item,true);
+		else
+			delete item;	
+		InvalidateMe();
+		PRINT(("REMOVE\n"));
+		break;
+	}
+	case B_ENTRY_MOVED:
+	{
+		node_ref nref;
+		node_ref from_nref;
+		BPath to_path,from_path;
+		BDirectory to_dir,from_dir;
+		entry_ref ref;
+	
+		message->FindInt32("device", &nref.device);
+		message->FindInt32("device", &from_nref.device);
+		message->FindInt64("to directory", &nref.node);
+		message->FindInt64("from directory", &from_nref.node);
+		to_dir.SetTo(&nref);
+		from_dir.SetTo(&from_nref);
+		
+		to_path.SetTo(&to_dir,NULL,false);
+		from_path.SetTo(&from_dir,NULL,false);
+			
+		message->FindString("name", &name);
+		// Add mail
+		if(::strncmp(to_path.Path(),myPath.Path(),my_path_len) == 0)
+		{
+			BPath file_path(to_path);
+			file_path.Append(name);
+			if(node.SetTo(file_path.Path()) != B_OK)
+				break;
+			
+			ninfo.SetTo(&node);
+			ninfo.GetType(mime_type);
+			if(::strcmp(mime_type,B_MAIL_TYPE) != 0)
+				break;
+			::get_ref_for_path(file_path.Path(),&ref);
+			HMailItem* item;
+			AddMail((item = new HMailItem(ref)));
+			if(fOwner->IndexOf(this) == fOwner->CurrentSelection())
+				((HFolderList*)fOwner)->AddToMailList(item);
+			InvalidateMe();	
+		}
+		// Remove mails
+		else if(::strncmp(from_path.Path(),myPath.Path(),my_path_len) == 0)
+		{
+			node_ref old_nref;
+			old_nref.device =from_nref.device;
+			message->FindInt64("node", &old_nref.node);
+			HMailItem *item = RemoveMail(old_nref);
+			if(!item)
+				break;
+			if(fOwner->IndexOf(this) == fOwner->CurrentSelection())
+				((HFolderList*)fOwner)->RemoveFromMailList(item,true);
+			else
+				delete item;
+			InvalidateMe();
+		}
+		break;
+	}
+	}
 }
 
 /***********************************************************

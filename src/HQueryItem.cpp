@@ -1,6 +1,7 @@
 #include "HQueryItem.h"
 #include "HMailItem.h"
 #include "ResourceUtils.h"
+#include "HFolderList.h"
 
 #include <Node.h>
 #include <Bitmap.h>
@@ -10,6 +11,11 @@
 #include <Debug.h>
 #include <Path.h>
 #include <File.h>
+#include <Window.h>
+#include <NodeMonitor.h>
+#include <Autolock.h>
+#include <FindDirectory.h>
+#include <SymLink.h>
 
 /***********************************************************
  * Constructor
@@ -18,9 +24,30 @@ HQueryItem::HQueryItem(const entry_ref &ref,
 						BListView *target)
 			:HFolderItem(ref,target)
 			,fPredicate("")
+			,fQuery(NULL)
+			,fMessenger(NULL)
 {
 	BNode node(&ref);
+	fQuery = new BQuery();
+	
+	fMessenger = new BMessenger((BHandler*)this,(BLooper*)target->Window());
+	fQuery->SetTarget(*fMessenger);
 	BString type;
+	
+	if(node.IsSymLink())
+	{
+		BEntry entry(&ref);
+		BSymLink link(&entry);
+		entry_ref new_ref;
+		BPath path;
+		
+		char buf[B_PATH_NAME_LENGTH+1];
+		ssize_t len = link.ReadLink(buf,B_PATH_NAME_LENGTH);
+		buf[len] = '\0';
+		path.SetTo(buf);
+		::get_ref_for_path(path.Path(),&new_ref);
+		node.SetTo(&new_ref);
+	}
 	if(node.InitCheck() == B_OK)
 		node.ReadAttrString("_trk/qrystr",&fPredicate);
 }
@@ -31,6 +58,8 @@ HQueryItem::HQueryItem(const entry_ref &ref,
 HQueryItem::~HQueryItem()
 {
 	EmptyMailList();
+	delete fQuery;
+	delete fMessenger;
 }
 
 /***********************************************************
@@ -65,25 +94,24 @@ HQueryItem::StartGathering()
 }
 
 /***********************************************************
- *
+ * Fetching
  ***********************************************************/
 void
 HQueryItem::Fetching()
 {
-	BQuery query;
 	BVolume volume;
 	BVolumeRoster().GetBootVolume(&volume);
-	query.SetVolume(&volume);
+	fQuery->SetVolume(&volume);
 	
-	query.SetPredicate(fPredicate.String());
+	fQuery->SetPredicate(fPredicate.String());
 	
 	BString type;
 	BNode node;
 	HMailItem *item(NULL);
-	if(query.Fetch() == B_OK)
+	if(fQuery->Fetch() == B_OK)
 	{
 		entry_ref ref;
-		while(query.GetNextRef(&ref) == B_OK)
+		while(fQuery->GetNextRef(&ref) == B_OK)
 		{
 			if(node.SetTo(&ref) != B_OK)
 				continue;
@@ -102,10 +130,11 @@ HQueryItem::Fetching()
 		BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"OpenQuery");
 		SetColumnContent(1,icon,2.0,true,false);
 		delete icon;
+		SetName(fUnread);
 		InvalidateMe();
 	}DEBUG_ONLY(
 	else{
-		PRINT(("Query fetching was failed"));
+		PRINT(("Query fetching was failed\n"));
 		}
 	);
 	fThread = -1;

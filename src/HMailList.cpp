@@ -33,6 +33,7 @@ HMailList::HMailList(BRect frame,
 	,fCurrentFolder(NULL)
 	,fScrollView(*scroll)
 	,fFolderType(FOLDER_TYPE)
+	,fOldSelection(NULL)
 {
 	AddColumn( new CLVColumn(NULL,22,CLV_LOCK_AT_BEGINNING|CLV_NOT_MOVABLE|
 		CLV_NOT_RESIZABLE|CLV_PUSH_PASS) );
@@ -117,6 +118,7 @@ HMailList::MessageReceived(BMessage *message)
 	case M_LOCAL_SELECTION_CHANGED:
 	{
 		BList *list;
+		MarkOldSelectionAsRead();
 		if(message->FindPointer("pointer",(void**)&list) == B_OK)
 		{
 			// Save Columns
@@ -167,6 +169,9 @@ void
 HMailList::SelectionChanged()
 {
 	int32 sel = this->CurrentSelection();
+	
+	MarkOldSelectionAsRead();
+	
 	if(sel <0 && SelectionCount() > 1)
 	{
 		// set content view empty
@@ -184,8 +189,8 @@ HMailList::SelectionChanged()
 		msg.AddString("from",item->fFrom);
 		msg.AddString("when",item->fDate);
 		msg.AddBool("read",item->IsRead());
+		fOldSelection = item;
 		Window()->PostMessage(&msg);
-		item->SetRead();
 		item->RefreshEnclosureAttr();		
 		InvalidateItem(sel);
 	}
@@ -677,4 +682,18 @@ HMailList::SelectionCount()
 	while(CurrentSelection(i++) >= 0)
 		count++;
 	return count;
+}
+
+/***********************************************************
+ * MarkOldSelectionAsRead
+ ***********************************************************/
+void
+HMailList::MarkOldSelectionAsRead()
+{
+	if(fOldSelection)
+	{
+		fOldSelection->SetRead();
+		InvalidateItem(IndexOf(fOldSelection));
+	}
+	fOldSelection = NULL;
 }
