@@ -271,7 +271,6 @@ Encoding::Mime2UTF8(BString &str)
 /***********************************************************
  * MimeDecode
  ***********************************************************/
-#define USE_BASE64DECODER
 void
 Encoding::MimeDecode(BString &str,bool quoted_printable)
 {
@@ -285,11 +284,7 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
    		len = decode_quoted_printable(buf,buf,len,true);	
    else	{
    // MIME-B
-#ifndef USE_BASE64DECODER
-		len = decode_base64(buf, buf, len,true); 
-#else
 		len = decode64(buf, buf, len); 
-#endif
     }
     buf[len] = '\0'; 
    	
