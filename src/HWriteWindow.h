@@ -60,6 +60,7 @@ protected:
 								bool mod = false);
 			void	FindCharset(int32 conversion,BString &charset);
 			
+			bool	IsHardWrap();
 private:
 	HAddressView	*fTopView;
 	HMailView		*fTextView;

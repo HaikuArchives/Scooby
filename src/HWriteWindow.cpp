@@ -82,6 +82,7 @@ HWriteWindow::HWriteWindow(BRect rect
 	min_width = 400;
 	min_height = 300;
 	SetSizeLimits(min_width,max_width,min_height,max_height);
+	AddShortcut('U',0,new BMessage(M_SELECT),fTextView);
 }
 
 /***********************************************************
@@ -174,6 +175,16 @@ HWriteWindow::InitMenu()
 	if(item)
 		item->SetMarked(true);
 	aMenu->AddItem(subMenu);
+	aMenu->AddSeparatorItem();
+	subMenu = new BMenu(_("Word Wrap"));
+	subMenu->SetRadioMode(true);
+	utils.AddMenuItem(subMenu,_("Soft Wrap"),(uint32)0,this,this);
+	utils.AddMenuItem(subMenu,_("Hard Wrap"),(uint32)0,this,this);
+	aMenu->AddItem(subMenu);
+	item = subMenu->FindItem(_("Hard Wrap"));
+	if(item)
+		item->SetMarked(true);
+	
 	menubar->AddItem( aMenu );
 	
 	
@@ -673,8 +684,11 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	BString cc(fTopView->Cc());
 	BString bcc(fTopView->Bcc());
 	BString from("");
-	BString content( fTextView->Text() );	
-
+	BString content;
+	if(!IsHardWrap())
+		content = fTextView->Text();	
+	else
+		fTextView->GetHardWrapedText(content);
 	// Get out box
 	BPath path;
 	::find_directory(B_USER_DIRECTORY,&path);
@@ -929,6 +943,23 @@ HWriteWindow::WriteAllPart(BString &out,const char* boundary)
 		delete[] outBuf;
 	} 
 	out << str;
+}
+
+/***********************************************************
+ * IsHardWrap
+ ***********************************************************/
+bool
+HWriteWindow::IsHardWrap()
+{
+	BMenu *subMenu = KeyMenuBar()->SubmenuAt(3);
+	subMenu = subMenu->SubmenuAt(3);
+	
+	BMenuItem *item = subMenu->FindMarked();
+	if(item)
+		return true;
+	if(::strcmp(item->Label(),_("Hard Wrap")) == 0)
+		return true;
+	return false;
 }
 
 /***********************************************************
