@@ -45,7 +45,7 @@ HWindow::HWindow(BRect rect,
 				const char* mail_addr)
 	:BWindow(rect,name,B_DOCUMENT_WINDOW,B_ASYNCHRONOUS_CONTROLS)
 	,fCheckIdleTime(time(NULL))
-	,fDeskbarWindow(NULL)
+	,fCurrentDeskbarIcon(DESKBAR_NORMAL_ICON)
 {
 	SetPulseRate(100000);
 	
@@ -74,7 +74,6 @@ HWindow::HWindow(BRect rect,
  ***********************************************************/
 HWindow::~HWindow()
 {
-
 }
 
 /***********************************************************
@@ -710,15 +709,6 @@ send:
 	case M_SELECT_PREV_MAIL:
 		PostMessage(message,fMailList);
 		break;
-	// Get deskbar view pointer
-	case M_DESKBAR_INSTALLED:
-	{
-		HDeskbarView *view;
-		if(message->FindPointer("deskbar_view",(void**)&view) != B_OK)
-			break;
-		fDeskbarWindow = view->Window();
-		break;
-	}
 	// Update toolbar buttons
 	case M_UPDATE_TOOLBUTTON:
 	{
@@ -1515,32 +1505,6 @@ HWindow::AddCheckFromItems()
 			subMenu->AddItem(new BMenuItem(name,msg));
 		}
 	}
-}
-
-/***********************************************************
- * ChangeDeskbarIcon
- ***********************************************************/
-void
-HWindow::ChangeDeskbarIcon(int32 icon)
-{
-	// Check whether scooby icon have already installed
-	BDeskbar deskbar;
-	if(!deskbar.HasItem( APP_NAME ))
-		return;
-	if(!fDeskbarWindow)
-	{
-		PRINT(("don't have Deskbar window pointer\n"));
-		return;
-	}
-	BView *view = fDeskbarWindow->FindView(APP_NAME);
-	if(!view)
-	{
-		PRINT(("Could not find deskbar view\n"));
-		return;
-	}	
-	BMessage msg(M_CHANGE_DESKBAR_ICON);
-	msg.AddInt32("icon",icon);
-	fDeskbarWindow->PostMessage(&msg,view);
 }
 
 /***********************************************************
