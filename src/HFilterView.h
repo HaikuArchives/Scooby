@@ -34,7 +34,7 @@ protected:
 			void	AddCriteria(int32 attr = -1,
 							int32 operation = 0,
 							const char* attr_value = NULL,
-							int32 operation = 0);
+							int32 operation2 = 0);
 			void	RemoveCriteria();
 			void	RemoveAllCriteria();
 			void	RefreshCriteriaScroll();
