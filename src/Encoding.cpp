@@ -816,7 +816,7 @@ Encoding::decode_quoted_printable(char *dest,char *in,off_t length,
         	ch = (HEX(src[len]) << 4) | HEX(src[len+1]);
         	dest[k++] = ch;
    			len+=2;
-   		}else if(ch == '=' && src[len] == '\r' && src[len+1] == '\n' ){
+   		}else if(ch == '=' && len + 1 < length && src[len] == '\r' && src[len+1] == '\n' ){
    			// Eliminate soft line feeds (CRLF)
    			// Do nothing
    			len+=2;
