@@ -21,56 +21,7 @@ USE_ICONV = 0
 # Warnings
 WARNINGS = ALL
 # Sources
-SRCS= ./src/HFolderItem.cpp\
-        ./src/HFolderList.cpp\
-        ./src/HMailItem.cpp\
-	./src/HMailCaption.cpp\
-        ./src/HMailList.cpp\
-        ./src/HPrefs.cpp\
-        ./src/HMailView.cpp\
-        ./src/HWindow.cpp\
-        ./src/HApp.cpp\
-	./src/HStatusView.cpp\
-	./src/HWriteWindow.cpp\
-	./src/HDetailView.cpp\
-	./src/HQueryItem.cpp\
-	./src/HPopClientView.cpp\
-	./src/PopClient.cpp\
-	./src/SmtpClient.cpp\
-	./src/HPrefWindow.cpp\
-	./src/HFilterView.cpp\
-	./src/HAddressView.cpp\
-	./src/HCriteriaView.cpp\
-	./src/HAccountView.cpp\
-	./src/HSmtpClientView.cpp\
-	./src/Encoding.cpp\
-	./src/HSignatureView.cpp\
-	./src/HGeneralSettingView.cpp\
-	./src/HEnclosureView.cpp\
-	./src/HEnclosureItem.cpp\
-	./src/md5c.c\
-	./src/HDeskbarView.cpp\
-	./src/HReadWindow.cpp\
-	./src/HIMAP4Item.cpp\
-	./src/HIMAP4Folder.cpp\
-	./src/IMAP4Client.cpp\
-	./src/HIMAP4Window.cpp\
-	./src/HSimpleFolderItem.cpp\
-	./src/HMailCache.cpp\
-	./src/HAttachmentList.cpp\
-	./src/HAttachmentItem.cpp\
-	./src/HTabView.cpp\
-	./src/HHtmlView.cpp\
-	./src/HHtmlMailView.cpp\
-	./src/HCoolListView.cpp \
-	./src/Utilities.cpp\
-	./src/scandir.c\
-	./src/HCreateFolderDialog.cpp\
-	./src/HFindWindow.cpp\
-	./src/HSpamFilterView.cpp\
-	./src/SpellCheckView.cpp\
-	./src/StatusBar.cpp\
-	./src/StatusItem.cpp
+-include .all_sources
 #-------------------------------------------------------
 #	determine wheather running on x86 or ppc
 ifeq ($(USE_SPLOCALE),1)
