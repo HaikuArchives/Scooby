@@ -289,32 +289,22 @@ void
 Encoding::MimeDecode(BString &str,bool quoted_printable)
 {
     int32 len = str.Length();
-   const char kJisEnd[4] = {0x1b,0x28,0x42,'\0'};
-   const char kMimeJisEnd[] = "GyhK";
-   bool check_jis = false;
    
-   char *old = str.LockBuffer(0);
+   char *buf = str.LockBuffer(0);
    if(len == 0)
    		return;
-   	char *buf = new char[len+1];
    // MIME-Q
    if(quoted_printable)
-   		len = decode_quoted_printable(buf,old,len,false);	
+   		len = decode_quoted_printable(buf,buf,len,false);	
    else	{
    // MIME-B
 #ifndef USE_BASE64DECODER
-		// Check whether it's jis charactor.
-		if(old && len > 5 && strcmp(&old[len-4],kMimeJisEnd) == 0)
-			check_jis = true;
- 		//
- 		len = decode_base64(buf, old, len,true); 
+		len = decode_base64(buf, buf, len,true); 
 #else
 		int i, iR;
 		char a1, a2, a3, a4;
 		i = 0; 
         iR = 0;
-        ::strcpy(buf,old);
-        buf[len] = '\0'; 
         while (1) { 
                 if (i >= len) 
                     break;
@@ -338,18 +328,8 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
 #endif
     }
     buf[len] = '\0'; 
-   	::strcpy(old,buf);
-    
+   	
     str.UnlockBuffer();
- 	
- 	// If it's jis charactor, check it contain jis end.
- 	if(check_jis)
- 	{
- 		if(buf && len > 4 && strcmp(&buf[len-3],kJisEnd) != 0)
- 			str += kJisEnd;
- 	}
- 	//
- 	delete[] buf;
 }
 
 /***********************************************************
