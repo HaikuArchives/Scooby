@@ -994,6 +994,9 @@ HWindow::FolderSelection()
 void
 HWindow::MoveMails(BMessage *message)
 {
+	// Restore old selection mail's status
+	fMailList->MarkOldSelectionAsRead();
+	//
 	entry_ref ref;
 	int32 count;
 	type_code type;
@@ -1070,8 +1073,6 @@ HWindow::DeleteMails()
 	::find_directory(B_USER_DIRECTORY, &path, true);
 	path.Append("mail");
 	path.Append( TRASH_FOLDER );
-	
-	fMailList->MarkOldSelectionAsRead();
 	
 	entry_ref ref;
 	::get_ref_for_path(path.Path(),&ref);

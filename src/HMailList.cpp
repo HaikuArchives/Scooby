@@ -692,6 +692,8 @@ HMailList::MarkOldSelectionAsRead()
 {
 	if(fOldSelection)
 	{
+		if(IndexOf(fOldSelection) < 0)
+			return;
 		fOldSelection->SetRead();
 		InvalidateItem(IndexOf(fOldSelection));
 	}

@@ -31,7 +31,6 @@ HQueryItem::HQueryItem(const entry_ref &ref,
 	fQuery = new BQuery();
 	
 	fMessenger = new BMessenger((BHandler*)this,(BLooper*)target->Window());
-	fQuery->SetTarget(*fMessenger);
 	BString type;
 	
 	if(node.IsSymLink())
@@ -101,8 +100,9 @@ HQueryItem::Fetching()
 {
 	BVolume volume;
 	BVolumeRoster().GetBootVolume(&volume);
+	fQuery->Clear();
+	fQuery->SetTarget(*fMessenger);
 	fQuery->SetVolume(&volume);
-	
 	fQuery->SetPredicate(fPredicate.String());
 	
 	BString type;
