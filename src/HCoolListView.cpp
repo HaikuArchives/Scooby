@@ -3,7 +3,7 @@
 #include <Debug.h>
 #include <ClassInfo.h>
 
-const rgb_color highlight = {200,200,255,100};
+const rgb_color highlight = {190,190,190,100};
 
 /***********************************************************
  * Constructor
