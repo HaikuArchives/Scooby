@@ -63,6 +63,13 @@ HDaemonApp::MessageReceived(BMessage *message)
 		break;
 	case M_RELOAD_SETTING:
 		fPrefs->LoadPrefs();
+		if(fRunner)
+		{
+			int32 interval;
+			fPrefs->GetData("check_minutes",&interval);
+			PRINT(("NEW INTERVAL:%d\n",interval));
+			fRunner->SetInterval(interval);
+		}
 		break;
 	// Error
 	case H_ERROR_MESSAGE:
