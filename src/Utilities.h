@@ -32,5 +32,6 @@ void	SizeUpdate(StatusItem *item);
 bool 	GetParameter(const char *src,const char *param, char **dst);
 //! Case insensitive version of strstr.
 char*	cistrstr(char *cs, char *ct);
-
+//! Read mail attr checking. if you set default value and it doesn't have attr, default value will be written.
+status_t	ReadNodeAttrString(BNode *node,const char* attrName,BString *out,const char* defaultValue=NULL);
 #endif

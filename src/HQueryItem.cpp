@@ -2,6 +2,7 @@
 #include "HMailItem.h"
 #include "HApp.h"
 #include "HFolderList.h"
+#include "Utilities.h"
 
 #include <Node.h>
 #include <Bitmap.h>
@@ -49,7 +50,7 @@ HQueryItem::HQueryItem(const entry_ref &ref,
 		node.SetTo(&new_ref);
 	}
 	if(node.InitCheck() == B_OK)
-		node.ReadAttrString("_trk/qrystr",&fPredicate);
+		ReadNodeAttrString(&node,"_trk/qrystr",&fPredicate);
 }
 
 /***********************************************************

@@ -2,6 +2,7 @@
 #include "HApp.h"
 #include "HMailItem.h"
 #include "Encoding.h"
+#include "Utilities.h"
 
 #include <Debug.h>
 #include <Handler.h>
@@ -167,7 +168,7 @@ SmtpClient::SendMail(HMailItem *item)
 	if(file.InitCheck() == B_OK)
 	{
 		BString smtp_server("");
-		if(file.ReadAttrString(B_MAIL_ATTR_SMTP_SERVER,&smtp_server) != B_OK)
+		if(ReadNodeAttrString(&file,B_MAIL_ATTR_SMTP_SERVER,&smtp_server) != B_OK)
 		{
 			PRINT(("ERR:SMTP_SERVER\n"));
 			return B_ERROR;
@@ -198,10 +199,10 @@ SmtpClient::SendMail(HMailItem *item)
 		buf[size] = '\0';
 		// parse header
 		BString from,to,cc,bcc;
-		file.ReadAttrString(B_MAIL_ATTR_FROM,&from);
-		file.ReadAttrString(B_MAIL_ATTR_TO,&to);
-		file.ReadAttrString(B_MAIL_ATTR_CC,&cc);
-		file.ReadAttrString(B_MAIL_ATTR_BCC,&bcc);
+		ReadNodeAttrString(&file,B_MAIL_ATTR_FROM,&from);
+		ReadNodeAttrString(&file,B_MAIL_ATTR_TO,&to);
+		ReadNodeAttrString(&file,B_MAIL_ATTR_CC,&cc);
+		ReadNodeAttrString(&file,B_MAIL_ATTR_BCC,&bcc);
 		if(cc.Length() > 0)
 			to << "," << cc;
 		if(bcc.Length() > 0)
