@@ -1280,11 +1280,10 @@ HWindow::DeleteMails()
 	}else{
 		// IMAP4 mails
 		int32 selected; 
-		int32 sel_index = 0;
 		int32 unread_mails = 0;
 		HIMAP4Item *mail(NULL);
 		
-		while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
+		while((selected = fMailList->CurrentSelection(0)) >= 0)
 		{
 			mail=cast_as(fMailList->RemoveItem(selected),HIMAP4Item);
 			if(!mail)
