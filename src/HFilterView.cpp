@@ -109,6 +109,7 @@ HFilterView::InitGUI()
 	frame.OffsetBy(-frame.Width()-5,0);
 	button = new BButton(frame,"criteria_add","Add",new BMessage(M_ADD_CRITERIA_MSG));
 	box->AddChild(button);
+	button->SetEnabled(false);
 
 	AddChild(box);
 	
