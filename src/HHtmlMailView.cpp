@@ -116,14 +116,19 @@ HHtmlMailView::MessageReceived(BMessage *message)
 	}
 	case B_REFS_RECEIVED:
 	{
-		int32 sel = fAttachmentList->CurrentSelection();
-		const char* name;
-		entry_ref ref;
-		if((message->FindRef("directory",&ref) == B_OK)&&
-			(message->FindString("name",&name) == B_OK))
+		int32 sel;
+		int32 index = 0;
+		
+		while((sel = fAttachmentList->CurrentSelection(index++)) >= 0)
 		{
-			if(sel >= 0)
+			const char* name;
+			entry_ref ref;
+			if((message->FindRef("directory",&ref) == B_OK)&&
+				(message->FindString("name",&name) == B_OK))
+			{
+				PRINT(("%s\n",name));
 				SaveAttachment(sel,ref,name);	
+			}
 		}
 		break;
 	}
@@ -868,13 +873,14 @@ HHtmlMailView::AddPart(const char* part,int32 file_offset)
 	}
 	offset += file_offset;
 	//PRINT(("Offset:%d FileOffset:%d DataLen:%d\n\n",offset,file_offset,data_len));
-	
-	fAttachmentList->AddItem(new HAttachmentItem(name,
+	HAttachmentItem *item;
+	fAttachmentList->AddItem(item = new HAttachmentItem(name,
 												offset,
 												data_len,
 												content_type,
 												encoding,
 												charset));
+	
 	delete[] content_type;
 	delete[] name;
 	delete[] encoding;	

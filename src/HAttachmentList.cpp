@@ -7,6 +7,7 @@
 #include <Window.h>
 #include <MenuItem.h>
 #include <string.h>
+#include <ClassInfo.h>
 
 /***********************************************************
  * Constructor
@@ -99,4 +100,67 @@ HAttachmentList::MouseDown(BPoint pos)
 	 	delete theMenu;
 	}else
 		ColumnListView::MouseDown(pos);
+}
+
+/***********************************************************
+ * InitiateDrag
+ ***********************************************************/
+bool
+HAttachmentList::InitiateDrag(BPoint  point,
+						int32 index,
+						bool wasSelected)
+{
+	if (wasSelected) 
+	{
+		BMessage msg(B_SIMPLE_DATA);
+		HAttachmentItem *item = cast_as(ItemAt(index),HAttachmentItem);
+		if(item == NULL)
+			return false;
+		BRect	theRect = this->ItemFrame(index);
+		
+		int32 selected; 
+		int32 sel_index = 0;
+		while((selected = CurrentSelection(sel_index++)) >= 0)
+		{
+			item=cast_as(ItemAt(selected),HAttachmentItem);
+			if(!item)
+				continue;
+			msg.AddPointer("pointer",item);
+			msg.AddInt32("be:actions",B_COPY_TARGET);
+			entry_ref ref = item->FileRef();
+			msg.AddRef("refs",&ref);
+			//PRINT(("Sel:%d\n",selected));
+		}
+			
+		const char *subject = item->GetColumnContentText(1);
+		theRect.OffsetTo(B_ORIGIN);
+		theRect.right = theRect.left + StringWidth(subject) + 20;
+		BBitmap *bitmap = new BBitmap(theRect,B_RGBA32,true);
+		BView *view = new BView(theRect,"",B_FOLLOW_NONE,0);
+		bitmap->AddChild(view);
+		bitmap->Lock();
+		view->SetHighColor(0,0,0,0);
+		view->FillRect(view->Bounds());
+		
+		view->SetDrawingMode(B_OP_ALPHA);
+		view->SetHighColor(0,0,0,128);
+		view->SetBlendingMode(B_CONSTANT_ALPHA,B_ALPHA_COMPOSITE);
+		const BBitmap *icon = item->GetColumnContentBitmap(0);
+		if(icon)
+			view->DrawBitmap(icon);
+		
+		BFont font;
+		GetFont(&font);	
+		view->SetFont(&font);
+		view->MovePenTo(theRect.left+18, theRect.bottom-3);
+		
+		if(subject)
+			view->DrawString( subject );
+		bitmap->Unlock();
+		
+		DragMessage(&msg, bitmap, B_OP_ALPHA,
+				BPoint(bitmap->Bounds().Width()/2,bitmap->Bounds().Height()/2));
+		// must not delete bitmap
+	}	
+	return (wasSelected);
 }

@@ -212,4 +212,4 @@ $(OBJ_DIR)/HCreateFolderDialog.o : ./src/HCreateFolderDialog.cpp \
 $(OBJ_DIR)/HFindWindow.o : ./src/HFindWindow.cpp src/HFindWindow.h src/HApp.h \
  libs/liblocale/LocaleApp.h
 $(OBJ_DIR)/HSpamFilterView.o : ./src/HSpamFilterView.cpp src/HSpamFilterView.h \
- src/HApp.h libs/liblocale/LocaleApp.h
+ src/HApp.h libs/liblocale/LocaleApp.h libs/Utils/HFile.h

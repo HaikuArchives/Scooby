@@ -19,6 +19,8 @@ public:
 			
 protected:
 	virtual void		MouseDown(BPoint point);
-
+	virtual	bool	InitiateDrag(BPoint point, 
+								int32 index, 
+								bool wasSelected);
 };
 #endif
