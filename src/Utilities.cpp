@@ -1,4 +1,8 @@
 #include "Utilities.h"
+#include "scandir.h"
+
+#include <stdio.h>
+#include <dirent.h>
 
 void
 DisallowFilenameKeys(BTextView *textView)
@@ -19,4 +23,16 @@ DisallowMetaKeys(BTextView *textView)
 	textView->DisallowChar(B_PAGE_UP);
 	textView->DisallowChar(B_PAGE_DOWN);
 	textView->DisallowChar(B_FUNCTION_KEY);
+}
+
+
+int32 GetAllDirents(const char* path,struct dirent ***outdirent)
+{
+	register int32 count;
+	register struct dirent **dirent;
+	
+	count = scandir(path,&dirent,NULL,NULL);
+	
+	*outdirent = dirent;
+	return count;
 }
