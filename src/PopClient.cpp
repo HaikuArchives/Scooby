@@ -232,7 +232,7 @@ PopClient::Connect(const char* address,
 
 	if(strncmp(line.String(),"+OK",3) != 0)
 		return B_ERROR;
-	PRINT(("%s\n",line.String()));
+	//PRINT(("%s\n",line.String()));
 	fLog = line;
 	return B_OK;
 }
@@ -257,7 +257,7 @@ PopClient::Login(const char* user,const char* password,bool apop)
 	status_t err;
 	if(apop)
 	{
-		PRINT(("Enter APOP\n"));
+		//PRINT(("Enter APOP\n"));
 		int32 index = fLog.FindFirst("<");
 		if(index == B_ERROR)
 			goto normal;
@@ -588,13 +588,27 @@ PopClient::SendCommand(const char* cmd)
 	int32 len;
 	if(!fEndpoint)
 		return B_ERROR;
-	
+	if(strncmp(cmd,"PASS",4) != 0)
+		PRINT(("C:%s",cmd));
 	if( fEndpoint->Send(cmd, ::strlen(cmd)) == B_ERROR)
 		return B_ERROR;
 	fLog = "";
 	// Receive
+	status_t err = B_OK;
 	
-	len = ReceiveLine(fLog);
+	while(1)
+	{
+		len = ReceiveLine(fLog);
+		PRINT(("S:%s\n",fLog.String() ));
+		if(len <= 0|fLog.Compare("+OK",3) == 0)
+			break;
+		else if(fLog.Compare("-ERR",4) == 0)
+		{
+			err = B_ERROR;
+			break;
+		}
+	}
+/*	len = ReceiveLine(fLog);
 	
 	if(len <= 0)
 		return B_ERROR;
@@ -602,8 +616,8 @@ PopClient::SendCommand(const char* cmd)
 	{
 		PRINT(("ERR:%s recv len :%d\n",fLog.String(),len));
 		return B_ERROR;
-	}
-	return B_OK;
+	}*/
+	return err;
 }
 
 
@@ -664,24 +678,24 @@ PopClient::MakeTime_t(const char* date)
 	hour = atoi(stime);
 	min = atoi(stime+3);
 	sec = atoi(stime+6);
-	PRINT(("TIME:%s\n",stime));
-	PRINT(("H:%d M:%d S:%d\n",hour,min,sec ));
+	//PRINT(("TIME:%s\n",stime));
+	//PRINT(("H:%d M:%d S:%d\n",hour,min,sec ));
 	// month
 	for(mon = 0;mon < 12;mon++)
 	{
 		if(strncmp(mons[mon],smon,3) == 0)
 			break;
 	}
-	PRINT(("MONTH:%s\n",smon));
-	PRINT(("M:%d\n",mon));
+	//PRINT(("MONTH:%s\n",smon));
+	//PRINT(("M:%d\n",mon));
 	// week of day
 	for(wday = 0;wday < 12;wday++)
 	{
 		if(strncmp(wdays[wday],swday,3) == 0)
 			break;
 	}
-	PRINT(("WEEK:%s\n",swday));
-	PRINT(("W:%d\n",wday));
+	//PRINT(("WEEK:%s\n",swday));
+	//PRINT(("W:%d\n",wday));
 	// offset 
 	char op = offset[0];
 	int off = atoi(offset+1);
@@ -689,8 +703,8 @@ PopClient::MakeTime_t(const char* date)
 		gmt_off  = (off/100)*60*60;
 	if(op == '-')
 		gmt_off  = -(off/100)*60*60;
-	PRINT(("GMT_OFF:%s\n",offset));
-	PRINT(("G:%d\n",gmt_off));
+	//PRINT(("GMT_OFF:%s\n",offset));
+	//PRINT(("G:%d\n",gmt_off));
 	struct tm btime;
 	btime.tm_sec = sec;
 	btime.tm_min = min;
