@@ -85,10 +85,10 @@ HMailItem::HMailItem(const entry_ref &ref,
 	SetColumnContent(2,fFrom.String());
 	SetColumnContent(3,fTo.String());
 	SetColumnContent(4,fDate.String());
-	//if(fStatus.Compare("New") == 0)
+	if(fStatus.Compare("New") == 0)
 		RefreshStatus();
-	//else
-	//	ResetIcon();
+	else
+		ResetIcon();
 }
 
 /***********************************************************
