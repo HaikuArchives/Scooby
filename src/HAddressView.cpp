@@ -347,7 +347,80 @@ HAddressView::MessageReceived(BMessage *message)
 }
 
 /***********************************************************
- *
+ * SetFrom
+ ***********************************************************/
+void
+HAddressView::SetFrom(const char* in_address)
+{
+	if( ::strlen(in_address) == 0)
+		return;
+	BString address;
+	// Parse address
+	char *p;
+	if ( (p = strstr(in_address, "<")) )
+	{
+		p++;
+		while( p)
+		{
+			if(*p++ == '>')
+				break;
+			address << (char)*p;
+		}
+	}else{
+		int32 len = strlen(in_address);
+		for(int32 i = 0;i < len;i++)
+		{
+			if(in_address[i] == ' ')
+				break;
+			address += in_address[i];
+		}
+	}
+	// Compare existing accounts	
+	char name[B_FILE_NAME_LENGTH];
+	BPath path;
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append(APP_NAME);
+	path.Append("Accounts");
+	BDirectory dir(path.Path());
+	status_t err = B_OK;
+	BEntry entry;
+	while(err == B_OK)
+	{
+		if( (err = dir.GetNextEntry(&entry)) != B_OK)
+			break;
+		BFile file(&entry,B_READ_ONLY);
+		if(file.InitCheck() == B_OK)
+		{
+			BMessage msg;
+			msg.Unflatten(&file);
+			BString reply,pop_host,pop_user;
+		
+			if(msg.FindString("pop_host",&pop_host) != B_OK)
+				pop_host = "";
+			if(msg.FindString("pop_user",&pop_user) != B_OK)
+				pop_user = "";
+			if(msg.FindString("reply_to",&reply) != B_OK)
+				reply = "";
+			
+			BString from("");
+			if(reply.Length() > 0)
+				from << reply;
+			else
+				from << pop_user << "@" << pop_host;
+			
+			// Change account
+			if(from.Compare(address) == 0)
+			{
+				entry.GetName(name);
+				ChangeAccount(name);
+				break;
+			}
+		}
+	}
+}
+
+/***********************************************************
+ * ChangeAccount
  ***********************************************************/
 void
 HAddressView::ChangeAccount(const char* name)
