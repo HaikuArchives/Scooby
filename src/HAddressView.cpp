@@ -418,23 +418,12 @@ HAddressView::SetFrom(const char* in_address)
 		{
 			BMessage msg;
 			msg.Unflatten(&file);
-			BString reply,pop_host,pop_user;
+			BString address;
 		
-			if(msg.FindString("pop_host",&pop_host) != B_OK)
-				pop_host = "";
-			if(msg.FindString("pop_user",&pop_user) != B_OK)
-				pop_user = "";
-			if(msg.FindString("reply_to",&reply) != B_OK)
-				reply = "";
-			
-			BString from("");
-			if(reply.Length() > 0)
-				from += reply;
-			else
-				from << pop_user << "@" << pop_host;
-			
+			if(msg.FindString("address",&address) != B_OK)
+				address = "";
 			// Change account
-			if(address.FindFirst(from) != B_ERROR)
+			if(address.FindFirst(address) != B_ERROR)
 			{
 				entry.GetName(name);	
 				ChangeAccount(name);
@@ -467,24 +456,20 @@ HAddressView::ChangeAccount(const char* name)
 	{
 		BMessage msg;
 		msg.Unflatten(&file);
-		BString name,reply,pop_host,pop_user;
+		BString name,from,address;
 		
-		if(msg.FindString("pop_host",&pop_host) != B_OK)
-			pop_host = "";
-		if(msg.FindString("pop_user",&pop_user) != B_OK)
-			pop_user = "";
-		if(msg.FindString("reply_to",&reply) != B_OK)
-			reply = "";
 		if(msg.FindString("real_name",&name) != B_OK)
 			name = "";
-		
-		BString from;
+		if(msg.FindString("address",&address) != B_OK)
+		{
+			address = "";
+			(new BAlert("",_("Cound not find your email address!\nPlease check your account"),_("OK")))->Go();
+			return;
+		}
 		if(name.Length() > 0)
 			from << "\"" <<name << "\" <";
-		if(reply.Length() > 0)
-			from << reply;
-		else
-			from << pop_user << "@" << pop_host;
+		from += address;
+		
 		if(name.Length() > 0)
 			from << ">";
 		fFrom->SetText(from.String());

@@ -109,20 +109,20 @@ HAccountView::InitGUI()
 	BBox *box = new BBox(rect,"Account Info");
 	box->SetLabel(_("Account Info"));
 	const float kDivider = StringWidth(_("POP password:"))+5;
-	const char* kLabel[] = {_("Account Name:"),_("POP host:"),_("POP port:"),_("POP user name:"),
+	const char* kLabel[] = {_("Account Name:"),_("E-Mail:"),_("POP host:"),_("POP port:"),_("POP user name:"),
 							_("POP password:"),_("SMTP host:"),_("Real name:"),
 							_("Reply to:")};
 	BTextControl *ctrl;
 	frame = box->Bounds();
 	frame.InsetBy(10,20);
 	frame.bottom = frame.top +25;
-	for(int32 i = 0;i < 8;i++)
+	for(int32 i = 0;i < 9;i++)
 	{
 		ctrl = new BTextControl(frame,kLabel[i],kLabel[i],"",NULL);
 		ctrl->SetDivider(kDivider);
 		box->AddChild(ctrl);
 		
-		if(i == 4)
+		if(i == 5)
 			ctrl->TextView()->HideTyping(true);
 		frame.OffsetBy(0,23);
 	}
@@ -239,13 +239,13 @@ HAccountView::MessageReceived(BMessage *message)
 void
 HAccountView::OpenAccount(int32 index)
 {
-	const char* kLabel[] = {_("Account Name:"),_("POP host:"),_("POP port:"),_("POP user name:"),
+	const char* kLabel[] = {_("Account Name:"),_("E-Mail:"),_("POP host:"),_("POP port:"),_("POP user name:"),
 							_("POP password:"),_("SMTP host:"),_("Real name:"),
 							_("Reply to:")};
 	if(index<0)
 	{
 err:
-		for(int32 i = 0;i < 8;i++)
+		for(int32 i = 0;i < 9;i++)
 		{
 			BTextControl *ctrl = cast_as(FindView(kLabel[i]),BTextControl);
 			ctrl->SetText("");
@@ -273,17 +273,18 @@ err:
 	
 	BMessage msg;
 	msg.Unflatten(&file);
-	
-	
-	const char* kName[] = {"name","pop_host","pop_port","pop_user",
+	// For earlier version compatibility
+	bool refresh = false;
+	//
+	const char* kName[] = {"name","address","pop_host","pop_port","pop_user",
 						"pop_password","smtp_host","real_name","reply_to"};
 	
-	for(int32 i = 0;i < 8;i++)
+	for(int32 i = 0;i < 9;i++)
 	{
 		BString str;
 		msg.FindString(kName[i],&str);
 		BTextControl *ctrl = cast_as(FindView(kLabel[i]),BTextControl);
-		if(i == 4)
+		if(i == 5)
 		{		
 			const char* text = str.String();
 			BString pass("");
@@ -291,6 +292,25 @@ err:
 			for(int32 k = 0;k < len;k++)
 				pass << (char)(255-text[k]);
 			ctrl->SetText(pass.String());
+		}else if(i == 1){
+			// For earlier version compatibility
+			if(msg.FindString(kName[i],&str) != B_OK)
+			{
+				msg.FindString(kName[8],&str);
+				if(str.Length() > 0)
+				{
+					ctrl->SetText(str.String());
+				}else{
+					msg.FindString(kName[4],&str);
+					str += "@";
+					BString tmp;
+					msg.FindString(kName[2],&tmp);
+					str += tmp;
+				}
+				refresh = true;
+			}
+			//
+			ctrl->SetText(str.String());
 		}else{
 			msg.FindString(kName[i],&str);
 			ctrl->SetText(str.String());
@@ -323,6 +343,13 @@ err:
 	field->Menu()->ItemAt(protocol)->SetMarked(true);
 	
 	SetEnableControls(true);
+	// For earlier version compatibility
+	if(refresh)
+	{
+		SaveAccount(index);
+		PRINT(("Account refreshed\n"));
+	}
+	//
 }
 
 /***********************************************************
@@ -354,14 +381,14 @@ HAccountView::New()
 	
 	fListView->AddItem(new BStringItem(path.Leaf()));
 	
-	const char* kName[] = {"name","pop_host","pop_port","pop_user",
+	const char* kName[] = {"name","address","pop_host","pop_port","pop_user",
 						"pop_password","smtp_host","real_name","reply_to"};
 	BMessage msg(B_SIMPLE_DATA);
-	for(int32 i = 0;i < 8;i++)
+	for(int32 i = 0;i < 9;i++)
 	{
 		if(i == 0)
 			msg.AddString(kName[i],path.Leaf());
-		else if(i == 2)
+		else if(i == 3)
 			msg.AddString(kName[i],"110");
 		else
 			msg.AddString(kName[i],"");
@@ -419,20 +446,20 @@ HAccountView::SaveAccount(int32 index)
 		return;
 	}
 	
-	const char* kLabel[] = {_("Account Name:"),_("POP host:"),_("POP port:"),_("POP user name:"),
+	const char* kLabel[] = {_("Account Name:"),_("E-Mail:"),_("POP host:"),_("POP port:"),_("POP user name:"),
 							_("POP password:"),_("SMTP host:"),_("Real name:"),
 							_("Reply to:")};
-	const char* kName[] = {"name","pop_host","pop_port","pop_user",
+	const char* kName[] = {"name","address","pop_host","pop_port","pop_user",
 						"pop_password","smtp_host","real_name","reply_to"};
 
 	// rewrite all settings
 	
 	BMessage msg(B_SIMPLE_DATA);
 	msg.Unflatten(&file);
-	for(int32 i = 0;i < 8;i++)
+	for(int32 i = 0;i < 9;i++)
 	{
 		ctrl = cast_as(FindView(kLabel[i]),BTextControl);
-		if(i == 4)
+		if(i == 5)
 		{
 			const char* text = ctrl->Text();
 			BString pass("");
@@ -484,11 +511,11 @@ HAccountView::SaveAccount(int32 index)
 void
 HAccountView::SetEnableControls(bool enable)
 {
-	const char* kLabel[] = {_("Account Name:"),_("POP host:"),_("POP port:"),_("POP user name:"),
+	const char* kLabel[] = {_("Account Name:"),_("E-Mail:"),_("POP host:"),_("POP port:"),_("POP user name:"),
 							_("POP password:"),_("SMTP host:"),_("Real name:"),
 							_("Reply to:")};
 	BTextControl *ctrl;					
-	for(int32 i = 0;i < 8;i++)
+	for(int32 i = 0;i < 9;i++)
 	{
 		ctrl = cast_as(FindView(kLabel[i]),BTextControl);
 		ctrl->SetEnabled(enable);
