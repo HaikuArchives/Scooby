@@ -156,7 +156,7 @@ HAddressView::InitGUI()
 	
 	if(!fReadOnly && query.Fetch() == B_OK)
 	{
-		BString addr1,addr2,name,group;
+		BString addr1,addr2,name,group,nick;
 		entry_ref ref;
 		BList peopleList;
 	
@@ -174,9 +174,19 @@ HAddressView::InitGUI()
 				addr2 = "";
 			if(node.ReadAttrString("META:group",&group) != B_OK)
 				group = "";
+			if(node.ReadAttrString("META:nickname",&nick) != B_OK)
+				nick = "";
 			if(addr1.Length() > 0)
 			{
+				if(nick.Length() != 0)
+				{
+					nick += " <";
+					nick += addr1;
+					nick += ">";
+					fAddrList.AddItem(strdup(nick.String()));
+				}
 				fAddrList.AddItem(strdup(addr1.String()));
+				
 				BString title = name;
 				title << " <" << addr1 << ">";
 			
