@@ -137,6 +137,7 @@ HWriteWindow::InitMenu()
 							rsrc_utils.GetBitmapResource('BBMP',"PageSetup"));
 	aMenu->AddSeparatorItem();					
 	utils.AddMenuItem(aMenu,"Close",B_QUIT_REQUESTED,this,this,'W',0);
+	utils.AddMenuItem(aMenu,"Quit",B_QUIT_REQUESTED,be_app,be_app,'Q',0);
 	
     menubar->AddItem( aMenu ); 
     //  Edit
