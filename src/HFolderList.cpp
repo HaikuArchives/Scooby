@@ -111,6 +111,21 @@ HFolderList::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
+	case M_GATHER_ALL_MAILS:
+	{
+		bool gather;
+		((HApp*)be_app)->Prefs()->GetData("load_list_on_start_up",&gather);
+		if(!gather)
+			break;
+		int32 count = fPointerList.CountItems();
+		for(int32 i = 0;i < count;i++)
+		{
+			HFolderItem *item = (HFolderItem*)fPointerList.ItemAt(i);
+			if(item && item->FolderType() == FOLDER_TYPE)
+				item->StartGathering();		
+		}
+		break;
+	}
 	case M_ADD_IMAP4_FOLDER:
 	{
 		RectUtils utils;
@@ -136,8 +151,7 @@ HFolderList::MessageReceived(BMessage *message)
 		HFolderItem *item;
 		HFolderItem *parent;
 		
-		bool gather;
-		((HApp*)be_app)->Prefs()->GetData("load_list_on_start_up",&gather);
+		
 		bool expand = false;
 		
 		for(int32 i = 0;i < count;i++)
@@ -156,8 +170,6 @@ HFolderList::MessageReceived(BMessage *message)
 			AddUnder(item,parent);
 			
 			fPointerList.AddItem(item);
-			if(gather && item->FolderType() == FOLDER_TYPE)
-					item->StartGathering();
 		}
 		break;
 	}
@@ -202,8 +214,6 @@ HFolderList::MessageReceived(BMessage *message)
 					AddUnder(item,fLocalFolders);
 				}
 				fPointerList.AddItem(item);
-				if(gather && item->FolderType() == FOLDER_TYPE)
-					item->StartGathering();
 			}
 		}
 		SortItems();
@@ -474,7 +484,7 @@ HFolderList::GetFolders(void* data)
 		list->Window()->PostMessage(&childMsg,list);
 	
 	list->fThread =  -1;
-	
+	list->Window()->PostMessage(M_GATHER_ALL_MAILS,list);
 	return 0;
 }
 
@@ -520,6 +530,7 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 				entry.GetRef(&ref);
 				childMsg.AddPointer("item",(item = new HFolderItem(ref,list)));
 				childMsg.AddPointer("parent",parentItem);
+				parentItem->IncreaseChildItemCount();
 				GetChildFolders(entry,item,list,childMsg);			
 			}
 		} 
@@ -554,10 +565,7 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 			entry.GetRef(&ref);
 			childMsg.AddPointer("item",(item = new HFolderItem(ref,list)));
 			childMsg.AddPointer("parent",parentItem);	
-			if(!parentItem->IsSuperItem())
-			{
-				parentItem->SetSuperItem(true);
-			}
+			parentItem->IncreaseChildItemCount();
 			GetChildFolders(entry,item,list,childMsg);			
 		} 
 	}
