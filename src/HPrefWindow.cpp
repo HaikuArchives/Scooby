@@ -17,7 +17,7 @@
  * Constructor
  ***********************************************************/
 HPrefWindow::HPrefWindow(BRect win_rect)
-	:_inherited(win_rect,_("Preferences"),B_TITLED_WINDOW_LOOK,B_MODAL_APP_WINDOW_FEEL,
+	:BWindow(win_rect,_("Preferences"),B_TITLED_WINDOW_LOOK,B_MODAL_APP_WINDOW_FEEL,
 		B_NOT_RESIZABLE|B_NOT_ZOOMABLE|B_ASYNCHRONOUS_CONTROLS|B_NOT_CLOSABLE)
 {
 	//this->AddShortcut(B_RETURN,0,new BMessage(M_APPLY_MESSAGE));	
@@ -88,7 +88,7 @@ HPrefWindow::MessageReceived(BMessage *message)
 		fFilterView->AddFolderItem(message);
 		break;
 	default:
-		_inherited::MessageReceived(message);
+		BWindow::MessageReceived(message);
 	}
 }
 
@@ -99,5 +99,5 @@ HPrefWindow::MessageReceived(BMessage *message)
 bool
 HPrefWindow::QuitRequested()
 {
-	return _inherited::QuitRequested();
+	return BWindow::QuitRequested();
 }
