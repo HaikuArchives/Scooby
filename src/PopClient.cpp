@@ -510,15 +510,19 @@ PopClient::Delete(int32 index)
 	BString out;
 	int32 r = 0;
 	status_t err = B_OK;
-	while(1)
+	if(fLog.Compare("+OK",3) != 0 && fLog.Compare("-ERR",4) != 0)
 	{
-		r = ReceiveLine(out);
-		if(r <= 0|out.Compare("+OK",3) == 0)
-			break;
-		else if(out.Compare("-ERR",4) == 0)
+		while(1)
 		{
-			err = B_ERROR;
-			break;
+			r = ReceiveLine(out);
+			PRINT(("out:%s\n",out.String() ));
+			if(r <= 0|out.Compare("+OK",3) == 0)
+				break;
+			else if(out.Compare("-ERR",4) == 0)
+			{
+				err = B_ERROR;
+				break;
+			}
 		}
 	}
 	return err;
@@ -567,25 +571,12 @@ PopClient::PopQuit()
 	
 	if( SendCommand(cmd.String()) != B_OK)
 		return B_ERROR;
-	BString out;
-	int32 r = 0;
-	status_t err = B_OK;
-	while(1)
-	{
-		r = ReceiveLine(out);
-		if(r <= 0|out.Compare("+OK",3) == 0)
-			break;
-		else if(out.Compare("-ERR",4) == 0)
-		{
-			err = B_ERROR;
-			break;
-		}
-	}
+	
 	fEndpoint->Close();
 	delete fEndpoint;
 	fEndpoint = NULL;
 	
-	return err;	
+	return B_OK;	
 }
 
 /***********************************************************
