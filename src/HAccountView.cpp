@@ -82,11 +82,11 @@ HAccountView::InitGUI()
 	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
-	path.Append(_("Accounts"));
+	path.Append("Accounts");
 	BDirectory dir(path.Path());
 	BEntry entry;
 	status_t err = B_OK;
-
+	
 	while(err == B_OK)
 	{
 		if((err = dir.GetNextEntry(&entry)) == B_OK 
