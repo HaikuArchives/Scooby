@@ -896,6 +896,7 @@ status_t HMailView::Save(BMessage *msg)
 			fFile->Seek(enclosure->file_offset, 0);
 			size = fFile->Read(data, enclosure->file_length);
 			data[enclosure->file_length] = '\0';
+			PRINT(("%s\n",data));
 			if (enclosure->type == TYPE_BE_ENCLOSURE)
 				SaveBeFile(&file, data, size);
 			else {
@@ -1195,16 +1196,19 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 				offset = start;
 			}else
 				len = (data + size) - offset;
-			// Decode base64
-			if ((encoding) && (cistrstr(encoding, "base64")))
-			{
-				saved_len = len;
-				len = decode_base64(offset, offset, len, true);
-			}
 			// Convert to utf8
-			if (((is_text) && (!type)) || ((is_text) && (type) && (!cistrstr(type, "name=")))) {
+			if (((is_text) && (!type)) || ((is_text) && (type) && (!cistrstr(type, "name="))))
+			{
 				utf8 = NULL;
 				saved_len = 0;
+				
+				// Decode base64
+				if ((encoding) && (cistrstr(encoding, "base64")))
+				{
+					saved_len = len;
+					len = decode_base64(offset, offset, len, true);
+				}
+				
 				if ((type) && (get_parameter(type, "charset=", type))) {
 					charset = type;
 					saved_len = len;
@@ -1222,7 +1226,6 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 					encode.ConvertToUTF8(&utf8,encode.DefaultEncoding());
 					len = ::strlen(utf8);
 				}
-				
 				if (utf8) {
 					result = strip_it(utf8, len, info);
 					delete[] utf8;
