@@ -1,4 +1,5 @@
 #include "AddOnMenu.h"
+#include "IconMenuItem.h"
 
 #include <Directory.h>
 #include <Entry.h>
@@ -15,9 +16,11 @@
  ***********************************************************/
 AddOnMenu::AddOnMenu(const char *title,
 					const char* directory_name,
-					int32	what)
+					int32	what,
+					bool		use_icon)
 		:BMenu(title)
 		,fWhat(what)
+		,fUseIcon(use_icon)
 {
 	::find_directory(B_USER_DIRECTORY,&fPath);
 	fPath.Append("config/add-ons");
@@ -65,12 +68,14 @@ AddOnMenu::Build()
 	itemList.MakeEmpty();
 	char 		name[B_FILE_NAME_LENGTH];
 	char		shortcut = 0;
+	BBitmap 	*bitmap(NULL);
 	
 	while(dir.GetNextEntry(&entry,true) == B_OK)
 	{
 		if(entry.IsFile() && entry.GetRef(&ref) == B_OK)
 		{	
 			shortcut = 0;
+			bitmap = NULL;
 			BMessage *msg = new BMessage(fWhat);
 			msg->AddRef("refs",&ref);
 			// make name and shortcut
@@ -81,7 +86,9 @@ AddOnMenu::Build()
 				shortcut = name[nameLen-1];
 				name[nameLen-2] = '\0';
 			}
-			itemList.AddItem(new BMenuItem(name,msg,shortcut));
+			if(fUseIcon)
+				bitmap = GetIcon(ref);
+			itemList.AddItem(new IconMenuItem(name,msg,shortcut,0,bitmap));
 		}
 	}
 	
@@ -90,7 +97,18 @@ AddOnMenu::Build()
 	
 	int32 count = itemList.CountItems();
 	for(int32 i = 0;i < count;i++)
-		AddItem((BMenuItem*)itemList.ItemAt(i));
+		AddItem((IconMenuItem*)itemList.ItemAt(i));
+}
+
+/***********************************************************
+ * GetIcon
+ ***********************************************************/
+BBitmap*
+AddOnMenu::GetIcon(entry_ref &ref)
+{
+	BBitmap bitmap(BRect(0,0,15,15),B_CMAP8);
+	BNodeInfo::GetTrackerIcon(&ref,&bitmap,B_MINI_ICON);
+	return new BBitmap(&bitmap);
 }
 
 /***********************************************************
