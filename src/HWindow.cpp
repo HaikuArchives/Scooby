@@ -617,6 +617,14 @@ HWindow::MessageReceived(BMessage *message)
 		SendPendingMails();
 		break;
 	}
+	// Delete Folders
+	case M_DELETE_FOLDER:
+	{
+		int32 i,k = 0;
+		while((i = fFolderList->CurrentSelection(k++)) >= 0)
+			DeleteFolder(i);
+		break;
+	}
 	// Open with e-mail
 	case M_OPEN_WITH_MSG:
 	{
@@ -1594,6 +1602,41 @@ HWindow::AddCheckFromItems()
 			subMenu->AddItem(new BMenuItem(name,msg));
 		}
 	}
+}
+
+/***********************************************************
+ * DeleteFolder
+ ***********************************************************/
+void
+HWindow::DeleteFolder(int32 sel)
+{
+	HFolderItem *item = cast_as(fFolderList->RemoveFolder(sel),HFolderItem);
+	if(!item)
+		return;
+	TrackerUtils utils;
+	
+	switch(item->FolderType())
+	{
+	case FOLDER_TYPE:
+	case QUERY_TYPE:
+		utils.MoveToTrash(item->Ref());
+		break;
+	case IMAP4_TYPE:
+	{
+		BPath path;
+		::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+		path.Append(APP_NAME);
+		path.Append("Accounts");
+		path.Append("IMAP4");
+		path.Append(item->FolderName());
+		
+		entry_ref ref;
+		::get_ref_for_path(path.Path(),&ref);		
+		utils.MoveToTrash(ref);
+		break;
+	}
+	}
+	delete item;
 }
 
 /***********************************************************

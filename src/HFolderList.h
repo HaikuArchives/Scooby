@@ -41,7 +41,7 @@ public:
 				void	AddToMailList(HMailItem *item);
 				void	RemoveFromMailList(HMailItem *item,bool free = false);
 
-
+		HFolderItem*	RemoveFolder(int32 index);
 protected:
 		virtual void 	MessageReceived(BMessage *message);		
 		static	int32 	GetFolders(void *data);
