@@ -135,6 +135,8 @@ void
 HHtmlView::SetEncoding(EncodingMessages encoding)
 {
 	BMessage msg(encoding);
+	if(!fNetPositiveView)
+		return;
 	BView *view = fNetPositiveView->FindView("__NetPositive__HTMLView");
 	if(view)
 		Window()->PostMessage(&msg,view);	
