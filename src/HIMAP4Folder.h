@@ -24,13 +24,15 @@ public:
 			int			Port()const {return fPort;}
 	const char*			Password() const{return fPassword.String();}
 	const char*			RemoteFolderName() const{return fRemoteFolderName.String();}
-	
+			void		SetRemoteFolderName(const char* folder) {fRemoteFolderName = folder;}
+	const char*			AccountName() const {return fAccountName.String();}
+			void		SetAccountName(const char* name){fAccountName = name;}
+			
 			void		SetServer(const char* addr) {fServer = addr;}
 			void		SetLogin(const char* login) {fLogin = login;}
 			void		SetPort(int port) {fPort = port;}
 			void		SetPassword(const char* pass){fPassword = pass;}
-			void		SetRemoteFolderName(const char* folder) {fRemoteFolderName = folder;}
-
+			
 			void		SetFolderGathered(bool gathered) {fFolderGathered = gathered;}
 			void		SetChildFolder(bool child) {fChildItem = child;}
 			bool		IsChildFolder() const {return fChildItem;}
@@ -49,8 +51,9 @@ private:
 		int				fPort;
 		BString			fLogin;
 		BString			fPassword;
-		BString			fRemoteFolderName;
-		BString			fDisplayedFolderName;
+		BString			fRemoteFolderName; //!<Remove folder name with path.
+		BString			fDisplayedFolderName;//!<Folder name converted to UTF8
+		BString			fAccountName;		//!<IMAP4 account name
 		bool			fFolderGathered;
 		bool			fChildItem;
 };

@@ -55,6 +55,10 @@ public:
 		bool		IsAlive();
 		//!Logout.
 		void		Logout();
+		//!Copy
+		status_t	Copy(int32 number,const char* dest_path);
+		//!Create new mailbox
+		status_t	Create(const char* path,const char* name);
 protected:
 		status_t	SendCommand(const char* str);
 		int32		ReceiveLine(BString &out);

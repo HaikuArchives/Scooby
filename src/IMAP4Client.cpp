@@ -644,3 +644,21 @@ IMAP4Client::CheckSessionEnd(const char* str,int32 session)
 	}	
 	return IMAP_SESSION_CONTINUED;
 }
+
+/***********************************************************
+ * Create
+ ***********************************************************/
+status_t
+IMAP4Client::Create(const char* path,const char* name)
+{
+	return B_OK;
+}
+
+/***********************************************************
+ * Copy
+ ***********************************************************/
+status_t
+IMAP4Client::Copy(int32 number,const char* dest_path)
+{
+	return B_OK;
+}

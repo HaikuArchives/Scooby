@@ -39,6 +39,7 @@ HIMAP4Folder::HIMAP4Folder(const char* name,
 	,fFolderGathered(false)
 	,fChildItem(false)
 {
+	SetAccountName(name);
 }
 
 /***********************************************************
@@ -305,6 +306,7 @@ HIMAP4Folder::GatherChildFolders()
 		delete[] buf;
 		folder->SetFolderGathered(true);
 		folder->SetChildFolder(true);
+		folder->SetAccountName(AccountName());
 		free( name );
 	}
 	
