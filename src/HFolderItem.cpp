@@ -86,7 +86,6 @@ HFolderItem::HFolderItem(const char* name,int32 type,BListView *target)
 	,fRefreshThread(-1)
 	,fFolderType(IMAP4_TYPE)
 {	
-	fName = name;
 	fMailList.MakeEmpty();
 	BBitmap *icon(NULL);
 	if(type == IMAP4_TYPE)
@@ -344,7 +343,7 @@ HFolderItem::SetName(int32 unread)
 		title << " [" << fUnread << "]";
 		SetColumnContent(LABEL_COLUMN,title.String());
 	}else
-		SetColumnContent(LABEL_COLUMN,BPath(&fFolderRef).Leaf());
+		SetColumnContent(LABEL_COLUMN,fName.String());
 }
 
 /***********************************************************
