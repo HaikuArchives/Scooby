@@ -213,7 +213,7 @@ HPopClientView::MessageReceived(BMessage *message)
 				break;
 			}
 			// make list
-			char *buf = list.LockBuffer(0);
+			char *buf = const_cast<char*>(list.String());
 			char *p = strtok(buf,"\n");
 			int size,index,count = 0;
 			char uidl[35];
@@ -244,8 +244,6 @@ HPopClientView::MessageReceived(BMessage *message)
 				}
 				p = strtok('\0',"\n");
 			}
-			
-			list.UnlockBuffer();
 			
 			if(count==0)
 			{
