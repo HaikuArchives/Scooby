@@ -13,7 +13,7 @@ LOCAL_INCLUDE_PATHS = ./libs/ComboBox ./libs/Utils ./libs/Santa ./libs/Toolbar
 # OPTIMIZE
 OPTIMIZE= FULL
 # Defines
-DEFINES= DEBUG USE_SCANDIR
+DEFINES= DEBUG USE_SCANDIR BONE
 # USE_SPLOCALE: Enable SpLocale supprt
 # USE_ICONV:	Enable iconv support
 USE_SPLOCALE = 0
