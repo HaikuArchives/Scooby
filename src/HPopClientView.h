@@ -12,7 +12,7 @@ class HPopClientView :public BView {
 public:
 					HPopClientView(BRect rect
 								,const char* name);
-	virtual 		~HPopClientView();
+			 		~HPopClientView();
 			void	PopConnect(const char* name,
 							const char* addr,int16 port,
 							const char* login,const char* pass);
@@ -45,10 +45,12 @@ public:
 							bool *is_delete);
 			int16	RetrieveType() const {return fRetrieve;}
 protected:
-	virtual void	MessageReceived(BMessage *message);
-	virtual void	Draw(BRect updateRect);
-	virtual	void	Pulse();
-
+	//@{
+	//!Override function.
+			void	MessageReceived(BMessage *message);
+			void	Draw(BRect updateRect);
+			void	Pulse();
+	//@}
 			BRect	BarberPoleInnerRect() const;	
 			BRect	BarberPoleOuterRect() const;
 			bool	Filter(const char* key,

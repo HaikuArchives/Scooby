@@ -25,11 +25,11 @@ public:
 			void		AddToHistory(const char* text);
 protected:
 	//!Destructor.
-	virtual				~HFindWindow();
+						~HFindWindow();
 	//@{
 	//!Override function.
-	virtual	void		MessageReceived(BMessage *message);
-	virtual bool		QuitRequested();
+			void		MessageReceived(BMessage *message);
+			bool		QuitRequested();
 	//@}
 private:
 	BHandler			*fTarget; // Search target handler.

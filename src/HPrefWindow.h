@@ -21,11 +21,11 @@ public:
 					HPrefWindow(BRect rect);
 protected:
 			//!Destructor.
-	virtual			~HPrefWindow();
+					~HPrefWindow();
 	//@{
 	//!Override function.
-	virtual	void	MessageReceived(BMessage *message);
-	virtual bool	QuitRequested();
+			void	MessageReceived(BMessage *message);
+			bool	QuitRequested();
 	//@}
 private:
 	HFilterView*	fFilterView;

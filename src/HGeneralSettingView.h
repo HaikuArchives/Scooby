@@ -10,12 +10,12 @@ enum{
 class HGeneralSettingView :public BView {
 public:
 					HGeneralSettingView(BRect rect);
-	virtual			~HGeneralSettingView();	
+					~HGeneralSettingView();	
 			void	Save();
 			void	InitGUI();
 protected:
-	virtual void	MessageReceived(BMessage *message);
-	virtual	void	AttachedToWindow();
+			void	MessageReceived(BMessage *message);
+			void	AttachedToWindow();
 private:
 	
 };

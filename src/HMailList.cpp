@@ -19,6 +19,7 @@
 #include <PopUpMenu.h>
 #include <MenuItem.h>
 #include <E-mail.h>
+#include <PropertyInfo.h>
 
 /***********************************************************
  * Scripting properties

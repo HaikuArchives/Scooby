@@ -47,11 +47,14 @@ public:
 					//! Constructor for sent mails.
 					HWriteWindow(BRect rect,const char* name,entry_ref &ref);		
 protected:
-	virtual			~HWriteWindow();
-	virtual	void	MessageReceived(BMessage *message);
-	virtual bool	QuitRequested();
-	virtual void	DispatchMessage(BMessage *message,BHandler *handler);
-	virtual void	MenusBeginning();
+					~HWriteWindow();
+	//@{
+	//!Override function.
+			void	MessageReceived(BMessage *message);
+			bool	QuitRequested();
+			void	DispatchMessage(BMessage *message,BHandler *handler);
+			void	MenusBeginning();
+	//@}
 			void	InitMenu();
 			void	InitGUI();
 		status_t	SaveMail(bool send_now,entry_ref &ref,bool multipart);

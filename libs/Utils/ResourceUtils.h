@@ -14,7 +14,7 @@ class ResourceUtils :public BLocker {
 public:	
 			ResourceUtils(BResources *rsrc = NULL);
 			ResourceUtils(const char* path);
-virtual		~ResourceUtils();
+			~ResourceUtils();
 
 	void	SetResource(BResources *rsrc);
 	void	SetResource(const char* path);

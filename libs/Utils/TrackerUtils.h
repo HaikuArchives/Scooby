@@ -10,7 +10,7 @@
 class TrackerUtils {
 public:
 					TrackerUtils();
-	virtual			~TrackerUtils();
+					~TrackerUtils();
 	
 			void	MoveToTrash(entry_ref file_ref);
 			void	OpenFolder(entry_ref folder_ref);

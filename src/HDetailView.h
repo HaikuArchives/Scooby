@@ -22,7 +22,7 @@ public:
 	//! Constructor
 					HDetailView(BRect rect,bool readOnly = false);
 	//! Destructor
-	virtual			~HDetailView();
+					~HDetailView();
 	//! Set all TextControl as readonly.
 			void	SetReadOnly(bool enable);
 	//! Set all values to be displayed.
@@ -39,7 +39,7 @@ protected:
 	//! Initialize all GUI.
 			void	InitGUI();
 	//! Override functions.
-	virtual void	MessageReceived(BMessage *message);
+			void	MessageReceived(BMessage *message);
 private:
 	MultiLineTextControl	*fSubject;
 	MultiLineTextControl	*fFrom;

@@ -18,14 +18,15 @@ public:
 									int8 		enclosure,
 									int32		index,
 									IMAP4Client	*client);
-	virtual				~HIMAP4Item();
+						~HIMAP4Item();
+	//@{
+	//!Override function.
+			void		SetRead();
+			void		RefreshStatus();
+			void		RefreshEnclosureAttr();
 	
-	virtual	void		SetRead();
-	virtual	void		RefreshStatus();
-	virtual	void		RefreshEnclosureAttr();
-	
-	virtual	entry_ref	Ref();
-
+			entry_ref	Ref();
+	//@}
 			void		Delete();
 			
 			bool		IsDownloaded() const { return fGotContent;}

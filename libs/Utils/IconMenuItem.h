@@ -9,7 +9,7 @@
 #ifndef __ICONMENUITEM_H__
 #define __ICONMENUITEM_H__
 
-#include <Be.h>
+#include <MenuItem.h>
 
 class IconMenuItem :public BMenuItem {
 public:
@@ -17,11 +17,11 @@ public:
 							char shortcut = 0,uint32 modifiers = 0,BBitmap *bitmap = NULL);
 					IconMenuItem(BMenu *submenu,BMessage *message,
 							char shortcut = 0,uint32 modifiers = 0,BBitmap *bitmap = NULL);
-	virtual			~IconMenuItem();
+		virtual		~IconMenuItem();
 			void	SetBitmap(BBitmap *bitmap);
 protected:
-	virtual void	DrawContent();
-	virtual void	GetContentSize(float *width ,float *height);
+	virtual	void	DrawContent();
+	virtual	void	GetContentSize(float *width ,float *height);
 private:
 		BBitmap 	*fBitmap;
 		float 		fHeightDelta;

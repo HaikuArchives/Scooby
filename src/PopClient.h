@@ -27,7 +27,7 @@ public:
 		//!Constructor.
 					PopClient(BHandler *handler,BLooper *looper);
 		//!Destructor.
-	virtual			~PopClient();
+					~PopClient();
 		//!Login to POP3 server.
 		status_t	Login(const char* user		//!<Login name.
 						,const char* password 	//!<Password.
@@ -70,8 +70,8 @@ protected:
 			void	PostError();
 	//@{
 	//!Override function.
-	virtual void	MessageReceived(BMessage *msg);	
-	virtual bool	QuitRequested();
+			void	MessageReceived(BMessage *msg);	
+			bool	QuitRequested();
 	//@}	
 		//!Make time_t struct from date string.
 		time_t		MakeTime_t(const char* date);

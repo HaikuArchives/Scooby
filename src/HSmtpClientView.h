@@ -13,7 +13,7 @@ enum{
 class HSmtpClientView :public BView {
 public:
 						HSmtpClientView(BRect rect,const char* name);
-	virtual				~HSmtpClientView();
+						~HSmtpClientView();
 	
 			void	StartBarberPole();
 			void	StopBarberPole();
@@ -31,10 +31,12 @@ public:
 			
 			void	Cancel();
 protected:
-	virtual void	MessageReceived(BMessage *message);
-	virtual void	Draw(BRect updateRect);
-	virtual	void	Pulse();
-		
+	//@{
+	//!Override function.
+			void	MessageReceived(BMessage *message);
+			void	Draw(BRect updateRect);
+			void	Pulse();
+	//@}
 			BRect	BarberPoleInnerRect() const;	
 			BRect	BarberPoleOuterRect() const;
 private:

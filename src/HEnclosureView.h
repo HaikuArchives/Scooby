@@ -15,7 +15,7 @@ public:
 			//!Constructor.
 						HEnclosureView(BRect rect);
 			//!Destructor.
-	virtual				~HEnclosureView();
+						~HEnclosureView();
 			//!Initalize all GUI.
 			void		InitGUI();
 			//!Add enclosure item by entry_ref.
@@ -37,8 +37,8 @@ public:
 protected:
 	//@{
 	//!Override function.
-	virtual void		MessageReceived(BMessage *message);
-	virtual void		KeyDown(const char* bytes,int32 numBytes);
+		 	void		MessageReceived(BMessage *message);
+		 	void		KeyDown(const char* bytes,int32 numBytes);
 	//@}
 	//!Handle drop files action.
 			void		WhenDropped(BMessage *message);

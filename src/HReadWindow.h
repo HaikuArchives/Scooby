@@ -25,13 +25,13 @@ public:
 	
 protected:
 			//!Destructor.
-	virtual				~HReadWindow();
+						~HReadWindow();
 	//@{
 	//! Override function.
-	virtual void		MessageReceived(BMessage *message);
-	virtual	bool		QuitRequested();
-	virtual void		MenusBeginning();
-	virtual void		DispatchMessage(BMessage *message,BHandler *handler);
+		 	void		MessageReceived(BMessage *message);
+		 	bool		QuitRequested();
+		 	void		MenusBeginning();
+		 	void		DispatchMessage(BMessage *message,BHandler *handler);
 	//@}
 			//!Initialize all GUI.
 			void		InitGUI();

@@ -12,10 +12,12 @@ class HQueryItem : public HFolderItem
 public:
 					HQueryItem(const entry_ref &ref,
 								BListView *target);
-	virtual			~HQueryItem();
-	
-	virtual	void	StartRefreshCache();
-	virtual void	StartGathering();
+					~HQueryItem();
+	//@{
+	//!Override function.
+			void	StartRefreshCache();
+			void	StartGathering();
+	//@}
 protected:
 			void	Fetching();
 	static	int32	FetchingThread(void* data);
