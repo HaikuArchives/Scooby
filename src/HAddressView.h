@@ -48,11 +48,11 @@ public:
 	BTextControl*	FocusedView() const;
 		//! Set account from "From" address.
 		void		SetFrom(const char* from/*<Address to guess account.*/);
+		//!	Change current account by account name.
+		void		ChangeAccount(const char* name/*<Account name*/);
 protected:
 		//! Override function.
 			void	MessageReceived(BMessage *message);
-		//!	Change current account by account name.
-			void	ChangeAccount(const char* name/*<Account name*/);
 		//! Add person menu item to menu field.
 			void	AddPerson(BMenu *menu //< Menu to be added menu items.
 							,const char* title //< MenuItem title.

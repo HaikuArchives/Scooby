@@ -146,6 +146,31 @@ HAccountView::InitGUI()
 												,menu);
 	menuField->SetDivider(kDivider);
 	box->AddChild(menuField);
+	
+	frame.OffsetBy(0,23);
+	menu = new BMenu("signature");
+	menu->AddItem(new BMenuItem(_("<none>"),NULL));
+	// Scan all signatures
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append(APP_NAME);
+	path.Append("Signatures");
+	dir.SetTo(path.Path());
+	char name[B_FILE_NAME_LENGTH];
+	while(dir.GetNextEntry(&entry) == B_OK)
+	{
+		if(entry.IsDirectory())
+			continue;
+		entry.GetName(name);
+		menu->AddItem(new BMenuItem(name,NULL));
+	}
+	menu->SetRadioMode(true);
+	menu->SetLabelFromMarked(true);
+	menu->ItemAt(0)->SetMarked(true);
+	menuField = new BMenuField(frame,"signature",_("Signature:")
+												,menu);
+	menuField->SetDivider(kDivider);
+	box->AddChild(menuField);
+	
 	AddChild(box);
 	// POP3 Options
 	rect.OffsetBy(rect.Width()+3,0);
@@ -348,6 +373,21 @@ err:
 	else
 		checkbox->SetValue(B_CONTROL_OFF);
 	
+	const char* kPath;
+	msg.FindString("signature",&kPath);
+	field = cast_as(FindView("signature"),BMenuField);
+	BMenu *menu = field->Menu();
+	
+	if(!kPath || ::strlen(kPath) == 0)
+		menu->ItemAt(0)->SetMarked(true);
+	else{
+		path.SetTo(kPath);
+		BMenuItem *menuitem = menu->FindItem(path.Leaf());
+		if(menuitem)
+			menuitem->SetMarked(true);
+		else
+			menu->ItemAt(0)->SetMarked(true);
+	}
 	SetEnableControls(true);
 }
 
@@ -387,6 +427,7 @@ HAccountView::New()
 	msg.AddInt32("delete_day",5);
 	msg.AddInt16("protocol_type",0);
 	msg.AddBool("smtp_auth",false);
+	msg.AddString("signature","");
 	msg.Flatten(&file);
 }
 
@@ -491,6 +532,19 @@ HAccountView::SaveAccount(int32 index)
 	msg.RemoveData("smtp_auth");
 	msg.AddBool("smtp_auth",checkbox->Value());
 	
+	field = cast_as(FindView("signature"),BMenuField);
+	menu = field->Menu();
+	if(menu->IndexOf(menu->FindMarked())==0)
+		msg.AddString("signature","");
+	else if(menu->FindMarked()){
+		BPath path;
+		::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+		path.Append(APP_NAME);
+		path.Append("Signatures");
+		path.Append(menu->FindMarked()->Label());
+		msg.AddString("signature",path.Path());
+	}
+	
 	file.Seek(0,SEEK_SET);
 	ssize_t numBytes;
 	msg.Flatten(&file,&numBytes);
@@ -536,6 +590,11 @@ HAccountView::SetEnableControls(bool enable)
 	
 	BCheckBox *checkbox = cast_as(FindView("smtp_auth"),BCheckBox);
 	checkbox->SetEnabled(enable);
+	
+	field = cast_as(FindView("signature"),BMenuField);
+	field->SetEnabled(enable);
+	if(!enable)
+		field->Menu()->ItemAt(0)->SetMarked(true);
 }
 
 /***********************************************************

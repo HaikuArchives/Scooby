@@ -461,8 +461,6 @@ HWriteWindow::InitGUI()
 	ArrowButton *button = cast_as(fTopView->FindView("addr_arrow"),ArrowButton);
 	button->SetState((int32)bValue);
 	fTopView->EnableJump(!bValue);
-	if(fReplyItem)
-		fTopView->SetFrom(fReplyItem->fTo.String());
 	rect.OffsetBy(0,rect.Height()+1);
 	prefs->GetData("expand_enclosure",&bValue);
 
@@ -533,7 +531,18 @@ HWriteWindow::InitGUI()
 	
 	
 	AddChild(toolbox);
-	
+	if(fReplyItem)
+		fTopView->SetFrom(fReplyItem->fTo.String());	
+	else{
+		BMenuField *field = cast_as(fTopView->FindView("FromMenu"),BMenuField);
+		BMenuItem *item(NULL);
+		item = field->Menu()->FindMarked();
+		if(item)
+		{
+			fTopView->ChangeAccount(item->Label());
+			item->SetMarked(true);	
+		}
+	}
 }
 
 /***********************************************************

@@ -3,7 +3,6 @@
 #include "StatusItem.h"
 #include "HApp.h"
 
-#include <String.h>
 #include <Debug.h>
 #include <File.h>
 #include <stdio.h>
@@ -44,6 +43,26 @@ DisallowMetaKeys(BTextView *textView)
 	textView->DisallowChar(B_PAGE_UP);
 	textView->DisallowChar(B_PAGE_DOWN);
 	textView->DisallowChar(B_FUNCTION_KEY);
+}
+
+BString& operator << (BString &str,BFile &file)
+{
+	int32 orglen = str.Length();
+	off_t size;
+	file.GetSize(&size);
+	char *buf = str.LockBuffer(orglen+size+1);
+	buf+=orglen;
+	size = file.Read(buf,size);
+	buf[size]='\0';
+	str.UnlockBuffer();
+	return str;
+}
+
+
+BString& operator >> (BString &str,BFile &file)
+{
+	file.Write(str.String(),str.Length());
+	return str;
 }
 
 

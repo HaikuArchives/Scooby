@@ -3,6 +3,8 @@
 
 #include <Alert.h>
 #include <TextView.h>
+#include <String.h>
+#include <File.h>
 class StatusItem;
 
 //Misc functions.
@@ -41,4 +43,7 @@ void	Alert(alert_type type,const char* format,...);
 time_t	MakeTime_t(const char* date);
 //! Get application version from its resource.
 void	GetAppVersion(BString &out);
+//! 
+BString& operator << (BString &str,BFile &file);
+BString& operator >> (BString &str,BFile &file);
 #endif
