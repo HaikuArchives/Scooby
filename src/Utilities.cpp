@@ -3,6 +3,7 @@
 #include "StatusItem.h"
 #include "HApp.h"
 
+#include <OS.h>
 #include <Debug.h>
 #include <File.h>
 #include <stdio.h>
@@ -15,6 +16,7 @@
 #include <Node.h>
 #include <stdlib.h>
 #include <Resources.h>
+#include <NodeMonitor.h>
 
 typedef struct {
 uint32 v1;
@@ -435,3 +437,48 @@ void GetAppVersion(BString &version)
 		}
 	}
 }
+
+/***********************************************************
+ * Node monitor hack
+ ***********************************************************/
+
+// This version of watch_node can increase the total
+// nb of availlable node_monitor slots.
+
+extern "C" int _kset_mon_limit_(int num);
+
+// Ripped from OpenTracker
+namespace Scooby
+{
+
+static int32 gNodeMonitorCount = 4096;
+const int32 kNodeMonitorBumpValue = 512;
+
+status_t watch_node(const node_ref *node, uint32 flags, BHandler *handler, BLooper *looper)
+{
+	status_t result = ::watch_node(node, flags, handler, looper);
+
+	if (result == B_OK || result != ENOMEM)
+		// need to make sure this uses the same error value as
+		// the node monitor code
+		return result;
+	
+	PRINT(("failed to start monitoring, trying to allocate more node monitors\n"));
+
+	gNodeMonitorCount += kNodeMonitorBumpValue;
+	PRINT(("bumping nodeMonitorCount to %d\n", gNodeMonitorCount));
+	result = _kset_mon_limit_(gNodeMonitorCount);
+	
+	if (result != B_OK) {
+		PRINT(("failed to allocate more node monitors, %s\n", strerror(result)));
+		return result;
+	}
+
+	// try again, this time with more node monitors
+	return ::watch_node(node, flags, handler, looper);
+}
+
+}
+
+
+

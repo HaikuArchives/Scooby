@@ -54,7 +54,7 @@ HFolderItem::HFolderItem(const entry_ref &ref,BListView *target)
 	
 	BEntry entry(&ref);
 	entry.GetNodeRef(&fNodeRef);
-	::watch_node(&fNodeRef,B_WATCH_DIRECTORY|B_WATCH_NAME,this);
+	Scooby::watch_node(&fNodeRef,B_WATCH_DIRECTORY|B_WATCH_NAME,this);
 	
 	if(BPath(&ref).InitCheck() == B_OK)
 		fName = BPath(&ref).Leaf();
@@ -148,7 +148,7 @@ HFolderItem::AddMail(HMailItem *item)
 {
 	fMailList.AddItem(item);
 	
-	::watch_node(&item->fNodeRef,B_WATCH_ATTR,this);
+	Scooby::watch_node(&item->fNodeRef,B_WATCH_ATTR,this);
 	
 	if(!item->IsRead())
 		SetUnreadCount(fUnread+1);
@@ -163,7 +163,7 @@ HFolderItem::RemoveMail(HMailItem* item)
 	fMailList.RemoveItem(item);
 	if(!item->IsRead())
 		SetUnreadCount(fUnread-1);
-	::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
+	Scooby::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
 }
 
 /***********************************************************
@@ -184,7 +184,7 @@ HFolderItem::RemoveMail(entry_ref& ref)
 			item = (HMailItem*)fMailList.RemoveItem(i);
 			if(!item->IsRead())
 				SetUnreadCount(fUnread-1);
-			::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
+			Scooby::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
 			return item;
 		}
 	}
@@ -203,7 +203,7 @@ HFolderItem::RemoveMail(node_ref &nref)
 		fMailList.RemoveItem(item);
 		if(!item->IsRead())
 				SetUnreadCount(fUnread-1);
-		::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
+		Scooby::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
 		PRINT(("remove\n"));
 		return item;
 	}
@@ -249,7 +249,7 @@ HFolderItem::AddMails(BList* list)
 			continue;
 		if(!item->IsRead())
 			unread++;
-		::watch_node(&item->fNodeRef,B_WATCH_ATTR,this);
+		Scooby::watch_node(&item->fNodeRef,B_WATCH_ATTR,this);
 	}
 	SetUnreadCount(fUnread+unread);
 }
@@ -268,7 +268,7 @@ HFolderItem::RemoveMails(BList* list)
 		if(!item)
 			continue;
 		fMailList.RemoveItem(item);
-		::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
+		Scooby::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
 		if(!item->IsRead())
 			fUnread--;
 	}
@@ -718,7 +718,7 @@ HFolderItem::EmptyMailList()
 	if (fOwner->LockLooper()) {
 		while (!fMailList.IsEmpty()) {
 			HMailItem *item = static_cast<HMailItem *>(fMailList.RemoveItem((int32)0));
-			::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
+			Scooby::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
 			delete item;
 		}
 		fOwner->UnlockLooper();

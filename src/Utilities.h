@@ -46,4 +46,10 @@ void	GetAppVersion(BString &out);
 //! 
 BString& operator << (BString &str,BFile &file);
 BString& operator >> (BString &str,BFile &file);
+
+
+namespace Scooby {
+status_t watch_node(const node_ref *node, uint32 flags, BHandler *handler, BLooper *looper=NULL);
+};
+
 #endif

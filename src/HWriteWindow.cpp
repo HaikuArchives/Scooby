@@ -1948,13 +1948,13 @@ HWriteWindow::WatchDraftAndTemplateFolders()
 	if( entry.SetTo(path.Path()) == B_OK)
 	{
 		entry.GetNodeRef(&nref);
-		::watch_node(&nref,B_WATCH_DIRECTORY|B_WATCH_NAME,this,this);
+		Scooby::watch_node(&nref,B_WATCH_DIRECTORY|B_WATCH_NAME,this,this);
 	}
 	GetTemplatesPath(path);
 	if( entry.SetTo(path.Path()) == B_OK)
 	{
 		entry.GetNodeRef(&nref);
-		::watch_node(&nref,B_WATCH_DIRECTORY|B_WATCH_NAME,this,this);
+		Scooby::watch_node(&nref,B_WATCH_DIRECTORY|B_WATCH_NAME,this,this);
 	}
 }
 
