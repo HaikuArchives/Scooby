@@ -469,7 +469,7 @@ void HMailView::MouseDown(BPoint where)
 					item = fMenu->Go(point, TRUE);
 					if (item)
 					{
-						if (item->Message()->what == M_SAVE)
+						if (item->Message()&&item->Message()->what == M_SAVE)
 						{
 							if (fPanel)
 								fPanel->SetEnclosure(enclosure);
@@ -494,7 +494,7 @@ void HMailView::MouseDown(BPoint where)
 		if(!fIncoming)
 			return _inherited::MouseDown(where);
 		
-		BPopUpMenu* theMenu = new BPopUpMenu("Enclosure", FALSE, FALSE);
+		BPopUpMenu* theMenu = new BPopUpMenu("Enclosure");
 		BFont font(be_plain_font);
 		font.SetSize(10);
 		theMenu->SetFont(&font);
@@ -695,8 +695,9 @@ void HMailView::Open(hyper_text *enclosure)
 					if (dir.InitCheck() == B_NO_ERROR) {
 						if (enclosure->name)
 							sprintf(name1, "%s", enclosure->name);
-						else
-							sprintf(name1, "enclosure");
+						else{
+							sprintf(name1, "Untitled");
+						}
 						strcpy(name, name1);
 						while (dir.Contains(name)) {
 							sprintf(name, "%s_%d", name1, (int)index++);
@@ -866,7 +867,7 @@ status_t HMailView::Save(BMessage *msg)
 		}
 		
 		if ((result = dir.CreateFile(name, &file)) == B_NO_ERROR) {
-			data = new char[enclosure->file_length];
+			data = new char[enclosure->file_length+1];
 			fFile->Seek(enclosure->file_offset, 0);
 			size = fFile->Read(data, enclosure->file_length);
 			data[enclosure->file_length] = '\0';
@@ -877,10 +878,10 @@ status_t HMailView::Save(BMessage *msg)
 					is_text = ((cistrstr(enclosure->content_type, "text")) &&
 							  (!cistrstr(enclosure->content_type, B_MAIL_TYPE)));
 					size = decode_base64(data, data, size, is_text);
+					PRINT(("MIME-B\n"));
 				}else if ((enclosure->encoding) && (cistrstr(enclosure->encoding, "quoted-printable"))) {
 					PRINT(("MIME-Q\n"));
 					size = Encoding::decode_quoted_printable(data, data, size, false);
-					//PRINT(("%s\n",data));
 				}
 				file.Write(data, size);
 				file.SetSize(size);
