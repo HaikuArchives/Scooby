@@ -329,6 +329,34 @@ int HMailItem::CompareItems(const CLVListItem *a_Item1,
 			return 0;
 		else
 			return -1;
+	}else if(KeyColumn == 0){
+		const BBitmap *bitmap1 = ((HMailItem*)Item1)->GetColumnContentBitmap(0);
+		const BBitmap *bitmap2 = ((HMailItem*)Item2)->GetColumnContentBitmap(0);
+		const BBitmap *New = ((HApp*)be_app)->GetIcon("New");
+		const BBitmap *Read = ((HApp*)be_app)->GetIcon("Read");
+		const BBitmap *Replied = ((HApp*)be_app)->GetIcon("Replied");
+		const BBitmap *Forwarded = ((HApp*)be_app)->GetIcon("Forwarded");
+		const BBitmap *Sent = ((HApp*)be_app)->GetIcon("Sent");
+		const BBitmap *Error = ((HApp*)be_app)->GetIcon("Error");
+		
+		if(bitmap1 == bitmap2 )
+		{
+			if(Item1->fWhen > Item2 ->fWhen)
+				return 1;
+			else if(Item1->fWhen == Item2->fWhen)
+				return 0;
+			else
+				return -1;
+		}
+		if(bitmap1 == New || 
+			(bitmap1 == Read && bitmap2 != New )||
+			(bitmap1 == Replied && bitmap2 != New && bitmap2 != Read)||
+			(bitmap1 == Forwarded && bitmap2 != New && bitmap2 != Read && bitmap2 != Replied)||
+			(bitmap1 == Error && bitmap2 != New && bitmap2 != Read && bitmap2 != Replied && Forwarded)||
+			(bitmap1 == Sent))
+			return 1;
+		else
+			return -1;	
 	}else{
 	if(Item1 == NULL || Item2 == NULL || Item1->m_column_types.CountItems() <= KeyColumn ||
 		Item2->m_column_types.CountItems() <= KeyColumn)
