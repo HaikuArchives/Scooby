@@ -56,7 +56,7 @@ HAccountView::InitGUI()
 	BRect rect(Bounds());
 	rect.top += 10;
 	rect.left +=5;
-	rect.bottom-= 55;
+	rect.bottom-= 65;
 	rect.right = rect.left +100;
 	BRect frame;
 	
@@ -106,7 +106,7 @@ HAccountView::InitGUI()
 	
 	rect.right= Bounds().right -220;
 	//rect.OffsetBy(0,40);
-	rect.bottom = Bounds().bottom - 55;
+	rect.bottom = Bounds().bottom - 65;
 	BBox *box = new BBox(rect,"Account Info");
 	box->SetLabel(_("Account Info"));
 	const float kDivider = StringWidth(_("POP password:"))+5;
@@ -116,6 +116,7 @@ HAccountView::InitGUI()
 	BTextControl *ctrl;
 	frame = box->Bounds();
 	frame.InsetBy(10,20);
+	frame.top -= 5;
 	frame.bottom = frame.top +25;
 	for(int32 i = 0;i < 9;i++)
 	{
@@ -169,18 +170,22 @@ HAccountView::InitGUI()
 	num_ctrl->SetDivider(0);
 	box->AddChild(num_ctrl);
 	frame.OffsetBy(frame.Width()+3,-8);
-	BStringView *string_view = new BStringView(frame,NULL,_("days"));
+	frame.right+=5;
+	BStringView *string_view = new BStringView(frame,"days",_("days"));
 	box->AddChild(string_view);
 	AddChild(box);
 
 	
 	// Apply change button
 	rect.bottom = Bounds().bottom - 30;
-	rect.right = Bounds().right - 5;
+	rect.right = Bounds().right - 10;
 	rect.left = rect.right - 80;
-	rect.top = rect.bottom - 20;
-	
+	rect.top = rect.bottom - 30;
+	float width = rect.Width();
 	button = new BButton(rect,"apply",_("Apply Changes"),new BMessage(M_ACCOUNT_SAVE_CHANGED));
+	button->ResizeToPreferred();
+	if(width < button->Bounds().Width() )
+		button->MoveBy(width-button->Bounds().Width(),0 );
 	AddChild(button);
 	
 	SetEnableControls(false);

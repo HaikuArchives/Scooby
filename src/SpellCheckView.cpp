@@ -307,6 +307,8 @@ SpellCheckView::InitDictionaries()
 			if(q != NULL)
 			{
 				char *tmp = (char*)list->LastItem();
+				if(!tmp)
+					continue;
 				tmp[ strlen(tmp)- strlen(q) ] = '\0';
 				q++;
 				int32 oplen = strlen(q);
