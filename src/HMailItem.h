@@ -23,6 +23,7 @@ public:
 								  const char* subject,
 								  const char* from,
 								  const char* to,
+								  const char* cc,
 								  time_t	  when,
 								  const char* priority,
 								  int8	enclosure);

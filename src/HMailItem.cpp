@@ -86,6 +86,7 @@ HMailItem::HMailItem(const char* status,
 					const char*	subject,
 					const char* from,
 					const char* to,
+					const char* cc,
 					time_t	  when,
 					const char* priority,
 					int8 enclosure)
@@ -94,7 +95,7 @@ HMailItem::HMailItem(const char* status,
 	,fSubject(subject)
 	,fFrom(from)
 	,fTo(to)
-	,fCC("")
+	,fCC(cc)
 	,fWhen(when)
 	,fPriority(priority)
 	,fEnclosure(enclosure)
