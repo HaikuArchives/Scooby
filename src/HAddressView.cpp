@@ -418,12 +418,12 @@ HAddressView::SetFrom(const char* in_address)
 		{
 			BMessage msg;
 			msg.Unflatten(&file);
-			BString address;
+			BString myAddress;
 		
-			if(msg.FindString("address",&address) != B_OK)
-				address = "";
+			if(msg.FindString("address",&myAddress) != B_OK)
+				myAddress = "";
 			// Change account
-			if(address.FindFirst(address) != B_ERROR)
+			if(address.FindFirst(myAddress) != B_ERROR)
 			{
 				entry.GetName(name);	
 				ChangeAccount(name);
