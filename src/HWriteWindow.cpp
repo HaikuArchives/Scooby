@@ -854,7 +854,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	if(bcc.Length() !=0 )
 		header << "BCc: " << encoded_bcc << "\n";
 	header << "Subject: " << encoded_subject << "\n";
-	header << "From: " << from << "\n";
+	header << "From: " << encoded_from << "\n";
 	if(reply.Length() != 0)
 		header << "Reply-To: " << reply << "\n";
 	header << "Date: " << timeBuf << "\n";
