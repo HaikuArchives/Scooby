@@ -427,7 +427,7 @@ PopClient::Retr(int32 index,BString &content)
 	BString size_list;
 	
 	content = "";
-	
+	PRINT(("BLACKLIST COUNT:%d\n",fBlackListCount));
 	// Spam filter
 	if(index != 0 && fBlackListCount > 0)
 	{
