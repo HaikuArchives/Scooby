@@ -4,6 +4,8 @@
 #include <Message.h>
 #include <Entry.h>
 #include <Messenger.h>
+#include <File.h>
+#include <Directory.h>
 
 class TrackerUtils {
 public:
@@ -12,5 +14,16 @@ public:
 	
 			void	MoveToTrash(entry_ref file_ref);
 			void	OpenFolder(entry_ref folder_ref);
+			
+			void	SmartCreateFile(BFile *file,
+									BDirectory *destDir,
+									const char* name,
+									const char* suffix = " copy ",
+									uint32 mode = B_READ_WRITE);
+
+			void	SmartMoveFile(entry_ref &ref,
+									BDirectory *destDir,
+									const char* suffix = " copy ");
+			
 };
 #endif
