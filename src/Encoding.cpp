@@ -4,6 +4,7 @@
 
 #include <ctype.h>
 #include <Debug.h>
+#include <E-mail.h>
 
 enum {
 	NUL = 0,
@@ -285,9 +286,7 @@ Encoding::Mime2UTF8(BString &str)
 void
 Encoding::MimeDecode(BString &str,bool quoted_printable)
 {
-   int len, i, iR;
-   char a1, a2, a3, a4;
-   len = str.Length();
+   int32 len = str.Length();
    char *old = str.LockBuffer(0);
    if(len == 0)
    		return;
@@ -296,33 +295,17 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
    {
    		char *buf = new char[len+1];
    		decode_quoted_printable(buf,old,len,false);	
-   		str.UnlockBuffer();
    		str = buf;
    		delete[] buf;
    }else{	
    // MIME-B
-   		i = 0;
-    	iR = 0;
-    	while (1) {
-        	if (i >= len)
-        	    break;
-        	a1 = p_Charconv(old[i]);
-        	a2 = p_Charconv(old[i+1]);
-        	a3 = p_Charconv(old[i+2]);
-        	a4 = p_Charconv(old[i+3]);
-        	//printf("%c %c %c %c\n",old[i],old[i+1],old[i+2],old[i+3]);
-        	//printf("%c %c %c %c\n",a1,a2,a2,a3);
-        	old[iR] = (a1 << 2) | (a2 >>4);
-        	
-        	old[iR + 1] = (a2 << 4) | (a3 >>2);
-        	old[iR + 2] = (a3 << 6) | a4;
-        	
-        	iR += 3;    	
-        	i += 4;
-        }
-    	old[iR] = '\0';
-    	str.UnlockBuffer();
+  	 	char *buf = new char[len+1];
+ 		ssize_t size = decode_base64(buf, old, len); 
+   		buf[size] = '\0';
+   		str = buf;
+   		delete[] buf;
     }
+    str.UnlockBuffer();
 }
 
 /***********************************************************
@@ -701,7 +684,6 @@ Encoding::ConvertReturnsToCRLF(BString &str)
 void
 Encoding::ConvertReturnsToLF(BString &str)
 {	
-	int32 len = str.Length();
 	char *text = str.LockBuffer(0);
 	ConvertReturnsToLF(text);
 	str.UnlockBuffer();	
@@ -714,7 +696,6 @@ Encoding::ConvertReturnsToLF(BString &str)
 void
 Encoding::ConvertReturnsToCR(BString &str)
 {	
-	int32 len = str.Length();
 	char *text = str.LockBuffer(0);
 	ConvertReturnsToCR(text);
 	str.UnlockBuffer();	
@@ -771,23 +752,6 @@ Encoding::decode_quoted_printable(char *dest,char *in,off_t length,
    free(src);
    return k; 
 }
-
-/***********************************************************
- * unhex
- ***********************************************************/
-char 
-Encoding::unhex(char c)
-{
-  if ((c >= '0') && (c <= '9'))
-    return (c - '0');
-  else if ((c >= 'A') && (c <= 'F'))
-    return (c - 'A' + 10);
-  else if ((c >= 'a') && (c <= 'f'))
-    return (c - 'a' + 10);
-  else
-    return c;
-}
-
 
 /***********************************************************
  * FindCharset

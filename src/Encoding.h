@@ -54,7 +54,6 @@ protected:
 			bool	p_IsMultiByte(char c);
 			int32 	p_Encoding(const char *charset);
 			void	ToMime(BString &in, int32 encoding);
-	static	char	unhex(char c);
 private:		
 			int32	fDefaultEncoding;
 };
