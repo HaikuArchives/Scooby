@@ -1,15 +1,22 @@
 #include "HFindWindow.h"
 #include "HApp.h"
+#include "ComboBox.h"
 
 #include <View.h>
 #include <Button.h>
 #include <TextControl.h>
 #include <ClassInfo.h>
+#include <Debug.h>
+#include <File.h>
+#include <Path.h>
+#include <FindDirectory.h>
 
 enum{
 	M_TEXT_CHANGED = 'mTEC',
-	M_FIND = 'mFnd'	
+	M_FIND = 'mFnd'
 };
+
+#define MAX_HISTORIES 10
 
 /***********************************************************
  * Constructor
@@ -28,7 +35,7 @@ HFindWindow::HFindWindow(BRect rect,const char* name)
 	
 	BString label(_("Find"));
 	label += ": ";
-	BTextControl *control = new BTextControl(bounds,"text",label.String(),
+	ComboBox *control = new ComboBox(bounds,"text",label.String(),
 									"",NULL);
 	control->SetModificationMessage(new BMessage(M_TEXT_CHANGED));
 	control->SetDivider(view->StringWidth(label.String()) + 3);
@@ -42,7 +49,9 @@ HFindWindow::HFindWindow(BRect rect,const char* name)
 	btn->SetEnabled(false);
 	btn->MakeDefault(true);
 	AddChild(view);	
-	control->MakeFocus(true);
+	control->TextControl()->MakeFocus(true);
+	
+	LoadHistory();
 }
 
 /***********************************************************
@@ -50,7 +59,7 @@ HFindWindow::HFindWindow(BRect rect,const char* name)
  ***********************************************************/
 HFindWindow::~HFindWindow()
 {
-	BTextControl *ctrl = cast_as(FindView("text"),BTextControl);
+	ComboBox *ctrl = cast_as(FindView("text"),ComboBox);
 	ctrl->SetModificationMessage(NULL);
 }
 
@@ -63,19 +72,22 @@ HFindWindow::MessageReceived(BMessage *message)
 	switch(message->what)
 	{
 	case M_FIND:
-	{
-		BTextControl *ctrl = cast_as(FindView("text"),BTextControl);
+	{	
+		ComboBox *combo = cast_as(FindView("text"),ComboBox);
+		BTextControl *ctrl = combo->TextControl();
 		const char* text = ctrl->Text();
 		BMessage msg('find');
 		msg.AddString("findthis",text);
 		if(fTarget)
 			fTarget->Looper()->PostMessage(&msg,fTarget);
+		AddToHistory(text);
 		break;
 	}
 	case M_TEXT_CHANGED:
 	{
 		BButton *button = cast_as(FindView("find"),BButton);
-		BTextControl *ctrl = cast_as(FindView("text"),BTextControl);
+		ComboBox *combo = cast_as(FindView("text"),ComboBox);
+		BTextControl *ctrl = combo->TextControl();
 		if(ctrl->TextView()->TextLength() > 0)
 			button->SetEnabled(true);
 		else
@@ -98,5 +110,76 @@ HFindWindow::QuitRequested()
 		Hide();
 		return false;
 	}
+	SaveHistory();
 	return BWindow::QuitRequested();
+}
+
+/***********************************************************
+ * SaveHistory
+ ***********************************************************/
+void
+HFindWindow::SaveHistory()
+{
+	BPath path;
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append("Scooby");
+	path.Append("SearchHistory");
+	
+	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
+	
+	if(file.InitCheck() != B_OK)
+		return;
+	ComboBox *combo = cast_as(FindView("text"),ComboBox);
+	
+	int32 count = combo->CountItems();
+	
+	BMessage msg;
+	for(int32 i = 0;i < count;i++)
+		msg.AddString("text",combo->ItemAt(i));
+	msg.Flatten(&file);
+}
+
+/***********************************************************
+ * LoadHistory
+ ***********************************************************/
+void
+HFindWindow::LoadHistory()
+{
+	BPath path;
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append("Scooby");
+	path.Append("SearchHistory");
+	
+	BFile file(path.Path(),B_READ_ONLY);
+
+	if(file.InitCheck() != B_OK)
+		return;
+	BMessage msg;
+	msg.Unflatten(&file);
+	
+	ComboBox *combo = cast_as(FindView("text"),ComboBox);
+	
+	int32 count;
+	type_code type;
+	const char *text;
+	msg.GetInfo("text",&type,&count);
+	for(int32 i = count-1;i >= 0;i--)
+	{
+		if(msg.FindString("text",i,&text) == B_OK)
+			combo->AddItem(text);
+	}
+}
+
+/***********************************************************
+ * AddToHistory
+ ***********************************************************/
+void
+HFindWindow::AddToHistory(const char* text)
+{
+	ComboBox *combo = cast_as(FindView("text"),ComboBox);
+	combo->AddItem(text);
+	
+	int32 count = combo->CountItems();
+	if(count > MAX_HISTORIES)
+		combo->RemoveItem(MAX_HISTORIES+1);
 }
