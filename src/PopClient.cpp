@@ -13,6 +13,8 @@
 #include <Autolock.h>
 
 #define CRLF "\r\n"
+#define MAX_RECIEVE_BUF_SIZE 4096
+
 
 const bigtime_t kTimeout = 1000000*180; //timeout 180 secs
 	
@@ -431,25 +433,26 @@ PopClient::Retr(int32 index,BString &content)
 	BMessage msg(H_SET_MAX_SIZE);
 	msg.AddInt32("max_size",size);
 	fLooper->PostMessage(&msg,fHandler);
-	
-	msg.MakeEmpty();
 	msg.what = H_RECEIVING_MESSAGE;
 	msg.AddInt32("index",index);
 	msg.AddInt32("size",0);
 	content = "";
-	char *buf = new char[size+1];
+	
+	int32 buf_size = (size>MAX_RECIEVE_BUF_SIZE)?MAX_RECIEVE_BUF_SIZE:size;
+	char *buf = new char[buf_size+1];
 	int32 content_len = 0;
 	while(1)
 	{
 		if(fEndpoint->IsDataPending(kTimeout))
 		{
-			r = fEndpoint->Receive(buf,(size>0)?size:1);
+			r = fEndpoint->Receive(buf,(buf_size>0)?buf_size:1);
 			if(r <= 0)
 			{
 				PRINT(("Receive Err:%d %d %s\n",r,size,buf));
 				return B_ERROR;
 			}
 			size -= r;
+			buf_size = (size>MAX_RECIEVE_BUF_SIZE)?MAX_RECIEVE_BUF_SIZE:size;
 			content_len += r;
 			buf[r] = '\0';
 			content += buf;
