@@ -30,9 +30,9 @@ OPTIMIZE= FULL
 # Defines
 # if libbind.so exists, assume we are running BONE
 ifeq ($(wildcard /system/lib/libbind.so),)
-DEFINES= DEBUG USE_SCANDIR
+DEFINES= DEBUG=1 USE_SCANDIR=1
 else
-DEFINES= DEBUG USE_SCANDIR BONE
+DEFINES= DEBU=1G USE_SCANDIR=1 B_BEOS_BONE=1
 endif
 
 # Linker flag required by BONE
