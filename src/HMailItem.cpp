@@ -376,6 +376,10 @@ int HMailItem::CompareItems(const CLVListItem *a_Item1,
 			return 0;
 		else
 			return -1;
+	}else if(KeyColumn == 8){
+		if(Item1->fSize == Item2->fSize)
+			return 0;
+		return (Item1->fSize > Item2->fSize)?1:-1;
 	}else if(KeyColumn == 0){
 		const BBitmap *bitmap1 = ((HMailItem*)Item1)->GetColumnContentBitmap(0);
 		const BBitmap *bitmap2 = ((HMailItem*)Item2)->GetColumnContentBitmap(0);
