@@ -424,7 +424,7 @@ PopClient::Retr(int32 index,BString &content)
 	int32 size = atol(&log[4]);
 	int32 r;
 	//PRINT(("Content size:%d\n",size));
-	size += 4;
+	size += 5;
 	BMessage msg(H_SET_MAX_SIZE);
 	msg.AddInt32("max_size",size);
 	fLooper->PostMessage(&msg,fHandler);
@@ -442,7 +442,7 @@ PopClient::Retr(int32 index,BString &content)
 		{
 			r = fEndpoint->Receive(buf,size);
 			if(r <= 0)
-				break;
+				return B_ERROR;
 			size -= r;
 			content_len += r;
 			buf[r] = '\0';
@@ -450,15 +450,18 @@ PopClient::Retr(int32 index,BString &content)
 			msg.ReplaceInt32("size",r);
 			fLooper->PostMessage(&msg,fHandler);
 			
-			if(content[content_len-1] == '\n' && 
+			if(content_len > 4 &&
+			          content[content_len-1] == '\n' && 
 					content[content_len-2] == '\r' &&
-					content[content_len-3] == '.' &&
-					content[content_len-4] == '\n' )
+					content[content_len-3] == '.'  &&
+					content[content_len-4] == '\n' &&
+					content[content_len-5] == '\r' )
 				break;
 		}
 	}
+	
 	delete[] buf;
-	content.Truncate(content.Length()-4);
+	content.Truncate(content.Length()-5);
 	content.ReplaceAll("\n..","\n.");
 	return B_OK;
 }
