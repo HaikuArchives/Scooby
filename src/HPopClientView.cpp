@@ -984,11 +984,10 @@ HPopClientView::PlayNotifySound()
 	::system_beep("New E-mail");
 	// Change deskbar icon and Play LED animation
 	HWindow *window = cast_as(Window(),HWindow);
-	if(window && window->Lock())
+	if(window)
 	{
 		window->ChangeDeskbarIcon(DESKBAR_NEW_ICON);
 		window->PlayLEDAnimaiton();	
-		window->Unlock();
 	}
 }
 
