@@ -5,6 +5,7 @@
 #include "Encoding.h"
 #include "HWindow.h"
 #include "ExtraMailAttr.h"
+#include "TrackerUtils.h"
 
 #include <Autolock.h>
 #include <Bitmap.h>
@@ -525,40 +526,15 @@ HPopClientView::SaveMail(const char* all_content,
 	//PRINT(("path:%s\n",folder_path.String() ));
 	
 	// Save to disk
-	BString filename(subject);
-	filename.ReplaceAll("/","_");
-	filename.ReplaceAll(":","_");
-	filename.ReplaceAll("\n","");
-	filename.ReplaceAll("\r","");
-	filename.Truncate(B_FILE_NAME_LENGTH-3);
 	BPath path = folder_path.String();
 	::create_directory(path.Path(),0777);
-	path.Append(filename.String());
+	BDirectory destDir(path.Path());
+	path.Append(subject.String());
 	//PRINT(("path:%s\n",path.Path() ));
 	// create the e-mail file
 	BFile file;
-	status_t err = B_ERROR;
-	int32 i = 1;
-	BString tmpsubject("");
-	while(err != B_OK)
-	{
-		err = file.SetTo(path.Path(),B_WRITE_ONLY|B_CREATE_FILE|B_FAIL_IF_EXISTS);
-		if(err == B_OK)
-			break;
-		path.SetTo(folder_path.String());
-		tmpsubject.SetTo( filename );
-		BString index("_");
-		index <<i++;
-		tmpsubject << index;
-		if(i > 50)
-		{
-			tmpsubject = "";
-			tmpsubject	<<time(NULL);		
-		}
-		path.Append(tmpsubject.String());
-		
-		//PRINT(("%s\n",tmpsubject.String() ));
-	}
+
+	TrackerUtils().SmartCreateFile(&file,&destDir,path.Leaf(),"_");
 	// write e-mail attributes
 	file.Write(all_content,strlen(all_content));
 	file.SetSize(strlen(all_content));

@@ -1249,19 +1249,10 @@ HWindow::MoveFile(entry_ref file_ref,const char *kDir_Path)
 	//
 	if(BNode(&file_ref).InitCheck() != B_OK)
 		return;
-	int32 i = 0;
 	BPath filePath(&file_ref);
 	BDirectory destDir(kDir_Path);
-	BString name = filePath.Leaf();
-	
-	BString toName = name;
-	
-	BEntry entry(&file_ref);
-	while(entry.MoveTo(&destDir,toName.String(),false) != B_OK)
-	{
-		toName = name;
-		toName << "_" << ++i;
-	}
+
+	TrackerUtils().SmartMoveFile(file_ref,&destDir,"_");
 }
 
 /***********************************************************
@@ -1731,6 +1722,8 @@ HWindow::FilterMails(HMailItem *item)
 								item->fReply.String(),
 								out_path);
 	PRINT(("To:%s\n",out_path.String()));
+	if(BPath(out_path.String()).InitCheck() != B_OK)
+		return;
 
 	BPath default_path,current_path;
 	::find_directory(B_USER_DIRECTORY,&default_path);

@@ -10,6 +10,7 @@
 #include "HHtmlMailView.h"
 #include "HMailList.h"
 #include "HAttachmentList.h"
+#include "TrackerUtils.h"
 #include "HTabView.h"
 
 #include <Menu.h>
@@ -281,15 +282,8 @@ HReadWindow::MessageReceived(BMessage *message)
 			break;
 		}
 		BDirectory dir(&ref);
-		char name[B_FILE_NAME_LENGTH];
-		entry.GetName(name);
-		char *newName = new char[::strlen(name)+10];
-		::strcpy(newName,name);
-		int32 i = 0;
-		while(entry.MoveTo(&dir,newName) != B_OK)
-			::sprintf(newName,"%s_%ld",name,i++);
-
-		delete[] newName;
+		
+		TrackerUtils().SmartMoveFile(fRef,&dir,"_");
 		PostMessage(B_QUIT_REQUESTED);
 		break;
 	}
