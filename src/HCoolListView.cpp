@@ -10,16 +10,16 @@ const rgb_color highlight = {200,200,255,100};
  ***********************************************************/
 HCoolListView::HCoolListView(BRect frame,
 						CLVContainerView** ContainerView,
-						const char* Name = NULL,
-						uint32 ResizingMode = B_FOLLOW_LEFT | B_FOLLOW_TOP,
-						uint32 flags = B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE,
-						list_view_type Type = B_SINGLE_SELECTION_LIST,
-						bool hierarchical = false,
-						bool horizontal = true,
-						bool vertical = true,
-						bool scroll_view_corner = true,
-						border_style border = B_NO_BORDER,
-						const BFont* LabelFont = be_plain_font)
+						const char* Name,
+						uint32 ResizingMode,
+						uint32 flags,
+						list_view_type Type,
+						bool hierarchical,
+						bool horizontal,
+						bool vertical,
+						bool scroll_view_corner,
+						border_style border,
+						const BFont* LabelFont)
 	:_inherited(frame,ContainerView,Name,ResizingMode,flags,Type,
 					hierarchical,horizontal,vertical,scroll_view_corner,border,LabelFont)
 	,fOldSelection(-1)
