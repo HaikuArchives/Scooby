@@ -138,11 +138,6 @@ HPopClientView::MessageReceived(BMessage *message)
 			fGotMails = false;
 			fPopServers = new BMessage(*message);
 			fServerIndex = 0;
-			if(fPopClient->Lock())
-			{
-				fPopClient->InitBlackList();
-				fPopClient->Unlock();
-			}
 		}
 		
 		const char* address,*login,*password,*name;
@@ -404,6 +399,11 @@ HPopClientView::PopConnect(const char* name,
 	if(fPopClient)
 		fPopClient->PostMessage(B_QUIT_REQUESTED);
 	fPopClient = new PopClient(this,Window());
+	if(fPopClient->Lock())
+	{
+		fPopClient->InitBlackList();
+		fPopClient->Unlock();
+	}
 	BString label(_("Connecting to"));
 	label += " ";
 	label += address;
