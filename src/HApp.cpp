@@ -71,6 +71,7 @@ HApp::~HApp()
 	delete fForwardedMailIcon;
 	delete fSentMailIcon;
 	delete fRepliedMailIcon;
+	delete fErrorIcon;
 	delete fPriority1;
 	delete fPriority2;
 	delete fPriority4;
@@ -574,6 +575,7 @@ HApp::InitIcons()
 	fForwardedMailIcon = utils.GetBitmapResource('BBMP',"Forwarded");
 	fEnclosureIcon = utils.GetBitmapResource('BBMP',"Enclosure");
 	fPendingIcon = utils.GetBitmapResource('BBMP',"Pending");
+	fErrorIcon = utils.GetBitmapResource('BBMP',"Error");
 	fPriority1 = utils.GetBitmapResource('BBMP',"1");
 	fPriority2 = utils.GetBitmapResource('BBMP',"2");
 	fPriority4 = utils.GetBitmapResource('BBMP',"4");
@@ -608,6 +610,8 @@ HApp::GetIcon(const char* icon_name)
 		bitmap = fEnclosureIcon;
 	else if(strcmp(icon_name,"Pending")== 0)
 		bitmap = fPendingIcon;
+	else if(strcmp(icon_name,"Error") == 0)
+		bitmap = fErrorIcon;
 	else if(strcmp(icon_name,"1")== 0)
 		bitmap = fPriority1;
 	else if(strcmp(icon_name,"2")== 0)
