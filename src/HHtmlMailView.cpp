@@ -448,6 +448,11 @@ HHtmlMailView::LoadMessage(BFile *file)
 	}else{
 		if(content_type.Compare("text/html") != 0)
 		{
+			if(transfer_encoding&&::strcasecmp(transfer_encoding,"base64") == 0)
+					encode.MimeDecode(content,false);
+			else if(transfer_encoding&&::strcasecmp(transfer_encoding,"quoted-printable") == 0)
+					encode.MimeDecode(content,true);
+			
 			GetParameter(header,"charset=",&parameter);
 			Plain2Html(content,parameter,transfer_encoding);
 			delete[] parameter;

@@ -473,7 +473,7 @@ HPopClientView::SaveMail(const char* all_content,
 		{
 			if(all_content[i-2] == '\r'||all_content[i-1] == '\n')
 			{
-				header_len = i+3;
+				header_len = i+2;
 				break;
 			}
 		}
