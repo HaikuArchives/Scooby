@@ -257,21 +257,6 @@ SpellCheckView::CheckThread(void* data)
 }
 
 /***********************************************************
- * IsSameColor
- ***********************************************************/
-bool
-SpellCheckView::IsSameColor(rgb_color c1 ,rgb_color c2)
-{
-	if(c1.red == c2.red
-			&& c1.green == c2.green
-			&& c1.blue == c2.blue
-			&& c1.alpha == c2.alpha){
-		return true;
-	}
-	return false;
-}
-
-/***********************************************************
  * SetColor
  ***********************************************************/
 void
