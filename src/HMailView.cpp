@@ -54,8 +54,10 @@ HMailView::HMailView(BRect frame, bool incoming, BFile *file)
 	m_font.SetSize(10);
 	fMenu = new BPopUpMenu("Enclosure", FALSE, FALSE);
 	fMenu->SetFont(&m_font);
-	fMenu->AddItem(new BMenuItem("Save Enclosure"B_UTF8_ELLIPSIS, new BMessage(M_SAVE)));
-	fMenu->AddItem(new BMenuItem("Open Enclosure", new BMessage(M_ADD)));
+	BString label = _("Save Enclosure");
+	label += B_UTF8_ELLIPSIS;
+	fMenu->AddItem(new BMenuItem(label.String(), new BMessage(M_SAVE)));
+	fMenu->AddItem(new BMenuItem(_("Open Enclosure"), new BMessage(M_ADD)));
 	
 	ResetFont();
 }
@@ -482,12 +484,12 @@ void HMailView::MouseDown(BPoint where)
 		theMenu->SetFont(&font);
 		BMessage *msg =  new BMessage(M_HEADER);
 		msg->AddBool("header",!fHeader);
-		theMenu->AddItem((item = new BMenuItem("Show Header",msg,'H',0)));
+		theMenu->AddItem((item = new BMenuItem(_("Show Header"),msg,'H',0)));
 		item->SetMarked(fHeader);
 		item->SetEnabled( (fFile)?true:false);
 		msg = new BMessage(M_RAW);
 		msg->AddBool("raw",!fRaw);
-		theMenu->AddItem((item= new BMenuItem("Show Raw Message", msg)));
+		theMenu->AddItem((item= new BMenuItem(_("Show Raw Message"), msg)));
 		item->SetMarked(fRaw);
 		item->SetEnabled( (fFile)?true:false);
 		
@@ -495,15 +497,17 @@ void HMailView::MouseDown(BPoint where)
 		msg = new BMessage(M_PRINT_MESSAGE);
 		msg->AddPointer("view",this);
 		msg->AddString("job_name","untitled");
-		theMenu->AddItem((item = new BMenuItem("Print",msg,'P',0)));
+		theMenu->AddItem((item = new BMenuItem(_("Print"),msg,'P',0)));
 		item->SetEnabled( (TextLength() > 0)?true:false);
 		
 		start = OffsetAt(where);
 		items = fEnclosures->CountItems();
 		theMenu->AddSeparatorItem();
 		BMenuItem *saveItem,*openItem;
-		theMenu->AddItem( saveItem = new BMenuItem("Save Enclosure"B_UTF8_ELLIPSIS, new BMessage(M_SAVE)));
-		theMenu->AddItem( openItem = new BMenuItem("Open Enclosure", new BMessage(M_ADD)));
+		BString label = _("Save Enclosure");
+		label += B_UTF8_ELLIPSIS;
+		theMenu->AddItem( saveItem = new BMenuItem(label.String(), new BMessage(M_SAVE)));
+		theMenu->AddItem( openItem = new BMenuItem(_("Open Enclosure"), new BMessage(M_ADD)));
 		openItem->SetEnabled(false);
 		saveItem->SetEnabled(false);
 		enclosure = NULL;

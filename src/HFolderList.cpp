@@ -42,7 +42,7 @@ HFolderList::HFolderList(BRect frame,
 	expander_col->SetShown(false);
 	this->AddColumn(new CLVColumn(NULL,20,CLV_LOCK_AT_BEGINNING|CLV_NOT_MOVABLE|
 		CLV_NOT_RESIZABLE|CLV_PUSH_PASS|CLV_MERGE_WITH_RIGHT));
-	this->AddColumn(new CLVColumn("Folders",1024,CLV_SORT_KEYABLE|CLV_NOT_MOVABLE|CLV_PUSH_PASS));
+	this->AddColumn(new CLVColumn(_("Folders"),1024,CLV_SORT_KEYABLE|CLV_NOT_MOVABLE|CLV_PUSH_PASS));
 	SetViewColor(tint_color( ui_color(B_PANEL_BACKGROUND_COLOR),B_LIGHTEN_2_TINT));
 	SetInvocationMessage(new BMessage(M_OPEN_FOLDER));
 	SetSortFunction(HFolderItem::CompareItems);
@@ -552,7 +552,7 @@ HFolderList::MouseDown(BPoint pos)
     	 theMenu->SetFont(&font);
     	 
     	
-    	 BMenuItem *item = new BMenuItem("Recreate Cache",new BMessage(M_REFRESH_CACHE),0,0);
+    	 BMenuItem *item = new BMenuItem(_("Recreate Cache"),new BMessage(M_REFRESH_CACHE),0,0);
     	 if(sel < 0)
     	 	item->SetEnabled(false);
     	 else{

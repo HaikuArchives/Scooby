@@ -71,18 +71,18 @@ HAccountView::InitGUI()
 	frame.top = frame.bottom + 5;
 	frame.right= frame.left + 50;
 	BButton *button;
-	button = new BButton(frame,"del","Delete",new BMessage(M_DEL_ACCOUNT));
+	button = new BButton(frame,"del",_("Delete"),new BMessage(M_DEL_ACCOUNT));
 	button->SetEnabled(false);
 	AddChild(button);
 	frame.OffsetBy(55,0);
-	button = new BButton(frame,"add","Add",new BMessage(M_ADD_ACCOUNT));
+	button = new BButton(frame,"add",_("Add"),new BMessage(M_ADD_ACCOUNT));
 	AddChild(button);
 	
 	int32 i = 0;
 	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
-	path.Append("Accounts");
+	path.Append(_("Accounts"));
 	BDirectory dir(path.Path());
 	BEntry entry;
 	status_t err = B_OK;
@@ -107,11 +107,11 @@ HAccountView::InitGUI()
 	//rect.OffsetBy(0,40);
 	rect.bottom = Bounds().bottom - 55;
 	BBox *box = new BBox(rect,"Account Info");
-	box->SetLabel("Account Info");
-	const float kDivider = StringWidth("POP password:")+5;
-	const char* kLabel[] = {"Account Name:","POP host:","POP port:","POP user name:",
-							"POP password:","SMTP host:","Real name:",
-							"Reply to:"};
+	box->SetLabel(_("Account Info"));
+	const float kDivider = StringWidth(_("POP password:"))+5;
+	const char* kLabel[] = {_("Account Name:"),_("POP host:"),_("POP port:"),_("POP user name:"),
+							_("POP password:"),_("SMTP host:"),_("Real name:"),
+							_("Reply to:")};
 	BTextControl *ctrl;
 	frame = box->Bounds();
 	frame.InsetBy(10,20);
@@ -137,7 +137,7 @@ HAccountView::InitGUI()
 	menu->SetRadioMode(true);
 	menu->SetLabelFromMarked(true);
 	menu->ItemAt(0)->SetMarked(true);
-	BMenuField *menuField = new BMenuField(frame,"protocol","Protocol Type:"
+	BMenuField *menuField = new BMenuField(frame,"protocol",_("Protocol Type:")
 												,menu);
 	menuField->SetDivider(kDivider);
 	box->AddChild(menuField);
@@ -146,29 +146,29 @@ HAccountView::InitGUI()
 	rect.OffsetBy(rect.Width()+3,0);
 	rect.right = Bounds().right - 5;
 	box= new BBox(rect,"retrieving_option");
-	box->SetLabel("Retrieving Options");
+	box->SetLabel(_("Retrieving Options"));
 	frame = box->Bounds();
 	frame.InsetBy(10,20);
 	frame.bottom = frame.top +25;
 	
 
-	BRadioButton *radio = new BRadioButton(frame,"leave","Leave mails on the server",NULL);
+	BRadioButton *radio = new BRadioButton(frame,"leave",_("Leave mails on the server"),NULL);
 	box->AddChild(radio);
 	radio->SetValue(B_CONTROL_ON);
 	frame.OffsetBy(0,20);
-	radio = new BRadioButton(frame,"delete","Delete mails from server",NULL);
+	radio = new BRadioButton(frame,"delete",_("Delete mails from server"),NULL);
 	box->AddChild(radio);
 	frame.OffsetBy(0,20);
-	frame.right = frame.left + StringWidth("Delete mails after") + 30;
-	radio = new BRadioButton(frame,"delete_after","Delete mails after",NULL);
+	frame.right = frame.left + StringWidth(_("Delete mails after")) + 20;
+	radio = new BRadioButton(frame,"delete_after",_("Delete mails after"),NULL);
 	box->AddChild(radio);
 	frame.OffsetBy(frame.Width(),0);
-	frame.right = frame.left + 40;
+	frame.right = frame.left + 25;
 	NumberControl *num_ctrl = new NumberControl(frame,"day","",5,NULL);
 	num_ctrl->SetDivider(0);
 	box->AddChild(num_ctrl);
 	frame.OffsetBy(frame.Width()+3,-8);
-	BStringView *string_view = new BStringView(frame,NULL,"days");
+	BStringView *string_view = new BStringView(frame,NULL,_("days"));
 	box->AddChild(string_view);
 	AddChild(box);
 
@@ -179,7 +179,7 @@ HAccountView::InitGUI()
 	rect.left = rect.right - 80;
 	rect.top = rect.bottom - 20;
 	
-	button = new BButton(rect,"apply","Apply Change",new BMessage(M_ACCOUNT_SAVE_CHANGED));
+	button = new BButton(rect,"apply",_("Apply Change"),new BMessage(M_ACCOUNT_SAVE_CHANGED));
 	AddChild(button);
 	
 	SetEnableControls(false);
@@ -243,9 +243,9 @@ HAccountView::MessageReceived(BMessage *message)
 void
 HAccountView::OpenAccount(int32 index)
 {
-	const char* kLabel[] = {"Account Name:","POP host:","POP port:","POP user name:",
-							"POP password:","SMTP host:","Real name:",
-							"Reply to:"};
+	const char* kLabel[] = {_("Account Name:"),_("POP host:"),_("POP port:"),_("POP user name:"),
+							_("POP password:"),_("SMTP host:"),_("Real name:"),
+							_("Reply to:")};
 	if(index<0)
 	{
 err:
@@ -393,7 +393,7 @@ HAccountView::SaveAccount(int32 index)
 	BString old_name = item->Text();
 	
 	
-	BTextControl *ctrl = cast_as(FindView("Account Name:"),BTextControl);
+	BTextControl *ctrl = cast_as(FindView(_("Account Name:")),BTextControl);
 	path.Append(old_name.String());
 	
 	if(old_name.Compare(ctrl->Text()) != 0)
@@ -401,7 +401,7 @@ HAccountView::SaveAccount(int32 index)
 		BEntry entry(path.Path());
 		if(entry.Rename(ctrl->Text()) != B_OK)
 		{
-			(new BAlert("","Could not create account file","OK"))->Go();
+			(new BAlert("",_("Could not create account file"),_("OK")))->Go();
 			PRINT(("LINE:%d\n",__LINE__));
 			return;
 		}
@@ -417,15 +417,15 @@ HAccountView::SaveAccount(int32 index)
 	{
 		if(file.SetTo(path.Path(),B_WRITE_ONLY|B_CREATE_FILE|B_ERASE_FILE) != B_OK)
 		{
-			(new BAlert("","Could not create account file","OK"))->Go();
+			(new BAlert("",_("Could not create account file"),_("OK")))->Go();
 			PRINT(("LINE:%d\n",__LINE__));
 		}
 		return;
 	}
 	
-	const char* kLabel[] = {"Account Name:","POP host:","POP port:","POP user name:",
-							"POP password:","SMTP host:","Real name:",
-							"Reply to:"};
+	const char* kLabel[] = {_("Account Name:"),_("POP host:"),_("POP port:"),_("POP user name:"),
+							_("POP password:"),_("SMTP host:"),_("Real name:"),
+							_("Reply to:")};
 	const char* kName[] = {"name","pop_host","pop_port","pop_user",
 						"pop_password","smtp_host","real_name","reply_to"};
 
@@ -490,9 +490,9 @@ HAccountView::SaveAccount(int32 index)
 void
 HAccountView::SetEnableControls(bool enable)
 {
-	const char* kLabel[] = {"Account Name:","POP host:","POP port:","POP user name:",
-							"POP password:","SMTP host:","Real name:",
-							"Reply to:"};
+	const char* kLabel[] = {_("Account Name:"),_("POP host:"),_("POP port:"),_("POP user name:"),
+							_("POP password:"),_("SMTP host:"),_("Real name:"),
+							_("Reply to:")};
 	BTextControl *ctrl;					
 	for(int32 i = 0;i < 8;i++)
 	{

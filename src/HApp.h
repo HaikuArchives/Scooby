@@ -1,11 +1,14 @@
 #ifndef __HOTMAIL_TRANSFER_H__
 #define __HOTMAIL_TRANSFER_H__
 
-#include <Application.h>
+#include "LocaleApp.h"
 
 #define APP_NAME		"Scooby"
 #define QUERY_FOLDER	"Queries"
 #define APP_SIG			"application/x-vnd.takamatsu-scooby"
+
+#undef _(String)
+#define _(String) (String)
 
 class HWindow;
 class HPrefs;
@@ -33,5 +36,6 @@ private:
 		BMessage*			fPrintSettings;
 		HWindow 			*fWindow;
 		HPrefs				*fPref;
+		typedef	BApplication	_inherited;
 };
 #endif

@@ -1,4 +1,5 @@
 #include "HCriteriaView.h"
+#include "HApp.h"
 
 #include <Menu.h>
 #include <MenuItem.h>
@@ -33,11 +34,11 @@ HCriteriaView::InitGUI()
 	rect.top += 2;
 	rect.right = rect.left + 80;
 	BMenu *menu = new BMenu("menu");
-	menu->AddItem(new BMenuItem("Subject",NULL));
-	menu->AddItem(new BMenuItem("To",NULL));
-	menu->AddItem(new BMenuItem("From",NULL));
-	menu->AddItem(new BMenuItem("Cc",NULL));
-	menu->AddItem(new BMenuItem("Reply-To",NULL));
+	menu->AddItem(new BMenuItem(_("Subject"),NULL));
+	menu->AddItem(new BMenuItem(_("To"),NULL));
+	menu->AddItem(new BMenuItem(_("From"),NULL));
+	menu->AddItem(new BMenuItem(_("Cc"),NULL));
+	menu->AddItem(new BMenuItem(_("Reply-To"),NULL));
 	menu->ItemAt(0)->SetMarked(true);
 	menu->SetRadioMode(true);
 	menu->SetLabelFromMarked(true);
@@ -47,10 +48,10 @@ HCriteriaView::InitGUI()
 	
 	rect.OffsetBy(80,0);
 	menu = new BMenu("menu");
-	menu->AddItem(new BMenuItem("contain",NULL));
-	menu->AddItem(new BMenuItem("is",NULL));
-	menu->AddItem(new BMenuItem("begin with",NULL));
-	menu->AddItem(new BMenuItem("end with",NULL));
+	menu->AddItem(new BMenuItem(_("contain"),NULL));
+	menu->AddItem(new BMenuItem(_("is"),NULL));
+	menu->AddItem(new BMenuItem(_("begin with"),NULL));
+	menu->AddItem(new BMenuItem(_("end with"),NULL));
 	menu->ItemAt(0)->SetMarked(true);
 	menu->SetRadioMode(true);
 	menu->SetLabelFromMarked(true);

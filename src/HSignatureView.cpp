@@ -97,18 +97,18 @@ HSignatureView::InitGUI()
 	frame.top = frame.bottom + 5;
 	frame.right= frame.left + 50;
 	BButton *button;
-	button = new BButton(frame,"del","Delete",new BMessage(M_DEL_SIGNATURE));
+	button = new BButton(frame,"del",_("Delete"),new BMessage(M_DEL_SIGNATURE));
 	button->SetEnabled(false);
 	AddChild(button);
 	frame.OffsetBy(55,0);
-	button = new BButton(frame,"add","Add",new BMessage(M_ADD_SIGNATURE));
+	button = new BButton(frame,"add",_("Add"),new BMessage(M_ADD_SIGNATURE));
 	AddChild(button);
 	
 	rect.OffsetBy(rect.Width()+30,0);
 	rect.right= rect.left + 200;
 	rect.bottom = rect.top + 35;
-	fName = new BTextControl(rect,"name","Name:","",NULL);
-	fName->SetDivider(StringWidth("Name:")+5);
+	fName = new BTextControl(rect,"name",_("Name:"),"",NULL);
+	fName->SetDivider(StringWidth(_("Name:"))+5);
 	AddChild(fName);
 	
 	rect.right = Bounds().right - 5 - B_V_SCROLL_BAR_WIDTH;
@@ -126,7 +126,7 @@ HSignatureView::InitGUI()
 	rect.left = rect.right - 80;
 	rect.top = rect.bottom - 20;
 	
-	button = new BButton(rect,"apply","Apply Change",new BMessage(M_SIGNATURE_SAVE_CHANGED));
+	button = new BButton(rect,"apply",_("Apply Change"),new BMessage(M_SIGNATURE_SAVE_CHANGED));
 	AddChild(button);	
 	
 	SetEnableControls(false);
@@ -264,7 +264,7 @@ HSignatureView::SaveItem(int32 sel)
 		BEntry entry(path.Path());
 		if(entry.Rename(name.String()) != B_OK)
 		{
-			(new BAlert("","Could not rename signature file","OK"))->Go();
+			(new BAlert("",_("Could not rename signature file"),_("OK")))->Go();
 			return;
 		}
 		entry.GetPath(&path);
@@ -277,7 +277,7 @@ HSignatureView::SaveItem(int32 sel)
 	BFile file(path.Path(),B_WRITE_ONLY);
 	if(file.InitCheck() != B_OK)
 	{
-		(new BAlert("","Could not open signature file","OK"))->Go();
+		(new BAlert("",_("Could not open signature file"),_("OK")))->Go();
 		return;
 	}
 	

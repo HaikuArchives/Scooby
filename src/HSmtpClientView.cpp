@@ -2,6 +2,7 @@
 #include "ResourceUtils.h"
 #include "HMailItem.h"
 #include "SmtpClient.h"
+#include "HApp.h"
 
 #include <Font.h>
 #include <Autolock.h>
@@ -79,7 +80,7 @@ HSmtpClientView::MessageReceived(BMessage *message)
 		fSmtpClient->PostMessage(message);
 		StopProgress();
 		StartBarberPole();
-		fStringView->SetText("Sending Mails…");
+		fStringView->SetText(_("Sending Mails…"));
 		break;
 	}
 	// End of smtp session
@@ -98,8 +99,8 @@ HSmtpClientView::MessageReceived(BMessage *message)
 	// Smtp session error
 	case M_SMTP_ERROR:
 	{
-		BString err("SMTP ERROR\n");
-		err << message->FindString("log");
+		BString err(_("SMTP ERROR"));
+		err << "\n" << message->FindString("log");
 		beep();
 		(new BAlert("",err.String(),"OK",NULL,NULL,B_WIDTH_AS_USUAL
 											,B_STOP_ALERT))->Go();

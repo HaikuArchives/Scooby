@@ -91,8 +91,8 @@ HPopClientView::MessageReceived(BMessage *message)
 	case H_ERROR_MESSAGE:
 	{
 		PRINT(("POP ERROR\n"));
-		BString err_str("POP3 ERROR\n");
-		err_str << message->FindString("log");
+		BString err_str(_("POP3 ERROR"));
+		err_str << "\n" << message->FindString("log");
 		beep();
 		(new BAlert("",err_str.String(),"OK",NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		fPopClient->PostMessage(B_QUIT_REQUESTED);
@@ -392,8 +392,8 @@ HPopClientView::PopConnect(const char* name,
 	if(fPopClient)
 		fPopClient->PostMessage(B_QUIT_REQUESTED);
 	fPopClient = new PopClient(this,Window());
-	BString label("Connecting to ");
-	label << address << "…";
+	BString label(_("Connecting to"));
+	label << " " << address << "…";
 	fStringView->SetText(label.String());
 	BMessage msg(H_CONNECT_MESSAGE);
 	msg.AddString("address",address);

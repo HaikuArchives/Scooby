@@ -68,7 +68,7 @@ HApp::MessageReceived(BMessage *message)
 		break;
 	}
 	default:
-		BApplication::MessageReceived(message);
+		_inherited::MessageReceived(message);
 	}	
 }
 
@@ -91,7 +91,7 @@ HApp::ArgvReceived(int32 argc,char** argv)
 			break;
 		}
 	}
-	BApplication::ArgvReceived(argc,argv);
+	_inherited::ArgvReceived(argc,argv);
 }
 
 /***********************************************************
@@ -219,7 +219,7 @@ HApp::AddSoundEvent(const char* name)
 bool
 HApp::QuitRequested()
 {
-	return BApplication::QuitRequested();
+	return _inherited::QuitRequested();
 }
 
 /***********************************************************

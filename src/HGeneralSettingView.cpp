@@ -76,16 +76,16 @@ HGeneralSettingView::InitGUI()
 	rect.OffsetBy(0,10);
 	rect.bottom = rect.top + 40;
 	BBox *box = new BBox(rect,"messagebox");
-	box->SetLabel("Message");
+	box->SetLabel(_("Message"));
 	BRect frame(rect);
 	frame.OffsetTo(B_ORIGIN);
 	frame.OffsetBy(10,10);
 	frame.InsetBy(5,5);
 	BMenuField *field = new BMenuField(frame,
 									"encode",
-									"Default encoding:",
+									_("Default encoding:"),
 									menu);
-	field->SetDivider(StringWidth("Default encoding:")+5);
+	field->SetDivider(StringWidth(_("Default encoding:"))+5);
 	
 	box->AddChild(field);
 	AddChild(box);
@@ -94,7 +94,7 @@ HGeneralSettingView::InitGUI()
 	rect.bottom = rect.top + 75;
 	
 	box = new BBox(rect,"fontbox");
-	box->SetLabel("Font");
+	box->SetLabel(_("Font"));
 	menu = new BMenu("fontmenu");
 	MenuUtils().AddFontMenu(menu,M_FONT_CHANGED,this,Window(),true);
 	// load font settings
@@ -117,9 +117,9 @@ HGeneralSettingView::InitGUI()
 	frame.InsetBy(5,5);
 	field = new BMenuField(frame,
 								"font",
-								"Font:",
+								_("Font:"),
 								menu);
-	field->SetDivider(StringWidth("Font Size:")+5);
+	field->SetDivider(StringWidth(_("Font Size:"))+5);
 	box->AddChild(field);
 	BString label("");
 	label << family << "  " << style;
@@ -146,9 +146,9 @@ HGeneralSettingView::InitGUI()
 	frame.OffsetBy(0,25);
 	field = new BMenuField(frame,
 								"size",
-								"Font Size:",
+								_("Font Size:"),
 								menu);
-	field->SetDivider(StringWidth("Font Size:")+5);
+	field->SetDivider(StringWidth(_("Font Size:"))+5);
 	box->AddChild(field);
 	
 	AddChild(box);
@@ -158,15 +158,15 @@ HGeneralSettingView::InitGUI()
 	rect.bottom = rect.top + 130;
 	
 	box = new BBox(rect,"optionbox");
-	box->SetLabel("Options");
+	box->SetLabel(_("Options"));
 	frame = rect;
 	frame.OffsetTo(B_ORIGIN);
 	frame.OffsetBy(10,10);
 	frame.InsetBy(5,5);
-	frame.right = frame.left + StringWidth("Check mail every") + 25;
+	frame.right = frame.left + StringWidth(_("Check mail every")) + 25;
 	frame.bottom = frame.top + 17;
 	
-	BCheckBox *checkbox = new BCheckBox(frame,"check","Check mail every",NULL);
+	BCheckBox *checkbox = new BCheckBox(frame,"check",_("Check mail every"),NULL);
 	bool bValue;
 	prefs->GetData("auto_check",&bValue);
 	checkbox->SetValue(bValue);
@@ -182,31 +182,33 @@ HGeneralSettingView::InitGUI()
 	numberCtrl->SetAlignment(B_ALIGN_LEFT,B_ALIGN_RIGHT);
 	box->AddChild(numberCtrl);
 	frame2.OffsetBy(frame2.Width()+5,0);
-	BStringView *stringView = new BStringView(frame2,"","minutes");
+	BStringView *stringView = new BStringView(frame2,"",_("minutes"));
 	
 	frame.OffsetBy(0,20);
 	frame.right = box->Bounds().right-10;
-	checkbox = new BCheckBox(frame,"cache","Use folder cache",NULL);
+	checkbox = new BCheckBox(frame,"cache",_("Use folder cache"),NULL);
 	prefs->GetData("use_folder_cache",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
 	frame.OffsetBy(0,22);
-	checkbox = new BCheckBox(frame,"list_start","Create all mail lists on start up",NULL);
+	checkbox = new BCheckBox(frame,"list_start",
+				_("Create all mail lists on start up"),NULL);
 	prefs->GetData("load_list_on_start_up",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
 	frame.OffsetBy(0,22);
-	checkbox = new BCheckBox(frame,"desktray","Use deskbar replicant",NULL);
+	checkbox = new BCheckBox(frame,"desktray",
+				_("Use deskbar replicant"),NULL);
 	prefs->GetData("use_desktray",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
 	frame.OffsetBy(0,22);
 	menu = new BMenu("toolbar_mode");
-	menu->AddItem(new BMenuItem("Text and Icon",NULL));
-	menu->AddItem(new BMenuItem("Icon only",NULL));
+	menu->AddItem(new BMenuItem(_("Text and Icon"),NULL));
+	menu->AddItem(new BMenuItem(_("Icon only"),NULL));
 	menu->SetRadioMode(true);
 	menu->SetLabelFromMarked(true);
 	int16 mode;
@@ -214,8 +216,8 @@ HGeneralSettingView::InitGUI()
 	item = menu->ItemAt(mode);
 	if(item)
 		item->SetMarked(true);
-	field = new BMenuField(frame,"toolbar","Toolbar mode:",menu);
-	field->SetDivider(StringWidth("Toolbar mode:") + 3);
+	field = new BMenuField(frame,"toolbar",_("Toolbar mode:"),menu);
+	field->SetDivider(StringWidth(_("Toolbar mode:")) + 3);
 	box->AddChild(field);
 	
 	box->AddChild(stringView);
