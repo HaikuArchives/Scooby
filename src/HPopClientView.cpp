@@ -737,7 +737,7 @@ HPopClientView::MakeTime_t(const char* date)
 						,"Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
 	const char* wdays[] = {"Sun","Mon","Tue","Wed","Thu"
 						,"Fri","Sat"};
-	
+
 	char swday[5];
 	int wday=0;
 	int day;
@@ -755,15 +755,28 @@ HPopClientView::MakeTime_t(const char* date)
 				,swday,&day,smon,&year,&hour,&min,&sec,offset);
 	if(num_scan != 8)
 	{
-		// 9 Nov 2000 11:30:23 -0000
+		// 9 Nov 2000 11:30:23 -0000 or  29 Jan 01 9:16:08 PM
 		num_scan = ::sscanf(date, "%d%3s%d %2d:%2d:%2d %5s"
 					,&day,smon,&year,&hour,&min,&sec,offset);
-		DEBUG_ONLY(
-			if(num_scan != 7)
-				printf("Unknown date format\n");
-		);
+		if(strcasecmp(offset,"PM") == 0)
+        		hour += 12;
+        ::strcpy(offset,"-0000");	
+        
+		if(num_scan != 7)
+		{
+			// 01 Feb 01 12:22:42 PM
+			num_scan = sscanf(date, "%d %3s %3d %d %2d:%2d %5s",
+                                        &day, smon, &year, &hour, &min,&sec,offset);
+        	if(strcasecmp(offset,"PM") == 0)
+        		hour += 12;
+        	if (num_scan != 7) 
+        	{
+        		// Return current time if this can not parse date
+        	 	PRINT(("Unknown date format\n"));
+				return time(NULL);
+			}
+		}
 	}
-	//PRINT(("M:%s H:%d M:%d S:%d\n",smon,hour,min,sec));
 	// month
 	for(mon = 0;mon < 12;mon++)
 	{
@@ -784,22 +797,30 @@ HPopClientView::MakeTime_t(const char* date)
 	float off = atof(offset+1);
 	if(op == '+')
 		gmt_off  = static_cast<int>((off/100.0)*60*60);
-	if(op == '-')
+	else if(op == '-')
 		gmt_off  = static_cast<int>(-(off/100.0)*60*60);
+	else
+		gmt_off = 0;
 	struct tm btime;
 	btime.tm_sec = sec;
 	btime.tm_min = min;
 	btime.tm_hour = hour;
 	btime.tm_mday = day;
 	btime.tm_mon = mon;
-	if(year > 1900)
-		btime.tm_year = year-1900;
-	else
-		btime.tm_year = 2000 + year;
+	
+	if(year < 100)
+	{
+		if(year < 70)
+			year+=2000;
+		else
+			year+=1900;
+	}
+	btime.tm_year = year - 1900;
+	
 	if(num_scan == 8)
 		btime.tm_wday = wday;
 	btime.tm_gmtoff = gmt_off;
-	return mktime(&btime);	
+	return mktime(&btime);
 }
 
 /***********************************************************

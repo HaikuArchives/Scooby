@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <StopWatch.h>
 
-#define TIME_FORMAT "%a, %m/%d/%Y, %r"
+#define TIME_FORMAT "%a, %d %b %Y %r"
 
 /***********************************************************
  * Constructor
