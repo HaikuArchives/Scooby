@@ -5,6 +5,8 @@
 #include <ListView.h>
 #include <MenuField.h>
 
+class BTextControl;
+
 enum{
 	M_DEL_FILTER_MSG = 'MDEL',
 	M_ADD_FILTER_MSG = 'MADD',
