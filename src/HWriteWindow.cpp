@@ -99,6 +99,7 @@ HWriteWindow::HWriteWindow(BRect rect
 		entry.GetNodeRef(&nref);
 		::watch_node(&nref,B_WATCH_DIRECTORY|B_WATCH_NAME,this,this);
 	}
+	PRINT(("%d\n",IsHardWrap()));
 }
 
 /***********************************************************
@@ -1044,15 +1045,9 @@ HWriteWindow::WriteAllPart(BString &out,const char* boundary)
 bool
 HWriteWindow::IsHardWrap()
 {
-	BMenu *subMenu = KeyMenuBar()->SubmenuAt(3);
-	subMenu = subMenu->SubmenuAt(3);
-	
-	BMenuItem *item = subMenu->FindMarked();
-	if(item)
-		return true;
-	if(::strcmp(item->Label(),_("Hard Wrap")) == 0)
-		return true;
-	return false;
+	BMenuItem *item = KeyMenuBar()->FindItem(_("Hard Wrap"));
+
+	return item->IsMarked();
 }
 
 /***********************************************************
