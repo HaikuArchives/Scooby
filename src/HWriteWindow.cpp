@@ -736,7 +736,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	header << "X-Mailer: " << XMAILER << "\n";
 	// Get priority
 	int32 priority = 3;
-	BMenu *subMenu = KeyMenuBar()->SubmenuAt(2);
+	BMenu *subMenu = KeyMenuBar()->SubmenuAt(3);
 	subMenu = subMenu->SubmenuAt(1);
 	BMenuItem *item = subMenu->FindMarked();
 	if(::strcmp(item->Label(),"Highest") == 0)
