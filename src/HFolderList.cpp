@@ -404,69 +404,6 @@ HFolderList::GetFolders(void* data)
 	list->LoadFolders(ref,NULL,0,msg,childMsg);
 
 	delete list->fFoldersCache;
-#if 0
-	entry_ref ref;
-	HFolderItem *item;	
-	//
-   	entry.GetRef(&ref);
-	
-	BList folderList;
-#ifndef USE_SCANDIR	
-	while( (count = dir.GetNextDirents((dirent *)buf, 4096)) > 0 && !list->fCancel )
-	{
-		offset = 0;
-		/* Now we step through the dirents. */ 
-		while (count-- > 0)
-		{
-			dent = (dirent *)buf + offset; 
-			offset +=  dent->d_reclen;
-			/* Skip . and .. directory */
-			if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
-				continue;
-			ref.device = dent->d_pdev;
-			ref.directory = dent->d_pino;
-			ref.set_name(dent->d_name);
-			
-			if(entry.SetTo(&ref) != B_OK)
-				continue;
-			if(entry.IsDirectory())
-			{
-				item = new HFolderItem(ref,list);
-				msg.AddPointer("item",item);
-				folderList.AddItem(item);
-				if(fUseTreeMode)
-					GetChildFolders(entry,item,list,childMsg);
-			}
-		}
-	}
-#else
-	int32 i=0;
-	struct dirent **dirents = NULL;
-	count = GetAllDirents(path.Path(),&dirents,true);
-	while(count>i && !list->fCancel )
-	{
-		dent = dirents[i++];
-		//if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
-		//	continue;
-		ref.device = dent->d_pdev;
-		ref.directory = dent->d_pino;
-		ref.set_name(dent->d_name);
-		if(entry.SetTo(&ref) != B_OK)
-			continue;
-		if(entry.IsDirectory())
-		{
-			item = new HFolderItem(ref,list);
-			msg.AddPointer("item",item);
-			folderList.AddItem(item);
-			if(fUseTreeMode)
-				GetChildFolders(entry,item,list,childMsg);
-		}
-	}
-	for(i = 0;i < count;i++)
-		free(dirents[i++]);
-	free(dirents);
-#endif
-#endif
 	/********* QUERY ***********/
 	err = B_OK;
 	find_directory(B_USER_SETTINGS_DIRECTORY,&path);
