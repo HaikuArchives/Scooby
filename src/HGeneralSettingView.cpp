@@ -63,6 +63,7 @@ HGeneralSettingView::InitGUI()
 	menu->AddItem(new BMenuItem("ISO-8859-13",new BMessage(B_ISO13_CONVERSION)));
 	menu->AddItem(new BMenuItem("ISO-8859-14",new BMessage(B_ISO14_CONVERSION)));
 	menu->AddItem(new BMenuItem("ISO-8859-15",new BMessage(B_ISO15_CONVERSION)));
+	menu->AddItem(new BMenuItem("Windows-1251",new BMessage(B_MS_WINDOWS_1251_CONVERSION)));
 	
 	int32 encoding;
 	((HApp*)be_app)->Prefs()->GetData("encoding",&encoding);
