@@ -792,7 +792,15 @@ Encoding::decode_quoted_printable(char *dest,char *in,off_t length,
         	ch = (HEX(src[len]) << 4) | HEX(src[len+1]);
         	dest[k++] = ch;
    			len+=2;
-	    }else if ((ch == '_') && treat_underscore_as_space){ 
+   		}else if(ch == '=' && src[len] == '\r' && src[len+1] == '\n' ){
+   			// Eliminate soft line feeds (CRLF)
+   			// Do nothing
+   			len+=2;
+   		}else if((ch == '=') && (src[len] == '\r' || src[len] == '\n') ){
+   			// Eliminate soft line feeds (CR or LF)
+   			// Do nothing
+   			len++;
+   		}else if ((ch == '_') && treat_underscore_as_space){ 
             dest[k++] = ' '; 
         }else {
         	dest[k++] = ch;
