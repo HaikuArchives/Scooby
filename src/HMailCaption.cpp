@@ -28,7 +28,7 @@ HMailCaption::HMailCaption(BRect rect,const char* name,BListView *target)
 	rect1.right = Bounds().right - BarberPoleOuterRect().Width() - 5;
 	
 	view = new BStringView(rect1,"","no items");
-	view->SetAlignment(B_ALIGN_RIGHT);
+	view->SetAlignment(B_ALIGN_LEFT);
 	this->AddChild(view);
 	//this->Draw(this->Bounds());
 	fOld = 0;
