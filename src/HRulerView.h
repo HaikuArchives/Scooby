@@ -26,5 +26,6 @@ private:
 	bool				fDragging;
 	float				fFontWidth;
 	BFont				fFont;
+	BRect				fOldCaretRect;
 };
 #endif

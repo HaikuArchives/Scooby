@@ -81,12 +81,11 @@ HWrapTextView::FrameResized(float width, float height)
 	if(fUseRuler)
 	{
 		BRect rect= fRulerView->Bounds();
-		if(TextRect().Width() > Bounds().Width())
-			fRulerView->ResizeTo(TextRect().Width()+4.0,rect.Height());
-		else{
-			fRulerView->ResizeTo(width,rect.Height());
-			fRulerView->Invalidate();
-		}
+		fRulerView->ResizeTo(width,rect.Height());
+		
+		rect.left= rect.right - 50;
+		rect.right = width;
+		fRulerView->Invalidate(rect);
 	}
 	_inherited::FrameResized(width,height);
 }
