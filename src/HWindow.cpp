@@ -2043,6 +2043,10 @@ HWindow::PlayLEDAnimaiton()
 bool
 HWindow::QuitRequested()
 {	
+	// To avoid corrupting folder structure caches, wait for gathering folders.
+	if(!fFolderList->IsGatheredLocalFolders())
+		return false;
+		
 	if(fPopClientView->IsRunning())
 	{
 		int32 btn = (new BAlert("",_("POP3 session is running"),_("Force Quit"),_("Wait"),NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
