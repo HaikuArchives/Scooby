@@ -3,6 +3,7 @@
 #include "NumberControl.h"
 #include "HIMAP4Folder.h"
 #include "HFolderList.h"
+#include "Utilities.h"
 
 #include <View.h>
 #include <TextControl.h>
@@ -84,8 +85,8 @@ HIMAP4Window::InitGUI()
 			if(i == 0)
 			{
 				// Disallow charactors that could not use filename
-				ctrl->TextView()->DisallowChar('/');
-				ctrl->TextView()->DisallowChar(':');
+				DisallowFilenameKeys(ctrl->TextView());
+				DisallowMetaKeys(ctrl->TextView());
 			}
 			bg->AddChild(ctrl);
 			if(i == 4)
