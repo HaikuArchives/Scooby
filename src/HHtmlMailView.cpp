@@ -23,6 +23,8 @@
 #include <ctype.h>
 #include <Roster.h>
 
+#define TMP_FILE_NAME "Scooby.tmp"
+
 /***********************************************************
  * Constructor
  ***********************************************************/
@@ -73,7 +75,7 @@ HHtmlMailView::~HHtmlMailView()
 	// Remove tmp file
 	BPath path;
 	::find_directory(B_COMMON_TEMP_DIRECTORY,&path);
-	path.Append("Scooby.tmp");
+	path.Append( TMP_FILE_NAME );
 	
 	BEntry entry(path.Path());
 	if(entry.InitCheck() == B_OK)
@@ -443,7 +445,7 @@ HHtmlMailView::LoadMessage(BFile *file)
 	// Dump to tmp directory
 	BPath path;
 	::find_directory(B_COMMON_TEMP_DIRECTORY,&path);
-	path.Append("Scooby.tmp");
+	path.Append( TMP_FILE_NAME );
 	BFile tmpFile(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
 	tmpFile.Write(content.String(),content.Length());
 	tmpFile.SetSize(content.Length());
