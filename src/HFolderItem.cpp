@@ -360,13 +360,13 @@ HFolderItem::Gather()
 	{
 		if(::strcmp(dirents[i]->d_name,".") == 0 || ::strcmp(dirents[i]->d_name,"..")== 0)
 		{
-			free(dirents[i++]);
+			i++;
 			continue;
 		}
 		ref.device = dirents[i]->d_pdev;
 		ref.directory = dirents[i]->d_pino;
-		ref.set_name(dirents[i]->d_name);
-		free(dirents[i++]);
+		ref.set_name(dirents[i++]->d_name);
+		
 		if(node.SetTo(&ref) != B_OK)
 			continue;
 		if(node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH) <0)
@@ -378,6 +378,9 @@ HFolderItem::Gather()
 				fUnread++;
 		}
 	}
+	// free all dirents
+	for(i = 0;i < count;i++)
+		free(dirents[i++]);
 	free(dirents);
 #endif		
 	//fMailList.SortItems(HFolderItem::CompareFunc);
