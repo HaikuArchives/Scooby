@@ -450,8 +450,8 @@ HMailList::MouseDown(BPoint pos)
     	 font.SetSize(10);
     	 theMenu->SetFont(&font);
     	 
-    	 item = new IconMenuItem(_("New Message" B_UTF8_ELLIPSIS),new BMessage(M_NEW_MSG),'N',0,
-							utils.GetBitmapResource('BBMP',"New Message"));
+    	 item = new IconMenuItem(_("Open Message in New Window" B_UTF8_ELLIPSIS),new BMessage(M_INVOKE_MAIL),'N',0,
+							utils.GetBitmapResource('BBMP',"Read"));
 		 theMenu->AddItem(item);
 		 theMenu->AddSeparatorItem();
 	
