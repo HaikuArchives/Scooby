@@ -357,7 +357,9 @@ HWindow::InitGUI()
 	if(kToolbarHeight == 50)
 		toolbox->UseLabel(true);
 	toolbox->AddButton("Check",utils.GetBitmapResource('BBMP',"Check Mail"),new BMessage(M_POP_CONNECT),_("Check Mail"));
-	//toolbox->AddButton("Send",utils.GetBitmapResource('BBMP',"Send"),new BMessage(M_SEND_PENDING_MAILS),"Send Pending Mails");
+	HToolbarButton *btn = cast_as(toolbox->FindView("Check"),HToolbarButton);
+	if(btn)	btn->SetEnabled(false);
+	
 	toolbox->AddSpace();
 	toolbox->AddButton("New",utils.GetBitmapResource('BBMP',"New Message"),new BMessage(M_NEW_MSG),_("New Message"));
 	BMessage *msg = new BMessage(M_REPLY_MESSAGE);
