@@ -164,29 +164,125 @@ HWriteWindow::HWriteWindow(BRect rect
 		if(::get_ref_for_path(enclosure_path,&enc_ref) == B_OK)
 			fEnclosureView->AddEnclosure(enc_ref);
 	}
-	// SetWindowSizeLimit
-	float min_width,min_height,max_width,max_height;
-	GetSizeLimits(&min_width,&max_width,&min_height,&max_height);
-	min_width = 400;
-	min_height = 300;
-	SetSizeLimits(min_width,max_width,min_height,max_height);
-	// Watch drafts and templates folders
-	node_ref nref;
-	BPath path;
-	BEntry entry;
-	GetDraftsPath(path);
-	if( entry.SetTo(path.Path()) == B_OK)
+
+	SetWindowSizeLimit();
+	WatchDraftAndTemplateFolders();
+}
+
+/***********************************************************
+ * Constructor for re-edit
+ ***********************************************************/
+HWriteWindow::HWriteWindow(BRect rect,const char* name,entry_ref &ref)
+	:BWindow(rect,name,B_DOCUMENT_WINDOW,B_ASYNCHRONOUS_CONTROLS)
+	,fFilePanel(NULL)
+	,fReply(false)
+	,fForward(false)
+	,fReplyItem(NULL)
+	,fReplyFile(NULL)
+	,fDraftEntry(NULL)
+	,fSkipComplete(false)
+	,fSent(false)
+{
+	InitMenu();
+	InitGUI();
+	BTextControl *ctrl;
+	ctrl = cast_as(FindView("to"),BTextControl);
+	ctrl->MakeFocus(true);
+	// Set all fields -------------------------------------------------
+	BString attrString;
+	BFile file(&ref,B_READ_ONLY);
+	const char* kAttr[] = {B_MAIL_ATTR_TO,B_MAIL_ATTR_SUBJECT,
+						B_MAIL_ATTR_CC,B_MAIL_ATTR_BCC};
+	const char* kFieldLabels[] = {"to","subject","cc","bcc"};
+	if(file.InitCheck() == B_OK)
 	{
-		entry.GetNodeRef(&nref);
-		::watch_node(&nref,B_WATCH_DIRECTORY|B_WATCH_NAME,this,this);
+	
+		for(int32 i = 0;i < 4;i++)
+		{	
+			if(file.ReadAttrString(kAttr[i],&attrString) == B_OK)
+			{
+				ctrl = cast_as(FindView(kFieldLabels[i]),BTextControl);
+				ctrl->SetText(attrString.String());
+			}
+		}
+		if(file.ReadAttrString(B_MAIL_ATTR_FROM,&attrString) == B_OK)
+			fTopView->SetFrom(attrString.String());
 	}
-	GetTemplatesPath(path);
-	if( entry.SetTo(path.Path()) == B_OK)
+	// Read file
+	off_t size;
+	file.GetSize(&size);
+	char *buf = new char[size+1];
+	size = file.Read(buf,size);
+	buf[size] = '\0';
+	char *param = NULL;
+	// Get header length
+	ssize_t attrsize;
+	int32 header_len = 0;
+	attrsize = file.ReadAttr(B_MAIL_ATTR_HEADER,B_INT32_TYPE,0,&header_len,sizeof(int32));
+	if(attrsize == B_ENTRY_NOT_FOUND || header_len< 0)
 	{
-		entry.GetNodeRef(&nref);
-		::watch_node(&nref,B_WATCH_DIRECTORY|B_WATCH_NAME,this,this);
+		// if could not get header length from attr, get fron mail content.
+		for(int32 i = 0;i < size;i++)
+		{
+			if(strncmp(&buf[i],"\r\n\r\n",4)==0)
+			{
+				header_len = i+4;
+				break;
+			}
+		}
 	}
-	PRINT(("%d\n",IsHardWrap()));
+	// mail body and attachments -------------------------------
+	if(GetParameter(buf,"Content-Type:",&param))
+	{
+		if(::strncmp("multipart/",param,10) == 0)
+		{
+			delete[] param; param=NULL;
+			GetParameter(buf,"boundary=",&param);
+			BString bdr("--");
+			bdr += param;
+			char* ptr = strstr(buf,bdr.String());
+			if(ptr)
+			{
+				ptr += bdr.Length();
+				BString body;
+				int32 boundaryLen = bdr.Length();
+				while(1)
+				{
+					if(::strncmp(ptr,bdr.String(),boundaryLen) == 0)
+						break;
+					body += ptr[0];
+					ptr++;
+				}
+				ParseAllParts(ptr,param);
+				// Set encoding
+				delete[] param; param=NULL;
+				GetParameter(buf,"charset=",&param);
+				fEnclosureView->SetEncoding(param);
+				PRINT(("Encoding:%s\n",param));
+				// Set content
+				int32 offset = body.FindFirst("\r\n\r\n")+4;
+				BString content = body.String()+((offset<4)?0:offset);
+				Encoding().ConvertToUTF8(content,param);
+				fTextView->SetText(content.String());
+			}
+			delete[] param; param=NULL;
+		}else{
+			// Set encoding
+			delete[] param; param=NULL;
+			GetParameter(buf,"charset=",&param);
+			fEnclosureView->SetEncoding(param);
+			PRINT(("Encoding:%s\n",param));
+			// Set content
+			BString content = buf+header_len;
+			Encoding().ConvertToUTF8(content,param);
+			fTextView->SetText(content.String());
+		}
+	}
+	
+	delete[] param;
+	delete[] buf;
+	SetWindowSizeLimit();
+	WatchDraftAndTemplateFolders();
 }
 
 /***********************************************************
@@ -468,7 +564,7 @@ HWriteWindow::MessageReceived(BMessage *message)
 		
 		if( SaveMail(false,ref,multipart) == B_OK)
 		{
-			WriteReplyStatus();
+			//WriteReplyStatus();
 			
 			BMessage msg(M_CREATE_MAIL);
 			HMailItem *item = new HMailItem(ref);
@@ -574,10 +670,11 @@ HWriteWindow::MessageReceived(BMessage *message)
 			int32 start,end;
 		
 			control->TextView()->GetSelection(&start,&end);
-			if(start != 0)
+			if(start != 0 && control->TextView()->TextLength()>0 &&(control->Text())[start-1] != ',')
 				control->TextView()->Insert(",");
 			control->TextView()->Insert(addr);
-			
+			if(start == 0 && control->TextView()->TextLength()>0 && (control->Text())[strlen(addr)] != ',')
+				control->TextView()->Insert(",");
 		}
 		break;
 	}
@@ -922,6 +1019,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 		(new BAlert("",label.String(),_("OK")))->Go();
 		return B_ERROR;
 	}
+	
 	// make smtp server
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
@@ -1082,9 +1180,10 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	file.WriteAttr(B_MAIL_ATTR_CONTENT,B_INT32_TYPE,0,&content_len,sizeof(int32));	
 	file.WriteAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&now,sizeof(time_t));
 	file.WriteAttrString(B_MAIL_ATTR_SMTP_SERVER,&smtp_host);
+	
 	BNodeInfo ninfo(&file);
 	ninfo.SetType("text/x-email");
-	
+	file.Sync();
 	return B_OK;
 }
 
@@ -1109,49 +1208,57 @@ HWriteWindow::WriteAllPart(BString &out,const char* boundary)
 			PRINT(("The item is invalid\n"));
 			continue;
 		}
-		entry_ref ref = item->Ref();
 		
-		BFile file(&ref,B_READ_ONLY);
-		if(file.InitCheck() != B_OK)
+		// for file based attachments
+		if(item->HasRef())
 		{
-			PRINT(("File not found\n"));
-			continue;
+			entry_ref ref = item->Ref();
+		
+			BFile file(&ref,B_READ_ONLY);
+			if(file.InitCheck() != B_OK)
+			{
+				PRINT(("File not found\n"));
+				continue;
+			}
+			off_t size;
+			file.GetSize(&size);
+			char *buf = new char[size+1];
+			char *outBuf = new char[size*2];
+			size = file.Read(buf,size);
+			buf[size] = '\0';
+			size = encode_base64(outBuf,buf,size);
+			outBuf[size] = '\0';
+			char name[B_FILE_NAME_LENGTH+1];
+			BEntry entry(&ref);
+			entry.GetName(name);
+			BNodeInfo info(&file);
+			char type[B_MIME_TYPE_LENGTH+1];
+			type[0] = '\0';
+			if( info.GetType(type) != B_OK)
+			{
+				BPath path(&ref);
+				BString cmd("/bin/mimeset \"");
+				cmd << path.Path() << "\"";
+				::system(cmd.String());
+				if(info.GetType(type) != B_OK)
+					type[0] = '\0';
+			}
+			if(!type)
+				strcpy(type,"application/octet-stream");
+			encodedName = name;
+			encode.UTF82Mime(encodedName,encoding);
+			str << boundary << "\n";
+			str << "Content-Type: " << type << "; ";
+			str << "name=\"" << encodedName << "\"\n";
+			str << "Content-Disposition: attachment\n";
+			str << "Content-Transfer-Encoding: base64\n\n";
+			str << outBuf << "\n";
+			delete[] buf;
+			delete[] outBuf;
+		}else{
+			str << boundary << "\n";
+			str << item->Data() << "\n";
 		}
-		off_t size;
-		file.GetSize(&size);
-		char *buf = new char[size+1];
-		char *outBuf = new char[size*2];
-		size = file.Read(buf,size);
-		buf[size] = '\0';
-		size = encode_base64(outBuf,buf,size);
-		outBuf[size] = '\0';
-		char name[B_FILE_NAME_LENGTH+1];
-		BEntry entry(&ref);
-		entry.GetName(name);
-		BNodeInfo info(&file);
-		char type[B_MIME_TYPE_LENGTH+1];
-		type[0] = '\0';
-		if( info.GetType(type) != B_OK)
-		{
-			BPath path(&ref);
-			BString cmd("/bin/mimeset \"");
-			cmd << path.Path() << "\"";
-			::system(cmd.String());
-			if(info.GetType(type) != B_OK)
-				type[0] = '\0';
-		}
-		if(!type)
-			strcpy(type,"application/octet-stream");
-		encodedName = name;
-		encode.UTF82Mime(encodedName,encoding);
-		str << boundary << "\n";
-		str << "Content-Type: " << type << "; ";
-		str << "name=\"" << encodedName << "\"\n";
-		str << "Content-Disposition: attachment\n";
-		str << "Content-Transfer-Encoding: base64\n\n";
-		str << outBuf << "\n";
-		delete[] buf;
-		delete[] outBuf;
 	} 
 	out << str;
 }
@@ -1771,4 +1878,84 @@ HWriteWindow::ProcessAddOn(BMessage *message)
 	alert->SetShortcut(0, B_ESCAPE);
 	alert->Go();	
 	return result;
+}
+
+/***********************************************************
+ * WatchDraftAndTemplateFolders
+ ***********************************************************/
+void
+HWriteWindow::WatchDraftAndTemplateFolders()
+{
+	// Watch drafts and templates folders
+	node_ref nref;
+	BPath path;
+	BEntry entry;
+	GetDraftsPath(path);
+	if( entry.SetTo(path.Path()) == B_OK)
+	{
+		entry.GetNodeRef(&nref);
+		::watch_node(&nref,B_WATCH_DIRECTORY|B_WATCH_NAME,this,this);
+	}
+	GetTemplatesPath(path);
+	if( entry.SetTo(path.Path()) == B_OK)
+	{
+		entry.GetNodeRef(&nref);
+		::watch_node(&nref,B_WATCH_DIRECTORY|B_WATCH_NAME,this,this);
+	}
+}
+
+/***********************************************************
+ * SetWindowSizeLimit
+ ***********************************************************/
+void
+HWriteWindow::SetWindowSizeLimit()
+{
+	// SetWindowSizeLimit
+	float min_width,min_height,max_width,max_height;
+	GetSizeLimits(&min_width,&max_width,&min_height,&max_height);
+	min_width = 400;
+	min_height = 300;
+	SetSizeLimits(min_width,max_width,min_height,max_height);
+}
+
+/***********************************************************
+ * ParseAllParts
+ ***********************************************************/
+void
+HWriteWindow::ParseAllParts(const char* str,const char* boundary)
+{
+	char *new_boundary = new char[::strlen(boundary)+3];
+	::sprintf(new_boundary,"--%s",boundary);
+	int32 boundary_len = ::strlen(new_boundary);
+	char *end_boundary = new char[boundary_len +3];
+	::sprintf(end_boundary,"%s--",new_boundary);
+	
+	BString content(str);
+	int32 start=0;
+	int32 part_offset = 0;
+	BString part("");
+	char *subBoundary = NULL;
+	
+	while((start=content.FindFirst(new_boundary,start)) != B_ERROR)
+	{
+		start+= boundary_len+2; // boundary_len + CRLF
+		part_offset = start;
+		part = "";
+		while(::strncmp(&content[start],new_boundary,boundary_len) != 0)
+			part += content[start++];
+		
+		if( GetParameter(part.String(),"boundary=",&subBoundary) )
+		{
+			ParseAllParts(part.String(),subBoundary);
+		}else{
+			fEnclosureView->AddEnclosure(part.String());
+		}
+		delete[] subBoundary;
+		subBoundary = NULL;
+		if(::strncmp(&content[start],end_boundary,boundary_len+2) == 0)
+			break;
+	}
+	
+	delete[] new_boundary;
+	delete[] end_boundary;
 }

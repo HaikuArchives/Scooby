@@ -781,6 +781,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 	switch(opcode)
 	{
 	case B_ENTRY_CREATED:
+	{
 		ref.set_name(name);
 		path.SetTo(&ref);
 		if(!path.Path())
@@ -788,14 +789,19 @@ HFolderItem::NodeMonitor(BMessage *message)
 		if(node.SetTo(&ref) != B_OK)
 			break;
 		ninfo.SetTo(&node);
-		ninfo.GetType(mime_type);
-		
+		// Wait for writing mime types
+		int32 i = 0;
+		while(ninfo.GetType(mime_type) != B_OK &&i < 200)
+		{
+			::snooze(10000); //0.01 sec
+			i++;
+		}
 		if(::strcmp(mime_type,B_MAIL_TYPE) == 0)
 		{
-			AddMail((item = new HMailItem(ref)));
+			AddMail(item = new HMailItem(ref));
 			if( IsSelected() )
 				((HFolderList*)fOwner)->AddToMailList(item);
-		
+			PRINT(("NEW MAIL CREATED\n"));
 			InvalidateMe();
 		}else if(node.IsDirectory()){
 			HFolderItem *folder = new HFolderItem(ref,fOwner);
@@ -804,8 +810,9 @@ HFolderItem::NodeMonitor(BMessage *message)
 			msg.AddPointer("item",folder);
 			fOwner->Window()->PostMessage(&msg,fOwner);
 		}
-		PRINT(("Create\n"));
+		PRINT(("Create:%s\n",mime_type));
 		break;
+	}
 	case B_ENTRY_REMOVED:
 	{
 		BDirectory dir(&nref);
@@ -903,17 +910,13 @@ HFolderItem::NodeMonitor(BMessage *message)
 		bool read;
 		if(item)
 		{
-			//PRINT(("Attr Changed\n"));
 			read = item->IsRead();
 			item->RefreshStatus();
 			if(read != item->IsRead())
 				SetName((!item->IsRead())?fUnread+1:fUnread-1);
 			InvalidateMe();
-			//HMailList *list = ((HWindow*)fOwner->Window())->MailList();
-			//list->InvalidateItem(list->IndexOf(item));
 			BMessage msg(M_INVALIDATE_MAIL);
 			msg.AddPointer("mail",item);
-			//PRINT(("%ld\n",nref.node));
 			fOwner->Window()->PostMessage(&msg);
 		}
 		break;

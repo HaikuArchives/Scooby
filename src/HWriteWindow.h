@@ -42,7 +42,9 @@ public:
 								const char* enclosure_path = NULL,
 								HMailItem *replyItem = NULL,
 								bool reply = false,
-								bool forward = false);			
+								bool forward = false);
+					// Constructor for re-edit
+					HWriteWindow(BRect rect,const char* name,entry_ref &ref);		
 protected:
 	virtual			~HWriteWindow();
 	virtual	void	MessageReceived(BMessage *message);
@@ -74,13 +76,18 @@ protected:
 			
 			void	GetDraftsPath(BPath &path);
 			void	GetTemplatesPath(BPath &path);
-			
+			// Nodemonitor for drafts and templates 
 			void	NodeMonitor(BMessage *message);
-			
+			// Add remove menu items
 			void	AddNewChildItem(entry_ref &ref);
 			void	RemoveChildItem(node_ref &nref);
 			
 		status_t	ProcessAddOn(BMessage *message);
+		
+			void	WatchDraftAndTemplateFolders();
+			void	SetWindowSizeLimit();
+			
+			void	ParseAllParts(const char* buf,const char* boundary);
 private:
 	HAddressView	*fTopView;
 	HMailView		*fTextView;

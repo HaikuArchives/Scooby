@@ -99,6 +99,15 @@ HEnclosureView::AddEnclosure(entry_ref ref)
 }
 
 /***********************************************************
+ * AddEnclosure
+ ***********************************************************/
+void
+HEnclosureView::AddEnclosure(const char* data)
+{
+	fListView->AddItem(new HEnclosureItem(data));
+}
+
+/***********************************************************
  * RemoveEnclosure
  ***********************************************************/
 void

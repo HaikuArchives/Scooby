@@ -18,4 +18,8 @@ void	SetMenuItemLabel(BMenuItem *item,const char* label);
 void	LineUpdate(StatusItem *item);
 void	SizeUpdate(StatusItem *item);
 /******************************************************/
+// get mail header parameters
+bool 	GetParameter(const char *src,const char *param, char **dst);
+char*	cistrstr(char *cs, char *ct);
+
 #endif

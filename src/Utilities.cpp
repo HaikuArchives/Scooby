@@ -12,6 +12,7 @@
 #include <TextView.h>
 #include <MenuItem.h>
 #include <ClassInfo.h>
+#include <Alert.h>
 
 void
 DisallowFilenameKeys(BTextView *textView)
@@ -134,4 +135,77 @@ void SizeUpdate(StatusItem *item)
 		label += "s";
 	item->SetLabel( label.String() );
 	item->ResizeToPreferred();
+}
+
+/***********************************************************
+ * Get mail header param (HTMLVIEW ONLY)
+ ***********************************************************/
+bool GetParameter(const char *src,const char *param, char **dst)
+{
+	char		*offset;
+	int32		len;
+	char 		*out;
+
+	if ((offset = cistrstr((char*)src, (char*)param))) {
+		offset += strlen(param);
+		//len = strlen(src) - (offset - src);
+		if (*offset == '"')
+			offset++;
+		if( *offset == ' ')
+			offset++;
+		len = 0;
+		while (offset[len] != '"' && 
+				offset[len] != ';' && 
+				offset[len] != '\n'&& 
+				offset[len] != '\r')
+			len++;
+		out = new char[len+1];
+		if(!out)
+		{
+			(new BAlert("","Memory was exhausted","OK"))->Go();
+			return false;
+		}
+		::strncpy(out, offset,len);
+		out[len] = '\0';
+		char *p = strchr(out,';');
+		if(p)
+			p[0] = '\0';
+		*dst = out;
+		return true;
+	}
+	return false;
+}
+
+/***********************************************************
+ * case-insensitive version of strstr
+ ***********************************************************/
+char* cistrstr(char *cs, char *ct)
+{
+	char		c1;
+	char		c2;
+	int32		cs_len;
+	int32		ct_len;
+	int32		loop1;
+	int32		loop2;
+
+	cs_len = strlen(cs);
+	ct_len = strlen(ct);
+	for (loop1 = 0; loop1 < cs_len; loop1++) {
+		if (cs_len - loop1 < ct_len)
+			goto done;
+		for (loop2 = 0; loop2 < ct_len; loop2++) {
+			c1 = cs[loop1 + loop2];
+			if ((c1 >= 'A') && (c1 <= 'Z'))
+				c1 += ('a' - 'A');
+			c2 = ct[loop2];
+			if ((c2 >= 'A') && (c2 <= 'Z'))
+				c2 += ('a' - 'A');
+			if (c1 != c2)
+				goto next;
+		}
+		return(&cs[loop1]);
+next:;
+	}
+done:;
+	return(NULL);
 }
