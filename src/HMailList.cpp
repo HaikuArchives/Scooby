@@ -26,7 +26,7 @@
 HMailList::HMailList(BRect frame,
 					BetterScrollView **scroll,
 					const char* title)
-	:ColumnListView(frame,
+	:_inherited(frame,
 					(CLVContainerView**)scroll,
 					title,
 					B_FOLLOW_ALL,
@@ -58,6 +58,8 @@ HMailList::HMailList(BRect frame,
 	int32 sort_key = 4,sort_mode = 1;
 	SetSortMode(sort_key,(CLVSortMode)sort_mode);
 	SetSortKey(sort_key);
+	rgb_color selection_col = {184,194, 255,255};
+	SetItemSelectColor(true, selection_col);
 }
 
 /***********************************************************
@@ -151,7 +153,7 @@ HMailList::MessageReceived(BMessage *message)
 		break;
 	}
 	default:
-		ColumnListView::MessageReceived(message);
+		_inherited::MessageReceived(message);
 	}
 }
 
@@ -203,7 +205,7 @@ HMailList::KeyDown(const char *bytes, int32 numBytes)
 		return;
 	else if(bytes[0] == B_DELETE&&numBytes == 1)
 		Window()->PostMessage(M_DELETE_MSG);		
-	ColumnListView::KeyDown(bytes,numBytes);
+	_inherited::KeyDown(bytes,numBytes);
 }
 
 /***********************************************************
@@ -477,7 +479,7 @@ HMailList::MouseDown(BPoint pos)
 	 	} 
 	 	delete theMenu;
 	 }else
-	 	ColumnListView::MouseDown(point);
+	 	_inherited::MouseDown(point);
 }
 
 /***********************************************************

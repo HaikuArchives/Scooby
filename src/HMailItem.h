@@ -65,7 +65,14 @@ public:
 		node_ref	fNodeRef;
 		thread_id	fInitThread;
 		BListView	*fOwner;
+protected:
+	virtual void 	DrawItemColumn(BView* owner, 
+								BRect item_column_rect, 
+								int32 column_index, 
+								bool complete);
 private:
 	static int32	RefreshStatusWithThread(void* data);
+	
+	typedef	CLVEasyItem	_inherited;
 };
 #endif

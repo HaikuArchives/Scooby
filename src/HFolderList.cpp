@@ -28,7 +28,7 @@
 HFolderList::HFolderList(BRect frame,
 						BetterScrollView **scroll,
 						const char* title)
-	:ColumnListView(frame,
+	:_inherited(frame,
 					(CLVContainerView**)scroll,
 					title,
 					B_FOLLOW_LEFT|B_FOLLOW_TOP_BOTTOM,
@@ -62,6 +62,8 @@ HFolderList::HFolderList(BRect frame,
 	
 	AddItem(fLocalFolders);
 	fLocalFolders->Added(true);
+	rgb_color selection_col = {184,194, 255,255};
+	SetItemSelectColor(true, selection_col);
 }
 
 /***********************************************************
@@ -221,7 +223,7 @@ HFolderList::MessageReceived(BMessage *message)
 		if(message->WasDropped())
 			this->WhenDropped(message);
 		else
-			ColumnListView::MessageReceived(message);
+			_inherited::MessageReceived(message);
 	}
 }
 
@@ -607,7 +609,7 @@ HFolderList::MouseMoved(BPoint point,
 			SelectWithoutGathering(sel);
 		}
 	}
-	ColumnListView::MouseMoved(point,transit,message);
+	_inherited::MouseMoved(point,transit,message);
 }
 
 /***********************************************************
@@ -736,7 +738,7 @@ HFolderList::MouseDown(BPoint pos)
 	 	} 
 	 	delete theMenu;
 	 }else
-	 	ColumnListView::MouseDown(point);
+	 	_inherited::MouseDown(point);
 }
 
 

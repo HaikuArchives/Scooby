@@ -3,7 +3,7 @@
 
 #include <string>
 #include <iostream>
-#include "ColumnListView.h"
+#include "HCoolListView.h"
 #include "HMailItem.h"
 
 #include <Entry.h>
@@ -42,7 +42,7 @@ enum{
 };
 
 
-class HMailList	:public	 ColumnListView {
+class HMailList	:public	 HCoolListView {
 public:
 					HMailList(BRect frame,BetterScrollView **scroll,const char* title);
 	virtual			~HMailList();
@@ -79,5 +79,7 @@ private:
 	BetterScrollView 	*fScrollView;
 	int32				fFolderType;
 	HMailItem			*fOldSelection;
+
+	typedef	HCoolListView _inherited;
 };
 #endif

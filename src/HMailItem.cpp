@@ -20,11 +20,13 @@
 
 #define TIME_FORMAT "%a, %d %b %Y %r"
 
+const rgb_color kBorderColor = ui_color(B_PANEL_BACKGROUND_COLOR);
+
 /***********************************************************
  * Constructor
  ***********************************************************/
 HMailItem::HMailItem(const entry_ref &ref)
-: CLVEasyItem(0, false, false, 18.0)
+: _inherited(0, false, false, 18.0)
 	,fRef(ref)
 	,fStatus("")
 	,fSubject("")
@@ -57,7 +59,7 @@ HMailItem::HMailItem(const entry_ref &ref,
 					  const char* priority,
 					  int8 enclosure,
 					  ino_t	node,BListView *view)
-	:CLVEasyItem(0, false, false, 18.0)
+	:_inherited(0, false, false, 18.0)
 	,fRef(ref)
 	,fStatus(status)
 	,fSubject(subject)
@@ -110,7 +112,7 @@ HMailItem::HMailItem(const char* status,
 					time_t	  when,
 					const char* priority,
 					int8 enclosure)
-	:CLVEasyItem(0, false, false, 18.0)
+	:_inherited(0, false, false, 18.0)
 	,fStatus(status)
 	,fSubject(subject)
 	,fFrom(from)
@@ -390,4 +392,28 @@ HMailItem::RefreshEnclosureAttr()
 		delete icon;
 	}else
 		SetColumnContent(6,NULL,2.0,true,false);
+}
+
+/***********************************************************
+ * DrawItemColumn
+ ***********************************************************/
+void
+HMailItem::DrawItemColumn(BView* owner, 
+									BRect item_column_rect, 
+									int32 column_index, 
+									bool complete)
+{
+	_inherited::DrawItemColumn(owner,item_column_rect,column_index,complete);
+	// Stroke line
+	rgb_color old_col = owner->HighColor();
+	
+	owner->SetHighColor(kBorderColor);
+	
+	BPoint start,end;
+	start.y = end.y = item_column_rect.bottom;
+	start.x = 0;
+	end.x = owner->Bounds().right;
+	
+	owner->StrokeLine(start,end);
+	owner->SetHighColor(old_col);
 }
