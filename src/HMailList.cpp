@@ -560,13 +560,15 @@ HMailList::InitiateDrag(BPoint  point,
 		PRINT(("%d\n",sel));
 		int32 selected; 
 		int32 sel_index = 0;
+		entry_ref ref;
 		while((selected = CurrentSelection(sel_index++)) >= 0)
 		{
 			item= MailAt(selected);
 			if(!item)
 				continue;
 			msg.AddPointer("pointer",item);
-			msg.AddRef("refs",&item->fRef);
+			ref = item->Ref();
+			msg.AddRef("refs",&ref);
 			//PRINT(("Sel:%d\n",selected));
 		}
 			
