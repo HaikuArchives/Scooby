@@ -15,7 +15,7 @@
 #include "HMailView.h"
 #include "TrackerUtils.h"
 #include "HWindow.h"
-
+#include "TrackerUtils.h"
 
 #include <MenuBar.h>
 #include <ClassInfo.h>
@@ -32,6 +32,7 @@
 #include <MenuField.h>
 #include <Beep.h>
 #include <Clipboard.h>
+#include <NodeMonitor.h>
 
 #define DRAFT_FOLDER "Drafts"
 #define TEMPLATE_FOLDER "Templates"
@@ -82,6 +83,22 @@ HWriteWindow::HWriteWindow(BRect rect
 	min_width = 400;
 	min_height = 300;
 	SetSizeLimits(min_width,max_width,min_height,max_height);
+	// Watch drafts and templates folders
+	node_ref nref;
+	BPath path;
+	BEntry entry;
+	GetDraftsPath(path);
+	if( entry.SetTo(path.Path()) == B_OK)
+	{
+		entry.GetNodeRef(&nref);
+		::watch_node(&nref,B_WATCH_DIRECTORY|B_WATCH_NAME,this,this);
+	}
+	GetTemplatesPath(path);
+	if( entry.SetTo(path.Path()) == B_OK)
+	{
+		entry.GetNodeRef(&nref);
+		::watch_node(&nref,B_WATCH_DIRECTORY|B_WATCH_NAME,this,this);
+	}
 }
 
 /***********************************************************
@@ -111,22 +128,23 @@ HWriteWindow::InitMenu()
 	aMenu = new BMenu(_("File"));
 	
 	subMenu = new BMenu(_("Open draft"));
-	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
-	path.Append(APP_NAME);
-	path.Append(DRAFT_FOLDER);
-	
+	GetDraftsPath(path);
 	AddChildItem(subMenu,path.Path(),M_OPEN_DRAFT);
+	subMenu->AddSeparatorItem();
+	utils.AddMenuItem(subMenu,_("Edit drafts"),M_EDIT_DRAFTS,this,this);
+	
 	aMenu->AddItem(subMenu);
 	utils.AddMenuItem(aMenu,_("Save as draft"),M_SAVE_DRAFT,this,this,'S',B_SHIFT_KEY);
 	
 	aMenu->AddSeparatorItem();
 	
 	subMenu = new BMenu(_("Open template"));
-	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
-	path.Append(APP_NAME);
-	path.Append(TEMPLATE_FOLDER);
+	GetTemplatesPath(path);
 	
 	AddChildItem(subMenu,path.Path(),M_OPEN_TEMPLATE);
+	subMenu->AddSeparatorItem();
+	utils.AddMenuItem(subMenu,_("Edit templates"),M_EDIT_TEMPLATES,this,this);
+	
 	aMenu->AddItem(subMenu);
 	utils.AddMenuItem(aMenu,_("Save as template"),M_SAVE_TEMPLATE,this,this,0,0);
 	
@@ -524,6 +542,38 @@ HWriteWindow::MessageReceived(BMessage *message)
 		msg.AddPointer("view",fTextView);
 		msg.AddPointer("detail",fTopView);
 		be_app->PostMessage(&msg);
+		break;
+	}
+	// Edit drafts
+	case M_EDIT_DRAFTS:
+	{
+		BPath path;
+		GetDraftsPath(path);
+		
+		entry_ref ref;
+		::get_ref_for_path(path.Path(),&ref);
+		
+		TrackerUtils utils;
+		utils.OpenFolder(ref);
+		break;
+	}
+	// Edit templates
+	case M_EDIT_TEMPLATES:
+	{
+		BPath path;
+		GetTemplatesPath(path);
+		
+		entry_ref ref;
+		::get_ref_for_path(path.Path(),&ref);
+		
+		TrackerUtils utils;
+		utils.OpenFolder(ref);
+		break;
+	}
+	// NodeMonitor
+	case B_NODE_MONITOR:
+	{
+		NodeMonitor(message);
 		break;
 	}
 	// Edit menus
@@ -1271,16 +1321,22 @@ HWriteWindow::AddChildItem(BMenu *menu,const char* path,int32 what,bool mod)
 	char name[B_FILE_NAME_LENGTH+1];
 	char c = '1';
 	entry_ref ref;
+	node_ref nref;
 	while(err == B_OK)
 	{
 		err = dir.GetNextEntry(&entry);
 		if(err != B_OK)
 			break;
-		entry.GetRef(&ref);
-		entry.GetName(name);
-		BMessage *msg = new BMessage(what);
-		msg->AddRef("refs",&ref);
-		menu->AddItem(new BMenuItem(name,msg,(mod)?c++:0,0));
+		if(entry.IsFile() )
+		{
+			entry.GetRef(&ref);
+			entry.GetNodeRef(&nref);
+			entry.GetName(name);
+			BMessage *msg = new BMessage(what);
+			msg->AddRef("refs",&ref);	
+			msg->AddInt64("ino_t",nref.node);
+			menu->AddItem(new BMenuItem(name,msg,(mod)?c++:0,0));
+		}
 	}
 }
 
@@ -1329,4 +1385,196 @@ HWriteWindow::DispatchMessage(BMessage *message,BHandler *handler)
 	}
 end:
 	BWindow::DispatchMessage(message,handler);
+}
+
+/***********************************************************
+ * NodeMonitor
+ ***********************************************************/
+void
+HWriteWindow::NodeMonitor(BMessage *message)
+{
+	int32 opcode;
+	const char  *name;
+	entry_ref ref;
+	node_ref nref;
+	BPath draftsPath,templatesPath,path;
+
+	
+	if(message->FindInt32("opcode",&opcode) != B_OK)	
+		return;
+	message->FindInt32("device", &ref.device); 
+	message->FindInt64("directory", &ref.directory); 
+	message->FindString("name", &name);
+	
+	GetDraftsPath(draftsPath);
+	GetTemplatesPath(templatesPath);
+	
+	switch(opcode)
+	{
+	case B_ENTRY_CREATED:
+		ref.set_name(name);
+		path.SetTo(&ref);
+		if(!path.Path())
+			break;
+		if(!BEntry(&ref).IsFile())
+			break;
+		
+		AddNewChildItem(ref);
+		break;
+	case B_ENTRY_REMOVED:
+	{
+		message->FindInt32("device", &nref.device);
+		message->FindInt64("node", &nref.node);
+		
+		RemoveChildItem(nref);
+		break;
+	}
+	case B_ENTRY_MOVED:
+	{
+		node_ref from_nref;
+		BPath to_path,from_path;
+		BDirectory to_dir,from_dir;
+		entry_ref ref;
+	
+		message->FindInt32("device", &nref.device);
+		message->FindInt32("device", &from_nref.device);
+		message->FindInt64("to directory", &nref.node);
+		message->FindInt64("from directory", &from_nref.node);
+		to_dir.SetTo(&nref);
+		from_dir.SetTo(&from_nref);
+		
+		to_path.SetTo(&to_dir,NULL,false);
+		from_path.SetTo(&from_dir,NULL,false);
+			
+		message->FindString("name", &name);
+		// Add mail
+		if(::strncmp(to_path.Path(),draftsPath.Path(),strlen(draftsPath.Path())) == 0 ||
+			::strncmp(to_path.Path(),templatesPath.Path(),strlen(templatesPath.Path())) == 0)
+		{
+			BPath file_path(to_path);
+			file_path.Append(name);
+			::get_ref_for_path(file_path.Path(),&ref);
+			
+			if(BEntry(&ref).IsFile())
+				AddNewChildItem(ref);
+		}
+		// Remove mails
+		else if(::strncmp(from_path.Path(),draftsPath.Path(),strlen(draftsPath.Path())) == 0 ||
+			::strncmp(from_path.Path(),templatesPath.Path(),strlen(templatesPath.Path())) == 0)
+		{
+			node_ref old_nref;
+			old_nref.device =from_nref.device;
+			message->FindInt64("node", &old_nref.node);
+			RemoveChildItem(old_nref);
+		}
+		break;
+		}
+	}
+}
+
+/***********************************************************
+ * AddNewChildItem
+ ***********************************************************/
+void
+HWriteWindow::AddNewChildItem(entry_ref &ref)
+{
+	BPath path(&ref),draftsPath,templatesPath;
+	GetDraftsPath(draftsPath);
+	GetTemplatesPath(templatesPath);
+	
+	BMenu *menu(NULL);
+	int32 what = 0;
+	// draft item
+	if(::strncmp(draftsPath.Path(),path.Path(),strlen(draftsPath.Path()))==0)
+	{
+		menu = KeyMenuBar()->SubmenuAt(0);
+		menu = menu->SubmenuAt(0);
+		what = M_OPEN_DRAFT;
+	}else if(::strncmp(templatesPath.Path(),path.Path(),strlen(templatesPath.Path()))==0)
+	// template item
+	{
+		menu = KeyMenuBar()->SubmenuAt(0);
+		menu = menu->SubmenuAt(3);	
+		what = M_OPEN_TEMPLATE;
+	}
+	// Add new menu item
+	if(menu)
+	{
+		BPath path(&ref);
+		node_ref nref;
+		BEntry entry(&ref);
+		entry.GetNodeRef(&nref);
+		
+		BMessage *msg = new BMessage(what);
+		msg->AddRef("refs",&ref);	
+		msg->AddInt64("ino_t",nref.node);
+		
+		menu->AddItem(new BMenuItem(path.Leaf(),msg),0);
+	}
+}
+
+/***********************************************************
+ * RemoveChildItem
+ ***********************************************************/
+void
+HWriteWindow::RemoveChildItem(node_ref &nref)
+{
+	BMenuItem *item(NULL);
+	BMessage *msg(NULL);
+	int32 count;
+	ino_t item_node;
+	// Check drafts and templates menus
+	
+	BMenu *menu;
+	int32 index[] = {0,3};
+	
+	for(int32 k = 0;k < 2;k++)
+	{
+		menu = KeyMenuBar()->SubmenuAt(0);
+		menu = menu->SubmenuAt(index[k]);
+	
+		if(menu)
+		{
+			count = menu->CountItems();
+			for(int32 i = 0;i < count;i++)
+			{
+				item = menu->ItemAt(i);
+				if(!item)
+					continue;
+				msg = item->Message();
+				if(!msg)
+					continue;
+				msg->FindInt64("ino_t",&item_node);
+				if(nref.node == item_node)
+				{
+					menu->RemoveItem(item);
+					delete item;
+					return;
+				}	
+			}
+		}		
+	}
+}
+
+
+/***********************************************************
+ * GetDraftsPath
+ ***********************************************************/
+void
+HWriteWindow::GetDraftsPath(BPath &path)
+{
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append(APP_NAME);
+	path.Append("Drafts");
+}
+
+/***********************************************************
+ * GetTemplatesPath
+ ***********************************************************/
+void
+HWriteWindow::GetTemplatesPath(BPath &path)
+{
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append(APP_NAME);
+	path.Append("Templates");
 }

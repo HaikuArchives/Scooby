@@ -20,7 +20,9 @@ enum{
 	M_OPEN_DRAFT = 'MOdf',
 	M_SAVE_DRAFT = 'MSAd',
 	M_OPEN_TEMPLATE = 'MOTM',
-	M_SAVE_TEMPLATE = 'MSTM'
+	M_SAVE_TEMPLATE = 'MSTM',
+	M_EDIT_DRAFTS = 'mEDF',
+	M_EDIT_TEMPLATES = 'mETM'
 };
 
 
@@ -61,6 +63,14 @@ protected:
 			void	FindCharset(int32 conversion,BString &charset);
 			
 			bool	IsHardWrap();
+			
+			void	GetDraftsPath(BPath &path);
+			void	GetTemplatesPath(BPath &path);
+			
+			void	NodeMonitor(BMessage *message);
+			
+			void	AddNewChildItem(entry_ref &ref);
+			void	RemoveChildItem(node_ref &nref);
 private:
 	HAddressView	*fTopView;
 	HMailView		*fTextView;
