@@ -224,6 +224,7 @@ HWriteWindow::InitGUI()
 	ArrowButton *button = cast_as(fTopView->FindView("addr_arrow"),ArrowButton);
 	button->SetState((int32)bValue);
 	fTopView->EnableJump(!bValue);
+	fTopView->SetFrom(fReplyItem->fTo.String());
 	
 	rect.OffsetBy(0,rect.Height()+1);
 	prefs->GetData("expand_enclosure",&bValue);
@@ -248,7 +249,7 @@ HWriteWindow::InitGUI()
 	AddChild(scroll);
 	fTextView->SetDoesUndo(true);
 	
-	/********** Toolbarの追加 ***********/
+	/********** Add Toolbar ***********/
 	BRect toolrect = Bounds();
 	toolrect.top += (KeyMenuBar()->Bounds()).Height();
 	toolrect.bottom = toolrect.top + kToolbarHeight;

@@ -31,6 +31,8 @@ public:
 		void		EnableJump(bool enable);
 		BList&		AddressList() {return fAddrList;}
 	BTextControl*	FocusedView() const;
+	
+		void		SetFrom(const char* from);
 protected:
 	virtual	void	MessageReceived(BMessage *message);
 			
