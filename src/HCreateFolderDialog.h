@@ -13,12 +13,12 @@ public:
 										,const char* path //!< Path that folder to be created in.
 										);
 		//! Destructor.
-	virtual 		~HCreateFolderDialog();
+					~HCreateFolderDialog();
 		//! Initialize all GUI.
 			void	InitGUI();
 protected:
 		//! Handling messages.
-	virtual	void	MessageReceived(BMessage *message);
+			void	MessageReceived(BMessage *message);
 private:
 	BTextControl*	fNameControl;
 	char*			fParentPath;

@@ -19,15 +19,15 @@ public:
 										BetterScrollView **scroll,
 										const char* name);
 		//! Destructor.
-	virtual				~HAttachmentList();
+						~HAttachmentList();
 		//! Find attachment by content type.
 			int32		FindPart(const char* content_type);
 			
 protected:
 	//@{
 	//!Override function.
-	virtual void		MouseDown(BPoint point);
-	virtual	bool	InitiateDrag(BPoint point, 
+		void		MouseDown(BPoint point);
+		bool		InitiateDrag(BPoint point, 
 								int32 index, 
 								bool wasSelected);
 	//@}

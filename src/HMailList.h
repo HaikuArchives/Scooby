@@ -52,7 +52,7 @@ public:
 				//!Constructor.
 					HMailList(BRect frame,BetterScrollView **scroll,const char* title);
 				//!Destructor.
-	virtual			~HMailList();
+					~HMailList();
 				//!Save column positions.
 			void	SaveColumnsAndPos();
 
@@ -72,18 +72,18 @@ protected:
 	virtual	bool	InitiateDrag(BPoint point, 
 								int32 index, 
 								bool wasSelected);
-	virtual void	SelectionChanged();
-	virtual void 	KeyDown(const char *bytes,int32 numBytes);
-	virtual void	MouseDown(BPoint pos);
+		 	void	SelectionChanged();
+		 	void 	KeyDown(const char *bytes,int32 numBytes);
+		 	void	MouseDown(BPoint pos);
 	//@}
 	//@{
 	//!Scripting override.
-	virtual BHandler*	ResolveSpecifier(BMessage *message,
+		 BHandler*	ResolveSpecifier(BMessage *message,
 									int32 index,
 									BMessage *specifier,
 									int32 what,
 									const char *property);
-	virtual	status_t	GetSupportedSuites(BMessage *data);
+			status_t	GetSupportedSuites(BMessage *data);
 	//@}
 			int32	CalcInsertPosition(int32 count,
 										int32 sort_key,

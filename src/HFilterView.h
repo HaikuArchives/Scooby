@@ -20,7 +20,7 @@ public:
 			//!Constructor.
 					HFilterView(BRect rect);
 			//!Destructor.
-	virtual			~HFilterView();
+					~HFilterView();
 			//!Initialize all GUI.
 			void	InitGUI();
 			//!Add folder item to Move menu.
@@ -29,9 +29,9 @@ public:
 protected:
 	//@{
 	//!Override function.
-	virtual	void	MessageReceived(BMessage *message);
-	virtual	void	Pulse();
-	virtual	void	AttachedToWindow();	
+			void	MessageReceived(BMessage *message);
+			void	Pulse();
+			void	AttachedToWindow();	
 	//@}
 	//! Create new filter and add it to list.
 			void	New();

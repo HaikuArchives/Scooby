@@ -42,7 +42,7 @@ public:
 								const char* comment,
 								const char* url = NULL,
 								const char* mail = NULL);
-	virtual			~HAboutWindow();
+					~HAboutWindow();
 	
 protected:
 			void	InitGUI();

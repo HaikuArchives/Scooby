@@ -17,14 +17,14 @@ public:
 		//!	Constructor
 						HAccountView(BRect rect);
 		//! Destructor
-	virtual				~HAccountView();
+						~HAccountView();
 		//! Initialize all GUI.
 			void		InitGUI();
 protected:
 		//@{
 		//! Override function.
-	virtual void		MessageReceived(BMessage *message);	
-	virtual	void		AttachedToWindow();
+			 void		MessageReceived(BMessage *message);	
+			void		AttachedToWindow();
 		//@}
 		//!	Save account file.
 			void		SaveAccount(int32 index/*!< List index.*/);

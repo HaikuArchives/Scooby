@@ -15,9 +15,9 @@ public:
 									const char* login,
 									const char* password,
 									BListView *owner);
-	virtual				~HIMAP4Folder();
-	virtual	void		StartRefreshCache();
-	virtual void		StartGathering();
+						~HIMAP4Folder();
+		void			StartRefreshCache();
+		void			StartGathering();
 	
 	const char*			Server()const {return fServer.String();}
 	const char*			Login() const {return fLogin.String();}

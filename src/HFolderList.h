@@ -33,7 +33,7 @@ public:
 									BetterScrollView **scroll,
 									const char* title);
 				//!Destructor.
-		virtual			~HFolderList();
+						~HFolderList();
 				//!Deselect all items.
 				void	DeleteAll();
 				//!
@@ -73,11 +73,11 @@ public:
 protected:
 		//@{
 		//!Override function.
-		virtual void 	MessageReceived(BMessage *message);		
-		virtual void	SelectionChanged();
-		virtual void	Pulse();
-		virtual void	MouseDown(BPoint pos);
-		virtual void	MouseMoved(BPoint point,
+			 	void 	MessageReceived(BMessage *message);		
+			 	void	SelectionChanged();
+			 	void	Pulse();
+			 	void	MouseDown(BPoint pos);
+			 	void	MouseMoved(BPoint point,
 									uint32 transit,
 									const BMessage *message);
 		//@}

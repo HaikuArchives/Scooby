@@ -14,7 +14,7 @@ public:
 							uint32 resize,
 							uint32 flags=B_WILL_DRAW);
 		//!Destructor.
-	virtual			~StatusBar();
+					~StatusBar();
 	
 		//!Add new StatusItem.
 			void	AddItem(const char* name //!< Status item name.

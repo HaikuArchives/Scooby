@@ -24,7 +24,7 @@ public:
 										,const char *charset	//! Attachment charset.
 										);
 			//! Destructor
-	virtual				~HAttachmentItem();
+						~HAttachmentItem();
 			//! Returns attachment content type.
 		const char*		ContentType() {return fContentType;}
 			//! Returns attachment content encoding.

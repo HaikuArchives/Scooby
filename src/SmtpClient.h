@@ -25,7 +25,7 @@ public:
 			//!Constructor.
 						SmtpClient(BHandler *handler,BLooper *looper);
 			//!Destructor.
-	virtual				~SmtpClient();
+						~SmtpClient();
 			//!Connect to SMTP server. Returns B_ERROR if failed to connect.
 		status_t		Connect(const char* addr //!<Server address.
 								,int16 port=25	//!<Server port.(default value is 25.)
@@ -44,8 +44,8 @@ public:
 protected:
 	//@{
 	//!Override functions.
-	virtual	void		MessageReceived(BMessage *message);
-	virtual bool		QuitRequested();
+			void		MessageReceived(BMessage *message);
+			bool		QuitRequested();
 	//@}
 			//!Receive one line from socket.
 			int32		ReceiveLine(BString &buf);

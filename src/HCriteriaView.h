@@ -11,7 +11,7 @@ public:
 		//! Constructor.
 						HCriteriaView(BRect rect,const char* name);
 		//! Destructor.
-	virtual				~HCriteriaView();
+						~HCriteriaView();
 		//! Set all controls as enabled.
 			void		SetEnableControls(bool enable);
 		//! Set criteria values.
@@ -33,9 +33,9 @@ protected:
 			void		InitGUI();
 		//@{
 		//! Override function.
-	virtual void		Draw(BRect updateRect);
-	virtual void		MouseDown(BPoint point);
-	virtual void		MakeFocus(bool focus);
+			void		Draw(BRect updateRect);
+			void		MouseDown(BPoint point);
+			void		MakeFocus(bool focus);
 		//@}
 private:
 	BMenuField			*fAttrMenu;

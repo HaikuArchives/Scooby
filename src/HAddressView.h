@@ -21,7 +21,7 @@ public:
 								,bool readOnly = false //! All TextControls is readonly or not.
 								);
 		//! Destructor
-	virtual			~HAddressView();
+					~HAddressView();
 		//! Set all TetxtControl as readonly.
 			void	SetReadOnly(bool enable);
 		//! Initialize all GUI.
@@ -50,7 +50,7 @@ public:
 		void		SetFrom(const char* from/*<Address to guess account.*/);
 protected:
 		//! Override function.
-	virtual	void	MessageReceived(BMessage *message);
+			void	MessageReceived(BMessage *message);
 		//!	Change current account by account name.
 			void	ChangeAccount(const char* name/*<Account name*/);
 		//! Add person menu item to menu field.

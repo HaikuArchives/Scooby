@@ -14,7 +14,7 @@ public:
 	//! Constructor for sent mails.			
 					HEnclosureItem(const char* data);
 	//! Destructor
-	virtual			~HEnclosureItem();
+					~HEnclosureItem();
 	//! Returns mail file entry_ref. (for not sent mails)
 		entry_ref	Ref()const {return fRef;}
 	//! Returns true if attachment is based on entry_ref.
@@ -29,8 +29,8 @@ public:
 protected:
 	//@{
 	//!Override function.
-	virtual void	DrawItem(BView *owner, BRect frame, bool complete);
-	virtual void 	Update(BView* owner, const BFont* font);
+		 void	DrawItem(BView *owner, BRect frame, bool complete);
+		 void 	Update(BView* owner, const BFont* font);
 	//@}
 	//!Make attachment size label.
 			void	MakeSizeLabel(char **out,off_t size);

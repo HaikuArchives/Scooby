@@ -11,9 +11,9 @@ public:
 						HIMAP4Window(BRect rect,
 									BHandler *handler,
 									HIMAP4Folder* item = NULL);
-	virtual				~HIMAP4Window();
 protected:
-	virtual	void		MessageReceived(BMessage *message);
+						~HIMAP4Window();
+			void		MessageReceived(BMessage *message);
 			void		InitGUI();
 	const char*			GetText(const char* name);
 			void		SetText(const char* name,const char* text);
