@@ -32,15 +32,12 @@ HReadWindow::HReadWindow(BRect rect,entry_ref ref,BMessenger *messenger)
 	,fMessenger(messenger)
 	,fRef(ref)
 	,fCurrentIndex(0)
-	,fEntryList(NULL)
 {
 	InitMenu();
 	InitGUI();
 
 	LoadMessage(ref);
 	
-	if(fMessenger)
-		InitIndex();
 	fMailView->MakeFocus(true);
 	
 	AddShortcut(B_UP_ARROW,0,new BMessage(M_PREV_MESSAGE));
@@ -53,7 +50,6 @@ HReadWindow::HReadWindow(BRect rect,entry_ref ref,BMessenger *messenger)
 HReadWindow::~HReadWindow()
 {
 	delete fMessenger;
-	delete fEntryList;
 }
 
 
@@ -219,11 +215,11 @@ HReadWindow::MessageReceived(BMessage *message)
 		break;
 	}
 	case M_PREV_MESSAGE:
-		SiblingItem(-1);
+		SiblingItem('sprv');
 		break;
 		
 	case M_NEXT_MESSAGE:
-		SiblingItem(1);
+		SiblingItem('snxt');
 		break;
 	// Show header 
 	case M_HEADER:
@@ -395,53 +391,29 @@ HReadWindow::MenusBeginning()
 }
 
 /***********************************************************
- * InitIndex
- ***********************************************************/
-void
-HReadWindow::InitIndex()
-{
-	BMessage msg,reply;
-	msg.what =  B_GET_PROPERTY;
-	msg.AddSpecifier("Entry");
-	
-	fMessenger->SendMessage(&msg,&reply);
-	fEntryList = new BMessage(reply);
-	int32 count;
-	type_code type;
-	entry_ref ref;
-	fEntryList->GetInfo("result", &type, &count);
-	
-	for(int32 i = 0;i < count;i++)
-	{
-		fEntryList->FindRef("result",i,&ref);
-		if(fRef == ref)
-		{
-			fCurrentIndex= i;
-			break;
-		}
-	}
-}
-
-
-/***********************************************************
  * SiblingItem
  ***********************************************************/
 void
-HReadWindow::SiblingItem(int32 how_far)
+HReadWindow::SiblingItem(int32 what)
 {
+	// Set read message as read
 	SetRead();
-	if(!fEntryList)
-	{
-		beep();
-		return;
-	}
+	// Send message
+	BMessage specifier(what);
+	specifier.AddString("property","Entry");
+	specifier.AddRef("data",&fRef);
+	BMessage msg,reply;
+	msg.what =  B_GET_PROPERTY;
+	msg.AddSpecifier(&specifier);
+	
+	fMessenger->SendMessage(&msg,&reply);
 	entry_ref ref;
-	if(fEntryList->FindRef("result",fCurrentIndex+how_far,&ref) == B_OK)
+	if(reply.FindRef("result",&ref) == B_OK)
 	{
 		Select(ref);
 		LoadMessage(ref);
 		fRef = ref;
-		fCurrentIndex += how_far;
+		reply.FindInt32("index",&fCurrentIndex);
 	}else
 		beep();
 }

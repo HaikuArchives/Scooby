@@ -705,7 +705,11 @@ HWindow::MessageReceived(BMessage *message)
 			}
 		}
 		if(!msg.IsEmpty())
+		{
+			BMessenger messenger(fMailList,this);
+			msg.AddMessenger("TrackerViewToken",messenger);	
 			be_roster->Launch(app_sig,&msg);
+		}
 		break;
 	}
 	// Filter mails
@@ -1212,9 +1216,8 @@ HWindow::InvokeMailItem()
 	if(sel < 0)
 		return;
 	HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
-	
 	entry_ref ref = item->Ref();
-	MakeReadWindow(ref);
+	MakeReadWindow(ref,new BMessenger(fMailList,this));
 }
 
 /***********************************************************

@@ -64,6 +64,11 @@ protected:
 	virtual void	SelectionChanged();
 	virtual void 	KeyDown(const char *bytes,int32 numBytes);
 	virtual void	MouseDown(BPoint pos);
+	virtual BHandler*	ResolveSpecifier(BMessage *message,
+									int32 index,
+									BMessage *specifier,
+									int32 what,
+									const char *property);
 			int32	CalcInsertPosition(int32 count,
 										int32 sort_key,
 										int32 sort_mode,
@@ -77,6 +82,9 @@ protected:
 									float *column_width);
 			void	RefreshScrollPos(BMessage *msg);
 			void	MakePath(BPath &basePath,const char* relative);
+			bool	HandleScriptingMessage(BMessage *message);
+			bool	GetProperty(BMessage *, int32 , const char *, BMessage *);
+		status_t	GetSupportedSuites(BMessage *data);
 private:
 	BEntry  			*fCurrentFolder;
 	BetterScrollView 	*fScrollView;
