@@ -261,7 +261,7 @@ SpellCheckView::CheckThread(void* data)
 	int32 len = end - start;
 	SpellCheckView *view = checkData->view;
 	
-	if(view->Looper()->Lock() )
+	if(view->LockLooper() )
 	{
 		BString word;
 		char *buf = new char[len+1];
@@ -287,7 +287,7 @@ SpellCheckView::CheckThread(void* data)
 				word += buf[i];
 		}
 		delete[] buf;
-		view->Looper()->Unlock();
+		view->UnlockLooper();
 	}
 	view->fCheckThreadID = -1;
 	delete data;

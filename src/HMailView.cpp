@@ -377,9 +377,9 @@ void HMailView::MessageReceived(BMessage *msg)
 			break;
 
 		case M_HEADER:
-			Window()->Unlock();
+			UnlockLooper();
 			StopLoad();
-			Window()->Lock();
+			LockLooper();
 			msg->FindBool("header", &fHeader);
 			ResetTextRunArray();
 			SetText(NULL);
@@ -387,9 +387,9 @@ void HMailView::MessageReceived(BMessage *msg)
 			break;
 			
 		case M_RAW:
-			Window()->Unlock();
+			UnlockLooper();
 			StopLoad();
-			Window()->Lock();
+			LockLooper();
 			msg->FindBool("raw", &fRaw);
 			ResetTextRunArray();
 			SetText(NULL);
@@ -633,9 +633,9 @@ void HMailView::ClearList(void)
 
 void HMailView::SetContent(BFile *file)
 {
-	Window()->Unlock();
+	UnlockLooper();
 	StopLoad();
-	Window()->Lock();
+	LockLooper();
 	SetText("");
 	delete fFile;
 	fFile = NULL;
