@@ -1179,15 +1179,16 @@ HWindow::DeleteMails()
 	}else
 		item = cast_as(fFolderList->ItemAt(folder),HFolderItem);
 	
+	int32 sel = fFolderList->CurrentSelection();
+	if(sel < 0)
+		return;
+	HFolderItem *from = cast_as(fFolderList->ItemAt(sel),HFolderItem);
+	if(from == item) 
+		return;
 	// Local mails
-	if(item->FolderType() != IMAP4_TYPE)
+	if(from->FolderType() != IMAP4_TYPE)
 	{
-		int32 sel = fFolderList->CurrentSelection();
-		if(sel < 0)
-			return;
-		HFolderItem *from = cast_as(fFolderList->ItemAt(sel),HFolderItem);
-		if(from == item) 
-			return;
+		
 		BMessage msg(M_MOVE_MAIL);
 		msg.AddPointer("from",from);
 		msg.AddPointer("to",item);
@@ -1218,6 +1219,7 @@ HWindow::DeleteMails()
 		int32 sel_index = 0;
 		//int32 unread_mails = 0;
 		HIMAP4Item *mail(NULL);
+		
 		while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
 		{
 			mail=cast_as(fMailList->RemoveItem(selected),HIMAP4Item);
@@ -1227,7 +1229,7 @@ HWindow::DeleteMails()
 			mail->Delete();
 			//if(!mail->IsRead())
 			//	unread_mails++;
-			delete mail;
+			from->RemoveMail( mail );
 		}
 		
 	}

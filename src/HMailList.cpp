@@ -715,8 +715,9 @@ HMailList::MarkOldSelectionAsRead()
 			return;
 		}
 		if( is_kind_of(fOldSelection,HIMAP4Item) )
-			fOldSelection->SetRead();
-		else{
+		{
+			((HIMAP4Item*)fOldSelection)->SetRead();
+		}else{
 			entry_ref ref = fOldSelection->Ref();
 			BNode node(&ref);
 			BString status;

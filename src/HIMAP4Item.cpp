@@ -45,7 +45,13 @@ HIMAP4Item::~HIMAP4Item()
 void
 HIMAP4Item::SetRead()
 {
+	if(fStatus.Compare("New") != 0)
+		return;
+
 	fClient->MarkAsRead(fMailIndex);
+
+	fStatus = "Read";
+	ResetIcon();
 }
 
 /***********************************************************
