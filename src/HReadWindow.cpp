@@ -27,7 +27,7 @@
  * Constructor
  ***********************************************************/
 HReadWindow::HReadWindow(BRect rect,entry_ref ref,BMessenger *messenger)
-	:BWindow(rect,"",B_DOCUMENT_WINDOW,0)
+	:BWindow(rect,"",B_DOCUMENT_WINDOW,B_ASYNCHRONOUS_CONTROLS)
 	,fMessenger(messenger)
 	,fRef(ref)
 	,fCurrentIndex(0)

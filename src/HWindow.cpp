@@ -53,7 +53,7 @@
 HWindow::HWindow(BRect rect,
 				const char* name,
 				const char* mail_addr)
-	:BWindow(rect,name,B_DOCUMENT_WINDOW,B_ASYNCHRONOUS_CONTROLS|B_QUIT_ON_WINDOW_CLOSE)
+	:BWindow(rect,name,B_DOCUMENT_WINDOW,B_ASYNCHRONOUS_CONTROLS)
 	,fCheckIdleTime(time(NULL))
 	,fCurrentDeskbarIcon(DESKBAR_NORMAL_ICON)
 	,fOpenPanel(NULL)
