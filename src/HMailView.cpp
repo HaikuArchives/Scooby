@@ -743,7 +743,7 @@ status_t HMailView::Reader(reader *info)
 			goto done;
 	}
 	
-	if ((info->raw) /*|| (!info->mime)*/) {
+	if ((info->raw) || (!info->mime)) {
 		if (!strip_it(msg + len, size - len, info))
 			goto done;
 	}
@@ -1335,7 +1335,7 @@ HMailView::strip_it(char* data, int32 data_len, reader *info)
 				continue;
 			}
 		}
-		/*if ((!info->raw) && (info->mime) && (data[loop] == '=')) {
+		if ((!info->raw) && (info->mime) && (data[loop] == '=')) {
 			if ((loop) && (loop < data_len - 1) && (data[loop + 1] == '\r'))
 				loop += 2;
 			else if ((loop < data_len - 2) && (isxdigit(data[loop + 1])) &&
@@ -1349,7 +1349,7 @@ HMailView::strip_it(char* data, int32 data_len, reader *info)
 			else
 				line[count++] = data[loop];
 		}
-		else*/ if (data[loop] != '\r')
+		else if (data[loop] != '\r')
 			line[count++] = data[loop];
 
 		if ((count > 511) || ((count) && (loop == data_len - 1))) {
