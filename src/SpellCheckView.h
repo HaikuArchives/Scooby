@@ -29,7 +29,7 @@ public:
 						*/
 	virtual 			~SpellCheckView();
 			
-			void		SetEnableSpellChecking(bool enable) {fEnabled = enable;}
+			void		SetEnableSpellChecking(bool enable);
 			void		StartChecking(int32 start,int32 end);	
 			void		SetColor(int32 start,int32 end,rgb_color *col);
 			
@@ -50,6 +50,7 @@ private:
 	bool				fEnabled;
 	BList				fWordList;
 	bool				fIsIM;
+	bool				fDicInited;
 	
 	typedef	CTextView	_inherited;
 };

@@ -24,9 +24,9 @@ SpellCheckView::SpellCheckView(BRect frame,
 	,fCheckThreadID(-1)
 	,fEnabled(false)
 	,fIsIM(false)
+	,fDicInited(false)
 {
 	SetStylable(true);
-	InitDictionaries();
 }
 
 /*
@@ -41,9 +41,9 @@ SpellCheckView::SpellCheckView(BRect		frame,
 	,fCheckThreadID(-1)
 	,fEnabled(false)
 	,fIsIM(false)
+	,fDicInited(false)
 {
 	SetStylable(true);
-	InitDictionaries();
 }
 */
 /***********************************************************
@@ -216,6 +216,16 @@ SpellCheckView::StartChecking(int32 start,int32 end)
 }
 
 /***********************************************************
+ * SetEnableSpellChecking
+ ***********************************************************/
+void
+SpellCheckView::SetEnableSpellChecking(bool enable)
+{
+	fEnabled = enable;
+	InitDictionaries();
+}
+
+/***********************************************************
  * CheckThread
  ***********************************************************/
 int32
@@ -278,6 +288,9 @@ SpellCheckView::SetColor(int32 startOffset,int32 endOffset,rgb_color *col)
 void
 SpellCheckView::InitDictionaries()
 {
+	if(fDicInited)
+		return;
+	
 	for(int32 i = 0;i < 27;i++)
 	{
 		BList *list = new BList();
@@ -304,7 +317,9 @@ SpellCheckView::InitDictionaries()
 			int16 index;
 			index = tolower(p[0]) - 'a';
 			BList *list = (BList*)fWordList.ItemAt(index);
-			if(list && strlen(p)>0)
+			if(!list)
+				break;
+			if(strlen(p)>0)
 				list->AddItem(strdup(p));
 			// for option
 			char *q = strstr(p,"/");
@@ -760,4 +775,5 @@ SpellCheckView::InitDictionaries()
 		}
 		delete[] all;
 	}
+	fDicInited = true;
 }
