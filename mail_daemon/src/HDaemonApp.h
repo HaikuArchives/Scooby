@@ -64,6 +64,9 @@ protected:
 				void		SetNextRecvPos(const char* uidl);
 				
 			status_t		GetNextAccount(entry_ref &ref);
+			
+				void		EmptyNewMailList();
+				void		AddNewMail(BEntry *entry);
 private:
 		BMessageRunner		*fRunner;
 		HPrefs				*fPrefs;
@@ -75,6 +78,7 @@ private:
 		bool				fCanUseUIDL;
 		BMessage			fDeleteMails;
 		bool				fHaveNewMails;
+		BList				fNewMailList;
 		// Account info
 		BString 	fHost;
 		int16 		fPort;
