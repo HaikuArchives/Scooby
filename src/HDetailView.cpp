@@ -2,6 +2,7 @@
 #include "MenuUtils.h"
 #include "HApp.h"
 #include "MultiLineTextControl.h"
+#include "ArrowButton.h"
 
 #include <TextControl.h>
 #include <StringView.h>
@@ -50,15 +51,15 @@ HDetailView::InitGUI()
 	
 	BRect rect = Bounds();
 	rect.top += 3;
-	rect.left += 5;
+	rect.left += 20;
 	rect.right -= 5 + B_V_SCROLL_BAR_WIDTH;
 	rect.bottom = rect.top + 18;
 	
 	MultiLineTextControl *ctrl;
-	const char* kName[] = {"subject","from","when"};
-	const char* kLabel[] = {_("Subject:"),_("From:"),_("When:")};
+	const char* kName[] = {"subject","from","when","cc","to"};
+	const char* kLabel[] = {_("Subject:"),_("From:"),_("When:"),_("Cc:"),_("To:")};
 	
-	for(int32 i = 0;i < 3;i++)
+	for(int32 i = 0;i < 5;i++)
 	{
 		
 		ctrl = new MultiLineTextControl(BRect(rect.left,rect.top
@@ -66,16 +67,28 @@ HDetailView::InitGUI()
 								,rect.bottom)
 								,kName[i],kLabel[i],"","",NULL
 								,B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP,B_WILL_DRAW|B_NAVIGABLE);
-		
 		ctrl->SetDivider(divider);
 		ctrl->SetTextMargin(1);
 		AddChild(ctrl);
+		// Add Arrow button
+		if(i == 2)
+		{
+			BRect arrowRect(rect);
+			arrowRect.OffsetBy(0,3);
+			arrowRect.left = Bounds().left - 2;
+			arrowRect.right = arrowRect.left + 16;
+			arrowRect.bottom = arrowRect.top + 16;
+			ArrowButton *arrow = new ArrowButton(arrowRect,"addr_arrow"
+										,new BMessage(M_EXPAND_ATTRIBUTES));
+			AddChild(arrow);
+		}
 		rect.OffsetBy(0,20);
 	}
 	fSubject = cast_as(FindView("subject"),MultiLineTextControl);
 	fFrom = cast_as(FindView("from"),MultiLineTextControl);
 	fWhen = cast_as(FindView("when"),MultiLineTextControl);
-
+	fCc = cast_as(FindView("cc"),MultiLineTextControl);
+	fTo = cast_as(FindView("to"),MultiLineTextControl);
 }
 
 
@@ -91,6 +104,8 @@ HDetailView::SetReadOnly(bool enable)
 	fSubject->TextView()->MakeEditable(!enable);
 	fFrom->TextView()->MakeEditable(!enable);
 	fWhen->TextView()->MakeEditable(!enable);
+	fCc->TextView()->MakeEditable(!enable);
+	fTo->TextView()->MakeEditable(!enable);
 }
 
 /***********************************************************
@@ -108,11 +123,15 @@ HDetailView::Subject()
 void
 HDetailView::SetInfo(const char* subject,
 					const char* from,
-					const char* when)
+					const char* when,
+					const char* cc,
+					const char* to)
 {
 	fSubject->SetText(subject);
 	fFrom->SetText(from);
 	fWhen->SetText(when);
+	fCc->SetText(cc);
+	fTo->SetText(to);
 }
 
 /***********************************************************
@@ -131,4 +150,34 @@ HDetailView::FocusedView() const
 			return child;
 	}
 	return NULL;
+}
+
+/***********************************************************
+ * MessageReceived
+ ***********************************************************/
+void
+HDetailView::MessageReceived(BMessage *message)
+{
+	switch(message->what)
+	{
+	// Expand attributes
+	case M_EXPAND_ATTRIBUTES:
+	{
+		BWindow *window = Window();
+		BView *siblingView = window->FindView("scroller");
+		if(Bounds().Height() <= DETAIL_VIEW_HEIGHT)
+		{
+			ResizeBy(0,DETAIL_VIEW_HEIGHT_EXPANDED-DETAIL_VIEW_HEIGHT);
+			siblingView->ResizeBy(0,DETAIL_VIEW_HEIGHT-DETAIL_VIEW_HEIGHT_EXPANDED);
+			siblingView->MoveBy(0,DETAIL_VIEW_HEIGHT_EXPANDED-DETAIL_VIEW_HEIGHT);
+		}else{
+			ResizeBy(0,DETAIL_VIEW_HEIGHT-DETAIL_VIEW_HEIGHT_EXPANDED);
+			siblingView->ResizeBy(0,DETAIL_VIEW_HEIGHT_EXPANDED-DETAIL_VIEW_HEIGHT);
+			siblingView->MoveBy(0,DETAIL_VIEW_HEIGHT-DETAIL_VIEW_HEIGHT_EXPANDED);		
+		}
+		break;
+	}
+	default:
+		BView::MessageReceived(message);
+	}
 }

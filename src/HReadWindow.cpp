@@ -226,6 +226,10 @@ HReadWindow::MessageReceived(BMessage *message)
 			PostMessage(message,view);
 		break;
 	}
+	// Expand attributes
+	case M_EXPAND_ATTRIBUTES:
+		PostMessage(message,fDetailView);
+		break;
 	default:
 		BWindow::MessageReceived(message);
 	}
@@ -245,16 +249,19 @@ HReadWindow::LoadMessage(entry_ref ref)
 		fMailView->SetContent(NULL);
 		return;
 	}
-	BString from,subject;
+	BString from,subject,cc,to;
 	time_t when;
 	file->ReadAttrString(B_MAIL_ATTR_FROM,&from);
 	file->ReadAttrString(B_MAIL_ATTR_SUBJECT,&subject);
 	file->ReadAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&when,sizeof(time_t));
+	file->ReadAttrString(B_MAIL_ATTR_CC,&cc);
+	file->ReadAttrString(B_MAIL_ATTR_TO,&to);
+	
 	const char* kTimeFormat = "%a, %m/%d/%Y, %r";
 	char *buf = new char[64];
 	struct tm* time = localtime(&when);
 	 ::strftime(buf, 64,kTimeFormat, time);
-	fDetailView->SetInfo(subject.String(),from.String(),buf);
+	fDetailView->SetInfo(subject.String(),from.String(),buf,cc.String(),to.String());
 	delete[] buf;
 	fMailView->SetContent(file);
 	SetTitle(subject.String());

@@ -183,6 +183,8 @@ HMailList::SelectionChanged()
 		msg.AddString("from",item->fFrom);
 		msg.AddString("when",item->fDate);
 		msg.AddBool("read",item->IsRead());
+		msg.AddString("cc",item->fCC);
+		msg.AddString("to",item->fTo);
 		fOldSelection = item;
 		Window()->PostMessage(&msg);
 		item->RefreshEnclosureAttr();		
