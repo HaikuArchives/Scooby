@@ -15,8 +15,6 @@ public:
 															It contains add-on's entry_ref.
 														 */ 
 							bool		use_icon=false  /*!< Use menu icons. Default value is false. */);
-			//!	Destructor.
-	virtual			~AddOnMenu();
 			//! Build menu items.
 			void	Build();	
 			//! Remove all menu items and re-build them.

@@ -11,7 +11,6 @@ public:
 									const char* name,
 									const char* initialText,
 									void	(*func)(StatusItem* item));
-						~StatusItem();
 			void		Draw(BRect updateRect);
 			void		ResizeToPreferred();
 	

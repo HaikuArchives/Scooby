@@ -31,9 +31,6 @@ public:
 			//!Close SMTP socket.
 			void		ForceQuit();
 protected:
-			//!Destructor.
-					~SmtpLooper();
-
 	//@{
 	//!Override functions.
 			void		MessageReceived(BMessage *message);

@@ -10,11 +10,6 @@ HPrefs::HPrefs(const char* name, const char* dir_name)
 	MakeDefault();
 }
 
-
-HPrefs::~HPrefs()
-{
-}
-
 void
 HPrefs::MakeDefault()
 {

@@ -21,8 +21,6 @@ class HDetailView: public BView {
 public:
 	//! Constructor
 					HDetailView(BRect rect,bool readOnly = false);
-	//! Destructor
-					~HDetailView();
 	//! Set all TextControl as readonly.
 			void	SetReadOnly(bool enable);
 	//! Set all values to be displayed.

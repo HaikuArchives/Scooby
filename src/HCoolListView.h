@@ -23,8 +23,6 @@ public:
 								bool scroll_view_corner = true,
 								border_style border = B_NO_BORDER,		//!<What type of border to add, if any
 								const BFont* LabelFont = be_plain_font);
-				//!Destructor.
-	virtual		~HCoolListView();
 				//!Enable or disable hovering.
 	void		SetHovering(bool enable){fHovering=enable;}
 				//!Returns hovering was enabled or not.

@@ -23,8 +23,6 @@ public:
 									int32		index,
 									IMAP4Client	*client,
 									HIMAP4Folder *folder);
-				//!Destructor.
-						~HIMAP4Item();
 	//@{
 	//!Override function.
 			void		SetRead();

@@ -10,8 +10,6 @@ class HCriteriaView :public BView{
 public:
 		//! Constructor.
 						HCriteriaView(BRect rect,const char* name);
-		//! Destructor.
-						~HCriteriaView();
 		//! Set all controls as enabled.
 			void		SetEnableControls(bool enable);
 		//! Set criteria values.

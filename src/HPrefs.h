@@ -8,8 +8,6 @@ class HPrefs:public HSetting
 public:
 			HPrefs(const char* name = K_PREFS_FILE_NAME
 					, const char* dir_name = NULL);
-			~HPrefs();
-	
 protected:
 		 void	MakeDefault();
 };
