@@ -58,6 +58,7 @@ HHtmlMailView::HHtmlMailView(BRect frame,const char* name,
 	BetterScrollView *bscroll;
 	fAttachmentList = new HAttachmentList(rect,&bscroll,"attachmentlist");
 	tabview->AddTab(bscroll,tab);	
+	tab->SetEnabled(false);
 	tab->SetLabel(_("Attachment"));
 }
 
@@ -375,8 +376,12 @@ HHtmlMailView::LoadMessage(BFile *file)
 			html = true;;
 		HAttachmentItem *item = cast_as(fAttachmentList->ItemAt(part_index),HAttachmentItem);
 		if(!item)
-			Plain2Html(content);
-		else{
+		{
+			GetParameter(header,"charset=",&parameter);
+			Plain2Html(content,parameter);
+			delete[] parameter;
+			parameter = NULL;
+		}else{
 			int32 data_len = item->DataLength();
 			int32 offset = item->Offset();
 			BString part;
@@ -402,7 +407,6 @@ HHtmlMailView::LoadMessage(BFile *file)
 			charset = ::strdup(item->Charset());
 			if(!html && charset)
 			{
-				encode.ConvertToUTF8(part,charset);
 				Plain2Html(part,charset);
 			}
 			content = part;
@@ -418,11 +422,17 @@ HHtmlMailView::LoadMessage(BFile *file)
 				tabview->Invalidate();
 			}
 		}
-	}else
-		Plain2Html(content);
+	}else{
+		if(content_type.Compare("text/html") != 0)
+		{
+			GetParameter(header,"charset=",&parameter);
+			Plain2Html(content,parameter);
+			delete[] parameter;
+			parameter = NULL;
+		}
+	}
 	encode.ConvertReturnsToLF(content);
 	encode.ConvertReturnsToLF(header);
-	//PRINT(("%s\n",content.String()));
 	// Dump to tmp directory
 	BPath path;
 	::find_directory(B_COMMON_TEMP_DIRECTORY,&path);
@@ -452,15 +462,22 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 	const char* kQuote2 = "#969600";
 	const char* kQuote3 = "#009696";
 	
+	char buf[10];
+	Encoding encode;
+
 	BString out("");
 	out += "<html>\n";
 	out += "<body bgcolor=\"#ffffff\">\n";
 	if(encoding)
 	{
-		out += " <META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=";
+		out += "<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=";
 		out += encoding;
 		out += "\">";
 	}
+	// Convert to UTF8 
+	// We need to convert to UTF8 for multibyte charactor support
+	if(encoding)
+		encode.ConvertToUTF8(content,encoding);
 	// We must add higlight quote and replace line feed
 	const char* text = content.String();
 	int32 len = content.Length();
@@ -475,7 +492,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 			if(text[i-1] == '\n')
 			{
 				tmp += "<font color=\"";
-			
+				
 				if(text[i+1] == '>' && text[i+2] != '>')
 					tmp += kQuote2;
 				else if(text[i+1] == '>' && text[i+2] == '>')
@@ -484,12 +501,28 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 					tmp += kQuote1;
 				tmp += "\"><i>";
 				while(text[i] != '\0' && text[i] != '\n')
-					tmp += text[i++];
-			
+				{
+					// Convert some latin 1 charactors
+					if((text[i] - 0xffffffc2) == 0 && 
+						(text[i+1] - 0xffffffa1) >= 0 &&
+						(text[i+1] - 0xffffffa1) < 35)
+					{
+						::sprintf(buf,"&#%d;",text[i+1]+161);
+						i+=2;
+						tmp += buf;
+					}else{
+						// Normal charactors
+						ConvertToHtmlCharactor(text[i++],buf);
+						tmp += buf;
+					}
+				}
 				tmp += "</i></font>";
-				tmp += text[i];
-			}else
-				tmp += text[i];
+				ConvertToHtmlCharactor(text[i],buf);
+				tmp += buf;
+			}else{
+				ConvertToHtmlCharactor(text[i],buf);
+				tmp += buf;
+			}
 			break;
 		}
 		// http,ftp,mailto
@@ -510,22 +543,88 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 				tmp += "\">";
 				tmp += uri;
 				tmp += "</a>";
-				tmp += text[i];
-			}else
-				tmp+= text[i];
+				ConvertToHtmlCharactor(text[i],buf);
+				tmp += buf;
+			}else{
+				ConvertToHtmlCharactor(text[i],buf);
+				tmp += buf;
+			}
 			break;
-		
 		default:
-			tmp += text[i];
+			// Convert some latin 1 charactors
+			if((text[i] - 0xffffffc2) == 0 && 
+				(text[i+1] - 0xffffffa1) >= 0 &&
+				(text[i+1] - 0xffffffa1) < 35)
+			{
+				::sprintf(buf,"&#%d;",text[i+1]+161);
+				text++;
+				tmp += buf;
+			}else{
+			// Normal charactors
+				ConvertToHtmlCharactor(text[i],buf);
+				tmp += buf;
+			}
 		}
 	}
+	// Convert from UTF8
+	if(encoding)
+		encode.ConvertFromUTF8(tmp,encoding);
+	//
 	content = tmp;
-	content.ReplaceAll("\n","<br>\n");
 	//
 	out += content;
 	out += "\n</body>\n";
 	out += "</html>\n";
 	content = out;
+}
+
+/***********************************************************
+ * ConvertToHtmlCharactor
+ ***********************************************************/
+void
+HHtmlMailView::ConvertToHtmlCharactor(char c,char *out)
+{
+	::memset(out,0,10);
+/*	// Some Latin1 charactors
+	if(c & 0x80)
+	{
+		
+		::sprintf(out,"&#%d;",c);
+		return;
+	}*/ 
+	// Special charactors
+	switch(c)
+	{
+	case '>':
+		::strcpy(out,"&gt;");
+		break;
+	case '<':
+		::strcpy(out,"&lt;");
+		break;
+	case '&':
+		::strcpy(out,"&amp;");
+		break;
+	case '"':
+		::strcpy(out,"&quote;");
+		break;
+	case '!':
+		::strcpy(out,"&#33;");
+		break;
+	case '#':
+		::strcpy(out,"&#35;");
+		break;
+	case '$':
+		::strcpy(out,"&#36;");
+		break;
+	case '%':
+		::strcpy(out,"&#37;");
+		break;
+	case '\n':
+		::sprintf(out,"<br>%c",c);
+		break;
+	default:
+		out[0] = c;
+	}
 }
 
 /***********************************************************

@@ -131,7 +131,7 @@ Encoding::ToMime(BString &inString, int32 encoding)
 	int i = 0; 
 	BString outString("");
 	
-	const char kJis_End[3] = {0x1b,0x28,0x42};
+	const char kJis_End[4] = {0x1b,0x28,0x42,'\0'};
 	
 	ConvertFromUTF8(inString,encoding);
 	// For japanese jis support	
