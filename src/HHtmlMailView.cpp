@@ -504,16 +504,22 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 	BString out("");
 	out += "<html>\n";
 	out += "<body bgcolor=\"#ffffff\">\n";
+	// Convert to UTF8 
+	// We need to convert to UTF8 for multibyte charactor support
+	int32 default_encoding = 0;
+	if(encoding)
+		encode.ConvertToUTF8(content,encoding);
+	else{
+		default_encoding = encode.DefaultEncoding();
+		encode.ConvertToUTF8(content,default_encoding);
+	}
+	
 	if(encoding)
 	{
 		out += "<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=";
 		out += encoding;
 		out += "\">";
 	}
-	// Convert to UTF8 
-	// We need to convert to UTF8 for multibyte charactor support
-	if(encoding)
-		encode.ConvertToUTF8(content,encoding);
 	// We must add higlight quote and replace line feed
 	const char* text = content.String();
 	int32 len = content.Length();
@@ -607,6 +613,8 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 	// Convert from UTF8
 	if(encoding)
 		encode.ConvertFromUTF8(tmp,encoding);
+	else
+		encode.ConvertFromUTF8(tmp,default_encoding);
 	//
 	content = tmp;
 	//

@@ -394,7 +394,9 @@ HPopClientView::PopConnect(const char* name,
 		fPopClient->PostMessage(B_QUIT_REQUESTED);
 	fPopClient = new PopClient(this,Window());
 	BString label(_("Connecting to"));
-	label << " " << address << "…";
+	label += " ";
+	label += address;
+	label +=  "…";
 	fStringView->SetText(label.String());
 	BMessage msg(H_CONNECT_MESSAGE);
 	msg.AddString("address",address);
@@ -619,7 +621,7 @@ HPopClientView::FilterMail(const char* subject,
 	BMessage filter;
 	int32 attr,op,action;
 	BString attr_value,action_value;
-	BString key;
+	char* key(NULL);
 	bool hit = false;
 	type_code type;
 	int32 count;
@@ -631,7 +633,6 @@ HPopClientView::FilterMail(const char* subject,
 			if( file.SetTo(&ref,B_READ_ONLY) != B_OK)
 				continue;
 			filter.Unflatten(&file);
-			
 			filter.GetInfo("attribute",&type,&count);
 			for(int32 i = 0;i < count;i++)
 			{
@@ -644,23 +645,25 @@ HPopClientView::FilterMail(const char* subject,
 				switch(attr)
 				{
 				case 0:
-					key = subject;
+					key = ::strdup(subject);
 					break;
 				case 1:
-					key = to;
+					key = ::strdup(to);
 					break;
 				case 2:
-					key = from;
+					key = ::strdup(from);
 					break;
 				case 3:
-					key = cc;
+					key = ::strdup(cc);
 					break;
 				case 4:
-					key = reply;
+					key = ::strdup(reply);
 					break;
 				}
 			
-				hit = Filter(key.String(),op,attr_value.String());
+				hit = Filter(key,op,attr_value.String());
+				free( key );
+				key = NULL;
 				if(!hit )
 					break;
 			}

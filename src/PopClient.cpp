@@ -267,7 +267,10 @@ PopClient::Login(const char* user,const char* password,bool apop)
 		
 		//md5_buffer(timestamp.String(),timestamp.Length(),buf);
 		BString cmd = "APOP ";
-		cmd << user << " " << md5sum << CRLF;
+		cmd += user;
+		cmd += " ";
+		cmd += md5sum;
+		cmd += CRLF;
 		free(md5sum);
 		err = SendCommand(cmd.String());
 		if(err != B_OK)
@@ -280,7 +283,8 @@ PopClient::Login(const char* user,const char* password,bool apop)
 normal:
 	// Send Username
 	BString cmd = "USER ";
-	cmd << user << CRLF;
+	cmd += user;
+	cmd += CRLF;
 	err = SendCommand(cmd.String());
 	if(err != B_OK)
 	{
@@ -289,7 +293,8 @@ normal:
 	}	
 	// Send Password
 	cmd = "PASS ";
-	cmd << password << CRLF;
+	cmd += password;
+	cmd += CRLF;
 	
 	err = SendCommand(cmd.String());
 	if(err != B_OK)
@@ -602,7 +607,7 @@ PopClient::ReceiveLine(BString &line)
 			if(rcv <=0)
 				break;
 			len += rcv;
-			line << c;
+			line += c;
 		}else
 			break;
 	}
