@@ -3,6 +3,7 @@
 #include "HApp.h"
 #include "HPrefs.h"
 #include "HMailItem.h"
+#include "HString.h"
 
 #include <String.h>
 #include <Entry.h>
@@ -110,9 +111,17 @@ HMailItem::HMailItem(const entry_ref &ref,
 	
 	}
 	//
-	BString str_size;
-	
-	str_size << size;
+	HString str_size,suffix("bytes");
+	float display_size = size;
+	if(display_size >= 1024 && display_size < 1048576)
+	{
+		suffix = "KB";
+		display_size = display_size/1024.0;	
+	}else if(display_size >= 1048576){
+		suffix = "MB";
+		display_size = display_size/1048576.0;
+	}
+	str_size.Format("%7.2f %s",display_size,suffix.String());
 	SetColumnContent(8,str_size.String());
 	SetColumnContent(9,fAccount.String());
 	
