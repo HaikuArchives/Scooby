@@ -6,7 +6,6 @@
 #include "HWindow.h"
 #include "ExtraMailAttr.h"
 #include "TrackerUtils.h"
-#include "TrackerString.h"
 
 #include <Autolock.h>
 #include <Bitmap.h>
@@ -695,32 +694,33 @@ no_hit:
 bool
 HPopClientView::Filter(const char* in_key,int32 operation,const char *attr_value)
 {
-	using namespace BPrivate;
-	
-	TrackerString key(in_key);
-	BString value(attr_value);
-	TrackerStringExpressionType exp = kContains;
+	BString key(in_key);	
+	bool hit = false;
 	
 	switch(operation)
 	{
 	// contain
 	case 0:
-		exp = kContains;
+		if(key.FindFirst(attr_value) != B_ERROR)
+			hit = true;
 		break;
 	// is
 	case 1:
-		exp = kNone;
+		if(key.Compare(attr_value) == 0)
+			hit = true;
 		break;
 	// begin with
 	case 2:
-		exp = kStartsWith;
+		if(key.FindFirst(attr_value) == 0)
+			hit = true;
 		break;
 	// end with
 	case 3:
-		exp = kEndsWith;
+		if(key.FindFirst(attr_value) == key.Length()- (int32)::strlen(attr_value) )
+			hit = true;
 		break;
 	}
-	return (exp == kNone)?(key == value):(key.Matches(value.String(),false,exp));
+	return hit;
 }
 
 /***********************************************************
