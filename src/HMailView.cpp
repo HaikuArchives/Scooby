@@ -71,6 +71,7 @@ HMailView::~HMailView(void)
 		delete[] fYankBuffer;
 	delete_sem(fStopSem);
 	delete fFile;
+	delete fMenu;
 }
 
 //--------------------------------------------------------------------
