@@ -192,7 +192,6 @@ HWrapTextView::ScrollTo(BPoint pos)
 {
 	if(fRulerView)
 	{
-		pos.PrintToStream();
 		BPoint rulerPos=pos;
 		rulerPos.y=0;
 		fRulerView->ScrollTo(rulerPos);

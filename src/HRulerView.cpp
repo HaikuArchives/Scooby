@@ -61,12 +61,13 @@ HRulerView::DrawRuler()
 {
 	rgb_color black = {0,0,0,255};
 	BRect bounds(Bounds());
-	float width = bounds.Width()-4.0F;
+	float width = (bounds.Width()>fTextView->RightLimit())?bounds.Width():fTextView->RightLimit();
+	width -= -4.0F;
 	int32 count = (int32)floor(width/fFontWidth);
 	
 	BeginLineArray(count);
 	
-	float start = 4.0;
+	float start = 4.0F;
 	BPoint pos;
 	char buf[10];
 	pos.y = bounds.top + 7;
