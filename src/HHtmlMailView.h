@@ -21,7 +21,7 @@ public:
 
 			void	LoadMessage(BFile* file);
 			void	SetContent(BFile *file);
-			
+			void SetEncoding(const char* encoding);
 			bool	IsShowingHeader() {return false;}
 			bool	IsShowingRawMessage() {return false;}
 protected:

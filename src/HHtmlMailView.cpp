@@ -136,13 +136,14 @@ HHtmlMailView::MessageReceived(BMessage *message)
 			if(fFile)
 			{
 				app_info info;
-    			be_app->GetAppInfo(&info); 
-    			BPath path(&info.ref);
-    			path.GetParent(&path);
-    			path.Append("html/startup.html");
-    			char *buf = new char[::strlen(path.Path())+8];
-    			::sprintf(buf,"file://%s",path.Path());
-				fHtmlView->ShowURL(buf);
+    				be_app->GetAppInfo(&info); 
+    				BPath path(&info.ref);
+    				path.GetParent(&path);
+    				path.Append("html/startup.html");
+    				char *buf = new char[::strlen(path.Path())+8];
+    				::sprintf(buf,"file://%s",path.Path());
+    				fHtmlView->SetEncoding((EncodingMessages)fHtmlView->fDefaultEncoding);
+    				fHtmlView->ShowURL(buf);
 				delete[] buf;
 				
 				ResetAttachmentList();
@@ -449,6 +450,7 @@ HHtmlMailView::LoadMessage(BFile *file)
 		if(content_type.Compare("text/html") != 0)
 		{
 			GetParameter(header,"charset=",&parameter);
+			charset = ::strdup(parameter);
 			Plain2Html(content,parameter,transfer_encoding);
 			delete[] parameter;
 			parameter = NULL;
@@ -471,6 +473,10 @@ HHtmlMailView::LoadMessage(BFile *file)
 	char *tmpPath = new char[::strlen(path.Path())+7+1];
 	::sprintf(tmpPath,"file://%s",path.Path());
 	// Set content and header
+	if(charset)
+		SetEncoding(charset);
+	else
+		fHtmlView->SetEncoding((EncodingMessages)fHtmlView->fDefaultEncoding);
 	fHtmlView->ShowURL(tmpPath);
 	fHeaderView->SetText( header );
 	delete[] tmpPath;
@@ -478,6 +484,35 @@ HHtmlMailView::LoadMessage(BFile *file)
 	free( charset );
 	free(transfer_encoding);
 	fFile = file;
+}
+
+/***********************************************************
+ * SetEncoding
+ ***********************************************************/
+void
+HHtmlMailView::SetEncoding(const char* encoding)
+{
+	PRINT(("%s\n",encoding));
+	int32 what = fHtmlView->fDefaultEncoding;
+	if(::strcasecmp(encoding,"ISO-8859-1") == 0)
+		what = NETPOSITIVE_ISO1;
+	else if(::strcasecmp(encoding,"ISO-8859-2") == 0)
+		what = NETPOSITIVE_ISO2;
+	else if(::strcasecmp(encoding,"ISO-8859-5") == 0)
+		what = NETPOSITIVE_ISO5;
+	else if(::strcasecmp(encoding,"ISO-8859-7") == 0)
+		what = NETPOSITIVE_ISO7;
+	else if(::strcasecmp(encoding,"ISO-2022-JP") == 0)
+		what = NETPOSITIVE_JAPANESE_AUTO;
+	else if(::strcasecmp(encoding,"euc-jp") == 0)
+		what = NETPOSITIVE_JAPANESE_AUTO;
+	else if(::strcasecmp(encoding,"utf-8") == 0)
+		what = NETPOSITIVE_UTF8;
+	else if(::strcasecmp(encoding,"koi8-r") == 0)
+		what = NETPOSITIVE_KOI8R;
+	else if(::strcasecmp(encoding,"windows-1251") == 0)
+		what = NETPOSITIVE_KOI8R;
+	fHtmlView->SetEncoding((EncodingMessages)what);
 }
 
 /***********************************************************
