@@ -24,6 +24,10 @@
 #include <E-mail.h>
 #include <StopWatch.h>
 
+// Extra folder attribute
+#define	SCOOBY_FOLDER_EXPANDED "Scooby:FolderExpanded"
+//
+
 /***********************************************************
  * Constructor
  ***********************************************************/
@@ -175,12 +179,11 @@ HFolderList::MessageReceived(BMessage *message)
 			message->FindPointer("parent",i,(void**)&parent);
 			if(message->FindBool("expand",i,&expand) != B_OK)
 				expand = false;
-			
-			
+			if(expand && !IsExpanded(FullListIndexOf(parent)))
+				parent->SetExpanded(expand);
 			if(!parent->IsSuperItem())
 			{
 				parent->SetSuperItem(true);
-				parent->SetExpanded(expand);
 				InvalidateItem(IndexOf(parent));
 			}
 			AddUnder(item,parent);
@@ -1439,7 +1442,7 @@ HFolderList::SaveFolderStructure()
 	HFolderItem *item;
 	entry_ref ref;
 	struct stat st;
-	BEntry entry;
+	BNode node;
 	
 	int32 count = FullListCountItems();
 	PRINT(("count:%d\n",count));
@@ -1448,12 +1451,13 @@ HFolderList::SaveFolderStructure()
 	::find_directory(B_USER_DIRECTORY,&path);
 	path.Append("mail");
 	::get_ref_for_path(path.Path(),&ref);
-	entry.SetTo(&ref);
-	entry.GetStat(&st);
+	node.SetTo(&ref);
+	node.GetStat(&st);
 	msg.AddRef("refs",&ref);
 	msg.AddInt32("time",st.st_mtime);
 	msg.AddInt32("indent",0);
 	
+	bool expanded;
 	for(int32 i = 0;i < count;i++)
 	{
 		item = cast_as(FullListItemAt(i),HFolderItem);
@@ -1461,11 +1465,14 @@ HFolderList::SaveFolderStructure()
 			continue;
 		//PRINT(("%s\n",item->FolderName()));
 		ref = item->Ref();
-		entry.SetTo(&ref);
-		entry.GetStat(&st);
+		node.SetTo(&ref);
+		node.GetStat(&st);
 		msg.AddRef("refs",&ref);
 		msg.AddInt32("time",st.st_mtime);
 		msg.AddInt32("indent",item->OutlineLevel());
+		expanded= IsExpanded(FullListIndexOf(item));
+		
+		node.WriteAttr(SCOOBY_FOLDER_EXPANDED,B_BOOL_TYPE,0,&expanded,sizeof(bool));
 	}
 	msg.Flatten(&file);
 }
@@ -1506,6 +1513,11 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 			break;
 		}
 	}
+	// Check expanded
+	bool expand;
+	BNode node(&inRef);
+	if(node.ReadAttr(SCOOBY_FOLDER_EXPANDED,B_BOOL_TYPE,0,&expand,sizeof(bool)) <=0)
+		expand = false;
 	
 	// not modified folders
 	if(useCache)
@@ -1527,6 +1539,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 				}else{
 					childFolders.AddPointer("item",item = new HFolderItem(ref,this));
 					childFolders.AddPointer("parent",parent);
+					childFolders.AddBool("expand",expand);
 					parent->IncreaseChildItemCount();
 				}
 				LoadFolders(ref,item,childIndent,rootFolders,childFolders);
@@ -1536,6 +1549,46 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		}
 	}else{
 		// Load from local strage
+#ifndef USE_SCANDIR
+		int32 direntcount,offset;
+		char buf[4096];
+		dirent *dent;
+		entry_ref childref;
+		BEntry childentry;
+		
+		while( (direntcount = dir.GetNextDirents((dirent *)buf, 4096)) > 0 && !list->fCancel )
+		{
+			offset = 0;
+			/* Now we step through the dirents. */ 
+			while (direntcount-- > 0)
+			{
+				dent = (dirent *)buf + offset; 
+				offset +=  dent->d_reclen;
+				/* Skip . and .. directory */
+				if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
+					continue;
+				childref.device = dent->d_pdev;
+				childref.directory = dent->d_pino;
+				childref.set_name(dent->d_name);
+			
+				if(childentry.SetTo(&childref) != B_OK)
+					continue;
+				if(childentry.IsDirectory())
+				{
+					if(!parent)
+					{
+						rootFolders.AddPointer("item",item = new HFolderItem(childref,this));
+					}else{
+						childFolders.AddPointer("item",(item = new HFolderItem(childref,this)));
+						childFolders.AddPointer("parent",parent);
+						childFolders.AddBool("expand",expand);
+						parent->IncreaseChildItemCount();
+					}
+					LoadFolders(childref,item,item->OutlineLevel(),rootFolders,childFolders);
+				}
+			}
+		}
+#else
 		BDirectory dir(&inRef);
 		int32 direntcount,i=0;
 		struct dirent **dirents = NULL;
@@ -1569,4 +1622,5 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 			free(dirents[i++]);
 		free(dirents);
 	}
+#endif
 }

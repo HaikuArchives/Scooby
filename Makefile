@@ -17,7 +17,7 @@ DEFINES= DEBUG USE_SCANDIR
 # USE_SPLOCALE: Enable SpLocale supprt
 # USE_ICONV:	Enable iconv support
 USE_SPLOCALE = 0
-USE_ICONV = 1
+USE_ICONV = 0
 # Warnings
 WARNINGS = ALL
 # Sources
