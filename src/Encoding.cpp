@@ -240,12 +240,27 @@ Encoding::ISO2UTF8(BString &str,int32 &encoding)
 void
 Encoding::Mime2UTF8(BString &str)
 {
+#ifdef USE_ICONV
+	int32 encode = fDefaultEncoding;
+	int32 start = str.FindFirst("=?");
+	BString charset("");
+	if(start != B_ERROR)
+	{	
+		start += 2;
+		int32 end = str.FindFirst("?",start);
+		str.CopyInto(charset,start,end-start);
+	}
+	ISO2UTF8(str,encode);
+	if(encode > 0 && charset.Length() > 0)
+		ConvertToUTF8(str,charset.String());
+#else
 	int32 encode = fDefaultEncoding;
 	
 	ISO2UTF8(str,encode);
 	
 	if(encode > 0)
 		ConvertToUTF8(str,encode);
+#endif
 	return; 
 }
 
@@ -409,21 +424,26 @@ void
 Encoding::ConvertToUTF8(BString &text,const char* charset)
 {
 #ifdef USE_ICONV
-	size_t inlen = text.Length();
-	char *outbuf = new char[text.Length()*3];
-	size_t outlen = text.Length()*3;
-	iconv_t handle;
-	const char *inbuf = text.String();
-
-	handle = iconv_open("UTF-8",charset);
-	if(handle )
-	{
-		iconv(handle,&inbuf,&inlen,&outbuf,&outlen);
+	size_t inlen = text.Length() + 1;
 	
-		text = outbuf;
+	iconv_t cd;
+	cd = iconv_open("UTF-8",charset);
+	if(cd == (iconv_t)(-1))
+		return;
+	size_t outlen = inlen*2;
+	char *outbuf = new char[outlen];
+	const char* inbuf = text.String();
+	::memset(outbuf,0,outlen);
+	char *outbufp = outbuf;
+	size_t r = iconv(cd,&inbuf,&inlen,&outbufp,&outlen);
+	if(r < 0)
+	{
 		delete[] outbuf;
+		return;
 	}
-	iconv_close(handle);
+	text = outbuf;
+	delete[] outbuf;
+	iconv_close(cd);
 #else
 	int32 encoding = p_Encoding(charset);
 
