@@ -7,6 +7,8 @@
 #include <Handler.h>
 #include <Messenger.h>
 
+class BQuery;
+
 class HQueryItem : public HFolderItem
 {
 public:
