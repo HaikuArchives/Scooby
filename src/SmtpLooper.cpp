@@ -14,6 +14,7 @@
 #include <Path.h>
 #include <Beep.h>
 #include <Alert.h>
+#include <FindDirectory.h>
 
 #define CRLF "\r\n"
 #define xEOF    236
@@ -76,14 +77,19 @@ SmtpLooper::SendMail(HMailItem *item)
 	BFile file(&ref,B_READ_ONLY);
 	BPath path(&ref);
 	PRINT(("Path:%s\n",path.Path()));
+	
 	if(file.InitCheck() == B_OK)
 	{
-		BString smtp_server("");
+		BString smtp_server(""),account("");
+		bool smtp_auth=false;
+	
 		if(ReadNodeAttrString(&file,B_MAIL_ATTR_SMTP_SERVER,&smtp_server) != B_OK)
 		{
 			PRINT(("ERR:SMTP_SERVER\n"));
 			return B_ERROR;
 		}
+		file.ReadAttr(B_MAIL_ATTR_SMTP_AUTH,B_BOOL_TYPE,0,&smtp_auth,sizeof(bool));
+		ReadNodeAttrString(&file,B_MAIL_ATTR_ACCOUNT,&account);
 		
 		PRINT(("SMTP:%s\n",smtp_server.String()));
 		
@@ -95,7 +101,38 @@ SmtpLooper::SendMail(HMailItem *item)
 			PostError("Cound not connect to smtp server");
 			return B_ERROR;		
 		}
-
+		// SMTP auth -------------
+		if(smtp_auth)
+		{
+			BPath path;
+			::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+			path.Append(APP_NAME);
+			path.Append("Accounts");
+			path.Append(account.String());
+			
+			BFile file;
+			BMessage setting;
+			if(file.SetTo(path.Path(),B_READ_ONLY) != B_OK)
+			{
+				Alert(B_STOP_ALERT,_("Account file %s is corrupted"),account.String());
+				return B_ERROR;
+			}
+			setting.Unflatten(&file);
+			const char* login,*password;
+			setting.FindString("pop_user",&login);
+			setting.FindString("pop_password",&password);
+			BString pass("");
+			int32 len = strlen(password);
+			for(int32 k = 0;k < len;k++)
+				pass << (char)(255-password[k]);
+			status_t err = fSmtpClient->Login(login,pass.String());
+			if(err != B_OK)
+			{
+				Alert(B_STOP_ALERT,fSmtpClient->Log());
+				return err;
+			}
+		}
+		//---------------------------------
 		int32 header_len;
 		
 		file.ReadAttr(B_MAIL_ATTR_HEADER,B_INT32_TYPE,0,&header_len,sizeof(int32));

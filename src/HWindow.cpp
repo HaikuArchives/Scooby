@@ -456,21 +456,6 @@ HWindow::MessageReceived(BMessage *message)
 		HMailItem *mail(NULL);
 		if(message->FindPointer("pointer",(void**)&mail) == B_OK)
 		{
-/*			entry_ref ref = mail->Ref();
-			BPath path(&ref);
-			path.GetParent(&path);
-			entry_ref folder_ref;
-			::get_ref_for_path(path.Path(),&folder_ref);
-			int32 fol = fFolderList->FindFolder(folder_ref);
-			
-			HFolderItem *item(NULL);
-			if(fol < 0)
-				goto send;
-			item = cast_as(fFolderList->ItemAt(fol),HFolderItem);
-			if(!item)
-				goto send;
-			*/
-//send:
 			// send 
 			bool send_now;
 			message->FindBool("send",&send_now);

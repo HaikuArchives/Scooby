@@ -1046,6 +1046,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	
 	BFile AccountFile(path.Path(),B_READ_ONLY);
 	BString smtp_host(""),reply("");
+	bool smtp_auth=false;
 	if(AccountFile.InitCheck() == B_OK)
 	{
 		BMessage msg;
@@ -1055,6 +1056,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 			smtp_host = "";
 		if(msg.FindString("reply_to",&reply) != B_OK)
 			reply = "";
+		msg.FindBool("smtp_auth",&smtp_auth);
 	}else{
 		BString label(_("Cound not find account file"));
 		label << ":" << path.Path();
@@ -1170,6 +1172,9 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	file.WriteAttrString(B_MAIL_ATTR_MIME,&mime);
 	file.WriteAttrString(B_MAIL_ATTR_REPLY,&reply);
 	file.WriteAttr(B_MAIL_ATTR_ATTACHMENT,B_BOOL_TYPE,0,&is_multipart,sizeof(bool));
+	file.WriteAttr(B_MAIL_ATTR_SMTP_AUTH,B_BOOL_TYPE,0,&smtp_auth,sizeof(bool));
+	file.WriteAttr(B_MAIL_ATTR_ACCOUNT,B_STRING_TYPE,0,path.Leaf(),strlen(path.Leaf())+1);
+	
 	BString attrPriority;
 	attrPriority += priority;
 	switch(priority)
