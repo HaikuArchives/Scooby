@@ -27,12 +27,16 @@ PGP::~PGP()
 }
 
 /***********************************************************
- * CanUse
+ * CanUse: Check PGP commands have been installed.
  ***********************************************************/
 bool
 PGP::CanUse() const
 {
-	return true;
+	BPath path;
+	::find_directory(B_USER_DIRECTORY,&path);
+	path.Append("config/bin/pgp");
+	BFile file(path.Path(),B_READ_ONLY);
+	return (file.InitCheck() == B_OK)?true:false;
 }
 
 /***********************************************************

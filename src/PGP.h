@@ -13,8 +13,9 @@ class PGP {
 public:
 				//!Constructor.
 							PGP();
+				//!Destructor.
 							~PGP();
-
+				//! Check PGP commands have been installed.
 				bool		CanUse() const; //!<Returns true if yuu can use pgp command.
 				
 				//! PGP sign
