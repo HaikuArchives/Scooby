@@ -241,7 +241,7 @@ SmtpClient::SendMail(const char* from,
 	{
 		char c = to[i];
 		if(c != ',')
-			addr << (char)c;
+			addr += (char)c;
 		if(c == ','||i == len-1)
 		{
 			if(addr.Length() == 0)
@@ -250,6 +250,7 @@ SmtpClient::SendMail(const char* from,
 			const char* kText = addr.String();
 			
 			ParseAddress(kText,cmd);
+			PRINT(("%s\n",cmd.String() ));
 			if(SendCommand(cmd.String()) != B_OK)
 			{
 				PRINT(("Err: rcpt\n"));
@@ -329,7 +330,7 @@ SmtpClient::ParseAddress(const char* in,BString& out)
 			if(*p++ == '>')
 				break;
 		}
-		out << CRLF;
+		out += CRLF;
 	}else{
 		out += "<"; 
 		
@@ -340,7 +341,7 @@ SmtpClient::ParseAddress(const char* in,BString& out)
 				break;
 			out += in[i];
 		}
-		out << ">"<< CRLF;
+		out += ">\r\n";
 	}
 }
 
