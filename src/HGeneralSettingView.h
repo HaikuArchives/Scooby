@@ -15,6 +15,7 @@ public:
 			void	InitGUI();
 protected:
 	virtual void	MessageReceived(BMessage *message);
+	virtual	void	AttachedToWindow();
 private:
 	
 };

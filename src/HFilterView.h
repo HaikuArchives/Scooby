@@ -38,7 +38,7 @@ protected:
 			void	RemoveCriteria();
 			void	RemoveAllCriteria();
 			void	RefreshCriteriaScroll();
-			
+	virtual	void	AttachedToWindow();	
 private:
 	BListView		*fListView;
 	BMenuField		*fActionMenu;

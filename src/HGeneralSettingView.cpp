@@ -392,3 +392,11 @@ HGeneralSettingView::MessageReceived(BMessage *message)
 		BView::MessageReceived(message);
 	}
 }
+
+/***********************************************************
+ * AttachedToWindow
+ ***********************************************************/
+void
+HGeneralSettingView::AttachedToWindow()
+{
+}

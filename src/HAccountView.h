@@ -22,7 +22,7 @@ protected:
 			void		OpenAccount(int32 index);
 			void		New();
 			void		SetEnableControls(bool enable);
-			
+	virtual	void		AttachedToWindow();
 private:
 	BListView			*fListView;
 };
