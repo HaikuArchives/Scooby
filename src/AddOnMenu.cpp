@@ -63,13 +63,25 @@ AddOnMenu::Build()
 	BEntry 		entry;
 	BList		itemList;
 	itemList.MakeEmpty();
+	char 		name[B_FILE_NAME_LENGTH];
+	char		shortcut = 0;
+	
 	while(dir.GetNextEntry(&entry,true) == B_OK)
 	{
 		if(entry.IsFile() && entry.GetRef(&ref) == B_OK)
 		{	
+			shortcut = 0;
 			BMessage *msg = new BMessage(fWhat);
 			msg->AddRef("refs",&ref);
-			itemList.AddItem(new BMenuItem(ref.name,msg));
+			// make name and shortcut
+			int32 nameLen = ::strlen(ref.name);
+			::strcpy(name,ref.name);
+			if(name[nameLen-2] == '-')
+			{
+				shortcut = name[nameLen-1];
+				name[nameLen-2] = '\0';
+			}
+			itemList.AddItem(new BMenuItem(name,msg,shortcut));
 		}
 	}
 	
