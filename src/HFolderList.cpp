@@ -1442,7 +1442,7 @@ HFolderList::SaveFolderStructure()
 	HFolderItem *item;
 	entry_ref ref;
 	struct stat st;
-	BNode node;
+	BEntry entry;
 	
 	int32 count = FullListCountItems();
 	PRINT(("count:%d\n",count));
@@ -1451,8 +1451,8 @@ HFolderList::SaveFolderStructure()
 	::find_directory(B_USER_DIRECTORY,&path);
 	path.Append("mail");
 	::get_ref_for_path(path.Path(),&ref);
-	node.SetTo(&ref);
-	node.GetStat(&st);
+	entry.SetTo(&ref);
+	entry.GetStat(&st);
 	msg.AddRef("refs",&ref);
 	msg.AddInt32("time",st.st_mtime);
 	msg.AddInt32("indent",0);
@@ -1465,8 +1465,8 @@ HFolderList::SaveFolderStructure()
 			continue;
 		//PRINT(("%s\n",item->FolderName()));
 		ref = item->Ref();
-		node.SetTo(&ref);
-		node.GetStat(&st);
+		entry.SetTo(&ref);
+		entry.GetStat(&st);
 		msg.AddRef("refs",&ref);
 		msg.AddInt32("time",st.st_mtime);
 		msg.AddInt32("indent",item->OutlineLevel());
