@@ -111,7 +111,7 @@ HWindow::InitMenu()
 	utils.AddMenuItem(aMenu,_("Empty Trash"),M_EMPTY_TRASH,this,this,'T',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();
-	subMenu = new BMenu("Import");
+	subMenu = new BMenu(_("Import"));
 	utils.AddMenuItem(subMenu,_("Plain Text Mails"),M_IMPORT_PLAIN_TEXT_MAIL,this,this);
 	utils.AddMenuItem(subMenu,_("mbox"),M_IMPORT_MBOX,this,this);
 	aMenu->AddItem(subMenu);
