@@ -1,6 +1,7 @@
 #include "Encoding.h"
 #include "HApp.h"
 #include "HPrefs.h"
+#include "base64.h"
 
 #include <ctype.h>
 #include <Debug.h>
@@ -128,7 +129,6 @@ Encoding::p_IsMultiByte(char c)
 void
 Encoding::ToMime(BString &inString, int32 encoding) 
 { 
-	int i = 0; 
 	BString outString("");
 #ifndef USE_ICONV	
 	const char kJis_End[4] = {0x1b,0x28,0x42,'\0'};
@@ -146,27 +146,7 @@ Encoding::ToMime(BString &inString, int32 encoding)
 	const char *in = inString.String();
 	char *out = outString.LockBuffer(inlen *3);
  	
- 	for (; inlen >= 3; inlen -= 3)
-    {
-    	out[i++] = kMimeBase[in[0] >> 2];
-		out[i++] = kMimeBase[((in[0] << 4) & 0x30) | (in[1] >> 4)];
-		out[i++] = kMimeBase[((in[1] << 2) & 0x3c) | (in[2] >> 6)];
-		out[i++] = kMimeBase[in[2] & 0x3f];
-		in += 3;
-    }
-    if (inlen > 0)
-    {
-		char f;
-    
-		out[i++] = kMimeBase[in[0] >> 2];
-		f = (in[0] << 4) & 0x30;
-		if (inlen > 1)
-		    f |= in[1] >> 4;
-		out[i++] = kMimeBase[f];
-		out[i++] = (inlen < 2) ? '=' : kMimeBase[(in[1] << 2) & 0x3c];
-		out[i++] = '=';
-    }
-    out[i] = '\0';
+ 	::decode64(out,(char*)in,inlen);
     
     outString.UnlockBuffer();
     outString += "?=";
