@@ -236,7 +236,7 @@ ReadNodeAttrString(BNode *node,const char* attrName,BString *out,const char* def
 		if(attr.size > 0)
 		{
 			char *buf = out->LockBuffer(attr.size+1);
-			err = node->ReadAttr(attrName,B_STRING_TYPE,0,buf,attr.size);
+			node->ReadAttr(attrName,B_STRING_TYPE,0,buf,attr.size);
 			out->UnlockBuffer();
 		}	
 	}else{
