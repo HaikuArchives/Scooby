@@ -518,7 +518,7 @@ HWindow::MessageReceived(BMessage *message)
 	
 		if(sel < 0)
 			break;
-		HFolderItem *item = cast_as(fFolderList->ItemAt(sel),HFolderItem);
+		HFolderItem *item = cast_as(fFolderList->FullListItemAt(sel),HFolderItem);
 		if(item && item->FolderType() != IMAP4_TYPE)
 			item->Launch();
 		else if(item && item->FolderType() == IMAP4_TYPE)
@@ -763,7 +763,7 @@ HWindow::MessageReceived(BMessage *message)
 		if(sel<0)
 			break;
 		//HFolderItem *item = cast_as(fFolderList->ItemAt(sel),HFolderItem);
-		HFolderItem *item = (HFolderItem*)fFolderList->ItemAt(sel);
+		HFolderItem *item = (HFolderItem*)fFolderList->FullListItemAt(sel);
 		if(item)
 		{
 			fFolderList->SetWatching( true );
@@ -1135,7 +1135,6 @@ HWindow::MoveMails(BMessage *message)
 	type_code type;
 	HMailItem *mail;
 	int32 i;
-	BList AddList,DelList;
 		
 	message->GetInfo("mail",&type,&count);
 	if(count == 0)
@@ -1151,32 +1150,16 @@ HWindow::MoveMails(BMessage *message)
 	for(i = 0;i < count;i++)
 	{			
 		message->FindPointer("mail",i,(void**)&mail);
-		DelList.AddItem(mail);
 		
 		ref = mail->Ref();
 		MoveFile(ref,path.Path());
 		BPath item_path(path.Path());
 		item_path.Append(BPath(&ref).Leaf());
 		::get_ref_for_path(item_path.Path(),&ref);
-		/*
-		AddList.AddItem(new HMailItem(ref,
-										mail->fStatus.String(),
-										mail->fSubject.String(),
-										mail->fFrom.String(),
-										mail->fTo.String(),
-										mail->fCC.String(),
-										mail->fWhen,
-										mail->fPriority.String(),
-										mail->fEnclosure
-										));*/
 	}
 	
-	
-	//to->AddMails(&AddList);
-	//from->RemoveMails(&DelList);
 	int32 old_selection = fMailList->CurrentSelection();
 	fMailList->DeselectAll();
-	//fMailList->RemoveMails(&DelList);
 	fMailList->Select( old_selection );
 }
 
@@ -1219,12 +1202,12 @@ HWindow::DeleteMails()
 		fFolderList->AddItem((item = new HFolderItem(ref,fFolderList)));
 		//fFolderList->SortItems();
 	}else
-		item = cast_as(fFolderList->ItemAt(folder),HFolderItem);
+		item = cast_as(fFolderList->FullListItemAt(folder),HFolderItem);
 	
 	int32 sel = fFolderList->CurrentSelection();
 	if(sel < 0)
 		return;
-	HFolderItem *from = cast_as(fFolderList->ItemAt(sel),HFolderItem);
+	HFolderItem *from = cast_as(fFolderList->FullListItemAt(sel),HFolderItem);
 	if(from == item) 
 		return;
 	// Local mails
@@ -1414,7 +1397,7 @@ HWindow::SendPendingMails()
 	int32 folder_index = fFolderList->FindFolder(ref);
 	if(folder_index < 0)
 		return;
-	HFolderItem *folder = cast_as(fFolderList->ItemAt(folder_index),HFolderItem);
+	HFolderItem *folder = cast_as(fFolderList->FullListItemAt(folder_index),HFolderItem);
 	if(!folder)
 		return;
 	BList *maillist = folder->MailList();
@@ -1457,9 +1440,25 @@ HWindow::ReplyMail(HMailItem *item,bool reply_all)
 	{
 		to << "," <<cc;	
 	}
-	
+	// Eliminate mail list title
+	if(subject.Length() > 2 && subject[0] == '[')
+	{
+		int32 index = subject.FindFirst(']',1);
+		if(index != B_ERROR)
+		{
+			if(subject[index+1] == ' ')
+				index++;
+			subject = &subject[index+1];
+		}
+	}
+	//
 	if( strncmp(subject.String(),"Re:",3) != 0)
-		subject.Insert("Re: ",0);
+	{
+		if(subject[0] == ' ')
+			subject.Insert("Re:",0);
+		else
+			subject.Insert("Re: ",0);
+	}
 	off_t size;
 	file.GetSize(&size);
 	char *buf = new char[size+1];
@@ -1641,7 +1640,7 @@ HWindow::EmptyTrash()
 		
 	for(int32 i = 0;i < count;i++)
 	{
-		HFolderItem *item = cast_as(fFolderList->ItemAt(i),HFolderItem);
+		HFolderItem *item = cast_as(fFolderList->FullListItemAt(i),HFolderItem);
 		if(item && ::strcmp(item->FolderName(), TRASH_FOLDER ) == 0)
 			trash = item;
 	}
