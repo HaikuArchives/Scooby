@@ -448,11 +448,6 @@ HHtmlMailView::LoadMessage(BFile *file)
 	}else{
 		if(content_type.Compare("text/html") != 0)
 		{
-			if(transfer_encoding&&::strcasecmp(transfer_encoding,"base64") == 0)
-					encode.MimeDecode(content,false);
-			else if(transfer_encoding&&::strcasecmp(transfer_encoding,"quoted-printable") == 0)
-					encode.MimeDecode(content,true);
-			
 			GetParameter(header,"charset=",&parameter);
 			Plain2Html(content,parameter,transfer_encoding);
 			delete[] parameter;
@@ -532,15 +527,11 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 	out += "<body bgcolor=\"#ffffff\">\n";
 	// Convert to UTF8 
 	// We need to convert to UTF8 for multibyte charactor support
-	if(transfer_encoding && ::strcmp(transfer_encoding,"quoted-printable") == 0)
-	{
-		char *buf = ::strdup(content.String());
-		
-		encode.decode_quoted_printable(buf,buf,::strlen(buf),false);
-		
-		content = buf;
-		free( buf );
-	}
+	if(transfer_encoding && ::strcasecmp(transfer_encoding,"quoted-printable") == 0)
+		encode.MimeDecode(content,true);
+	else if(transfer_encoding&&::strcasecmp(transfer_encoding,"base64") == 0)
+		encode.MimeDecode(content,false);
+	
 	int32 default_encoding = 0;
 	if(encoding)
 		encode.ConvertToUTF8(content,encoding);
@@ -556,6 +547,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 	}
 	// We must add higlight quote and replace line feed
 	const char* text = content.String();
+	
 	int32 len = content.Length();
 	BString tmp;
 	for(int32 i = 0;i < len;i++)
@@ -578,19 +570,9 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 				tmp += "\"><i>";
 				while(text[i] != '\0' && text[i] != '\n')
 				{
-					// Convert some latin 1 charactors
-					/*if((text[i] - 0xc2) == 0 && 
-						(text[i+1] - 0xa1) >= 0 &&
-						(text[i+1] - 0xa1) < 35)
-					{
-						::sprintf(buf,"&#%d;",text[i+1]+161);
-						i+=2;
-						tmp += buf;
-					}else{*/
-						// Normal charactors
-						ConvertToHtmlCharactor(text[i++],buf,&translate_space);
-						tmp += buf;
-					//}
+					// Normal charactors
+					ConvertToHtmlCharactor(text[i++],buf,&translate_space);
+					tmp += buf;
 				}
 				tmp += "</i></font>";
 				ConvertToHtmlCharactor(text[i],buf,&translate_space);
@@ -631,19 +613,8 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 			}
 			break;
 		default:
-		/*	// Convert some latin 1 charactors
-			if((text[i] - 0xffffffc2) == 0 && 
-				(text[i+1] - 0xffffffa1) >= 0 &&
-				(text[i+1] - 0xffffffa1) < 94)
-			{
-				::sprintf(buf,"&#%d;",text[i+1]+161);
-				text++;
-				tmp += buf;
-			}else{*/
-			// Normal charactors
 				ConvertToHtmlCharactor(text[i],buf,&translate_space);
 				tmp += buf;
-			//}
 		}
 	}
 	// Convert from UTF8
