@@ -11,7 +11,8 @@ enum{
 	M_MODIFIED 	= 'SUMD',
 	M_ADDR_MSG	='TOMS',
 	M_ACCOUNT_CHANGE = 'MACC',
-	M_EXPAND_ADDRESS = 'MeXA'
+	M_EXPAND_ADDRESS = 'MeXA',
+	M_SEL_GROUP = 'mSEG'
 };
 
 class HAddressView: public BView {
@@ -37,6 +38,10 @@ protected:
 	virtual	void	MessageReceived(BMessage *message);
 			
 			void	ChangeAccount(const char* name);
+
+			void	AddPerson(BMenu *menu,const char* title,const char* group,BMessage *msg
+							, char shortcut = 0
+							, uint32 modifiers = 0);
 private:
 	BTextControl	*fSubject;
 	BTextControl	*fTo;

@@ -434,7 +434,7 @@ HWriteWindow::MessageReceived(BMessage *message)
 		if(message->FindPointer("pointer",(void**)&control) == B_OK)
 		{
 			const char* addr;
-			message->FindString("email",&addr);
+			message->FindString("title",&addr);
 			
 			if(!control)
 				break;

@@ -4,6 +4,11 @@
 #include "CLVEasyItem.h"
 #include <Entry.h>
 #include <String.h>
+#include <ListView.h>
+
+enum{
+	M_REFRESH_MAIL_ITEM = 'mReM'
+};
 
 class HMailItem : public CLVEasyItem
 {
@@ -19,7 +24,8 @@ public:
 								  time_t 	  when,
 								  const char* priority,
 								  int8	enclosure,
-								  ino_t	node = 0);
+								  ino_t	node = 0,
+								  BListView* fOwner = NULL);
 						
 						HMailItem(const char* status,
 								  const char* subject,
@@ -57,5 +63,9 @@ public:
 		int8		fEnclosure;
 		bool		fDeleteMe;
 		node_ref	fNodeRef;
+		thread_id	fInitThread;
+		BListView	*fOwner;
+private:
+	static int32	RefreshStatusWithThread(void* data);
 };
 #endif
