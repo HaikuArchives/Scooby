@@ -148,7 +148,7 @@ HQueryItem::Fetching()
 		BBitmap *icon = ((HApp*)be_app)->GetIcon("OpenQuery");
 		SetColumnContent(1,icon,2.0,false,false);
 		
-		SetName(fUnread);
+		SetUnreadCount(fUnread);
 		InvalidateMe();
 	}DEBUG_ONLY(
 	else{

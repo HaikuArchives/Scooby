@@ -29,7 +29,7 @@ public:
 			void		SetLogin(const char* login) {fLogin = login;}
 			void		SetPort(int port) {fPort = port;}
 			void		SetPassword(const char* pass){fPassword = pass;}
-			void		SetFolderName(const char* folder) {fRemoteFolderName = folder;}
+			void		SetRemoteFolderName(const char* folder) {fRemoteFolderName = folder;}
 
 			void		SetFolderGathered(bool gathered) {fFolderGathered = gathered;}
 			void		SetChildFolder(bool child) {fChildItem = child;}

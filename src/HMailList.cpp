@@ -556,6 +556,7 @@ HMailList::InitiateDrag(BPoint  point,
 		if(sel < 0)
 			return false;
 		msg.AddInt32("sel",sel);
+		PRINT(("%d\n",sel));
 		int32 selected; 
 		int32 sel_index = 0;
 		while((selected = CurrentSelection(sel_index++)) >= 0)

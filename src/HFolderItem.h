@@ -48,8 +48,10 @@ public:
 		node_ref	NodeRef() {return fNodeRef;}
 				//!Returns folder name.
 	const char*		FolderName() {return fName.String();};
+				//!Set displayed folder name
+			void	SetFolderName(const char* name){fName = name;}
 				//!Set folder name label with unread count.
-			void	SetName(int32 unread);
+			void	SetUnreadCount(int32 unread);
 				//!Free all mail and restart gathering.
 	virtual	void	StartRefreshCache();
 				//!Invalidate this item.

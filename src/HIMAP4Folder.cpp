@@ -6,6 +6,7 @@
 #include "HFolderList.h"
 #include "HString.h"
 #include "Utilities.h"
+#include "utf7.h"
 
 #include <Alert.h>
 #include <Bitmap.h>
@@ -208,7 +209,7 @@ HIMAP4Folder::IMAPGetList()
 											));
 		if(!read) fUnread++;
 	}
-	SetName(fUnread);
+	SetUnreadCount(fUnread);
 	
 	fDone = true;
 	
@@ -290,6 +291,16 @@ HIMAP4Folder::GatherChildFolders()
 			p = name;
 		::strcpy(displayName,p);
 		displayName[::strlen(p)] = '\0';
+		// Convert UTF7 to UTF8
+		if(strstr(name,"&"))
+		{
+			char *buf = new char[strlen(displayName)*4];
+			IMAP4UTF72UTF8(buf,displayName);
+			SetFolderName(buf);
+			::strcpy(displayName,buf);
+			delete[] buf;
+		}
+		//
 		pointerList.AddItem((folder = new HIMAP4Folder(displayName,name
 											,server
 											,port

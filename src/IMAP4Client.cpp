@@ -373,6 +373,7 @@ IMAP4Client::FetchFields(int32 index,
 			if(strncmp(first_line,p,strlen(first_line)) == 0)
 			{
 				read = (line.FindFirst("\\Seen") != B_ERROR)?true:false;
+				
 			}
 			// Subject
 			if(strncmp("Subject:",p,8) == 0)

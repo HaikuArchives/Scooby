@@ -164,7 +164,7 @@ $(OBJ_DIR)/HIMAP4Folder.o : ./src/HIMAP4Folder.cpp src/HIMAP4Folder.h \
  libs/Santa/CLVColumn.h libs/Santa/PrefilledBitmap.h \
  libs/Santa/BetterScrollView.h libs/Santa/ScrollViewCorner.h \
  src/HSimpleFolderItem.h src/HCoolListView.h libs/Utils/HString.h \
- src/Utilities.h
+ src/Utilities.h src/utf7.h
 $(OBJ_DIR)/IMAP4Client.o : ./src/IMAP4Client.cpp src/IMAP4Client.h src/HApp.h
 $(OBJ_DIR)/HIMAP4Window.o : ./src/HIMAP4Window.cpp src/HIMAP4Window.h src/HApp.h \
  libs/Utils/NumberControl.h src/HIMAP4Folder.h src/HFolderItem.h \
@@ -231,3 +231,4 @@ $(OBJ_DIR)/PopLooper.o : ./src/PopLooper.cpp src/PopLooper.h src/PopClient.h \
  libs/Utils/HFile.h src/HPopClientView.h src/TrackerString.h \
  src/RegExp.h
 $(OBJ_DIR)/base64.o : ./src/base64.c
+$(OBJ_DIR)/utf7.o : ./src/utf7.c
