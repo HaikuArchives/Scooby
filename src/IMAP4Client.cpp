@@ -282,14 +282,14 @@ IMAP4Client::MarkAsDelete(int32 index)
 		PRINT(("Could not store the delete flag\n"));
 		return B_ERROR;
 	}
-	return Expurge();
+	return Expunge();
 }
 
 /***********************************************************
  * Expurge
  ***********************************************************/
 status_t
-IMAP4Client::Expurge()
+IMAP4Client::Expunge()
 {
 	// Check connection
 	if(!IsAlive())
@@ -303,7 +303,7 @@ IMAP4Client::Expurge()
 	BString out;
 	int32 state;
 	
-	if(SendCommand("EXPURGE") == B_OK)
+	if(SendCommand("EXPUNGE") == B_OK)
 	{
 		int32 cmdNumber = fCommandCount;
 		

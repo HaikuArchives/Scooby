@@ -47,8 +47,8 @@ public:
 		status_t	Store(int32 index,const char* flags,bool add = true);
 		//!Send noop command.
 		status_t	Noop();
-		//!Send expurge commnad.
-		status_t	Expurge();
+		//!Send expunge commnad.
+		status_t	Expunge();
 		//!Reconnect to IMAP4 server.
 		status_t	Reconnect();
 		//!Returns true if connection is alive.
