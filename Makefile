@@ -48,6 +48,11 @@ USE_ICONV = 0
 # Warnings
 WARNINGS = ALL
 
+ifeq ($(CHECK_MEMORY), true)
+	OPTIMIZE=NONE
+	COMPILER_FLAGS := -fcheck-memory-usage -D_NO_INLINE_ASM=1 -D_KERNEL_MODE=1
+endif
+
 # Sources
 -include .all_sources
 include .makefile.base
