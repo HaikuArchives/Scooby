@@ -5,7 +5,7 @@ NAME = Scooby
 RSRCS= ./resources/Icon.rsrc ./resources/Resource.rsrc
 
 # Libraries
-REG_LIBS = root be tracker mail
+REG_LIBS = root be tracker
 NET_LIBS = netapi net
 BONE_LIBS = bnetapi bind socket
 # if libbind.so exists, assume we are running BONE
