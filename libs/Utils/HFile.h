@@ -18,6 +18,12 @@ public:
 
 			int32		GetLine(BString *out);
 			int32		GetLine(char *buf);
+			
+			ssize_t		ReadAll(BString *out);
+			ssize_t		ReadAll(char **buf);
+			
+			ssize_t		WriteAll(BString str);
+			ssize_t		WriteAll(const char* buf);
 protected:
 
 };
