@@ -157,28 +157,6 @@ void HMailView::KeyDown(const char *key, int32 count)
 				}
 			}
 			break;
-
-		case B_DELETE:
-		{
-			if (IsSelectable())
-			{
-				if (key[0] == B_DELETE)	//**GR || (mods & B_CONTROL_KEY))
-				{	// ^d
-					if (IsEditable())
-					{
-						GetSelection(&start, &end);
-						if (start != end)
-							Delete();
-						else
-						{
-							Select(start, start + 1);
-							Delete();
-						}
-					}
-				}
-			}
-			break;
-		}
 		case B_END:
 		{
 			if (IsSelectable())
