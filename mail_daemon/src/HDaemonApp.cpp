@@ -75,6 +75,16 @@ HDaemonApp::MessageReceived(BMessage *message)
 		PRINT(("%s\n",err_str.String()));
 		fPopClient->PostMessage(B_QUIT_REQUESTED);
 		fPopClient = NULL;
+		
+		entry_ref ref;
+		if(GetNextAccount(ref) == B_OK)
+			// Connect next server
+			CheckFromServer(ref);
+		else{
+			if(fGotMails)
+				PlayNotifySound();
+			fChecking = false;
+		}
 		break;
 	}
 	// conect success
