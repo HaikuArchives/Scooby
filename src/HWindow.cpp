@@ -30,6 +30,7 @@
 #include "HAttachmentList.h"
 #include "HMailItem.h"
 #include "HCreateFolderDialog.h"
+#include "Encoding.h"
 
 #include <Box.h>
 #include <Beep.h>
@@ -54,6 +55,7 @@ HWindow::HWindow(BRect rect,
 	:BWindow(rect,name,B_DOCUMENT_WINDOW,B_ASYNCHRONOUS_CONTROLS)
 	,fCheckIdleTime(time(NULL))
 	,fCurrentDeskbarIcon(DESKBAR_NORMAL_ICON)
+	,fOpenPanel(NULL)
 {
 	SetPulseRate(100000);
 	AddShortcut('/',0,new BMessage(B_ZOOM));
@@ -83,6 +85,7 @@ HWindow::HWindow(BRect rect,
  ***********************************************************/
 HWindow::~HWindow()
 {
+	delete fOpenPanel;
 }
 
 /***********************************************************
@@ -107,7 +110,8 @@ HWindow::InitMenu()
 	utils.AddMenuItem(aMenu,_("Empty Trash"),M_EMPTY_TRASH,this,this,'T',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();
-	
+	utils.AddMenuItem(aMenu,_("Import Plain Text Mails"),M_IMPORT_PLAIN_TEXT_MAIL,this,this);
+	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
 	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,
@@ -367,6 +371,28 @@ HWindow::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
+	// Show Open File Panel
+	case M_IMPORT_PLAIN_TEXT_MAIL:
+	{
+		ShowOpenPanel(M_CONVERT_PLAIN_TO_MAIL);
+		break;
+	}
+	// 
+	case M_CONVERT_PLAIN_TO_MAIL:
+	{
+		type_code type;
+		int32 count;
+		entry_ref ref;
+		message->GetInfo("refs",&type,&count);
+		for(int32 i = 0;i < count;i++)
+		{
+			if(message->FindRef("refs",i,&ref) != B_OK)
+				continue;
+			BPath path(&ref);
+			Plain2BeMail(path.Path());
+		}
+		break;
+	}
 	// Select All
 	case B_COPY:
 	case B_SELECT_ALL:
@@ -1828,6 +1854,56 @@ HWindow::PrintMessage(BMessage *message)
 	msg.AddPointer("detail",fDetailView);
 	msg.AddString("job_name",item->fSubject.String());
 	be_app->PostMessage(&msg);
+}
+
+/***********************************************************
+ * Plain2BeMail
+ *	Convert plain text mails to BeOS format ones
+ *	and filter them.
+ ***********************************************************/
+void
+HWindow::Plain2BeMail(const char* path)
+{
+	BFile input(path,B_READ_ONLY);
+	if(input.InitCheck() != B_OK)
+		return;
+	off_t size;
+	input.GetSize(&size);
+	char *all_content = new char[size+1];
+	size = input.Read(all_content,size);
+	all_content[size] = '\0';
+	
+	entry_ref folder_ref,file_ref;
+	bool del;
+	fPopClientView->SaveMail(all_content,&folder_ref,&file_ref,&del);
+	
+	delete[] all_content;
+}
+
+/***********************************************************
+ * MBox2BeMail
+ ***********************************************************/
+void
+HWindow::MBox2BeMail(const char* path)
+{
+
+}
+
+/***********************************************************
+ * ShowOpenPanel
+ ***********************************************************/
+void
+HWindow::ShowOpenPanel(int32 what)
+{
+	if(!fOpenPanel)
+	{
+		fOpenPanel = new BFilePanel();
+		fOpenPanel->SetTarget(this);
+	}
+	BMessage msg(what);
+	fOpenPanel->SetMessage(&msg);
+	
+	fOpenPanel->Show();
 }
 
 /***********************************************************
