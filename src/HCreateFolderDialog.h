@@ -4,14 +4,20 @@
 #include <Window.h>
 #include <TextControl.h>
 
+//!Create folder dialog.
 class HCreateFolderDialog :public BWindow{
 public:
-					HCreateFolderDialog(BRect rect,
-										const char* title,
-										const char* path);
+		//! Constructor.
+					HCreateFolderDialog(BRect rect //!< Window frame rectanble.
+										,const char* title //!<Window title.
+										,const char* path //!< Path that folder to be created in.
+										);
+		//! Destructor.
 	virtual 		~HCreateFolderDialog();
+		//! Initialize all GUI.
 			void	InitGUI();
 protected:
+		//! Handling messages.
 	virtual	void	MessageReceived(BMessage *message);
 private:
 	BTextControl*	fNameControl;
