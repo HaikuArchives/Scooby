@@ -374,6 +374,8 @@ SmtpClient::PostError(const char* log)
 void
 SmtpClient::ForceQuit()
 {
+	if(!fEndpoint)
+		return;
 	fEndpoint->Close();
 }
 

@@ -344,8 +344,8 @@ HReadWindow::MenusBeginning()
 	if(is_kind_of(fMailView,HMailView))
 	{
 		HMailView *view = cast_as(fMailView,HMailView);
-		EnableMenuItem(KeyMenuBar()->FindItem(M_HEADER),view->IsShowingHeader());
-		EnableMenuItem(KeyMenuBar()->FindItem(M_RAW),view->IsShowingHeader());
+		MarkMenuItem(KeyMenuBar()->FindItem(M_HEADER),view->IsShowingHeader());
+		MarkMenuItem(KeyMenuBar()->FindItem(M_RAW),view->IsShowingRawMessage());
 	}else{
 		EnableMenuItem(KeyMenuBar()->FindItem(M_HEADER),false);
 		EnableMenuItem(KeyMenuBar()->FindItem(M_RAW),false);

@@ -18,6 +18,7 @@
 #include "TrackerUtils.h"
 #include "HString.h"
 #include "Utilities.h"
+#include "StatusBar.h"
 
 #include <MenuBar.h>
 #include <ClassInfo.h>
@@ -354,14 +355,28 @@ HWriteWindow::InitGUI()
 	
 	rect.OffsetBy(0,rect.Height()+1);
 	rect.right -= B_V_SCROLL_BAR_WIDTH;
-	rect.bottom = Bounds().bottom - B_H_SCROLL_BAR_HEIGHT;
+	rect.bottom = Bounds().bottom - B_H_SCROLL_BAR_HEIGHT*2;
 	fTextView = new HMailView(rect,false,NULL);
 	
 	BScrollView *scroll = new BScrollView("scroll",fTextView,B_FOLLOW_ALL,
 										B_WILL_DRAW,true,true);
 	AddChild(scroll);
+	scroll->ScrollBar(B_VERTICAL)->ResizeBy(0,B_H_SCROLL_BAR_HEIGHT);
 	fTextView->SetDoesUndo(true);
-	
+	/********** Statusbar **************/
+	BRect statusRect(Bounds());
+	statusRect.top = statusRect.bottom - B_H_SCROLL_BAR_HEIGHT;
+	StatusBar *statusbar = new StatusBar(statusRect,NULL,B_FOLLOW_ALL,B_WILL_DRAW);
+	AddChild(statusbar);
+	BString label;
+	label = _("Row");
+	label += " : 0  ";
+	label = _("Col");
+	label += ": 0";
+	statusbar->AddItem("line",label.String(),LineUpdate);
+	label = _("Size");
+	label += ": 0 byte";
+	statusbar->AddItem("size",label.String(),SizeUpdate);
 	/********** Add Toolbar ***********/
 	BRect toolrect = Bounds();
 	toolrect.top += (KeyMenuBar()->Bounds()).Height();
@@ -1693,4 +1708,41 @@ HWriteWindow::GetTemplatesPath(BPath &path)
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append("Templates");
+}
+
+/***********************************************************
+ * LineUpdate
+ ***********************************************************/
+void
+HWriteWindow::LineUpdate(StatusItem *item)
+{
+	HWriteWindow *window = cast_as(item->Window(),HWriteWindow);
+	BTextView *view = cast_as(window->FindView("HMailView"),BTextView);
+//	int32 lines = view->CountLines();
+	int32 current = view->CurrentLine();
+	int32 lineoffset = view->OffsetAt(current);
+	int32 start,end;
+	view->GetSelection(&start,&end);
+			
+	BString label;
+	label << _("Row") << ": " << current+1 <<"  Col: " << start-lineoffset;
+	item->SetLabel( label.String() );
+	item->ResizeToPreferred();
+}
+
+/***********************************************************
+ * SizeUpdate
+ ***********************************************************/
+void
+HWriteWindow::SizeUpdate(StatusItem *item)
+{
+	HWriteWindow *window = cast_as(item->Window(),HWriteWindow);
+	BTextView *view = cast_as(window->FindView("HMailView"),BTextView);
+	int32 size = view->TextLength();
+	BString label;
+	label << _("Size") << ": " << size << " byte";
+	if(size != 0)
+		label += "s";
+	item->SetLabel( label.String() );
+	item->ResizeToPreferred();
 }

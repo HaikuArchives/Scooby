@@ -218,6 +218,11 @@ HHtmlMailView::OpenAttachment(int32 sel )
 		data_len = decode_base64(data, data, data_len, is_text);
 	}else if(encoding && ::strcasecmp(encoding,"quoted-printable") == 0){
 		data_len = Encoding().decode_quoted_printable(data,data,data_len,false);
+	}else{
+		BString label("Unsupported attachment format: ");
+		label += encoding;
+		(new BAlert("",label.String(),"OK"))->Go();
+		return;
 	}
 	file.Write(data,data_len);
 	file.SetSize(data_len);
@@ -291,6 +296,11 @@ HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name,bool rena
 		data_len = decode_base64(data, data, data_len, is_text);
 	}else if(encoding && ::strcasecmp(encoding,"base64") == 0){
 		data_len = Encoding().decode_quoted_printable(data,data,data_len,false);
+	}else{
+		BString label("Unsupported attachment format: ");
+		label += encoding;
+		(new BAlert("",label.String(),"OK"))->Go();
+		return;
 	}
 	file.Write(data,data_len);
 	file.SetSize(data_len);
