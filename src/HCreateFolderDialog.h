@@ -14,8 +14,6 @@ public:
 										,const char* title //!<Window title.
 										,HFolderItem *parent=NULL //!< Path that folder to be created in.
 										);
-		//! Destructor.
-					~HCreateFolderDialog();
 		//! Initialize all GUI.
 			void	InitGUI();
 protected:

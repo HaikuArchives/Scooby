@@ -12,7 +12,6 @@ public:
 										,const char* name
 										,int32 resize_mode
 										,int32 flags);
-		virtual 		~HWrapTextView();
 		
 		void			SetRightLimit(float right);
 		float			RightLimit() const {return fRightLimit;}

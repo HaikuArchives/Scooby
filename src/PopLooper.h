@@ -37,8 +37,6 @@ public:
 		//!Initialize spam mail address list.
 			void	InitBlackList();
 protected:
-		//!Destructor.
-					~PopLooper();
 		//!Post error.
 			void	PostError(const char* log);
 	//@{

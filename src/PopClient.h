@@ -10,8 +10,6 @@ class PopClient :public BNetEndpoint{
 public:
 		//!Constructor.
 					PopClient();
-		//!Destructor.
-					~PopClient();
 		//!Login to POP3 server.
 		status_t	Login(const char* user		//!<Login name.
 						,const char* password 	//!<Password.

@@ -10,8 +10,6 @@ class Encoding {
 public:
 			//! Constructor.
 					Encoding();
-			//!	Destructor.
-					~Encoding();
 			//!	Decode quoted-printable. It returns size of dest buffer.
 	static	int32	decode_quoted_printable(char *dest //!< Output buffer.
 											,char *in	//!< Input buffer.

@@ -13,9 +13,6 @@ public:
 							const char* name,
 							uint32 resize,
 							uint32 flags=B_WILL_DRAW);
-		//!Destructor.
-					~StatusBar();
-	
 		//!Add new StatusItem.
 			void	AddItem(const char* name //!< Status item name.
 							,const char* initialText //!<Initial text.

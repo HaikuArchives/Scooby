@@ -16,8 +16,6 @@ class IMAP4Client :public BNetEndpoint {
 public:
 		//!Constructor.
 					IMAP4Client();
-		//!Destructor.
-					~IMAP4Client();
 		//!Connect to IMAP4 server.
 		status_t	Connect(const char* addr,int port);
 		//!Login to IMAP4 server.
