@@ -48,7 +48,7 @@ HEnclosureView::InitGUI()
 	
 	BStringView *stringView = new BStringView(rect,
 											"StringView",
-											_("Enclosure"),
+											_("Attachments"),
 											B_FOLLOW_TOP|B_FOLLOW_LEFT_RIGHT);
 	AddChild(stringView);
 

@@ -37,13 +37,13 @@ HHtmlMailView::HHtmlMailView(BRect frame,const char* name,
 {
 	BRect rect = Bounds();
 
-	const char* kTabNames[3] = {"Content","Header","Attachment"};
+	const char* kTabNames[3] = {"Body","Headers","Attachments"};
 	HTabView *tabview = new HTabView(rect,"tabview",kTabNames,3,B_FOLLOW_ALL);
 	tabview->SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
 	
 	BView* TabbedViews[3];
 	BRect ContentRect = tabview->GetContentArea();
-	fHtmlView = new HHtmlView(ContentRect,_("Content"),false,B_FOLLOW_ALL);
+	fHtmlView = new HHtmlView(ContentRect,_("Body"),false,B_FOLLOW_ALL);
 	TabbedViews[0] = fHtmlView;
 	
 	BRect textRect = ContentRect;
@@ -51,7 +51,7 @@ HHtmlMailView::HHtmlMailView(BRect frame,const char* name,
 	fHeaderView = new CTextView(textRect,"headerview",B_FOLLOW_ALL,B_WILL_DRAW);
 	fHeaderView->MakeEditable(false);
 	fHeaderView->SetViewColor(tint_color(ui_color(B_PANEL_BACKGROUND_COLOR),B_LIGHTEN_1_TINT));
-	BScrollView *scroll = new BScrollView(_("Header"),fHeaderView,B_FOLLOW_ALL,0,true,true);
+	BScrollView *scroll = new BScrollView(_("Headers"),fHeaderView,B_FOLLOW_ALL,0,true,true);
 	TabbedViews[1] = scroll;
 	
 	BetterScrollView *bscroll;
