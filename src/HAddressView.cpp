@@ -155,9 +155,9 @@ HAddressView::InitGUI()
 	
 	if(!fReadOnly && query.Fetch() == B_OK)
 	{
-		BString addr1,addr2,name;
+		BString addr1,addr2,name,group;
 		entry_ref ref;
-		MenuUtils utils;
+//		MenuUtils utils;
 	
 		while(query.GetNextRef(&ref) == B_OK)
 		{
@@ -166,8 +166,12 @@ HAddressView::InitGUI()
 				continue;
 			if(node.ReadAttrString("META:name",&name) != B_OK)
 				continue;
-			node.ReadAttrString("META:email",&addr1);
-			node.ReadAttrString("META:email2",&addr2);
+			if(node.ReadAttrString("META:email",&addr1) != B_OK)
+				addr1 = "";
+			if(node.ReadAttrString("META:email2",&addr2) != B_OK)
+				addr2 = "";
+			if(node.ReadAttrString("META:group",&group) != B_OK)
+				group = "";
 			if(addr1.Length() > 0)
 			{
 				fAddrList.AddItem(strdup(addr1.String()));
@@ -176,18 +180,21 @@ HAddressView::InitGUI()
 				BMessage *msg = new BMessage(M_ADDR_MSG);
 				msg->AddString("email",addr1);
 				msg->AddPointer("pointer",fTo);
-				utils.AddMenuItem(toMenu,title.String(),msg,this,Window(),0,0
-							,rutils.GetBitmapResource('BBMP',"Person"));
+				msg->AddString("title",title);
+				AddPerson(toMenu,title.String(),group.String(),msg,0,0);
+				
 				msg = new BMessage(M_ADDR_MSG);
 				msg->AddString("email",addr1);
 				msg->AddPointer("pointer",fCc);
-				utils.AddMenuItem(ccMenu,title.String(),msg,this,Window(),0,0
-							,rutils.GetBitmapResource('BBMP',"Person"));
+				msg->AddString("title",title);
+				AddPerson(ccMenu,title.String(),group.String(),msg,0,0);
+				
 				msg = new BMessage(M_ADDR_MSG);
 				msg->AddString("email",addr1);
 				msg->AddPointer("pointer",fBcc);
-				utils.AddMenuItem(bccMenu,title.String(),msg,this,Window(),0,0
-							,rutils.GetBitmapResource('BBMP',"Person"));
+				msg->AddString("title",title);
+				AddPerson(bccMenu,title.String(),group.String(),msg,0,0);
+				
 			}
 			if(addr2.Length() > 0)
 			{
@@ -196,19 +203,23 @@ HAddressView::InitGUI()
 				title << " <" << addr2 << ">";
 				BMessage *msg = new BMessage(M_ADDR_MSG);
 				msg->AddPointer("pointer",fTo);
+				msg->AddString("title",title);
 				msg->AddString("email",addr2);
-				utils.AddMenuItem(toMenu,title.String(),msg,this,Window(),0,0
-							,rutils.GetBitmapResource('BBMP',"Person"));
+				AddPerson(toMenu,title.String(),group.String(),msg,0,0);
+				
+				
 				msg = new BMessage(M_ADDR_MSG);
 				msg->AddPointer("pointer",fCc);
 				msg->AddString("email",addr2);
-				utils.AddMenuItem(ccMenu,title.String(),msg,this,Window(),0,0
-							,rutils.GetBitmapResource('BBMP',"Person"));
+				msg->AddString("title",title);
+				AddPerson(ccMenu,title.String(),group.String(),msg,0,0);
+				
 				msg = new BMessage(M_ADDR_MSG);
 				msg->AddString("email",addr2);
 				msg->AddPointer("pointer",fBcc);
-				utils.AddMenuItem(bccMenu,title.String(),msg,this,Window(),0,0
-							,rutils.GetBitmapResource('BBMP',"Person"));
+				msg->AddString("title",title);
+				AddPerson(bccMenu,title.String(),group.String(),msg,0,0);
+				
 			}
 		}
 	}
@@ -340,6 +351,30 @@ HAddressView::MessageReceived(BMessage *message)
 			break;
 		ChangeAccount(name);
 		PRINT(("Name:%s\n",name));
+		break;
+	}
+	case M_SEL_GROUP:
+	{
+		BMenu *menu;
+		BTextControl *control;
+		if(message->FindPointer("menu",(void**)&menu) != B_OK ||
+			message->FindPointer("control",(void**)&control) != B_OK)
+			break;
+		if(control)
+		{
+			BString text = control->Text();
+			if(text.Length() != 0)
+				text += ",";
+			int32 count = menu->CountItems();
+			for(int32 i = 0;i < count;i++)
+			{
+				const char* label = menu->ItemAt(i)->Label();
+				text += label;
+				if(i != count-1)
+					text += ",";
+			}
+			control->SetText(text.String() );
+		}
 		break;
 	}
 	default:
@@ -490,4 +525,59 @@ HAddressView::FocusedView() const
 			return child;
 	}
 	return NULL;
+}
+
+/***********************************************************
+ * AddPerson
+ ***********************************************************/
+void
+HAddressView::AddPerson(BMenu *menu
+							,const char* title
+							,const char* group
+							,BMessage *msg
+							, char shortcut
+							, uint32 modifiers)
+{
+	BMenu *subMenu(NULL);
+	ResourceUtils rutils;
+	MenuUtils utils;
+	BMenuItem *item;
+	
+	if(::strlen(group) > 0)
+	{
+		int32 count = menu->CountItems();
+		for(int32 i = 0;i < count;i++)
+		{
+			BMenu *tmpMenu = menu->SubmenuAt(i);
+			if(tmpMenu)
+			{
+				item = tmpMenu->Superitem();
+				if(item && ::strcmp(item->Label(),group) == 0)
+				{
+					subMenu = tmpMenu;
+					break;
+				}
+			}
+		}
+		if(!subMenu)
+		{
+			subMenu = new BMenu(group);
+			BMessage *message = new BMessage(M_SEL_GROUP);
+			message->AddString("group",group);
+			BTextControl *control;
+			msg->FindPointer("pointer",(void**)&control);
+			message->AddPointer("control",control);
+			message->AddPointer("menu",subMenu);
+			BFont font(be_plain_font);
+			font.SetSize(10);
+			subMenu->SetFont(&font);
+			utils.AddMenuItem(menu,subMenu,message,this,Window(),0,0
+						,rutils.GetBitmapResource('BBMP',"OpenFolder"));
+		}
+		utils.AddMenuItem(subMenu,title,msg,this,Window(),shortcut,modifiers
+						,rutils.GetBitmapResource('BBMP',"Person"));
+		
+	}else
+		utils.AddMenuItem(menu,title,msg,this,Window(),shortcut,modifiers
+						,rutils.GetBitmapResource('BBMP',"Person"));
 }

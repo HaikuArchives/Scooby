@@ -36,6 +36,7 @@ HMailItem::HMailItem(const entry_ref &ref)
 	,fPriority("")
 	,fEnclosure(-1)
 	,fDeleteMe(false)
+	,fInitThread(-1)
 {
 	BEntry entry(&ref);
 	entry.GetNodeRef(&fNodeRef);
@@ -55,7 +56,7 @@ HMailItem::HMailItem(const entry_ref &ref,
 					  time_t 	  when,
 					  const char* priority,
 					  int8 enclosure,
-					  ino_t	node)
+					  ino_t	node,BListView *view)
 	:CLVEasyItem(0, false, false, 18.0)
 	,fRef(ref)
 	,fStatus(status)
@@ -68,6 +69,8 @@ HMailItem::HMailItem(const entry_ref &ref,
 	,fPriority(priority)
 	,fEnclosure(enclosure)
 	,fDeleteMe(false)
+	,fInitThread(-1)
+	,fOwner(view)
 {
 	if(node == 0)
 	{
@@ -85,6 +88,10 @@ HMailItem::HMailItem(const entry_ref &ref,
 	SetColumnContent(2,fFrom.String());
 	SetColumnContent(3,fTo.String());
 	SetColumnContent(4,fDate.String());
+	
+	//fInitThread = ::spawn_thread(RefreshStatusWithThread,"MailInitThread",B_NORMAL_PRIORITY,this);
+	//::resume_thread(fInitThread);
+	
 	if(fStatus.Compare("New") == 0)
 		RefreshStatus();
 	else
@@ -114,6 +121,7 @@ HMailItem::HMailItem(const char* status,
 	,fPriority(priority)
 	,fEnclosure(enclosure)
 	,fDeleteMe(false)
+	,fInitThread(-1)
 {
 	struct tm* time = localtime(&fWhen);
 	char *tmp = fDate.LockBuffer(24);
@@ -131,7 +139,12 @@ HMailItem::HMailItem(const char* status,
  ***********************************************************/
 HMailItem::~HMailItem()
 {
-
+	// Wait if init thread is running
+	if(fInitThread >= 0)
+	{
+		status_t err;
+		::wait_for_thread(fInitThread,&err);
+	}
 }
 
 /***********************************************************
@@ -165,6 +178,26 @@ HMailItem::SetRead()
 }
 
 /***********************************************************
+ * RefreshStatusWithThread
+ ***********************************************************/
+int32
+HMailItem::RefreshStatusWithThread(void *data)
+{
+	HMailItem *theItem = (HMailItem*)data;
+	theItem->RefreshStatus();
+	theItem->fInitThread = -1;
+
+	if(theItem->fOwner && theItem->fOwner->Window()->Lock())
+	{
+		int32 index = theItem->fOwner->IndexOf(theItem);
+		if(index >= 0)
+			theItem->fOwner->InvalidateItem(index);
+		theItem->fOwner->Window()->Unlock();
+	}
+	return 0;
+}
+
+/***********************************************************
  * ResetIcon
  ***********************************************************/
 void
@@ -172,7 +205,7 @@ HMailItem::ResetIcon()
 {
 	ResourceUtils utils;
 	BBitmap *icon = utils.GetBitmapResource('BBMP',fStatus.String());
-	RefreshTextColor();
+	//RefreshTextColor();
 	
 	if(icon)
 		SetColumnContent(0,icon,2.0,true,false);

@@ -1,6 +1,7 @@
 #include "HMailCache.h"
 #include "HMailItem.h"
 #include "HFolderItem.h"
+#include "HMailList.h"
 #include "HApp.h"
 
 #include <File.h>
@@ -10,6 +11,7 @@
 #include <ListView.h>
 #include <stdlib.h>
 #include <Alert.h>
+#include <ClassInfo.h>
 
 #define VERSION 1
 
@@ -85,7 +87,9 @@ HMailCache::Open(BList &outList,HFolderItem *folder)
 	HMailItem *item;
 	int32 unread = 0;
 	char *name,*status,*subject,*from,*to,*cc,*reply,*priority;
-	
+	BWindow *window = folder->Owner()->Window();
+	BListView *list = cast_as(window->FindView("maillist"),BListView);
+
 	for(register int32 i = 0;i < count;i++)
 	{
 		memory.Read(&int_data,INTEGER_DATA_SIZE);
@@ -104,7 +108,7 @@ HMailCache::Open(BList &outList,HFolderItem *folder)
 		
 		outList.AddItem(item = new HMailItem(ref,status,subject,from,to,cc,reply,
 									int_data.when,priority,int_data.enclosure,
-									int_data.node));
+									int_data.node,list));
 		delete[] status;
 		delete[] subject;
 		delete[] from;
