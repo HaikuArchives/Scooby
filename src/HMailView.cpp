@@ -662,8 +662,8 @@ void HMailView::Open(hyper_text *enclosure)
 			result = be_roster->Launch("text/html", 1, &enclosure->name);
 			if ((result != B_NO_ERROR) && (result != B_ALREADY_RUNNING)) {
 				beep();
-				(new BAlert("", "There is no installed handler for 'text/html'.",
-					"Sorry"))->Go();
+				(new BAlert("", _("There is no installed handler for 'text/html'."),
+					_("OK")))->Go();
 			}
 			break;
 
@@ -896,8 +896,8 @@ status_t HMailView::Save(BMessage *msg)
 		}
 		else {
 			beep();
-			(new BAlert("", "An error occurred trying to save the enclosure.",
-				"Sorry"))->Go();
+			(new BAlert("", _("An error occurred trying to save the enclosure."),
+				_("OK")))->Go();
 		}
 	}
 	return result;
