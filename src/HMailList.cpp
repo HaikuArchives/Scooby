@@ -796,8 +796,10 @@ HMailList::MarkOldSelectionAsRead()
 			return;
 		}
 		if( is_kind_of(fOldSelection,HIMAP4Item) )
+		{
 			fOldSelection->SetRead();
-		else{
+			InvalidateItem(IndexOf(fOldSelection));
+		}else{
 			// read status from real node
 			entry_ref ref = fOldSelection->Ref();
 			BNode node(&ref);
