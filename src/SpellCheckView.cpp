@@ -108,6 +108,8 @@ SpellCheckView::InsertText(const char				*inText,
 						   int32					inOffset,
 						   const text_run_array		*inRuns)
 {
+	if(!fEnabled)
+		return _inherited::InsertText(inText,inLength,inOffset,inRuns);
 	// reset colors
 	text_run_array array;
 	array.count = 1;
