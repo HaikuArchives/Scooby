@@ -48,7 +48,7 @@ HFolderList::HFolderList(BRect frame,
 	//expander_col->SetShown(false);
 	this->AddColumn(new CLVColumn(NULL,20,CLV_LOCK_AT_BEGINNING|CLV_NOT_MOVABLE|
 		CLV_NOT_RESIZABLE|CLV_PUSH_PASS|CLV_MERGE_WITH_RIGHT));
-	this->AddColumn(new CLVColumn(_("Folders"),400,CLV_SORT_KEYABLE|CLV_NOT_MOVABLE|CLV_PUSH_PASS));
+	this->AddColumn(new CLVColumn(_("Folders"),Frame().right,CLV_SORT_KEYABLE|CLV_NOT_MOVABLE|CLV_PUSH_PASS));
 	SetViewColor(tint_color( ui_color(B_PANEL_BACKGROUND_COLOR),B_LIGHTEN_2_TINT));
 	SetInvocationMessage(new BMessage(M_OPEN_FOLDER));
 	SetSortFunction(HFolderItem::CompareItems);
