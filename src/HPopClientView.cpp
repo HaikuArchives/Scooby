@@ -993,9 +993,5 @@ HPopClientView::PlayNotifySound()
 void
 HPopClientView::Cancel()
 {
-	if(fPopClient && fPopClient->Lock())
-	{
-		fPopClient->ForceQuit();
-		fPopClient->Unlock();
-	}
+	fPopClient->ForceQuit();
 }

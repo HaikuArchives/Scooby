@@ -68,7 +68,9 @@ SRCS= ./src/HFolderItem.cpp\
 	./src/HCreateFolderDialog.cpp\
 	./src/HFindWindow.cpp\
 	./src/HSpamFilterView.cpp\
-	./src/SpellCheckView.cpp
+	./src/SpellCheckView.cpp\
+	./src/StatusBar.cpp\
+	./src/StatusItem.cpp
 #-------------------------------------------------------
 #	determine wheather running on x86 or ppc
 ifeq ($(USE_SPLOCALE),1)
