@@ -458,37 +458,51 @@ HReadWindow::DispatchMessage(BMessage *message,BHandler *handler)
 		// Scroll down with space key
 		const char* bytes;
 		int32 modifiers;
-		
+		bool html = false;
 		message->FindInt32("modifiers",&modifiers);
 		message->FindString("bytes",&bytes);
-		char c = (modifiers & B_SHIFT_KEY)?B_PAGE_UP:B_PAGE_DOWN;
 		
+		if(bytes[0] != B_SPACE)
+			return BWindow::DispatchMessage(message,handler);
+		BScrollBar *bar(NULL);
 		if(is_kind_of(fMailView,HMailView))
-		{
-			if(bytes[0] == B_SPACE)
-			{
-				char b[1];
-				b[0] = c;
-				fMailView->KeyDown(b,1);
-			}
-		}else{
-			BScrollBar *bar(NULL);
+			bar = fMailView->ScrollBar(B_VERTICAL);
+		else{
 			HTabView *tabview = cast_as(fMailView->FindView("tabview"),HTabView);
+			html = true;
 			if(tabview->Selection() == 0)
 			{
-				BView *view(NULL);
-				if(tabview->Selection() == 0)
-				{
-					view = FindView("__NetPositive__HTMLView");
-					bar = view->ScrollBar(B_VERTICAL);
-				}
-				if(bar && view)
-				{
-					char b[1];
-					b[0] = c;
-					view->KeyDown(b,1);
-				}	
+				BView *view = FindView("__NetPositive__HTMLView");
+				bar = view->ScrollBar(B_VERTICAL);
 			}
+		}
+		if(!bar)
+		{
+			BWindow::DispatchMessage(message,handler);
+			return;
+		}
+		float min,max,cur;
+		bar->GetRange(&min,&max);
+		cur = bar->Value();
+		if(cur != max)
+		{
+			if(!html)
+			{
+				// Scroll down with space key
+				char b[1];
+				b[0] = (modifiers & B_SHIFT_KEY)?B_PAGE_UP:B_PAGE_DOWN;
+				fMailView->KeyDown(b,1);
+			}else{
+				char b[1];
+				b[0] = (modifiers & B_SHIFT_KEY)?B_PAGE_UP:B_PAGE_DOWN;
+				BView *view = FindView("__NetPositive__HTMLView");
+				view->KeyDown(b,1);
+			}
+		}else{
+			if(modifiers&B_SHIFT_KEY)
+				PostMessage(M_PREV_MESSAGE,this);
+			else
+				PostMessage(M_NEXT_MESSAGE,this);
 		}
 	}
 	BWindow::DispatchMessage(message,handler);
