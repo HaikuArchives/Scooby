@@ -1,6 +1,9 @@
 #include "Utilities.h"
 #include "scandir.h"
 
+#include <String.h>
+#include <Debug.h>
+#include <File.h>
 #include <stdio.h>
 #include <dirent.h>
 
@@ -35,4 +38,37 @@ int32 GetAllDirents(const char* path,struct dirent ***outdirent)
 	
 	*outdirent = dirent;
 	return count;
+}
+
+
+bool IsHeaderLine(const char* line)
+{
+	if(!line )
+		return false;
+	while (*line != '\0' && *line != ' ') {
+		if (*line == ':')
+			return true;
+		line++;
+	}
+	return false;	
+}
+
+int32 ReadLine(BFile *file,BString* out)
+{
+	if(!file || !out)
+	{
+		PRINT(("NULL POINTER:%s %d",__FILE__,__LINE__));
+		return -1;
+	}
+	char c=0;
+	out->SetTo("");
+	int32 len = 0;
+	while(file->Read(&c,1) > 0)
+	{
+		out->Append(c,1);
+		len++;
+		if(c == '\n')
+			break;
+	}
+	return len;
 }
