@@ -583,7 +583,7 @@ HWindow::MessageReceived(BMessage *message)
 	}
 	case M_PREF_MSG:
 	{
-		HPrefWindow *win = new HPrefWindow(RectUtils().CenterRect(600,360));
+		HPrefWindow *win = new HPrefWindow(RectUtils().CenterRect(600,380));
 		win->Show();
 		break;
 	}

@@ -56,5 +56,6 @@ HPrefs::MakeDefault()
 	fDefaultMessage->AddBool("use_desktray",true);
 	fDefaultMessage->AddRect("read_win_rect",BRect(40,40,400,400));
 	fDefaultMessage->AddBool("use_html",true);
+	fDefaultMessage->AddBool("check_inbox",false);
 	HSetting::MakeDefault();
 }
