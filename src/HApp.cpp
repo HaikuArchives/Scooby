@@ -4,6 +4,7 @@
 #include "HPrefs.h"
 #include "HAboutWindow.h"
 #include "HPrefWindow.h"
+#include "HDeskbarView.h"
 
 #include <String.h>
 #include <Debug.h>
@@ -51,6 +52,7 @@ HApp::MessageReceived(BMessage *message)
 	{
 	case M_POP_CONNECT:
 	case M_NEW_MSG:
+	case M_DESKBAR_INSTALLED:
 		fWindow->PostMessage(message);
 		break;
 	case M_PAGE_SETUP_MESSAGE:

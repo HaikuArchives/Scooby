@@ -15,6 +15,12 @@ class HStatusView;
 class HDetailView;
 class HPopClientView;
 class HSmtpClientView;
+class HDeskbarView;
+
+enum{
+	DESKBAR_NORMAL_ICON = 0,
+	DESKBAR_NEW_ICON,
+};
 
 enum{
 	M_LAUNCH_MSG = 'HWLM',
@@ -54,6 +60,8 @@ public:
 									
 				void	MakeReadWindow(entry_ref ref,BMessenger *messenger = NULL);
 				void	RefsReceived(BMessage *message);
+				
+				void	ChangeDeskbarIcon(int32 icon);
 protected:		
 		virtual			~HWindow();
 
@@ -97,6 +105,7 @@ private:
 		HPopClientView*	fPopClientView;
 		time_t			fCheckIdleTime;
 		HSmtpClientView* fSmtpClientView;
+		BWindow*		fDeskbarWindow;
 };
 #endif		
 				
