@@ -269,7 +269,7 @@ HFolderList::MessageReceived(BMessage *message)
 			if(index < 0)
 				continue;
 				
-			item = (HFolderItem*)FullListItemAt(index);
+			item = (HFolderItem*)ItemAt(index);
 			if(!item)
 				continue;
 			
@@ -685,7 +685,7 @@ HFolderList::Pulse()
 	int32 sel = this->CurrentSelection();
 	if(sel >=0)
 	{
-		HFolderItem *theItem = (HFolderItem*)this->FullListItemAt(sel);
+		HFolderItem *theItem = (HFolderItem*)this->ItemAt(sel);
 		if(theItem->IsDone()) // Check wait for the end of gathering
 			this->SelectionChanged();
 	}
@@ -703,8 +703,8 @@ HFolderList::WhenDropped(BMessage *message)
 	int32 from;
 	message->FindInt32("sel",&from);
 	
-	HFolderItem *fromFolder = cast_as(FullListItemAt(from),HFolderItem);
-	HFolderItem *toFolder = cast_as(FullListItemAt(CurrentSelection()),HFolderItem);
+	HFolderItem *fromFolder = cast_as(ItemAt(from),HFolderItem);
+	HFolderItem *toFolder = cast_as(ItemAt(CurrentSelection()),HFolderItem);
 	if(fromFolder == toFolder)
 		return;
 	
@@ -740,7 +740,7 @@ HFolderList::SelectionChanged()
 		if(fSkipGathering)
 			return;
 		Window()->PostMessage(M_START_MAIL_BARBER_POLE);
-		HFolderItem *theItem = (HFolderItem*)this->FullListItemAt(sel);
+		HFolderItem *theItem = (HFolderItem*)this->ItemAt(sel);
 		if(!theItem->IsDone()) // if it has not gathered , assign it to check target
 		{
 			theItem->StartGathering();
@@ -800,7 +800,7 @@ void
 HFolderList::SelectWithoutGathering(int32 index)
 {
 	fSkipGathering = true;
-	HFolderItem *item = cast_as(FullListItemAt(index),HFolderItem);
+	HFolderItem *item = cast_as(ItemAt(index),HFolderItem);
 	int32 type = item->FolderType();
 	if(type == FOLDER_TYPE)
 		Select(index);
@@ -827,7 +827,7 @@ HFolderList::SelectItem(const BPoint point)
 		//Bounds().PrintToStream();
 		if( rect.Contains(point) )
 		{
-			HFolderItem *item = cast_as( FullListItemAt(i), HFolderItem);
+			HFolderItem *item = cast_as( ItemAt(i), HFolderItem);
 			if(item->FolderType() == QUERY_TYPE)
 				return B_ERROR;
 			if(item)
@@ -865,7 +865,7 @@ HFolderList::MouseDown(BPoint pos)
     	 
     	
     	 BMenuItem *item = new BMenuItem(_("Recreate Cache"),new BMessage(M_REFRESH_CACHE),0,0);
-    	 HFolderItem *folder= cast_as(FullListItemAt(sel),HFolderItem);
+    	 HFolderItem *folder= cast_as(ItemAt(sel),HFolderItem);
     	 
     	 if(sel < 0)
     	 	item->SetEnabled(false);
@@ -903,7 +903,7 @@ HFolderList::MouseDown(BPoint pos)
     	 {
     	 	item->SetEnabled(false);
     	 }else{
-    	 	HFolderItem *folder = cast_as(FullListItemAt(sel),HFolderItem);
+    	 	HFolderItem *folder = cast_as(ItemAt(sel),HFolderItem);
     	 	item->SetEnabled((folder->FolderType() == IMAP4_TYPE)?true:false);
     	 }
     	 theMenu->AddItem(item);
@@ -1213,7 +1213,7 @@ HFolderList::ProcessMails(BMessage *message)
 					folder_index = FindFolder(dir_ref);
 					if(folder_index <0)
 						break;
-					folder = (HFolderItem*)FullListItemAt(folder_index);
+					folder = (HFolderItem*)ItemAt(folder_index);
 					if(folder)
 					{
 						::get_ref_for_path(file_path.Path(),&ref);
@@ -1237,7 +1237,7 @@ HFolderList::ProcessMails(BMessage *message)
 					folder_index = FindFolder(ref);
 					if(folder_index <0)
 						break;
-					folder = (HFolderItem*)FullListItemAt(folder_index);
+					folder = (HFolderItem*)ItemAt(folder_index);
 					if(folder)
 					{
 						entry_ref old_ref(from_nref.device,from_nref.node,name);
@@ -1278,7 +1278,7 @@ HFolderList::ProcessMails(BMessage *message)
 				folder_index = FindFolder(dir_ref);
 				if(folder_index <0)
 					break;
-				folder = (HFolderItem*)FullListItemAt(folder_index);
+				folder = (HFolderItem*)ItemAt(folder_index);
 				if(folder)
 				{
 					HMailItem *item;
@@ -1305,7 +1305,7 @@ HFolderList::ProcessMails(BMessage *message)
 			folder_index = FindFolder(dir_ref);
 			if(folder_index <0)
 				break;
-			folder = (HFolderItem*)FullListItemAt(folder_index);
+			folder = (HFolderItem*)ItemAt(folder_index);
 			if(folder)
 			{
 				HMailItem *item = folder->RemoveMail(nref);
@@ -1376,7 +1376,7 @@ HFolderList::GenarateFolderPathes(BMessage &msg)
 	int32 result_count = 0;
 	for(int32 i = 0; i < count;i++)
 	{
-		HFolderItem *item = cast_as(FullListItemAt(i),HFolderItem);
+		HFolderItem *item = cast_as(ItemAt(i),HFolderItem);
 		
 		if(strcmp(item->FolderName(),_("Local Folders")) == 0)
 			continue;
