@@ -630,8 +630,9 @@ Encoding::ConvertReturnsToCR(char* text)
 void
 Encoding::ConvertReturnsToCRLF(char* text)
 {	
-	for(int32 i = 0, j = 0; true; i++, j++){
-		if(*(text + i) == LF){
+	/*for(int32 i = 0, j = 0; true; i++, j++){
+		if(*(text + i) == LF)
+		{
 			*(text + j) = CR;
 			*(text + j + 1) = LF;
 			j++;
@@ -646,7 +647,7 @@ Encoding::ConvertReturnsToCRLF(char* text)
 			if(*(text + j) == '\0')
 				break;
 		}
-	}
+	}*/
 }
 
 /***********************************************************
@@ -656,8 +657,26 @@ void
 Encoding::ConvertReturnsToCRLF(char** intext)
 {	
 	char *text = new char[::strlen(*intext)*2];
-	::strcpy(text,*intext);
-	ConvertReturnsToCRLF(text);
+	char *in = *intext;
+	for(int32 i = 0, j = 0; true; i++, j++){
+		if(*(in + i) == LF)
+		{
+			*(text + j) = CR;
+			*(text + j + 1) = LF;
+			j++;
+		}else if(*(in+i) == CR) {
+			*(text + j) = CR;
+			*(text + j + 1) = LF;
+			j++;
+			if(*(in + i + 1) == LF)
+				i++;
+		}else{
+			*(text + j) = *(in + i);
+			if(*(text + j) == '\0')
+				break;
+		}
+	}
+	
 	delete[] *intext;
 	*intext = text;
 }
@@ -669,9 +688,28 @@ void
 Encoding::ConvertReturnsToCRLF(BString &str)
 {	
 	int32 len = str.Length();
-	char *text = str.LockBuffer(len*2);
-	ConvertReturnsToCRLF(text);
-	str.UnlockBuffer();	
+	char *text = new char[len*2];
+	const char *in = str.String();
+	for(int32 i = 0, j = 0; true; i++, j++){
+		if(*(in + i) == LF)
+		{
+			*(text + j) = CR;
+			*(text + j + 1) = LF;
+			j++;
+		}else if(*(in+i) == CR) {
+			*(text + j) = CR;
+			*(text + j + 1) = LF;
+			j++;
+			if(*(in + i + 1) == LF)
+				i++;
+		}else{
+			*(text + j) = *(in + i);
+			if(*(text + j) == '\0')
+				break;
+		}
+	}
+	
+	str = text;
 }
 
 /***********************************************************
