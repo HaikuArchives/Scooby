@@ -7,10 +7,10 @@
 #include "HApp.h"
 #include "HPrefs.h"
 #include "HIMAP4Folder.h"
-#include "HIMAP4Window.h"
 #include "RectUtils.h"
 #include "HWindow.h"
 #include "Utilities.h"
+#include "HIMAP4Item.h"
 
 #include <Window.h>
 #include <StorageKit.h>
@@ -23,7 +23,6 @@
 #include <NodeMonitor.h>
 #include <E-mail.h>
 #include <StopWatch.h>
-#include <ListItem.h>
 
 
 /***********************************************************
@@ -43,7 +42,6 @@ HFolderList::HFolderList(BRect frame,
 	,fThread(-1)
 	,fWatching(false)
 	,fSkipGathering(false)
-	,fSkipMoveMail(false)
 	,fGatheredLocalFolders(false)
 {
 	CLVColumn *expander_col;
@@ -140,14 +138,6 @@ HFolderList::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
-	case M_ADD_IMAP4_FOLDER:
-	{
-		RectUtils utils;
-		BRect rect = utils.CenterRect(230,200);
-		HIMAP4Window *window = new HIMAP4Window(rect,this);
-		window->Show();
-		break;
-	}
 	case M_GET_FOLDERS:
 	{
 		fThread = ::spawn_thread(GetFolders,"GetVolume",B_NORMAL_PRIORITY,this);
@@ -391,7 +381,6 @@ HFolderList::GetFolders(void* data)
 	status_t err = B_NO_ERROR;
 	int32 offset;
 	BEntry entry(path.Path());
-	char name[B_FILE_NAME_LENGTH];
 	
 	BPath cachePath;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&cachePath);
@@ -455,7 +444,7 @@ HFolderList::GetFolders(void* data)
 		}
 	}
 	// Gather IMAP4 folders
-	err = B_OK;
+/*	err = B_OK;
 	find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append( APP_NAME );
 	path.Append("Accounts");
@@ -495,7 +484,8 @@ HFolderList::GetFolders(void* data)
 			setting.FindInt16("port",&port);
 			msg.AddPointer("item",new HIMAP4Folder(name,folder,addr,port,login,password.String(),list));
 		}
-	}	
+	}*/
+	list->LoadIMAP4Account(msg);
 	
 	// Send add list items message
 	if(!msg.IsEmpty())
@@ -592,7 +582,7 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 	}
 	// free all dirents
 	for(int32 i = 0;i < count;i++)
-		free(dirents[i++]);
+		free(dirents[i]);
 	free(dirents);
 #endif 
 }
@@ -644,26 +634,73 @@ HFolderList::WhenDropped(BMessage *message)
 	
 	HFolderItem *fromFolder = cast_as(ItemAt(from),HFolderItem);
 	HFolderItem *toFolder = cast_as(ItemAt(CurrentSelection()),HFolderItem);
-	if(fromFolder == toFolder)
+	
+	if(!toFolder||fromFolder == toFolder)
 		return;
-	
-	PRINT(("From:%d To:%d\n",from,CurrentSelection()));
-	
-	BMessage msg(M_MOVE_MAIL);
-	HMailItem *mail;
-	for(int32 i = 0;i < count;i++)
+	// Remote->Remote
+	if(toFolder->FolderType() == IMAP4_TYPE&&fromFolder->FolderType() == IMAP4_TYPE){
+		HIMAP4Folder *fromIMAP = cast_as(fromFolder,HIMAP4Folder);
+		HIMAP4Folder *toIMAP = cast_as(toFolder,HIMAP4Folder);
+		// move between same account folders.
+		if(::strcmp(toIMAP->AccountName(),fromIMAP->AccountName())==0)
+		{
+			BString index;
+			HIMAP4Item *mail;
+			for(int32 i = 0;i < count;i++)
+			{
+				if(message->FindPointer("pointer",i,(void**)&mail) == B_OK)
+				{
+					if(index.Length()>0)
+						index += ":";
+					index << mail->Index();
+				}
+			}
+			if(index.Length()>0)
+			{
+				if(fromIMAP->Move(index.String(),toIMAP->RemoteFolderPath())==B_OK)
+				{
+					for(int32 i = 0;i < count;i++)
+					{
+						if(message->FindPointer("pointer",i,(void**)&mail) == B_OK)
+						{
+							mail->Delete();
+							fromIMAP->RemoveMail(mail);
+							RemoveFromMailList(mail,true);
+						}
+					}
+				}
+			}
+			// Refresh mail list;
+			toIMAP->EmptyMailList();
+			toIMAP->SetDone(false);
+		}// move between different account folders.
+		else{
+			Alert(B_INFO_ALERT,_("Moving mails 	between different accounts have not been supported yet..."),_("OK"));
+		}
+	}//Local->Remote
+	else if(toFolder->FolderType() == IMAP4_TYPE&&fromFolder->FolderType() == FOLDER_TYPE){
+		Alert(B_INFO_ALERT,_("Moving local mails to IMAP4 folders have not been supported yet..."),_("OK"));
+	}// Local->Local or Remote->Local
+	else if(toFolder->FolderType() == FOLDER_TYPE)
 	{
-		if(message->FindPointer("pointer",i,(void**)&mail) == B_OK)
-			msg.AddPointer("mail",mail);
-	}
+		PRINT(("From:%d To:%d\n",from,CurrentSelection()));
 	
-	if(fromFolder&&toFolder)
-	{
-		msg.AddPointer("to",toFolder);
-		msg.AddPointer("from",fromFolder);
-		Window()->PostMessage(&msg);
-	}
+		BMessage msg(M_MOVE_MAIL);
+		HMailItem *mail;
+		for(int32 i = 0;i < count;i++)
+		{
+			if(message->FindPointer("pointer",i,(void**)&mail) == B_OK)
+				msg.AddPointer("mail",mail);
+		}
 	
+		if(fromFolder&&toFolder)
+		{
+			msg.AddPointer("to",toFolder);
+			msg.AddPointer("from",fromFolder);
+			Window()->PostMessage(&msg);
+		}
+	}
+	// Reset selection.
 	SelectWithoutGathering(from);
 }
 
@@ -739,10 +776,7 @@ void
 HFolderList::SelectWithoutGathering(int32 index)
 {
 	fSkipGathering = true;
-	HFolderItem *item = cast_as(ItemAt(index),HFolderItem);
-	int32 type = item->FolderType();
-	if(type == FOLDER_TYPE || type == QUERY_TYPE)
-		Select(index);
+	Select(index);
 	fSkipGathering = false;
 }
 
@@ -803,7 +837,7 @@ HFolderList::MouseDown(BPoint pos)
     	 theMenu->SetFont(&font);
     	 
     	
-    	 BMenuItem *item = new BMenuItem(_("Recreate Cache"),new BMessage(M_REFRESH_CACHE),0,0);
+    	 BMenuItem *item = new BMenuItem(_("Refresh Folder Cache"),new BMessage(M_REFRESH_CACHE),0,0);
     	 HFolderItem *folder= cast_as(ItemAt(sel),HFolderItem);
     	 
     	 if(sel < 0)
@@ -821,20 +855,25 @@ HFolderList::MouseDown(BPoint pos)
     	 theMenu->AddItem(item);
     	 theMenu->AddSeparatorItem();
     	 
-    	 item = new BMenuItem(_("New Folder"),new BMessage(M_CREATE_FOLDER_DIALOG),0,0);
+    	 item = new BMenuItem(_("New Folder" B_UTF8_ELLIPSIS),new BMessage(M_CREATE_FOLDER_DIALOG),0,0);
     	 if(sel < 0)
     	 	item->SetEnabled(true);
-    	 else if(folder->FolderType() == FOLDER_TYPE)
+    	 else if(folder&&(folder->FolderType() == FOLDER_TYPE ||folder->FolderType() == IMAP4_TYPE ))
     	 	item->SetEnabled(true);
     	 else
     	 	item->SetEnabled(false);
     	 theMenu->AddItem(item);
     	 
-    	 item = new BMenuItem(_("Delete Folders"),new BMessage(M_DELETE_FOLDER),0,0);
-    	 item->SetEnabled((sel<0)?false:true);
+    	 item = new BMenuItem(_("Delete Folder"),new BMessage(M_DELETE_FOLDER),0,0);
+    	 if(folder&&folder->FolderType() == IMAP4_TYPE && !((HIMAP4Folder*)folder)->IsChildFolder())
+    	 	item->SetEnabled(false);	
+    	 else
+    	 	item->SetEnabled((sel<0)?false:true);
+    	 
     	 theMenu->AddItem(item);
+    	 /*
     	 theMenu->AddSeparatorItem();
-    	 item = new BMenuItem(_("Add IMAP4 Folders"),new BMessage(M_ADD_IMAP4_FOLDER),0,0);
+    	 item = new BMenuItem(_("Add IMAP4 Folder" B_UTF8_ELLIPSIS),new BMessage(M_ADD_IMAP4_FOLDER),0,0);
     	 item->SetEnabled((sel<0)?true:false);
     	 theMenu->AddItem(item);
     	 item = new BMenuItem(_("IMAP4 Folder Properties"),new BMessage(M_OPEN_FOLDER),0,0);
@@ -846,7 +885,7 @@ HFolderList::MouseDown(BPoint pos)
     	 	item->SetEnabled((folder->FolderType() == IMAP4_TYPE)?true:false);
     	 }
     	 theMenu->AddItem(item);
-    	 
+    	 */
     	 BRect r;
          ConvertToScreen(&pos);
          r.top = pos.y - 5;
@@ -859,12 +898,7 @@ HFolderList::MouseDown(BPoint pos)
     	{
     	 	BMessage*	aMessage = theItem->Message();
 			if(aMessage)
-			{
-				if(aMessage->what == M_ADD_IMAP4_FOLDER)
-					Window()->PostMessage(aMessage,this);
-				else
-					Window()->PostMessage(aMessage);
-	 		}
+				Window()->PostMessage(aMessage);
 	 	} 
 	 	delete theMenu;
 	 }else
@@ -1024,7 +1058,7 @@ HFolderList::AddQuery(entry_ref ref)
 			return B_ERROR;
 	}	
 	BString type;
-	node.ReadAttrString("BEOS:TYPE",&type);
+	ReadNodeAttrString(&node,"BEOS:TYPE",&type);
 	if(type.Compare("application/x-vnd.Be-query") != 0)
 		return B_ERROR;
 	
@@ -1041,7 +1075,7 @@ HFolderList::AddQuery(entry_ref ref)
 status_t
 HFolderList::RemoveQuery(node_ref& in_nref)
 {
-	BListItem **items = reinterpret_cast<BListItem**>(fPointerList.Items());
+	BListItem **items = static_cast<BListItem**>(fPointerList.Items());
 	int32 count = fPointerList.CountItems();
 	node_ref nref;
 	BEntry entry;
@@ -1086,178 +1120,6 @@ HFolderList::RemoveQuery(entry_ref& ref)
 		}
 	}
 	return B_ERROR;
-}
-
-/***********************************************************
- * ProcessMails
- ***********************************************************/
-void
-HFolderList::ProcessMails(BMessage *message)
-{
-	int32 opcode,folder_index;
-	entry_ref ref,dir_ref;
-	const char *name;
-	
-	BPath folder_path;
-	BPath mail_folder;
-	::find_directory(B_USER_DIRECTORY,&mail_folder);
-	mail_folder.Append("mail");
-	int32 mail_path_len = strlen(mail_folder.Path());
-	char mime_type[B_MIME_TYPE_LENGTH];
-	BNode node;
-	BNodeInfo ninfo;
-	HFolderItem *folder;
-
-	if(message->FindInt32("opcode",&opcode) == B_OK)
-	{
-		switch(opcode)
-		{
-		case B_ENTRY_MOVED:
-		{
-			if(fSkipMoveMail)
-			{
-				fSkipMoveMail = false;
-				break;
-			}
-			node_ref nref;
-			node_ref from_nref;
-			BPath to_path,from_path;
-			BDirectory to_dir,from_dir;
-			entry_ref ref;
-			
-			message->FindInt32("device", &nref.device);
-			message->FindInt32("device", &from_nref.device);
-			message->FindInt64("to directory", &nref.node);
-			message->FindInt64("from directory", &from_nref.node);
-			to_dir.SetTo(&nref);
-			from_dir.SetTo(&from_nref);
-			
-			to_path.SetTo(&to_dir,NULL,false);
-			from_path.SetTo(&from_dir,NULL,false);
-			
-			message->FindString("name", &name);
-			bool moved = false;
-			// Add mail
-			if(::strncmp(to_path.Path(),mail_folder.Path(),mail_path_len) == 0)
-			{
-				BPath file_path(to_path);
-				file_path.Append(name);
-				if(node.SetTo(file_path.Path()) == B_OK)
-				{
-					ninfo.SetTo(&node);
-					ninfo.GetType(mime_type);
-					if(::strcmp(mime_type,B_MAIL_TYPE) != 0)
-						break;
-					::get_ref_for_path(to_path.Path(),&dir_ref);
-					folder_index = FindFolder(dir_ref);
-					if(folder_index <0)
-						break;
-					folder = (HFolderItem*)ItemAt(folder_index);
-					if(folder)
-					{
-						::get_ref_for_path(file_path.Path(),&ref);
-						HMailItem* item;
-						folder->AddMail((item = new HMailItem(ref)));
-						if(folder_index == CurrentSelection())
-							AddToMailList(item);
-						InvalidateItem(folder_index);
-					}
-				}	
-				moved = true;	
-			}
-			// Remove mails
-			if(::strncmp(from_path.Path(),mail_folder.Path(),mail_path_len) == 0)
-			{
-				BPath file_path(from_path);
-				if(node.SetTo(file_path.Path()) == B_OK)
-				{
-					ninfo.SetTo(&node);
-					::get_ref_for_path(from_path.Path(),&ref);
-					folder_index = FindFolder(ref);
-					if(folder_index <0)
-						break;
-					folder = (HFolderItem*)ItemAt(folder_index);
-					if(folder)
-					{
-						entry_ref old_ref(from_nref.device,from_nref.node,name);
-						HMailItem *item = folder->RemoveMail(old_ref);
-						if(folder_index == CurrentSelection())
-							RemoveFromMailList(item,true);
-						else
-							delete item;
-						InvalidateItem(folder_index);
-					}
-				}
-			}
-			// Move message will call 2 times; from "From dir" and "To dir"
-			// if move mails between mail folders.
-			// So skip next move message
-			if(::strncmp(to_path.Path(),mail_folder.Path(),mail_path_len) == 0
-				&&::strncmp(from_path.Path(),mail_folder.Path(),mail_path_len) == 0
-				&& ::strcmp(from_path.Path(),to_path.Path()) != 0)
-				fSkipMoveMail = true;
-			
-			break;
-		}
-		case B_ENTRY_CREATED:
-		{
-			message->FindInt32("device", &ref.device);
-			message->FindInt64("directory", &ref.directory);
-			message->FindString("name", &name);
-			ref.set_name(name);
-			if(node.SetTo(&ref) == B_OK)
-			{
-				ninfo.SetTo(&node);
-				ninfo.GetType(mime_type);
-				if(::strcmp(mime_type,B_MAIL_TYPE) != 0)
-					break;
-				BPath path(&ref);
-				path.GetParent(&path);
-				::get_ref_for_path(path.Path(),&dir_ref);
-				folder_index = FindFolder(dir_ref);
-				if(folder_index <0)
-					break;
-				folder = (HFolderItem*)ItemAt(folder_index);
-				if(folder)
-				{
-					HMailItem *item;
-					folder->AddMail((item = new HMailItem(ref)));
-					if(folder_index == CurrentSelection())
-						AddToMailList(item);
-					InvalidateItem(folder_index);
-				}
-			}
-			break;
-		}
-		case B_ENTRY_REMOVED:
-		{
-			node_ref nref,dir_nref;
-			message->FindInt32("device", &nref.device);
-			message->FindInt64("node", &nref.node);
-			message->FindInt64("directory", &dir_nref.node);
-			dir_nref.device = nref.device;
-
-			BDirectory dir(&dir_nref);
-			BEntry entry;
-			dir.GetEntry(&entry);
-			entry.GetRef(&dir_ref);
-			folder_index = FindFolder(dir_ref);
-			if(folder_index <0)
-				break;
-			folder = (HFolderItem*)ItemAt(folder_index);
-			if(folder)
-			{
-				HMailItem *item = folder->RemoveMail(nref);
-				if(folder_index == CurrentSelection())
-					RemoveFromMailList(item,true);
-				else
-					delete item;	
-				InvalidateItem(folder_index);
-			}
-			break;
-		}
-		} // end switch
-	}
 }
 
 /***********************************************************
@@ -1360,8 +1222,6 @@ HFolderList::GetFolderPath(HFolderItem *item,BMessage &msg)
 void
 HFolderList::SaveFolderStructure()
 {
-	if(!IsGatheredLocalFolders())
-		return;
 	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
@@ -1410,7 +1270,7 @@ HFolderList::SaveFolderStructure()
 /***********************************************************
  * LoadFolders
  ***********************************************************/
-bool
+void
 HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 						,BMessage &rootFolders,BMessage &childFolders)
 {
@@ -1434,7 +1294,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		if(ref != inRef)
 			continue;
 		if(entry.SetTo(&ref) != B_OK)
-			return false;
+			return;
 		fFoldersCache->FindInt32("time",i,&modified_time);
 		fFoldersCache->FindInt32("indent",i,&indent);
 		fFoldersCache->FindBool("expanded",i,&expanded);
@@ -1452,7 +1312,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		for(i = i+1;i < count;i++)
 		{
 			if(fFoldersCache->FindRef("refs",i,&ref)!= B_OK)
-				break;	
+				continue;	
 			if(entry.SetTo(&ref) != B_OK)
 				continue;
 			fFoldersCache->FindInt32("time",i,&modified_time);
@@ -1552,6 +1412,66 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		free(dirents);
 #endif
 	}
+	return;
+}
+
+/***********************************************************
+ * LoadIMAP4Account
+ ***********************************************************/
+void
+HFolderList::LoadIMAP4Account(BMessage &msg)
+{
+	BPath path;
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append(APP_NAME);
+	path.Append("Accounts");
 	
-	return true;
+	BDirectory dir(path.Path());
+	BEntry entry;
+	entry_ref ref;
+	BMessage setting;
+	const char* addr,*login,*pass,*name,*port;
+	
+	while(dir.GetNextEntry(&entry) == B_OK)
+	{
+		if(entry.IsDirectory())
+			continue;
+		entry.GetRef(&ref);
+		if(IsIMAP4Account(ref,&setting))
+		{
+			setting.FindString("name",&name);	
+			setting.FindString("pop_host",&addr);
+			setting.FindString("pop_user",&login);
+			setting.FindString("pop_password",&pass);
+			BString password;
+			int32 len = strlen(pass);
+			for(int32 i =0;i < len;i++)
+				password += (char)255-pass[i];
+				
+			setting.FindString("pop_port",&port);
+			msg.AddPointer("item",new HIMAP4Folder(name,"",addr,atoi(port),login,password.String(),this));
+		}
+	}	
+	return;
+}
+
+/***********************************************************
+ * IsIMAP4Account
+ ***********************************************************/
+bool
+HFolderList::IsIMAP4Account(entry_ref& ref,BMessage *outSetting)
+{
+	BMessage setting;
+	BFile file(&ref,B_READ_ONLY);
+	
+	setting.Unflatten(&file);
+	
+	int16 protocol;
+	if(setting.FindInt16("protocol_type",&protocol) == B_OK && protocol == 2)
+	{
+		if(outSetting)
+			*outSetting = setting;
+		return true;
+	}
+	return false;
 }

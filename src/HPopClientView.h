@@ -1,33 +1,24 @@
 #ifndef __HCLIENTVIEW_H__
 #define __HCLIENTVIEW_H__
 
-#include <View.h>
+#include "HProgressBarView.h"
 #include <String.h>
-#include <StringView.h>
 #include <Message.h>
 
-class PopClient;
+class PopLooper;
 
-class HPopClientView :public BView {
+enum{
+	M_POP_ABORT = 'mPaB'
+};
+
+class HPopClientView :public HProgressBarView {
 public:
 					HPopClientView(BRect rect
 								,const char* name);
-	virtual 		~HPopClientView();
+			 		~HPopClientView();
 			void	PopConnect(const char* name,
 							const char* addr,int16 port,
 							const char* login,const char* pass);
-			
-			void	StartBarberPole();
-			void	StopBarberPole();
-			
-			void	StartProgress() {fShowingProgress = true;}
-			void	StopProgress() {fShowingProgress = false;}
-			
-			
-			void	Update(float delta);
-			void	SetValue(float value);
-			void	SetMaxValue(float max) { fMaxValue = max;}
-			
 			bool	IsRunning() const {return fIsRunning;}
 			
 			void	Cancel();
@@ -45,16 +36,14 @@ public:
 							bool *is_delete);
 			int16	RetrieveType() const {return fRetrieve;}
 protected:
-	virtual void	MessageReceived(BMessage *message);
-	virtual void	Draw(BRect updateRect);
-	virtual	void	Pulse();
-
-			BRect	BarberPoleInnerRect() const;	
-			BRect	BarberPoleOuterRect() const;
+	//@{
+	//!Override function.
+			void	MessageReceived(BMessage *message);
+			void	MouseDown(BPoint point);
+	//@}
 			bool	Filter(const char* key,
 							int32 operation,
 							const char* value);
-			time_t	MakeTime_t(const char* date);
 			
 			void	SetNextRecvPos(const char* uidl);
 			
@@ -64,14 +53,7 @@ protected:
 									const char* content,
 									int32 offset);
 private:
-	BStringView		*fStringView;
-	int32			fLastBarberPoleOffset;
-	bool 			fShowingBarberPole;
-	bool			fShowingProgress;
-	BBitmap			*fBarberPoleBits;
-	float			fMaxValue;
-	float			fCurrentValue;
-	PopClient		*fPopClient;
+	PopLooper		*fPopLooper;
 	BString			fLogin;
 	BString			fPassword;
 	int32			fStartPos;
@@ -90,5 +72,8 @@ private:
 	bool			fGotMails;
 	int32			fMailCurrentIndex;
 	int32			fMailMaxIndex;
+	
+	typedef		HProgressBarView	_inherited;
 };
 #endif
+

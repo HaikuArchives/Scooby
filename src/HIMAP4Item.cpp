@@ -1,5 +1,6 @@
 #include "HIMAP4Item.h"
 #include "IMAP4Client.h"
+#include "HIMAP4Folder.h"
 
 #include <Path.h>
 #include <FindDirectory.h>
@@ -22,21 +23,16 @@ HIMAP4Item::HIMAP4Item(const char* status,
 						const char* priority,
 						int8 		enclosure,
 						int32		index,
-						IMAP4Client *client)
+						IMAP4Client *client,
+						HIMAP4Folder *folder)
 	:HMailItem(status,subject,from,to,cc,reply,when,priority,enclosure)
 	,fMailIndex(index)
 	,fClient(client)
 	,fGotContent(false)
 	,fHeaderLength(0)
+	,fFolder(folder)
 {
 
-}
-
-/***********************************************************
- * Destructor
- ***********************************************************/
-HIMAP4Item::~HIMAP4Item()
-{
 }
 
 /***********************************************************
@@ -49,7 +45,8 @@ HIMAP4Item::SetRead()
 		return;
 
 	fClient->MarkAsRead(fMailIndex);
-
+	fFolder->SetUnreadCount(fFolder->Unread()-1);
+	fFolder->InvalidateMe();
 	fStatus = "Read";
 	ResetIcon();
 }
@@ -62,6 +59,11 @@ HIMAP4Item::Delete()
 {
 	fClient->MarkAsDelete(fMailIndex);
 	PRINT(("IMAP MAIL DELETED\n"));
+	if(fStatus.Compare("New") == 0)
+	{
+		fFolder->SetUnreadCount(fFolder->Unread()-1);
+		fFolder->InvalidateMe();
+	}
 }
 
 /***********************************************************

@@ -17,7 +17,7 @@ public:
 					HHtmlMailView(BRect rect,const char* name,
 									uint32 reisze = B_FOLLOW_LEFT|B_FOLLOW_TOP,
 									uint32 flags = B_WILL_DRAW);
-	virtual			~HHtmlMailView();
+					~HHtmlMailView();
 
 			void	LoadMessage(BFile* file);
 			void	SetContent(BFile *file);
@@ -25,7 +25,7 @@ public:
 			bool	IsShowingHeader() {return false;}
 			bool	IsShowingRawMessage() {return false;}
 protected:
-	virtual void	MessageReceived(BMessage *message);
+			void	MessageReceived(BMessage *message);
 			void	Plain2Html(BString &content,const char* encoding,const char* transfer_encoding);
 			void	ClearList();
 			void	ParseAllParts(const char* content,const char* boundary,int32 header_len);
@@ -51,9 +51,9 @@ private:
 class MySavePanel :public BFilePanel {
 public:
 						MySavePanel(BView *view);
-	virtual				~MySavePanel();
+						~MySavePanel();
 protected:
-	virtual void	SendMessage(const BMessenger*, BMessage*);
+	 	 void	SendMessage(const BMessenger*, BMessage*);
 private:
 	BView*			fTargetView;
 };

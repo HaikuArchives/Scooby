@@ -4,7 +4,7 @@
 #include <ClassInfo.h>
 #include <Window.h>
 
-const rgb_color highlight = {190,190,190,100};
+const rgb_color highlight = {190,190,250,100};
 
 /***********************************************************
  * Constructor
@@ -23,16 +23,10 @@ HCoolListView::HCoolListView(BRect frame,
 						const BFont* LabelFont)
 	:_inherited(frame,ContainerView,Name,ResizingMode,flags,Type,
 					hierarchical,horizontal,vertical,scroll_view_corner,border,LabelFont)
+	,fHovering(true)
 	,fOldSelection(-1)
 {
 	SetViewColor(tint_color( ui_color(B_PANEL_BACKGROUND_COLOR),B_LIGHTEN_2_TINT));
-}
-
-/***********************************************************
- * Destructor
- ***********************************************************/
-HCoolListView::~HCoolListView()
-{
 }
 
 /***********************************************************
@@ -42,6 +36,8 @@ void
 HCoolListView::MouseMoved(BPoint where,uint32 code,const BMessage *message)
 {
 	_inherited::MouseMoved(where,code,message);
+	if(!fHovering)
+		return;
 	if(!Window()->IsActive())
 		return;
 	int32 count = CountItems();
@@ -50,7 +46,7 @@ HCoolListView::MouseMoved(BPoint where,uint32 code,const BMessage *message)
 	BRect itemRect = ItemFrame(0);
 	float itemHeight = itemRect.Height()+1;
 	
-	itemRect.OffsetBy(0,-1);
+	//itemRect.OffsetBy(0,-1);
 	
 	if(fOldSelection >= 0 && (code == B_EXITED_VIEW || code == B_OUTSIDE_VIEW))
 	{

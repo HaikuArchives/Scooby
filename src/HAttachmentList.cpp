@@ -80,7 +80,7 @@ HAttachmentList::MouseDown(BPoint pos)
     	BFont font(be_plain_font);
     	font.SetSize(10);
     	theMenu->SetFont(&font);
-    	BMenuItem *item = new BMenuItem("Save As…",new BMessage(M_SAVE_ATTACHMENT));
+    	BMenuItem *item = new BMenuItem("Save As" B_UTF8_ELLIPSIS,new BMessage(M_SAVE_ATTACHMENT));
     	item->SetEnabled((sel < 0)?false:true);
     	theMenu->AddItem(item);
     	item = new BMenuItem("Open",new BMessage(M_OPEN_ATTACHMENT));

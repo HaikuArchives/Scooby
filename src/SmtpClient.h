@@ -1,50 +1,46 @@
 #ifndef __SMTPCLIENT_H__
 #define __SMTPCLIENT_H__
 
-#include <NetworkKit.h>
+#include <NetEndpoint.h>
 #include <String.h>
 #include <Looper.h>
-#include "ExtraMailAttr.h"
+#include <Handler.h>
 
-#define XMAILER "Scooby for BeOS"
-#define OUTBOX "out"
-
-class HMailItem;
-
-enum{
-	M_SMTP_CONNECT = 'mSTC',
-	M_SMTP_ERROR = 'mSER',
-	M_SMTP_END = 'mSED',
-	M_SEND_MAIL_SIZE = 'SmSS',
-	M_SET_MAX_SIZE = 'mSMS'
-};
-
-class SmtpClient :public BLooper{
+//! SMTP client socket thread.
+class SmtpClient :public BNetEndpoint{
 public:
-						SmtpClient(BHandler *handler,BLooper *looper);
-	virtual				~SmtpClient();
-
-		status_t		Connect(const char* addr,
-								int16 port=25);
-		status_t		SendMail(const char* from,
-							const char* to,
-							const char* data);
-		status_t		SendMail(HMailItem *item);
+			//!Constructor.
+						SmtpClient();
+			//!Destructor.
+						~SmtpClient();
+			//!Connect to SMTP server. Returns B_ERROR if failed to connect.
+		status_t		Connect(const char* addr //!<Server address.
+								,int16 port=25	//!<Server port.(default value is 25.)
+								,bool esmtp = false //!< Use ESMTP EHLO command or not.
+								);
+			//!ESMTP login
+		status_t		Login(const char* login,const char* password);
+			//!Quit SMTP sessison. Returns B_ERROR if failed to send QUIT command.
 		status_t		SmtpQuit();
-		
-			void		ForceQuit();
-protected:
-	virtual	void		MessageReceived(BMessage *message);
-	virtual bool		QuitRequested();
-			int32		ReceiveLine(BString &buf);
-			status_t	SendCommand(const char* cmd);
-			void		PostError(const char* log);
-			void		ParseAddress(const char* in,BString& out);
+		//!Sent mail.	Returns B_ERROR if failed to send.
+		status_t		SendMail(const char* from 	//!<From address.
+								,const char* to		//!<To addresses.(adress_A,address_B)
+								,const char* data	//!<Data to be sent.
+								,void (*TotalSize)(int32,void*)=NULL  //!<Callback func update StatusBar max size.
+								,void (*SentSize)(int32,void*)=NULL   //!<Callback func update StatusBar value.
+								,void* cookie = NULL	//!< Cookie.
+								);
+		//!Returns the last SMTP command response log.
+		const char*		Log() const {return fLog.String();}
+			//!Parse one E-mail address from input string.
+	static	void		ParseAddress(const char* in,BString& out);
+			//!Send command and receive all response.
+			status_t	SendCommand(const char* cmd,bool send_line_break=true);
+			//!Receive all command response
+			int32		ReceiveResponse(BString &out);
 private:
-	BNetEndpoint		*fEndpoint;
-		BString			fLog;
-		BHandler		*fHandler;
-		BLooper			*fLooper;
-
+		BString			fLog;				//!<The last command's output log.
+		int32			fAuthType;	//!<SMTP auth type;
+		typedef	BNetEndpoint	_inherited;
 };
 #endif

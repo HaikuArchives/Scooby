@@ -11,6 +11,7 @@
 #include "TrackerUtils.h"
 #include "HPrefs.h"
 #include "Utilities.h"
+#include "base64.h"
 
 #include <TabView.h>
 #include <Debug.h>
@@ -39,7 +40,7 @@ HHtmlMailView::HHtmlMailView(BRect frame,const char* name,
 {
 	BRect rect = Bounds();
 
-	const char* kTabNames[3] = {"Body","Headers","Attachments"};
+	const char* kTabNames[3] = {_("Body"),_("Headers"),_("Attachments")};
 	HTabView *tabview = new HTabView(rect,"tabview",kTabNames,3,B_FOLLOW_ALL);
 	tabview->SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
 	
@@ -191,15 +192,12 @@ HHtmlMailView::OpenAttachment(int32 sel )
 	int32 file_offset = item->Offset();
 	int32 data_len = item->DataLength();
 	
-	off_t size;
-	fFile->Seek(SEEK_SET,0);
-	fFile->GetSize(&size);
-	char *buf = new char[size+1];
-	size = fFile->Read(buf,size);
-	buf[size] = '\0';
+	fFile->Seek(file_offset,SEEK_SET);
+
 	char *data = new char[data_len+1];
-	::memcpy(data,&buf[file_offset],data_len);
+	fFile->Read(data,data_len);
 	data[data_len] = '\0';
+
 	const char* name = item->Name();
 	
 	// dump to tmp directory
@@ -216,13 +214,14 @@ HHtmlMailView::OpenAttachment(int32 sel )
 		bool is_text = false;
 		if(::strncmp(item->ContentType(),"text",4) == 0)
 			is_text = true;
-		data_len = decode_base64(data, data, data_len, is_text);
+		data_len = decode64(data, data, data_len);
 	}else if(encoding && ::strcasecmp(encoding,"quoted-printable") == 0){
 		data_len = Encoding().decode_quoted_printable(data,data,data_len,false);
 	}else{
 		BString label("Unsupported attachment format: ");
 		label += encoding;
 		(new BAlert("",label.String(),"OK"))->Go();
+		delete[] data;
 		return;
 	}
 	file.Write(data,data_len);
@@ -240,7 +239,6 @@ HHtmlMailView::OpenAttachment(int32 sel )
 	item->SetExtracted(true);
 	item->SetFileRef(ref);
 	delete[] data;
-	delete[] buf;
 }
 
 /***********************************************************
@@ -271,14 +269,10 @@ HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name,bool rena
 	int32 file_offset = item->Offset();
 	int32 data_len = item->DataLength();
 	
-	off_t size;
-	fFile->Seek(SEEK_SET,0);
-	fFile->GetSize(&size);
-	char *buf = new char[size+1];
-	size = fFile->Read(buf,size);
-	buf[size] = '\0';
+	fFile->Seek(file_offset,SEEK_SET);
+	
 	char *data = new char[data_len+1];
-	::memcpy(data,&buf[file_offset],data_len);
+	fFile->Read(data,data_len);
 	data[data_len] = '\0';
 	
 	BFile file;
@@ -286,7 +280,10 @@ HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name,bool rena
 		TrackerUtils().SmartCreateFile(&file,&destDir,path.Leaf(),"_");
 	else{
 		if(file.SetTo(path.Path(),B_WRITE_ONLY|B_CREATE_FILE) != B_OK)
+		{
+			delete[] data;
 			return;
+		}
 	}	
 	const char* encoding = item->ContentEncoding();
 	if(encoding && ::strcasecmp(encoding,"base64") == 0)
@@ -294,13 +291,14 @@ HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name,bool rena
 		bool is_text = false;
 		if(::strncmp(item->ContentType(),"text",4) == 0)
 			is_text = true;
-		data_len = decode_base64(data, data, data_len, is_text);
+		data_len = decode64(data, data, data_len);
 	}else if(encoding && ::strcasecmp(encoding,"base64") == 0){
 		data_len = Encoding().decode_quoted_printable(data,data,data_len,false);
 	}else{
 		BString label("Unsupported attachment format: ");
 		label += encoding;
 		(new BAlert("",label.String(),"OK"))->Go();
+		delete[] data;
 		return;
 	}
 	file.Write(data,data_len);
@@ -310,7 +308,6 @@ HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name,bool rena
 		BNodeInfo ninfo(&file);
 		ninfo.SetType(item->ContentType());
 	}
-	delete[] buf;
 	delete[] data;
 }
 
@@ -402,7 +399,7 @@ HHtmlMailView::LoadMessage(BFile *file)
 	file->GetSize(&size);
 	char *buf = new char[size+1];
 	BString content;
-	file->Seek(SEEK_SET,0);
+	file->Seek(0,SEEK_SET);
 	size= file->ReadAt(0,buf,size);
 	buf[size] = '\0';
 	char *header = new char[header_len+1];

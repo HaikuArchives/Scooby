@@ -7,6 +7,9 @@
 #include <Message.h>
 #include <FindDirectory.h>
 #include <Path.h>
+#include <Bitmap.h>
+#include <Mime.h>
+#include <NodeInfo.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,13 +28,6 @@ AddOnMenu::AddOnMenu(const char *title,
 	::find_directory(B_USER_DIRECTORY,&fPath);
 	fPath.Append("config/add-ons");
 	fPath.Append(directory_name);
-}
-
-/***********************************************************
- * Destructor
- ***********************************************************/
-AddOnMenu::~AddOnMenu()
-{
 }
 
 /***********************************************************

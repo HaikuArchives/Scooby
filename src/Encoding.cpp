@@ -1,6 +1,7 @@
 #include "Encoding.h"
-#include "HApp.h"
-#include "HPrefs.h"
+#include "HApp.h" 
+#include "HPrefs.h" 
+#include "base64.h"
 
 #include <ctype.h>
 #include <Debug.h>
@@ -57,21 +58,13 @@ const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_MS_WINDOWS_1251_CONVERSION,
 								B_MS_WINDOWS_CONVERSION};
 
-const char kMimeBase[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 /***********************************************************
  * Constructor
  ***********************************************************/
 Encoding::Encoding()
 {
-	((HApp*)be_app)->Prefs()->GetData("encoding",&fDefaultEncoding);
-}
-
-/***********************************************************
- * Destructor
- ***********************************************************/
-Encoding::~Encoding()
-{
+	((HApp*)be_app)->Prefs()->GetData("encoding",&fDefaultEncoding); 
 }
 
 /***********************************************************
@@ -128,7 +121,6 @@ Encoding::p_IsMultiByte(char c)
 void
 Encoding::ToMime(BString &inString, int32 encoding) 
 { 
-	int i = 0; 
 	BString outString("");
 #ifndef USE_ICONV	
 	const char kJis_End[4] = {0x1b,0x28,0x42,'\0'};
@@ -145,28 +137,8 @@ Encoding::ToMime(BString &inString, int32 encoding)
 	int32 inlen = inString.Length();
 	const char *in = inString.String();
 	char *out = outString.LockBuffer(inlen *3);
- 	
- 	for (; inlen >= 3; inlen -= 3)
-    {
-    	out[i++] = kMimeBase[in[0] >> 2];
-		out[i++] = kMimeBase[((in[0] << 4) & 0x30) | (in[1] >> 4)];
-		out[i++] = kMimeBase[((in[1] << 2) & 0x3c) | (in[2] >> 6)];
-		out[i++] = kMimeBase[in[2] & 0x3f];
-		in += 3;
-    }
-    if (inlen > 0)
-    {
-		char f;
-    
-		out[i++] = kMimeBase[in[0] >> 2];
-		f = (in[0] << 4) & 0x30;
-		if (inlen > 1)
-		    f |= in[1] >> 4;
-		out[i++] = kMimeBase[f];
-		out[i++] = (inlen < 2) ? '=' : kMimeBase[(in[1] << 2) & 0x3c];
-		out[i++] = '=';
-    }
-    out[i] = '\0';
+	
+	::encode64(out,(char*)in,inlen);
     
     outString.UnlockBuffer();
     outString += "?=";
@@ -292,7 +264,6 @@ Encoding::Mime2UTF8(BString &str)
 /***********************************************************
  * MimeDecode
  ***********************************************************/
-#define USE_BASE64DECODER
 void
 Encoding::MimeDecode(BString &str,bool quoted_printable)
 {
@@ -306,60 +277,11 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
    		len = decode_quoted_printable(buf,buf,len,true);	
    else	{
    // MIME-B
-#ifndef USE_BASE64DECODER
-		len = decode_base64(buf, buf, len,true); 
-#else
-		int i, iR;
-		char a1, a2, a3, a4;
-		i = 0; 
-        iR = 0;
-        while (1) { 
-                if (i >= len) 
-                    break;
-                if(buf[i] == '\r'|| buf[i] == '\n')
-                {
-                	i++;
-                	continue;
-                }
-                a1 = p_Charconv(buf[i]); 
-                a2 = p_Charconv(buf[i+1]); 
-                a3 = p_Charconv(buf[i+2]); 
-                a4 = p_Charconv(buf[i+3]); 
-                buf[iR] = (a1 << 2) | (a2 >>4);        
-                buf[iR + 1] = (a2 << 4) | (a3 >>2); 
-                buf[iR + 2] = (a3 << 6) | a4; 
-                
-                iR += 3;        
-                i += 4; 
-        } 
-        len = iR;
-#endif
+		len = decode64(buf, buf, len); 
     }
     buf[len] = '\0'; 
    	
     str.UnlockBuffer();
-}
-
-/***********************************************************
- * p_Charconv
- ***********************************************************/
-char
-Encoding::p_Charconv(char c)
-{
-    if (c >= 'A' && c <= 'Z')
-        return (c - 'A');
-    if (c >= 'a' && c <= 'z')
-        return (c - 'a' + 0x1a);
-    if (c >= '0' && c <= '9')
-        return (c - '0' + 0x34);
-    if (c == '+')
-        return 0x3e;
-    if (c == '/')
-        return 0x3f;
-    if (c == '=')
-        return '\0';
-    PRINT(("Invalid character[%c:%d]\n", c,c));
-    return '\0';
 }
 
 /***********************************************************

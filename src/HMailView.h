@@ -20,8 +20,6 @@
 #define MIME_MULTIPART		"multipart/"
 #define QUOTE				">"
 
-class BPopUpMenu;
-
 class HMailView;
 class TSavePanel;
 
@@ -72,16 +70,20 @@ enum	MENUS	{/* app 	{M_NEW = SUBJECT_FIELD + 64, M_EDIT_SIGNATURE,
 								M_SIGNATURE,
 				/* encls*/ 	 M_ADD, M_REMOVE};
 
+//!Read and compose view for plain mode.
 class HMailView : public SpellCheckView {
 public:
-
+			//!Constructor.
 					HMailView(BRect, bool, BFile*);
+			//!Destructor.
 					~HMailView(void);
-			
+			//!Reset view font.
 			void	ResetFont();
+			//!Reset all text_run_array.
 			void	ResetTextRunArray();
-			
+			//!Check whether header is shown.
 			bool	IsShowingHeader()const {return fHeader;}
+			//!Check whether raw message is shown.
 			bool	IsShowingRawMessage()const {return fRaw;}
 			
 			void	ClearList(void);
@@ -91,17 +93,22 @@ public:
 		status_t	Save(BMessage*);
 			void	SaveBeFile(BFile*, char*, ssize_t);
 			void	StopLoad(void);
-	virtual void	KeyDown(const char*, int32);
 			void	SetContent(BFile*);
-	virtual void	MakeFocus(bool);
-			void	GetHardWrapedText(BString &out);
-			int32	ByteLength(char c);
-protected:
-	virtual	void	AttachedToWindow(void);
-	virtual void	MessageReceived(BMessage*);
-	virtual void	MouseDown(BPoint);
-	virtual void	MouseMoved(BPoint, uint32, const BMessage*);
 	
+	//@{
+	//!Override function.
+			void	KeyDown(const char*, int32);
+			void	MakeFocus(bool);
+protected:
+			void	AttachedToWindow(void);
+			void	MessageReceived(BMessage*);
+			void	MouseDown(BPoint);
+			void	MouseMoved(BPoint, uint32, const BMessage*);
+			void GetDragParameters(BMessage *drag
+								,BBitmap **bitmap
+								,BPoint *point
+								,BHandler **handler);
+	//@}
 	static	bool	get_semaphore(BWindow*, sem_id*);
 	static	bool	insert(reader*, char*, int32, bool);
 	static	bool	parse_header(char*, char*, off_t, char*, reader*, off_t*);
@@ -136,7 +143,7 @@ private:
 
 
 //====================================================================
-
+//!Attachment save panel.
 class TSavePanel : public BFilePanel {
 
 private:
@@ -146,8 +153,9 @@ HMailView		*fView;
 
 public:
 				TSavePanel(hyper_text*, HMailView*);
-virtual void	SendMessage(const BMessenger*, BMessage*);
+		 void	SendMessage(const BMessenger*, BMessage*);
 void			SetEnclosure(hyper_text*);
 void			SetSaveFileName(const char* name);
 };
 #endif
+

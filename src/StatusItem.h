@@ -11,17 +11,16 @@ public:
 									const char* name,
 									const char* initialText,
 									void	(*func)(StatusItem* item));
-	virtual				~StatusItem();
-	virtual	void		Draw(BRect updateRect);
-	virtual	void		ResizeToPreferred();
+			void		Draw(BRect updateRect);
+			void		ResizeToPreferred();
 	
 			void		SetLabel(const char* label);
 protected:
-	virtual void		Pulse();	
-	virtual void 		FrameResized(float width, float height);
+			void		Pulse();	
+			void 		FrameResized(float width, float height);
 	BString				fLabel;
 	BStringView			*fStringView;
-	void 				(*pulseFunc)(StatusItem* item);
+			void 		(*pulseFunc)(StatusItem* item);
 private:
 	float				fFontHeight;
 	BRect fCachedBounds;
@@ -30,4 +29,3 @@ private:
 	rgb_color fDark_2_color;
 };
 #endif
-

@@ -12,6 +12,13 @@ const rgb_color kNormalColor = {0,0,0,255};
 
 #define DIC_DIR "/boot/beos/etc/word_dictionary"
 
+
+typedef struct {
+	int32 start;
+	int32 end;
+	SpellCheckView *view;
+} CheckThreadData;
+
 /***********************************************************
  * Constructor
  ***********************************************************/
@@ -291,7 +298,6 @@ SpellCheckView::CheckThread(void* data)
 	}
 	view->fCheckThreadID = -1;
 	delete data;
-	
 	return 0;
 }
 

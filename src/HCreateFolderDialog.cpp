@@ -1,6 +1,8 @@
 #include "HCreateFolderDialog.h"
 #include "Utilities.h"
 #include "HApp.h"
+#include "HFolderItem.h"
+#include "HIMAP4Folder.h"
 
 #include <View.h>
 #include <stdlib.h>
@@ -11,6 +13,7 @@
 #include <Beep.h>
 #include <Directory.h>
 #include <Path.h>
+#include <FindDirectory.h>
 
 
 enum{
@@ -23,25 +26,17 @@ enum{
  ***********************************************************/
 HCreateFolderDialog::HCreateFolderDialog(BRect rect,
 									const char *title,
-									const char* path)
+									HFolderItem *parentItem)
 	:BWindow(rect
 			,title
 			,B_FLOATING_WINDOW_LOOK
 			,B_MODAL_APP_WINDOW_FEEL
 			,B_NOT_RESIZABLE|B_NOT_ZOOMABLE)
-	,fParentPath(NULL)
+	,fParentItem(parentItem)
 {
 	InitGUI();
-	fParentPath = ::strdup(path);
+	
 	fNameControl->MakeFocus(true);
-}
-
-/***********************************************************
- * Destructor
- ***********************************************************/
-HCreateFolderDialog::~HCreateFolderDialog()
-{
-	free(fParentPath);
 }
 
 /***********************************************************
@@ -89,20 +84,37 @@ HCreateFolderDialog::MessageReceived(BMessage *message)
 	{
 	case M_OK_MSG:
 	{
-		BPath path(fParentPath);
-		path.Append(fNameControl->Text());
-		if(path.InitCheck() != B_OK)
+		if(!fParentItem ||(fParentItem && fParentItem->FolderType() == FOLDER_TYPE))
 		{
-			BString string(_("Invalid path"));
-			string += ": ";
-			string += fParentPath;
-			string += "/";
-			string += fNameControl->Text();
-			beep();
-			(new BAlert("",string.String(),_("OK")))->Go();
-			break;
+			char buf[B_PATH_NAME_LENGTH];
+			if(fParentItem)
+			{
+				entry_ref ref = fParentItem->Ref();
+				BPath mail_folder(&ref);
+				::strcpy(buf,mail_folder.Path());
+			}else{
+				BPath mail_folder;
+				::find_directory(B_USER_DIRECTORY,&mail_folder);
+				mail_folder.Append("mail");
+				::strcpy(buf,mail_folder.Path());
+			}
+			BPath path(buf);
+			path.Append(fNameControl->Text());
+			if(path.InitCheck() != B_OK)
+			{
+				BString string(_("Invalid path"));
+				string += ": ";
+				string += path.Path();
+				string += "/";
+				string += fNameControl->Text();
+				beep();
+				(new BAlert("",string.String(),_("OK")))->Go();
+				break;
+			}
+			::create_directory(path.Path(),0777);
+		}else if(fParentItem&&fParentItem->FolderType() == IMAP4_TYPE){
+			((HIMAP4Folder*)fParentItem)->CreateChildFolder(fNameControl->Text());
 		}
-		::create_directory(path.Path(),0777);
 		this->PostMessage(B_QUIT_REQUESTED);
 		break;
 	}
