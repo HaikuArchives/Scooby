@@ -705,7 +705,10 @@ HMailList::MarkOldSelectionAsRead()
 		else{
 			entry_ref ref = fOldSelection->Ref();
 			BNode node(&ref);
-			node.WriteAttr(B_MAIL_ATTR_STATUS,B_STRING_TYPE,0,"Read",5);
+			BString status;
+			node.ReadAttrString(B_MAIL_ATTR_STATUS,&status);
+			if(status.Compare("New") == 0)
+				node.WriteAttr(B_MAIL_ATTR_STATUS,B_STRING_TYPE,0,"Read",5);
 		}
 		InvalidateItem(IndexOf(fOldSelection));
 		fOldSelection = NULL;
