@@ -280,9 +280,10 @@ HAddressView::InitGUI()
 			ChangeAccount(item->Label());
 			item->SetMarked(true);
 		}
-	}else
+	}else{
 		(new BAlert("",_("Could not find mail accounts"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_INFO_ALERT))->Go();
-		
+		Window()->PostMessage(B_QUIT_REQUESTED);
+	}
 	fromMenu->SetRadioMode(true);
 	
 	menuRect.OffsetBy(0,25);
