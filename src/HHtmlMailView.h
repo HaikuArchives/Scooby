@@ -30,8 +30,6 @@ protected:
 			void	ClearList();
 			void	ParseAllParts(const char* content,const char* boundary,int32 header_len);
 			void	AddPart(const char* part,int32 file_offset);
-			bool	GetParameter(const char *src,const char *param, char **dst);
-			char*	cistrstr(char *cs, char *ct);
 			
 			void	OpenAttachment(int32 i);
 			void	SaveAttachment(int32 i,entry_ref dir,const char* name,bool rename = true);

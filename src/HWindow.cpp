@@ -1222,6 +1222,7 @@ HWindow::InvokeMailItem()
 		return;
 	HMailItem *item = fMailList->MailAt(sel);
 	entry_ref ref = item->Ref();
+
 	MakeReadWindow(ref,new BMessenger(fMailList,this));
 }
 
@@ -1663,7 +1664,29 @@ HWindow::RefsReceived(BMessage *message)
 void
 HWindow::MakeReadWindow(entry_ref ref,BMessenger *messenger)
 {
+	// Check mail status
+	BString status;
+	BNode node(&ref);
 	BRect rect;
+
+	node.ReadAttrString(B_MAIL_ATTR_STATUS,&status);
+	
+	if(status.Compare("Sent")==0 ||
+		 status.Compare("Pending") == 0||
+		  status.Compare("Forwarded") == 0||
+		   status.Compare("Error") == 0)
+	{
+		int32 index = (new BAlert("",_("Would you like to (re)edit this message?"),_("Yes"),_("No"),NULL,B_WIDTH_AS_USUAL,B_IDEA_ALERT))->Go();
+		// Re edit mail
+		if(index == 0)
+		{
+			((HApp*)be_app)->Prefs()->GetData("write_window_rect",&rect);
+			HWriteWindow *win = new HWriteWindow(rect,_("New Message"),ref);
+			win->Show();
+			return;
+		}
+	}
+	
 	((HApp*)be_app)->Prefs()->GetData("read_win_rect",&rect);
 	HReadWindow *win = new HReadWindow(rect,ref,messenger);
 	win->Show();

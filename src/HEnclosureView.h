@@ -15,6 +15,8 @@ public:
 	virtual				~HEnclosureView();
 			void		InitGUI();
 			void		AddEnclosure(entry_ref ref);
+			void		AddEnclosure(const char* data);
+			
 			void		RemoveEnclosure(int32 index);
 			
 			void		SetEncoding(int32 encoding);
