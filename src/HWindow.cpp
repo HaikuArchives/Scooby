@@ -17,7 +17,7 @@
 #include "RectUtils.h"
 #include "TrackerUtils.h"
 #include "HSmtpClientView.h"
-#include "SmtpClient.h"
+#include "SmtpLooper.h"
 #include "HToolbarButton.h"
 #include "OpenWithMenu.h"
 #include "HReadWindow.h"
