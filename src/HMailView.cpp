@@ -1271,6 +1271,19 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 
 //--------------------------------------------------------------------
 
+static int Index_Hex[128] = 
+{ 
+   -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
+     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
+     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
+     0, 1, 2, 3,  4, 5, 6, 7,  8, 9,-1,-1, -1,-1,-1,-1, 
+     -1,10,11,12, 13,14,15,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
+     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
+     -1,10,11,12, 13,14,15,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
+     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 
+}; 
+#define HEX(c) (Index_Hex[(unsigned char)(c) & 0x7F])
+
 bool
 HMailView::strip_it(char* data, int32 data_len, reader *info)
 {
@@ -1281,6 +1294,7 @@ HMailView::strip_it(char* data, int32 data_len, reader *info)
 	int32			loop;
 	int32			type;
 	hyper_text		*enclosure;
+	Encoding		encode;
 
 	for (loop = 0; loop < data_len; loop++) {
 		if ((info->quote) && ((!loop) || ((loop) && (data[loop - 1] == '\n')))) {
@@ -1348,11 +1362,22 @@ HMailView::strip_it(char* data, int32 data_len, reader *info)
 				loop += 2;
 			else if ((loop < data_len - 2) && (isxdigit(data[loop + 1])) &&
 										 (isxdigit(data[loop + 2]))) {
+				char ch = (HEX(data[loop+1]) << 4) | HEX(data[loop+2]);
+				
 				data[loop] = data[loop + 1];
 				data[loop + 1] = data[loop + 2];
 				data[loop + 2] = 'x';
-				line[count++] = strtol(&data[loop], NULL, 16);
+				char *tmpBuf = new char[2];
+				tmpBuf[0] = ch;
+				tmpBuf[1] = '\0';
+				encode.ConvertToUTF8(&tmpBuf,B_ISO1_CONVERSION);
+				
+				int32 charLen = strlen(tmpBuf);
+				for(int32 k = 0;k < charLen;k++)
+					line[count++] = tmpBuf[k];//strtol(&data[loop], NULL, 16);
+				
 				loop += 2;
+				delete[] tmpBuf;
 			}
 			else
 				line[count++] = data[loop];

@@ -525,14 +525,6 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 	out += "<body bgcolor=\"#ffffff\">\n";
 	// Convert to UTF8 
 	// We need to convert to UTF8 for multibyte charactor support
-	int32 default_encoding = 0;
-	if(encoding)
-		encode.ConvertToUTF8(content,encoding);
-	else{
-		default_encoding = encode.DefaultEncoding();
-		encode.ConvertToUTF8(content,default_encoding);
-	}
-	
 	if(transfer_encoding && ::strcmp(transfer_encoding,"quoted-printable") == 0)
 	{
 		char *buf = ::strdup(content.String());
@@ -542,7 +534,13 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 		content = buf;
 		free( buf );
 	}
-	
+	int32 default_encoding = 0;
+	if(encoding)
+		encode.ConvertToUTF8(content,encoding);
+	else{
+		default_encoding = encode.DefaultEncoding();
+		encode.ConvertToUTF8(content,default_encoding);
+	}
 	if(encoding)
 	{
 		out += "<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=";
@@ -574,18 +572,18 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 				while(text[i] != '\0' && text[i] != '\n')
 				{
 					// Convert some latin 1 charactors
-					if((text[i] - 0xffffffc2) == 0 && 
-						(text[i+1] - 0xffffffa1) >= 0 &&
-						(text[i+1] - 0xffffffa1) < 35)
+					/*if((text[i] - 0xc2) == 0 && 
+						(text[i+1] - 0xa1) >= 0 &&
+						(text[i+1] - 0xa1) < 35)
 					{
 						::sprintf(buf,"&#%d;",text[i+1]+161);
 						i+=2;
 						tmp += buf;
-					}else{
+					}else{*/
 						// Normal charactors
 						ConvertToHtmlCharactor(text[i++],buf,&translate_space);
 						tmp += buf;
-					}
+					//}
 				}
 				tmp += "</i></font>";
 				ConvertToHtmlCharactor(text[i],buf,&translate_space);
@@ -625,7 +623,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 			}
 			break;
 		default:
-			// Convert some latin 1 charactors
+		/*	// Convert some latin 1 charactors
 			if((text[i] - 0xffffffc2) == 0 && 
 				(text[i+1] - 0xffffffa1) >= 0 &&
 				(text[i+1] - 0xffffffa1) < 94)
@@ -633,11 +631,11 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 				::sprintf(buf,"&#%d;",text[i+1]+161);
 				text++;
 				tmp += buf;
-			}else{
+			}else{*/
 			// Normal charactors
 				ConvertToHtmlCharactor(text[i],buf,&translate_space);
 				tmp += buf;
-			}
+			//}
 		}
 	}
 	// Convert from UTF8

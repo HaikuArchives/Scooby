@@ -699,32 +699,44 @@ Encoding::ConvertReturnsToCR(BString &str)
 /***********************************************************
  * decode_quoted_printable
  ***********************************************************/
+
+static int Index_Hex[128] = 
+{ 
+   -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
+     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
+     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
+     0, 1, 2, 3,  4, 5, 6, 7,  8, 9,-1,-1, -1,-1,-1,-1, 
+     -1,10,11,12, 13,14,15,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
+     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
+     -1,10,11,12, 13,14,15,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
+     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 
+}; 
+#define HEX(c) (Index_Hex[(unsigned char)(c) & 0x7F])
+
 int32
 Encoding::decode_quoted_printable(char *dest,char *in,off_t length,
 								bool treat_underscore_as_space)
 {
-	char ch,c1,c2;
+	char ch;
+	const char *allowed_in_qp = "0123456789ABCDEFabcdef";
    	char *src = (char*)malloc(length+1);
    	::strncpy(src,in,length);
    	off_t len =0;
    	int32 k = 0;
-   
+   	
    	while (len < length) 
    	{ 
 		ch = src[len++]; 
         
         if(!ch)
         	break;
-        if ((ch == '=') && (len + 1 < length) )
+        if ((ch == '=') && (len + 1 < length) 
+        		&& strchr(allowed_in_qp,src[len])
+        		&& strchr(allowed_in_qp,src[len+1]))
         {
-        	c1 = unhex(src[len]);
-        	c2 = unhex(src[len+1]);
-        	len+=2;
-        	if ((c1 > 15) || (c2 > 15)) 
-   				continue;
-   			ch = (16 * c1) + c2;
-   			if(ch >= 0)
-   				dest[k++] = ch;
+        	ch = (HEX(src[len]) << 4) | HEX(src[len+1]);
+        	dest[k++] = ch;
+   			len+=2;
 	    }else if ((ch == '_') && treat_underscore_as_space){ 
             dest[k++] = ' '; 
         }else {
