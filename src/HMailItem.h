@@ -25,7 +25,9 @@ public:
 								  const char* priority,
 								  int8	enclosure,
 								  ino_t	node = 0,
-								  BListView* fOwner = NULL);
+								  BListView* fOwner = NULL,
+								  const char* account = NULL,
+								  int32	size = 0);
 						
 						HMailItem(const char* status,
 								  const char* subject,
@@ -35,7 +37,9 @@ public:
 								  const char* reply,
 								  time_t	  when,
 								  const char* priority,
-								  int8	enclosure);
+								  int8	enclosure,
+								  const char* account = NULL,
+								  int32 size = 0);
 								  
 	virtual				~HMailItem();
 			void		InitItem();
@@ -65,6 +69,8 @@ public:
 		node_ref	fNodeRef;
 		thread_id	fInitThread;
 		BListView	*fOwner;
+		BString		fAccount;
+		int32		fSize;
 protected:
 	virtual void 	DrawItemColumn(BView* owner, 
 								BRect item_column_rect, 

@@ -13,7 +13,7 @@
 #include <Alert.h>
 #include <ClassInfo.h>
 
-#define VERSION 1
+#define VERSION 2
 
 typedef struct{
 	int32 version;
@@ -78,18 +78,19 @@ HMailCache::Open(HFolderItem *folder)
 	HEADER header;
 	memory.Read(&header,HEADER_SIZE);
 	
-	if(header.version != VERSION)
+	if(header.version > VERSION)
 		return B_ERROR;
 	int32 count = header.count;
-	//PRINT(("Count:%d\n",count));
+	PRINT(("Version:%d\n",header.version));
 	INTEGER_DATA int_data;
 	ENTRY_REF_DATA ref_data;
 	HMailItem *item;
 	int32 unread = folder->Unread();
-	char *name,*status,*subject,*from,*to,*cc,*reply,*priority;
+	char *name,*status,*subject,*from,*to,*cc,*reply,*priority,*account(NULL);
+	int32 mailsize=-1;
 	BWindow *window = folder->Owner()->Window();
 	BListView *list = cast_as(window->FindView("maillist"),BListView);
-
+	
 	for(register int32 i = 0;i < count;i++)
 	{
 		memory.Read(&int_data,INTEGER_DATA_SIZE);
@@ -105,10 +106,17 @@ HMailCache::Open(HFolderItem *folder)
 		ReadString(memory,&cc);
 		ReadString(memory,&reply);
 		ReadString(memory,&priority);
-		
+		if(header.version>1)
+		{
+			ReadString(memory,&account);
+			ReadInt32(memory,&mailsize);
+		}else{
+			account = NULL;
+			mailsize = -1;
+		}
 		folder->AddMail(item = new HMailItem(ref,status,subject,from,to,cc,reply,
 									int_data.when,priority,int_data.enclosure,
-									int_data.node,list));
+									int_data.node,list,account,mailsize));
 		delete[] status;
 		delete[] subject;
 		delete[] from;
@@ -116,6 +124,7 @@ HMailCache::Open(HFolderItem *folder)
 		delete[] cc;
 		delete[] reply;
 		delete[] priority;
+		delete[] account;
 		
 		if(!item->IsRead())
 			unread++;
@@ -138,6 +147,15 @@ HMailCache::ReadString(BMemoryIO &buf,char** out)
 	str[len] = '\0';
 	*out = str;
 	//PRINT(("%s\n",str));
+}
+
+/***********************************************************
+ * ReadInt32
+ ***********************************************************/
+void
+HMailCache::ReadInt32(BMemoryIO &buf,int32 *out)
+{
+	buf.Read(out,sizeof(int32));
 }
 
 /***********************************************************
@@ -168,6 +186,15 @@ HMailCache::WriteString(BMallocIO &buf,const char* str)
 	
 	buf.Write(&len,4);
 	buf.Write(str,len);
+}
+
+/***********************************************************
+ * WriteInt32
+ ***********************************************************/
+void
+HMailCache::WriteInt32(BMallocIO &buf,int32 &num)
+{
+	buf.Write(&num,sizeof(int32));
 }
 
 /***********************************************************
@@ -204,7 +231,6 @@ HMailCache::AddMails(BList &list,BMallocIO &buf)
 	int32 count = list.CountItems();
 	INTEGER_DATA int_data;
 	ENTRY_REF_DATA ref_data;
-	
 	HMailItem *item;
 	for(register int32 i = 0;i < count;i++)
 	{
@@ -227,6 +253,8 @@ HMailCache::AddMails(BList &list,BMallocIO &buf)
 		WriteString(buf,item->fCC.String());
 		WriteString(buf,item->fReply.String());
 		WriteString(buf,item->fPriority.String());
+		WriteString(buf,item->fAccount.String());
+		WriteInt32(buf,item->fSize);
 	}
 }
 

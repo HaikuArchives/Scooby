@@ -542,6 +542,7 @@ HPopClientView::SaveMail(const char* all_content,
 	file.WriteAttrString(B_MAIL_ATTR_SUBJECT,&subject);
 	file.WriteAttrString(B_MAIL_ATTR_REPLY,&reply);
 	file.WriteAttrString(B_MAIL_ATTR_MIME,&mime);
+	file.WriteAttrString(B_MAIL_ATTR_ACCOUNT,&fAccountName);
 	file.WriteAttr(B_MAIL_ATTR_ATTACHMENT,B_BOOL_TYPE,0,&is_multipart,sizeof(bool));
 	int32 content_len = strlen(all_content)-header_len;
 	//PRINT(("header:%d, content%d\n",header_len,content_len));

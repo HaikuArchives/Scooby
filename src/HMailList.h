@@ -27,7 +27,10 @@ enum ColumnType{
 	COL_TO,
 	COL_WHEN,
 	COL_PRIORITY ,
-	COL_ATTACHMENT
+	COL_ATTACHMENT,
+	COL_CC,
+	COL_SIZE,
+	COL_ACCOUNT
 };
 
 // column flags
@@ -37,8 +40,10 @@ enum{
 	COLUMN_TO 			= 1<<2,
 	COLUMN_WHEN 		= 1<<3,
 	COLUMN_PRIORITY 	= 1<<4,
-	COLUMN_ATTACHMENT 	= 1<<5
-
+	COLUMN_ATTACHMENT 	= 1<<5,
+	COLUMN_CC			= 1<<6,
+	COLUMN_SIZE 		= 1<<7,
+	COLUMN_ACCOUNT		= 1<<8
 };
 
 

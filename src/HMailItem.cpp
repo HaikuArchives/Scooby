@@ -61,7 +61,9 @@ HMailItem::HMailItem(const entry_ref &ref,
 					  time_t 	  when,
 					  const char* priority,
 					  int8 enclosure,
-					  ino_t	node,BListView *view)
+					  ino_t	node,BListView *view,
+					  const char *account,
+					  int32 size)
 	:_inherited(0, false, false, 18.0)
 	,fRef(ref)
 	,fStatus(status)
@@ -76,6 +78,8 @@ HMailItem::HMailItem(const entry_ref &ref,
 	,fDeleteMe(false)
 	,fInitThread(-1)
 	,fOwner(view)
+	,fAccount(account)
+	,fSize(size)
 {
 	if(node == 0)
 	{
@@ -92,6 +96,25 @@ HMailItem::HMailItem(const entry_ref &ref,
 	SetColumnContent(2,fFrom.String());
 	SetColumnContent(3,fTo.String());
 	SetColumnContent(4,fDate.String());
+	SetColumnContent(7,fCC.String());
+	
+	// for old cache format
+	if(size <= 0)
+	{
+		BNode mailNode(&fRef);
+		mailNode.GetSize((off_t*)&size);
+		fSize = size;
+		
+		if(mailNode.ReadAttrString(B_MAIL_ATTR_ACCOUNT,&fAccount) != B_OK)
+			fAccount = "";
+	
+	}
+	//
+	BString str_size;
+	
+	str_size << size;
+	SetColumnContent(8,str_size.String());
+	SetColumnContent(9,fAccount.String());
 	
 	//fInitThread = ::spawn_thread(RefreshStatusWithThread,"MailInitThread",B_NORMAL_PRIORITY,this);
 	//::resume_thread(fInitThread);
@@ -103,7 +126,7 @@ HMailItem::HMailItem(const entry_ref &ref,
 }
 
 /***********************************************************
- * Constructor
+ * Constructor for remote mail
  ***********************************************************/
 HMailItem::HMailItem(const char* status,
 					const char*	subject,
@@ -113,7 +136,9 @@ HMailItem::HMailItem(const char* status,
 					const char* reply,
 					time_t	  when,
 					const char* priority,
-					int8 enclosure)
+					int8 enclosure,
+					const char* account,
+					int32	size)
 	:_inherited(0, false, false, 18.0)
 	,fStatus(status)
 	,fSubject(subject)
@@ -126,12 +151,22 @@ HMailItem::HMailItem(const char* status,
 	,fEnclosure(enclosure)
 	,fDeleteMe(false)
 	,fInitThread(-1)
+	,fAccount(account)
+	,fSize(size)
 {
 	MakeTime(fDate);
 	SetColumnContent(1,fSubject.String());
 	SetColumnContent(2,fFrom.String());
 	SetColumnContent(3,fTo.String());
 	SetColumnContent(4,fDate.String());
+	
+	SetColumnContent(7,fCC.String());
+	BString str_size;
+	
+	str_size << size;
+	SetColumnContent(8,str_size.String());
+	if(!account) fAccount="";
+	SetColumnContent(9,fAccount.String());
 	ResetIcon();
 }
 
@@ -267,6 +302,8 @@ HMailItem::InitItem()
 	{
 		if(node.GetAttrInfo(B_MAIL_ATTR_SUBJECT,&attr) == B_OK)
 			node.ReadAttrString(B_MAIL_ATTR_SUBJECT,&fSubject);
+		if(node.GetAttrInfo(B_MAIL_ATTR_CC,&attr) == B_OK)
+			node.ReadAttrString(B_MAIL_ATTR_CC,&fCC);
 		if(node.GetAttrInfo(B_MAIL_ATTR_FROM,&attr) == B_OK)
 			node.ReadAttrString(B_MAIL_ATTR_FROM,&fFrom);
 		if(node.GetAttrInfo(B_MAIL_ATTR_TO,&attr) == B_OK)
@@ -296,6 +333,7 @@ HMailItem::InitItem()
 		SetColumnContent(2,fFrom.String());
 		SetColumnContent(3,fTo.String());
 		SetColumnContent(4,fDate.String());
+		SetColumnContent(7,fCC.String());
 		//SetColumnContent(5,fPriority.String(),false);
 		ResetIcon();
 	}

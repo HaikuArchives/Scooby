@@ -19,6 +19,10 @@ public:
 protected:
 					void	ReadString(BMemoryIO &buf,char** out);
 					void	WriteString(BMallocIO &buf,const char* str);
+					
+					void	ReadInt32(BMemoryIO &buf,int32 *out);
+					void	WriteInt32(BMallocIO &buf,int32 &inInt);
+					
 					void	AddMails(BList &list,BMallocIO &buf);
 			status_t		SaveToFile(BMallocIO &buf,BFile &file);
 private:
