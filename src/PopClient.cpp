@@ -540,20 +540,22 @@ PopClient::ReceiveLine(BString &line)
 {
 	if(!fEndpoint)
 		return B_ERROR;
-	bigtime_t timeout = 1000000*60; //timeout 60 secs
+	bigtime_t timeout = 1000000*180; //timeout 180 secs
 	int32 len = 0,rcv;
 	char c = 0;
 	line = "";
-	if(fEndpoint->IsDataPending(timeout))
+	
+	while(c != '\n')
 	{
-		while(c != '\n')
+		if(fEndpoint->IsDataPending(timeout))
 		{
 			rcv = fEndpoint->Receive(&c,1);
 			if(rcv <=0)
 				break;
 			len += rcv;
 			line << c;
-		}			
+		}else
+			break;			
 	}
 	return len;
 }
