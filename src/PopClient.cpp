@@ -452,7 +452,7 @@ int32
 PopClient::ReceiveLine(BString &line)
 {
 	int32 len = 0,rcv;
-	int c = 0;
+	int8 c = 0;
 	line = "";
 	
 	if(IsDataPending(kTimeout))

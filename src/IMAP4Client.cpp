@@ -605,7 +605,7 @@ IMAP4Client::SendCommand(const char* command)
 int32
 IMAP4Client::ReceiveLine(BString &out)
 {
-	int c = 0;
+	int8 c = 0;
 	int32 len = 0,r;
 	out = "";
 	if(IsDataPending(kIMAP4ClientTimeout))
