@@ -617,7 +617,7 @@ HWriteWindow::MessageReceived(BMessage *message)
 		BRect rect = fEnclosureView->Bounds();
 		BScrollView *view = cast_as(FindView("scroll"),BScrollView);
 		bool expand = (rect.Height() == ENCLOSUREVIEW_MINI_HEIGHT)?true:false;
-		const int32 kEnclosureHeight = (expand)?60:-60;
+		const int32 kEnclosureHeight = (expand)?ENCLOSUREVIEW_MAX_HEIGHT-ENCLOSUREVIEW_MINI_HEIGHT:-(ENCLOSUREVIEW_MAX_HEIGHT-ENCLOSUREVIEW_MINI_HEIGHT);
 		
 		
 		fEnclosureView->ResizeBy(0,kEnclosureHeight);
