@@ -16,6 +16,10 @@ public:
 			void		InitGUI();
 			void		AddEnclosure(entry_ref ref);
 			void		RemoveEnclosure(int32 index);
+			
+			void		SetEncoding(int32 encoding);
+		status_t		SetEncoding(const char* str);
+			int32		GetEncoding();
 protected:
 	virtual void		MessageReceived(BMessage *message);
 	virtual void		KeyDown(const char* bytes,int32 numBytes);
