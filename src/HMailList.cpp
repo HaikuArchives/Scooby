@@ -175,10 +175,9 @@ void
 HMailList::SelectionChanged()
 {
 	int32 sel = this->CurrentSelection();
-	
 	MarkOldSelectionAsRead();
 	
-	if(sel <0 || SelectionCount() > 1)
+	if(sel <0 || HasSomeSelection())
 	{
 		// set content view empty
 		Window()->PostMessage(M_SET_CONTENT);
@@ -421,13 +420,28 @@ HMailList::MouseDown(BPoint pos)
 	BPoint point = pos;
 	BMessage *msg;
     Window()->CurrentMessage()->FindInt32("buttons", &buttons); 
-    this->MakeFocus(true);
+    MakeFocus(true);
 	IconMenuItem *item;
-    // 右クリックのハンドリング 
+    // Right click 
     if(buttons == B_SECONDARY_MOUSE_BUTTON)
     {
+    	 // CurrentSelection func takes much time if too many items are selected
     	 int32 sel = CurrentSelection();
-    	
+    	 /*int32 sel = -1;
+    	 int32 n = 0;
+    	 PRINT(("Enter\n"));
+    	 while(1)
+    	 {
+    	 	if(!ItemAt(n))
+    	 		break;
+    	 	if(IsItemSelected(n++))
+    	 	{
+    	 		sel = n-1;
+    	 		break;
+    	 	}
+    	 }
+    	 PRINT(("OUT\n"));
+    	 */
     	 BPopUpMenu *theMenu = new BPopUpMenu("RIGHT_CLICK",false,false);
     	 BFont font(be_plain_font);
     	 font.SetSize(10);
@@ -748,16 +762,20 @@ HMailList::RefreshScrollPos(BMessage *settings)
 }
 
 /***********************************************************
- * SelectionCount
+ * HasSomeSelection
  ***********************************************************/
-int32
-HMailList::SelectionCount()
+bool
+HMailList::HasSomeSelection()
 {
 	int32 count = 0,i = 0;
 	
 	while(CurrentSelection(i++) >= 0)
+	{
 		count++;
-	return count;
+		if(count > 1)
+			break;
+	}
+	return (count > 1)?true:false;
 }
 
 /***********************************************************

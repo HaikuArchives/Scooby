@@ -270,12 +270,15 @@ Encoding::Mime2UTF8(BString &str)
 	if(encode > 0 && charset.Length() > 0)
 		ConvertToUTF8(str,charset.String());
 #else
-	int32 encode = fDefaultEncoding;
+	if(str.FindFirst("=?") != B_ERROR)
+	{
+		int32 encode = fDefaultEncoding;
 	
-	ISO2UTF8(str,encode);
+		ISO2UTF8(str,encode);
 	
-	if(encode > 0)
-		ConvertToUTF8(str,encode);
+		if(encode > 0)
+			ConvertToUTF8(str,encode);
+	}
 #endif
 	return; 
 }
