@@ -2010,9 +2010,13 @@ HWindow::AddToBlackList(int32 index)
 		if(*p == '<')
 		{
 			p++;
-			from = *p++;
-		}else
-			from += *p++;
+			if(*p != ' ')
+				from = *p;
+		}else{
+			if(*p != ' ')
+				from += *p;
+		}
+		p++;
 		if(*p == '>')
 			break;
 		if(*p == ' ' && from.FindFirst("@") != B_ERROR)
