@@ -423,7 +423,10 @@ HPopClientView::GetHeaderParam(BString &out,const char* content,int32 offset)
 		if(content[i] =='\n')
 		{
 			if(isalpha(content[i+1])|| content[i+1] == '\r'|| content[i+1] == '\n' )
-				break; 
+				break;
+			// skip first space character at the new line. 
+			else if(content[i+1] == ' ' ||content[i+1] == '\t')
+				i+=2;
 		}
 		if(content[i] != '\r' && content[i] != '\n' )
 		 	out += content[i++];

@@ -50,15 +50,16 @@ ssize_t encode64(char *out,char *_in, unsigned inlen)
 
 ssize_t decode64(char *out,const char *_in, unsigned inlen)
 {
-    unsigned len = 0,lup;
+    unsigned lup;
+    ssize_t len;
     int c1, c2, c3, c4;
-	int i,iR;
+	int i;
 	char *in = malloc(inlen+1);
  	memcpy(in,_in,inlen);
  	in[inlen] = '\0';
  	
  	i = 0;
-    iR=0;
+    len = 0;
     if (in[i+0] == '+' && in[i+1] == ' ') i += 2;
 	
     for (lup=0;lup<inlen/4;lup++)
@@ -73,21 +74,22 @@ ssize_t decode64(char *out,const char *_in, unsigned inlen)
         c3 = in[i+2];
         c4 = in[i+3];
         i += 4;
-        out[iR++] = (CHAR64(c1) << 2) | (CHAR64(c2) >> 4);
-        ++len;
+        *out++ = (CHAR64(c1) << 2) | (CHAR64(c2) >> 4);
+        len++;
         if (c3 != '=')
         {
-            out[iR++] = ((CHAR64(c2) << 4) & 0xf0) | (CHAR64(c3) >> 2);
-            ++len;
+            *out++ = ((CHAR64(c2) << 4) & 0xf0) | (CHAR64(c3) >> 2);
+            len++;
             if (c4 != '=')
             {
-                out[iR++] = ((CHAR64(c3) << 6) & 0xc0) | CHAR64(c4);
-                ++len;
+                *out++ = ((CHAR64(c3) << 6) & 0xc0) | CHAR64(c4);
+                len++;
             }
         }
     }
-
-    out[iR]='\0'; /* terminate string */
+	
+    *out='\0'; /* terminate string */
  	free(in);
+ 	
  	return len;
 }
