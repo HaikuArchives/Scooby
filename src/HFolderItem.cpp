@@ -382,6 +382,7 @@ HFolderItem::Gather()
 	fThread = -1;
 	InvalidateMe();
 	//CreateCache();
+	PRINT(("End gathering\n"));
 	return;
 }
 

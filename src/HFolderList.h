@@ -23,7 +23,7 @@ M_OPEN_FOLDER = 'OpFD',
 M_ADD_IMAP4_FOLDER = 'aIM4'
 };
 
-class HFolderList	:public	 HCoolListView {
+class HFolderList	:public	 ColumnListView {
 public:
 						HFolderList(BRect frame,
 									BetterScrollView **scroll,
@@ -79,6 +79,6 @@ private:
 	HSimpleFolderItem	*fQueryFolders; 
 		bool		fSkipMoveMail;
 		
-		typedef HCoolListView	_inherited;
+		typedef ColumnListView	_inherited;
 };
 #endif

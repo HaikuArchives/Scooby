@@ -728,7 +728,7 @@ HWriteWindow::MenusBeginning()
 void
 HWriteWindow::WriteReplyStatus()
 {
-	if(!fReplyFile)
+	if(!fReplyFile || !fReplyItem)
 		return;
 	BString status;
 	fReplyFile->ReadAttrString(B_MAIL_ATTR_STATUS,&status);
@@ -883,8 +883,10 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 		FindCharset(encoding,charset);
 		header << charset << "\n";
 	}else{
-		header << "Content-Type: multipart/mixed;" << "\n";
-		header << "\t" << "boundary=\"" << boundary << "\"\n";
+		header += "Content-Type: multipart/mixed;\n";
+		header += "\tboundary=\"";
+		header += boundary;
+		header += "\"\n";
 	}
 	header << "\n";
 	delete[] timeBuf;
@@ -898,9 +900,9 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	{
 		BString part("");
 		boundary.Insert("--",0);
-		part << "This is a multi-part message in MIME format.\n\n";
+		part += "This is a multi-part message in MIME format.\n\n";
 		part << boundary <<"\n";
-		part << "Content-Type: text/plain; charset=";
+		part += "Content-Type: text/plain; charset=";
 		BString charset;
 		FindCharset(encoding,charset);
 		part << charset << "\n";
@@ -936,19 +938,19 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	switch(priority)
 	{
 	case 1:
-		attrPriority << " (Highest)";
+		attrPriority += " (Highest)";
 		break;
 	case 2:
-		attrPriority << " (High)";
+		attrPriority += " (High)";
 		break;
 	case 3:
-		attrPriority << " (Normal)";
+		attrPriority += " (Normal)";
 		break;
 	case 4:
-		attrPriority << " (Low)";
+		attrPriority += " (Low)";
 		break;
 	case 5:
-		attrPriority << " (Lowest)";
+		attrPriority += " (Lowest)";
 		break;
 	}
 	file.WriteAttrString(B_MAIL_ATTR_PRIORITY,&attrPriority);
