@@ -32,6 +32,7 @@
 #include "HCreateFolderDialog.h"
 #include "Encoding.h"
 #include "Utilities.h"
+#include "LEDAnimation.h"
 
 #include <Box.h>
 #include <Beep.h>
@@ -76,6 +77,7 @@ HWindow::HWindow(BRect rect,
 	((HApp*)be_app)->Prefs()->GetData("use_desktray",&use);
 	if(use)
 		InstallToDeskbar();
+	fLEDAnimation = new LEDAnimation();
 }
 
 /***********************************************************
@@ -84,6 +86,7 @@ HWindow::HWindow(BRect rect,
 HWindow::~HWindow()
 {
 	delete fOpenPanel;
+	delete fLEDAnimation;
 }
 
 /***********************************************************
@@ -1578,6 +1581,12 @@ HWindow::DispatchMessage(BMessage *message,BHandler *handler)
 				PostMessage(M_SELECT_NEXT_MAIL,fMailList);
 		}
 	}
+	/// Stop LED Animation
+	if(fLEDAnimation->IsRunning() && 
+		(message->what == B_KEY_DOWN||message->what == B_MOUSE_DOWN))
+	{
+		fLEDAnimation->Stop();
+	}
 	
 	BWindow::DispatchMessage(message,handler);
 }
@@ -2061,6 +2070,14 @@ HWindow::AddToBlackList(int32 index)
 	file.Write(from.String(),from.Length());
 }
 
+/***********************************************************
+ * PlayLEDAnimaiton()
+ ***********************************************************/
+void
+HWindow::PlayLEDAnimaiton()
+{
+	fLEDAnimation->Start();
+}
 
 /***********************************************************
  * QuitRequested
