@@ -355,27 +355,8 @@ HAddressView::SetFrom(const char* in_address)
 {
 	if( ::strlen(in_address) == 0)
 		return;
-	BString address;
-	// Parse address
-	char *p;
-	if ( (p = strstr(in_address, "<")) )
-	{
-		p++;
-		while( p)
-		{
-			if(*p++ == '>')
-				break;
-			address << (char)*p;
-		}
-	}else{
-		int32 len = strlen(in_address);
-		for(int32 i = 0;i < len;i++)
-		{
-			if(in_address[i] == ' ')
-				break;
-			address += in_address[i];
-		}
-	}
+	BString address(in_address);
+	
 	// Compare existing accounts	
 	char name[B_FILE_NAME_LENGTH];
 	BPath path;
@@ -387,10 +368,10 @@ HAddressView::SetFrom(const char* in_address)
 	BEntry entry;
 	while(err == B_OK)
 	{
-		if( (err = dir.GetNextEntry(&entry)) != B_OK)
+		if( (err = dir.GetNextEntry(&entry)) != B_OK  )
 			break;
 		BFile file(&entry,B_READ_ONLY);
-		if(file.InitCheck() == B_OK)
+		if(file.InitCheck() == B_OK && entry.IsFile())
 		{
 			BMessage msg;
 			msg.Unflatten(&file);
@@ -405,14 +386,14 @@ HAddressView::SetFrom(const char* in_address)
 			
 			BString from("");
 			if(reply.Length() > 0)
-				from << reply;
+				from += reply;
 			else
 				from << pop_user << "@" << pop_host;
 			
 			// Change account
-			if(from.Compare(address) == 0)
+			if(address.FindFirst(from) != B_ERROR)
 			{
-				entry.GetName(name);
+				entry.GetName(name);	
 				ChangeAccount(name);
 				// Set From menu
 				BMenuField *field = cast_as(FindView("FromMenu"),BMenuField);
