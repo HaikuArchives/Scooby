@@ -337,7 +337,7 @@ HWriteWindow::InitMenu()
 	
 	aMenu->AddItem(subMenu);
 	utils.AddMenuItem(aMenu,_("Save as draft"),M_SAVE_DRAFT,this,this,'S',B_SHIFT_KEY
-					,rsrc_utils.GetBitmapResource('BBMP',"Send Later"));
+					,rsrc_utils.GetBitmapResource('BBMP',"Draft"));
 	
 	aMenu->AddSeparatorItem();
 	
@@ -387,8 +387,8 @@ HWriteWindow::InitMenu()
 	aMenu = new BMenu(_("Mail"));
 	utils.AddMenuItem(aMenu,_("Send Now"),M_SEND_NOW,this,this,'M',0,
 					rsrc_utils.GetBitmapResource('BBMP',"Send"));
-	//utils.AddMenuItem(aMenu,_("Send Later"),M_SEND_LATER,this,this,'L',0,
-	//				rsrc_utils.GetBitmapResource('BBMP',"Send Later"));
+	utils.AddMenuItem(aMenu,_("Send Later"),M_SEND_LATER,this,this,'L',0,
+					rsrc_utils.GetBitmapResource('BBMP',"Send Later"));
 	menubar->AddItem( aMenu );
 	
 	aMenu = new BMenu(_("Message"));
@@ -516,8 +516,10 @@ HWriteWindow::InitGUI()
 		toolbox->UseLabel(true);
 	toolbox->AddButton("Send",utils.GetBitmapResource('BBMP',"Send"),
 					new BMessage(M_SEND_NOW),"Send Message");
-	toolbox->AddButton("Draft",utils.GetBitmapResource('BBMP',"Send Later"),
-					new BMessage(M_SEND_LATER),"Save Message As Draft");
+	toolbox->AddButton("Later",utils.GetBitmapResource('BBMP',"Send Later"),
+					new BMessage(M_SEND_LATER),"Send Later");
+	toolbox->AddButton("Draft",utils.GetBitmapResource('BBMP',"Draft"),
+					new BMessage(M_SAVE_DRAFT),"Save Message As Draft");
 	toolbox->AddSpace();
 	toolbox->AddButton("Print",utils.GetBitmapResource('BBMP',"Printer"),new BMessage(M_PRINT_MESSAGE),_("Print Message"));
 	
@@ -584,7 +586,7 @@ HWriteWindow::MessageReceived(BMessage *message)
 		fTextView->UseRuler(!fTextView->IsUsingRuler());
 		break;
 	// Send Later
-	/*case M_SEND_LATER:
+	case M_SEND_LATER:
 	{	
 		fSent = true;
 		entry_ref ref;
@@ -594,7 +596,7 @@ HWriteWindow::MessageReceived(BMessage *message)
 		
 		if( SaveMail(false,ref,multipart) == B_OK)
 		{
-			//WriteReplyStatus();
+			WriteReplyStatus();
 			
 			BMessage msg(M_CREATE_MAIL);
 			HMailItem *item = new HMailItem(ref);
@@ -605,7 +607,7 @@ HWriteWindow::MessageReceived(BMessage *message)
 			RemoveDraft();
 		}
 		break;
-	}*/
+	}
 	// Open draft
 	case M_OPEN_DRAFT:
 	{
@@ -615,7 +617,6 @@ HWriteWindow::MessageReceived(BMessage *message)
 		break;
 	}
 	// Save as draft
-	case M_SEND_LATER:
 	case M_SAVE_DRAFT:
 		SaveAsDraft();
 		break;
