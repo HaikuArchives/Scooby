@@ -421,6 +421,30 @@ void HMailView::MessageReceived(BMessage *msg)
 				Find(text);
 			break;
 		}
+		// DND reply message from Tracker.
+		case B_COPY_TARGET:
+		{
+			entry_ref dirRef;
+			const char* name;
+			BMessage dataMsg;
+			if(msg->FindString("name",&name) == B_OK &&
+				msg->FindMessage("be:originator-data",&dataMsg) == B_OK &&
+				msg->FindRef("directory",&dirRef) == B_OK)
+			{
+				BPath path(&dirRef);
+				PRINT(("%s\n",path.Path()));
+				path.Append(name);
+				BFile file(path.Path(),B_WRITE_ONLY);
+				if(file.InitCheck() != B_OK)
+					break;
+				const char* data;
+				ssize_t size;
+				dataMsg.FindData("data",B_ANY_TYPE,&data,&size);
+				file.Write(data,size);
+				file.SetSize(size);
+			}
+			break;
+		}
 		default:
 			_inherited::MessageReceived(msg);
 	}
@@ -502,6 +526,8 @@ void HMailView::MouseDown(BPoint where)
 				else if ((abs( (int)(point.x - where.x) ) < 4) &&
 						 (abs((int)(point.y - where.y)) < 4))
 					Open(enclosure);
+				else
+					_inherited::MouseDown(where);
 				return;
 			}
 		}
@@ -1663,6 +1689,54 @@ HMailView::Find(const char* inText)
 			break;
 		}
 	}
+}
+
+/***********************************************************
+ * GetDragParameter
+ ***********************************************************/
+void
+HMailView::GetDragParameters(BMessage *drag
+						,BBitmap **bitmap
+						,BPoint *point
+						,BHandler **handler)
+{
+	
+	int32 start,end;
+	GetSelection(&start,&end);
+	
+	hyper_text		*enclosure;
+	
+	int32 items = fEnclosures->CountItems();
+	for (int32 loop = 0; loop < items; loop++) {
+		enclosure = (hyper_text *)fEnclosures->ItemAt(loop);
+		if ((start >= enclosure->text_start) && (start < enclosure->text_end)) {
+			PRINT(("enclosure\n"));
+			drag->MakeEmpty();
+			
+			BString decodedName(enclosure->name);
+			Encoding().Mime2UTF8(decodedName);
+			
+			off_t size = enclosure->file_length;
+			fFile->Seek(enclosure->file_offset,SEEK_SET);
+			char *data = new char[size+1];
+			fFile->Read(data,size);
+			data[size] = '\0';
+			size= ::decode64(data, data, size);
+			drag->what = B_SIMPLE_DATA;
+			drag->AddInt32("be:actions",B_COPY_TARGET);
+			drag->AddString("be:types",B_FILE_MIME_TYPE);
+			drag->AddString("be:filetypes",enclosure->content_type);
+			drag->AddString("be:clip_name",decodedName.String());
+			BMessage dataMsg(B_SIMPLE_DATA);
+			dataMsg.AddData("data",B_ANY_TYPE,data,size);
+			drag->AddMessage("be:originator-data",&dataMsg);
+			drag->PrintToStream();
+			
+			delete[] data;
+			return;
+		}
+	}
+	_inherited::GetDragParameters(drag,bitmap,point,handler);	
 }
 
 //====================================================================
