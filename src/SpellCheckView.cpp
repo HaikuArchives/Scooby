@@ -94,12 +94,14 @@ SpellCheckView::InsertText(const char				*inText,
 	}
 	int32 start=0,end=0;
 	FindWord(inOffset,&start,&end);
-	//if(start != inOffset)
-	//	start = inOffset - start;
-	end = inOffset+inLength;
+	
+	if(end < inLength+inOffset)
+		end = inOffset+inLength;
+	else
+		check = true;
 	PRINT(("%d %d %d\n",start,end,inOffset));
 	if(check && end-start > 1)
-		StartChecking(start,end);	
+		StartChecking(start,end);
 }
 
 /***********************************************************
