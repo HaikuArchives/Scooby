@@ -824,7 +824,7 @@ HMailView::HighlightQuote(BTextView *view)
 			i = e+1;
 			continue;
 		}
-		PRINT(("%s\n",line.String()));
+		
 		rgb_color col = kBlack;
 			
 		if(j==1)
