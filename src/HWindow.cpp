@@ -634,7 +634,7 @@ HWindow::MessageReceived(BMessage *message)
 	}
 	case M_PREF_MSG:
 	{
-		HPrefWindow *win = new HPrefWindow(RectUtils().CenterRect(600,360));
+		HPrefWindow *win = new HPrefWindow(RectUtils().CenterRect(600,380));
 		BMessage msg(M_ADD_FOLDERS);
 		fFolderList->GenarateFolderPathes(msg);
 		win->PostMessage(&msg);
@@ -2101,7 +2101,10 @@ HWindow::AddToBlackList(int32 index)
 void
 HWindow::PlayLEDAnimaiton()
 {
-	fLEDAnimation->Start();
+	bool enabled;
+	((HApp*)be_app)->Prefs()->GetData("led_blink",&enabled);
+	if(enabled)
+		fLEDAnimation->Start();
 }
 
 /***********************************************************

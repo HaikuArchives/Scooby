@@ -60,5 +60,6 @@ HPrefs::MakeDefault()
 	fDefaultMessage->AddBool("tree_mode",true);
 	fDefaultMessage->AddBool("open_link_as_new_window",false);
 	fDefaultMessage->AddString("time_format","%a, %d %b %Y %r");
+	fDefaultMessage->AddBool("led_blink",true);
 	HSetting::MakeDefault();
 }
