@@ -106,7 +106,17 @@ HWindow::InitMenu()
 	utils.AddMenuItem(aMenu,aboutLabel.String(),B_ABOUT_REQUESTED,be_app,be_app);
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,"Quit",B_QUIT_REQUESTED,this,this,'Q',0);
-    menubar->AddItem( aMenu ); 
+    menubar->AddItem( aMenu );
+    // Edit
+	aMenu = new BMenu("Edit");
+   	utils.AddMenuItem(aMenu,"Undo",B_UNDO,this,this,'Z',0);
+   	aMenu->AddSeparatorItem();
+   	utils.AddMenuItem(aMenu,"Cut",B_CUT,this,this,'X',0);
+   	utils.AddMenuItem(aMenu,"Copy",B_COPY,this,this,'C',0);
+   	utils.AddMenuItem(aMenu,"Paste",B_PASTE,this,this,'V',0);
+   	aMenu->AddSeparatorItem();
+   	utils.AddMenuItem(aMenu,"Select All",M_SELECT_ALL,this,this,'A',0);
+   	menubar->AddItem(aMenu);
 ////------------------------- Mail Menu ---------------------
 	aMenu = new BMenu("Mail");
    	utils.AddMenuItem(aMenu,"Check Mail",M_POP_CONNECT,this,this,'M',0,
@@ -323,6 +333,12 @@ HWindow::InitGUI()
 	
 	fFolderList->WatchQueryFolder();
 	fMailList->MakeFocus(true);	
+	
+	KeyMenuBar()->FindItem(B_CUT)->SetTarget(fMailView,this);
+	KeyMenuBar()->FindItem(B_COPY)->SetTarget(fMailView,this);
+	KeyMenuBar()->FindItem(B_PASTE)->SetTarget(fMailView,this);
+	KeyMenuBar()->FindItem(M_SELECT_ALL)->SetTarget(this);
+	KeyMenuBar()->FindItem(B_UNDO)->SetTarget(fMailView,this);
 }
 
 /***********************************************************
@@ -333,12 +349,18 @@ HWindow::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
-	// Show write mail window
-	case M_NEW_MSG:
+	// Select All
+	case M_SELECT_ALL:
 	{
-		MakeWriteWindow();
+		BView *view = CurrentFocus();
+		if(view)
+			PostMessage(B_SELECT_ALL,view);
 		break;
 	}
+	// Show write mail window
+	case M_NEW_MSG:
+		MakeWriteWindow();
+		break;
 	// New mail was created
 	case M_CREATE_MAIL:
 	{
@@ -799,6 +821,27 @@ HWindow::MenusBeginning()
 	item = KeyMenuBar()->FindItem(M_RAW);
 	item->SetMarked(fMailView->IsShowingRawMessage());
 	item->SetEnabled(mailSelected);
+	
+	// Cut & Copy	
+	int32 start,end;
+	fMailView->GetSelection(&start,&end);
+	KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
+	KeyMenuBar()->FindItem(B_PASTE)->SetEnabled(false);
+	if(start != end)
+		KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+	else
+		KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+	// Undo
+	KeyMenuBar()->FindItem(B_UNDO)->SetEnabled(false);
+	
+	// Select All
+	item = KeyMenuBar()->FindItem(M_SELECT_ALL);
+	BView *view = CurrentFocus();
+	item->SetEnabled(false);
+	if(is_kind_of(view,HMailList))
+		item->SetEnabled(true);
+	else if(is_kind_of(view,BTextView))
+		item->SetEnabled(true);
 }
 
 /***********************************************************
