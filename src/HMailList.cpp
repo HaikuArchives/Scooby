@@ -38,7 +38,7 @@ HMailList::HMailList(BRect frame,
 	,fOldSelection(NULL)
 {
 	AddColumn( new CLVColumn(NULL,22,CLV_LOCK_AT_BEGINNING|CLV_NOT_MOVABLE|
-		CLV_NOT_RESIZABLE|CLV_PUSH_PASS) );
+		CLV_NOT_RESIZABLE|CLV_PUSH_PASS|CLV_SORT_KEYABLE) );
 	SetSortFunction(HMailItem::CompareItems);
 	
 	const char* label[] = {_("Subject"),_("From"),_("To"),_("When"),_("P"),_("A")};
