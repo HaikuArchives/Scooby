@@ -25,7 +25,7 @@ HHtmlView::HHtmlView(BRect rect,
 	,fNetPositiveView(NULL)
 {
 	rect = Bounds();
-	// Get startup file file
+	// Get startup file path
 	app_info info;
     be_app->GetAppInfo(&info); 
     BPath path(&info.ref);
@@ -52,7 +52,8 @@ HHtmlView::HHtmlView(BRect rect,
     if(fShelf->AddReplicant(&message_replicant,BPoint(0,0)) == B_OK)
     {
    		fNetPositiveView = FindView("NetPositive");
-   		fNetPositiveView->SetResizingMode(B_FOLLOW_ALL);
+   		if(fNetPositiveView)
+   			fNetPositiveView->SetResizingMode(B_FOLLOW_ALL);
 	}else{
 		(new BAlert("","Could not create NetPositive replicant","OK"))->Go();
 	}
