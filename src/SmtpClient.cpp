@@ -370,6 +370,8 @@ SmtpClient::ForceQuit()
 status_t
 SmtpClient::SmtpQuit()
 {
+	if(!fEndpoint)
+		return B_OK;
 	// Send Quit
 	BString cmd = "QUIT\r\n";
 	if( SendCommand(cmd.String()) != B_OK)
