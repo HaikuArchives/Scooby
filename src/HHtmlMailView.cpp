@@ -501,6 +501,21 @@ HHtmlMailView::LoadMessage(BFile *file)
 			delete[] parameter;
 			parameter = NULL;
 		}else{
+			if(transfer_encoding)
+			{
+				bool mime_q = false;
+				bool mime = false;
+				if(::strcasecmp(transfer_encoding,"quoted-printable") == 0)
+				{
+					mime_q = true;
+					mime = true;
+				}else if(::strcasecmp(transfer_encoding,"base64") == 0){
+					mime = true;
+					mime_q = false;
+				}
+				if(mime)
+					encode.MimeDecode(content,mime_q);
+			}
 			// Convert link target to blank window
 			if(html && openNewWindow)
 				ConvertLinkToBlankWindow(content);
