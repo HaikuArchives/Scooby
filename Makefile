@@ -14,7 +14,7 @@ LOCAL_INCLUDE_PATHS = ./libs/Utils ./libs/Santa ./libs/Toolbar ./libs/liblocale
 OPTIMIZE= FULL
 #OPTIMIZE= NONE
 # Defines
-DEFINES= DEBUG USE_SCANDIR
+DEFINES= DEBUG USE_SCANDIR 
 # Warnings
 WARNINGS = ALL
 # Sources
@@ -61,7 +61,7 @@ SRCS= ./src/HFolderItem.cpp\
 		./src/HHtmlMailView.cpp\
 		./src/HCoolListView.cpp \
 		./src/Utilities.cpp\
-		./src/scandir.cpp
+		./src/scandir.c
 #--------------------------------------------------------
 #	determine wheather running on x86 or ppc
 MACHINE=$(shell uname -m)
@@ -381,10 +381,10 @@ SEDSCRIPT = sed -e's%^\(.*\.o\)%$$(OBJ_DIR)/\1%'
 endif
 
 depend :: FORCE
-	$(CC) $(INCLUDES) $(CFLAGS) $(DEPFLAG) $(SRCS) | $(SEDSCRIPT) > .dependencies
+	$(CC) $(INCLUDES) $(CFLAGS) $(DEPFLAG) $(SRCS) | $(SEDSCRIPT) > .$(CPU)_dependencies
 
 cleandepend :: FORCE
-	-rm -f .dependencies
+	-rm -f .$(CPU)_dependencies
 
 # make it easy to install drivers for testing
 USER_BIN_PATH = /boot/home/config/add-ons/kernel/drivers/bin
@@ -397,4 +397,4 @@ ifeq ($(TYPE), DRIVER)
 	ln -sf $(USER_BIN_PATH)/$(NAME) $(USER_DEV_PATH)/$(DRIVER_PATH)/$(NAME)
 endif
 
--include .dependencies
+-include .$(CPU)_dependencies
