@@ -47,7 +47,7 @@ HPopClientView::HPopClientView(BRect frame,
 	,fPopClient(NULL)
 	,fStartPos(0)
 	,fStartSize(-1)
-	,fIsDelete(false)
+	,fRetrieve(0)
 	,fIsRunning(false)
 	,fPopServers(NULL)
 	,fServerIndex(0)
@@ -156,10 +156,11 @@ HPopClientView::MessageReceived(BMessage *message)
 		if(fPopServers->FindInt16("protocol_type",fServerIndex,&proto) != B_OK)
 			proto= 0;
 		fUseAPOP = (proto == 0)?false:true;
-		if(fPopServers->FindBool("delete",fServerIndex,&fIsDelete) != B_OK)
-			fIsDelete = false;
 		if(fPopServers->FindInt32("delete_day",fServerIndex,&fDeleteDays) != B_OK)
 			fDeleteDays = 0;
+		if(fPopServers->FindInt16("retrieve",fServerIndex,&fRetrieve) != B_OK)
+			fRetrieve = 0;
+		PRINT(("Retrieve:%d\n",fRetrieve));
 		fServerIndex++;
 		fDeleteMails.MakeEmpty();
 		fDeleteMails.what = H_DELETE_MESSAGE;
@@ -214,6 +215,8 @@ HPopClientView::MessageReceived(BMessage *message)
 			char uidl[35];
 			while(p)
 			{
+				if(strlen(p) <= 1)
+					continue;
 				if(fCanUseUIDL)
 					::sscanf(p,"%d%s",&index,uidl);
 				else
@@ -221,7 +224,7 @@ HPopClientView::MessageReceived(BMessage *message)
 				if(index >= startpos)
 				{
 					msg.AddInt32("index",index);
-					//PRINT(("%d\n",index));
+					PRINT(("%d\n",index));
 					fUidl = "";
 					if(fCanUseUIDL)
 					{
@@ -251,7 +254,7 @@ HPopClientView::MessageReceived(BMessage *message)
 			BString label("RETR [ ");
 			
 			fMailCurrentIndex = (startpos == 0)?1:startpos;
-			fMailMaxIndex = fMailCurrentIndex+ count-1;
+			fMailMaxIndex = count;
 			label << fMailCurrentIndex << " / " << fMailMaxIndex << " ]";
 			fStringView->SetText(label.String());
 			StopBarberPole();
@@ -285,32 +288,27 @@ HPopClientView::MessageReceived(BMessage *message)
 			entry_ref folder_ref,file_ref;
 			bool is_delete;
 			SaveMail(content,&folder_ref,&file_ref,&is_delete);
-			/*BMessage msg(M_RECEIVE_MAIL);
-			msg.AddRef("folder_ref",&folder_ref);
-			msg.AddRef("file_ref",&file_ref);
-			Window()->PostMessage(&msg);
-			*/
+	
 			if(is_delete)
 				fDeleteMails.AddInt32("index",index);
 			
-			if(!fIsDelete && fMailCurrentIndex > fMailMaxIndex)
+			if(!is_delete && message->FindBool("end"))
 			{
 				SetNextRecvPos(fUidl.String());
 				fPopClient->PostMessage(B_QUIT_REQUESTED);
 				fPopClient = NULL;
 				fStringView->SetText("");
 				break;
-			}else if(fIsDelete && fMailCurrentIndex > fMailMaxIndex){
+			}else if(is_delete && message->FindBool("end")){
 				int32 count;
 				type_code type;
 				
 				fDeleteMails.GetInfo("index",&type,&count);
 				
-				
 				if(count > 0)
 				{
 					SetValue(fStartPos+1);
-					fMailCurrentIndex = fStartPos + 1;
+					fMailCurrentIndex = fMailMaxIndex;
 					SetMaxValue(fMailMaxIndex);
 					BString label("DEL [ ");
 					label << fMailCurrentIndex << " / " << fMailMaxIndex << " ]";
@@ -340,11 +338,11 @@ HPopClientView::MessageReceived(BMessage *message)
 		if(message->FindInt32("index",&index) == B_OK)
 		{
 			Update(1);
-			fMailCurrentIndex = index+1;
+			fMailCurrentIndex = index-1;
 			BString label("DEL [ ");
 			label << fMailCurrentIndex << "/" << fMailMaxIndex << " ]";
 			fStringView->SetText(label.String());
-			if(fMailCurrentIndex > fMailMaxIndex)
+			if(message->FindBool("end"))
 			{
 				fPopClient->PostMessage(B_QUIT_REQUESTED);
 				fPopClient = NULL;
@@ -583,11 +581,18 @@ HPopClientView::SaveMail(const char* all_content,
 	time_t when = MakeTime_t(date.String());
 	time_t now = time(NULL);
 	float diff = difftime(now,when);
-	if( !fIsDelete )
+	switch(fRetrieve )
+	{
+	case 0:
 		*is_delete = false;
-	else
+		break;
+	case 1:
+		*is_delete = true;
+		break;
+	case 2:
 		*is_delete = ( diff/3600 > fDeleteDays*24)?true:false;
-	
+		break;
+	}
 	file.WriteAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&when,sizeof(time_t));
 	
 	BNodeInfo ninfo(&file);
@@ -850,8 +855,10 @@ HPopClientView::SetNextRecvPos(const char *uidl)
 	msg.Unflatten(&file);
 	
 	msg.RemoveData("uidl");
-	msg.AddString("uidl",uidl);
-	
+	if(fRetrieve==0 || fRetrieve==2)
+		msg.AddString("uidl",(uidl)?uidl:"");
+	else
+		msg.AddString("uidl","");
 	file.Seek(0,SEEK_SET);
 	ssize_t numBytes;
 	msg.Flatten(&file,&numBytes);

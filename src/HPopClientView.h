@@ -70,7 +70,7 @@ private:
 	int32			fStartPos;
 	int32			fStartSize;
 	BString			fUidl;
-	bool			fIsDelete;
+	int16			fRetrieve;
 	bool			fIsRunning;
 	BMessage		*fPopServers;
 	int32			fServerIndex;

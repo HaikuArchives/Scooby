@@ -1044,7 +1044,7 @@ HWindow::AddPopServer(entry_ref ref,BMessage &sendMsg)
 	
 	int16 retrieve;
 	if(msg.FindInt16("retrieve",&retrieve) != B_OK)
-		return B_ERROR;
+		retrieve = 0;
 			
 	iValue = 0;
 	if(retrieve == 2)
@@ -1067,7 +1067,7 @@ HWindow::AddPopServer(entry_ref ref,BMessage &sendMsg)
 	sendMsg.AddString("address",host);
 	sendMsg.AddInt16("port",atoi(port));
 	sendMsg.AddString("login",login);
-	sendMsg.AddBool("delete",(retrieve==0)?false:true);
+	sendMsg.AddInt16("retrieve",retrieve);
 	sendMsg.AddInt16("protocol_type",proto);		
 	sendMsg.AddInt32("delete_day",iValue);
 	sendMsg.AddString("uidl",uidl);
