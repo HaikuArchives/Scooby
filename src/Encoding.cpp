@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <Debug.h>
 #include <E-mail.h>
+#include <Alert.h>
 
 enum {
 	NUL = 0,
@@ -631,11 +632,13 @@ Encoding::ConvertFromUTF8(BString& text,int32 encoding)
  ***********************************************************/
 void
 Encoding::ConvertReturnsToLF(char* text)
-{	
+{
+	int32 len = ::strlen(text);
+	
 	for(int32 i = 0, j = 0; true; i++, j++){
 		if(*(text + i) == CR){
 			*(text + j) = LF;
-			if(*(text + i + 1) == LF)
+			if(i<len-1 && *(text + i + 1) == LF)
 				i++;
 		}else{
 			*(text + j) = *(text + i);
@@ -654,7 +657,9 @@ Encoding::ConvertReturnsToCR(char* text)
 	for(int32 i = 0, j = 0; true; i++, j++){
 		if(*(text + i) == LF){
 			*(text + j) = CR;
-			if(*(text + i + 1) == CR)
+		}else if(*(text+i) == CR){
+			*(text + j) = CR;
+			if(*(text+i+1) == LF)
 				i++;
 		}else{
 			*(text + j) = *(text + i);
