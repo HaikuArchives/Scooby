@@ -1,4 +1,5 @@
 #include "HAttachmentItem.h"
+#include "Encoding.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -25,8 +26,11 @@ HAttachmentItem::HAttachmentItem(const char* name,
 	,fCharset(NULL)
 	,fName(NULL)
 {
-	fName = ::strdup((name)?name:"Unknown");
-	SetColumnContent(1,(name)?name:"(Unknown)");
+	fName = (name)?name:"Unknown";
+	
+	Encoding().Mime2UTF8(fName);
+	
+	SetColumnContent(1,fName.String());
 	SetColumnContent(2,(content_type)?content_type:"(Unknown)");
 	
 	char *size = new char[15];
@@ -78,5 +82,4 @@ HAttachmentItem::~HAttachmentItem()
 	free(fContentType);
 	free(fCharset);
 	free(fEncoding);
-	free(fName);
 }

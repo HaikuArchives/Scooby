@@ -3,6 +3,7 @@
 
 #include <Entry.h>
 #include <File.h>
+#include <String.h>
 #include "CLVEasyItem.h"
 
 class HAttachmentItem :public CLVEasyItem {
@@ -16,9 +17,9 @@ public:
 	virtual				~HAttachmentItem();
 		
 		const char*		ContentType() {return fContentType;}
-		const char*		Encoding() {return fEncoding;}
+		const char*		ContentEncoding() {return fEncoding;}
 		const char*		Charset() {return fCharset;}
-		const char*		Name() {return fName;}
+		const char*		Name() {return fName.String();}
 			int32		DataLength() {return fDataLen;}
 			int32		Offset() {return fFileOffset;}	
 
@@ -35,6 +36,6 @@ protected:
 	char*				fEncoding;
 	char*				fCharset;
 	entry_ref			fFileRef;
-	char*				fName;
+	BString				fName;
 };
 #endif
