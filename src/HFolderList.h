@@ -69,6 +69,9 @@ public:
 				bool	IsGatheredLocalFolders() const {return fGatheredLocalFolders;}
 				//!Save folder structure cache.
 				void	SaveFolderStructure();
+				//!Check the account file is IMAP4 or not.
+				bool	IsIMAP4Account(entry_ref &ref,BMessage *outSetting=NULL);
+
 				BMessage	*fFoldersCache; //!<Folder cache data.
 protected:
 		//@{
@@ -102,6 +105,7 @@ protected:
 								,int32 indent //!<Current indent level.
 								,BMessage &rootFolders //!<Output data for root folders.
 								,BMessage &childFolders); //!<Output data for child folders.
+				void	LoadIMAP4Account(BMessage &msg); //!<Load IMAP4 account.
 private:
 		BEntry   	*fEntry;
 		uint32	 	fOutlineLevel;

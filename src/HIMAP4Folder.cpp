@@ -149,6 +149,12 @@ HIMAP4Folder::IMAPGetList()
 	}
 	if(!fChildItem)
 		GatherChildFolders();
+	if(fRemoteFolderName.Length() == 0)
+	{
+		if(fOwner->IndexOf(this) == fOwner->CurrentSelection())
+				fOwner->Window()->PostMessage(M_STOP_MAIL_BARBER_POLE);
+		return;
+	}	
 	
 	int32 mail_count = 0;
 	if( (mail_count = fClient->Select(fRemoteFolderName.String())) < 0)
@@ -221,7 +227,7 @@ HIMAP4Folder::IMAPConnect()
 {
 	delete fClient;
 	fClient = new IMAP4Client();
-	PRINT(("IMAP4 Connect Start\n"));
+	PRINT(("IMAP4 Connect Start:%s %d\n",fServer.String(),fPort));
 	if( fClient->Connect(fServer.String(),fPort) != B_OK)
 	{
 		(new BAlert("",_("Could not connect to IMAP4 server"),"OK",

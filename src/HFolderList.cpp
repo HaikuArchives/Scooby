@@ -389,7 +389,6 @@ HFolderList::GetFolders(void* data)
 	status_t err = B_NO_ERROR;
 	int32 offset;
 	BEntry entry(path.Path());
-	char name[B_FILE_NAME_LENGTH];
 	
 	BPath cachePath;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&cachePath);
@@ -453,7 +452,7 @@ HFolderList::GetFolders(void* data)
 		}
 	}
 	// Gather IMAP4 folders
-	err = B_OK;
+/*	err = B_OK;
 	find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append( APP_NAME );
 	path.Append("Accounts");
@@ -493,7 +492,8 @@ HFolderList::GetFolders(void* data)
 			setting.FindInt16("port",&port);
 			msg.AddPointer("item",new HIMAP4Folder(name,folder,addr,port,login,password.String(),list));
 		}
-	}	
+	}*/
+	list->LoadIMAP4Account(msg);
 	
 	// Send add list items message
 	if(!msg.IsEmpty())
@@ -831,6 +831,7 @@ HFolderList::MouseDown(BPoint pos)
     	 item = new BMenuItem(_("Delete Folders"),new BMessage(M_DELETE_FOLDER),0,0);
     	 item->SetEnabled((sel<0)?false:true);
     	 theMenu->AddItem(item);
+    	 /*
     	 theMenu->AddSeparatorItem();
     	 item = new BMenuItem(_("Add IMAP4 Folders"),new BMessage(M_ADD_IMAP4_FOLDER),0,0);
     	 item->SetEnabled((sel<0)?true:false);
@@ -844,7 +845,7 @@ HFolderList::MouseDown(BPoint pos)
     	 	item->SetEnabled((folder->FolderType() == IMAP4_TYPE)?true:false);
     	 }
     	 theMenu->AddItem(item);
-    	 
+    	 */
     	 BRect r;
          ConvertToScreen(&pos);
          r.top = pos.y - 5;
@@ -1376,4 +1377,65 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		free(dirents);
 #endif
 	}
+}
+
+/***********************************************************
+ * LoadIMAP4Account
+ ***********************************************************/
+void
+HFolderList::LoadIMAP4Account(BMessage &msg)
+{
+	BPath path;
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append(APP_NAME);
+	path.Append("Accounts");
+	
+	BDirectory dir(path.Path());
+	BEntry entry;
+	entry_ref ref;
+	BMessage setting;
+	const char* addr,*login,*pass,*name,*port;
+	
+	while(dir.GetNextEntry(&entry) == B_OK)
+	{
+		if(entry.IsDirectory())
+			continue;
+		entry.GetRef(&ref);
+		if(IsIMAP4Account(ref,&setting))
+		{
+			setting.FindString("name",&name);	
+			setting.FindString("pop_host",&addr);
+			setting.FindString("pop_user",&login);
+			setting.FindString("pop_password",&pass);
+			BString password;
+			int32 len = strlen(pass);
+			for(int32 i =0;i < len;i++)
+				password += (char)255-pass[i];
+				
+			setting.FindString("pop_port",&port);
+			msg.AddPointer("item",new HIMAP4Folder(name,"",addr,atoi(port),login,password.String(),this));
+		}
+	}	
+	return;
+}
+
+/***********************************************************
+ * IsIMAP4Account
+ ***********************************************************/
+bool
+HFolderList::IsIMAP4Account(entry_ref& ref,BMessage *outSetting)
+{
+	BMessage setting;
+	BFile file(&ref,B_READ_ONLY);
+	
+	setting.Unflatten(&file);
+	
+	int16 protocol;
+	if(setting.FindInt16("protocol_type",&protocol) == B_OK && protocol == 2)
+	{
+		if(outSetting)
+			*outSetting = setting;
+		return true;
+	}
+	return false;
 }

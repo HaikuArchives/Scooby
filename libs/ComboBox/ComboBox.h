@@ -27,6 +27,7 @@ public:
 		void			RemoveItem(int32 index);
 	const char*			ItemAt(int32 i) const {return (const char*)fTextList.ItemAt(i);}
 		
+		void			SetText(const char* text) {fTextControl->SetText(text);}
 	const char*			Text() const{ return fTextControl->Text();}
 		void			SetDivider(float div) {return fTextControl->SetDivider(div);}
 		float			Divider()const {return fTextControl->Divider();}
