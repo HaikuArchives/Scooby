@@ -8,8 +8,8 @@
 class HMailItem : public CLVEasyItem
 {
 public:
-						HMailItem(const entry_ref ref);
-						HMailItem(const entry_ref ref,
+						HMailItem(const entry_ref &ref);
+						HMailItem(const entry_ref &ref,
 								  const char* status,
 								  const char* subject,
 								  const char* from,
