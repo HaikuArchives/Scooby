@@ -123,7 +123,7 @@ HWindow::InitMenu()
    							rsrc_utils.GetBitmapResource('BBMP',"Check Mail"));
 	// gather account
 	BMenu *subMenu = new BMenu("Check Mail From");
-	BPath path;
+/*	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append("Accounts");
@@ -143,7 +143,7 @@ HWindow::InitMenu()
 			msg->AddRef("refs",&ref);
 			subMenu->AddItem(new BMenuItem(name,msg));
 		}
-	}
+	}*/
 	aMenu->AddItem(subMenu);
 	aMenu->AddSeparatorItem();
 	//
@@ -188,6 +188,7 @@ HWindow::InitMenu()
 	menubar->AddItem( aMenu ); 	 	
 ///// ------------------
 	AddChild(menubar);
+	AddCheckFromItems();
 }
 
 
@@ -276,7 +277,7 @@ HWindow::InitGUI()
 	fVSplitter->SetBarPosition(pos);
 	fVSplitter->SetBarThickness(BPoint(BAR_THICKNESS,BAR_THICKNESS));
 	fVSplitter->SetViewInsetBy(BPoint(0,0));
-/********** StatusViewの追加 ***********/
+/********** StatusView ***********/
 	captionframe = bg->Bounds();
 	captionframe.bottom+=2;
 	captionframe.top = captionframe.bottom - B_H_SCROLL_BAR_HEIGHT-1;
@@ -301,7 +302,7 @@ HWindow::InitGUI()
 	fHSplitter->SetBarAlignmentLocked(true);
 	fVSplitter->SetBarAlignmentLocked(true);
 	bg->AddChild(fVSplitter);
-/********** Toolbarの追加 ***********/
+/********** Toolbar ***********/
 	BRect toolrect = Bounds();
 	toolrect.top += (KeyMenuBar()->Bounds()).Height();
 	toolrect.bottom = toolrect.top + kToolbarHeight;
@@ -845,6 +846,15 @@ HWindow::MenusBeginning()
 		item->SetEnabled(true);
 	else if(is_kind_of(view,BTextView))
 		item->SetEnabled(true);
+	// Recreate check from items
+	// Delete all items
+	BMenu *subMenu = KeyMenuBar()->SubmenuAt(2);
+	subMenu = subMenu->SubmenuAt(1);
+	int32 count = subMenu->CountItems();
+	while(count>0)
+		delete subMenu->RemoveItem(--count);
+	AddCheckFromItems();
+	//
 }
 
 /***********************************************************
@@ -1453,6 +1463,41 @@ HWindow::RemoveFromDeskbar()
 		deskbar.RemoveItem( APP_NAME );
 }
 
+
+/***********************************************************
+ * AddCheckFromItems
+ ***********************************************************/
+void
+HWindow::AddCheckFromItems()
+{
+	// Delete all items
+	BMenu *subMenu = KeyMenuBar()->SubmenuAt(2);
+	subMenu = subMenu->SubmenuAt(1);
+	// Add items
+	BPath path;
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append(APP_NAME);
+	path.Append("Accounts");
+	BDirectory dir(path.Path());
+		
+	BEntry entry;
+	status_t err = B_OK;
+	
+	while(err == B_OK)
+	{
+		if((err = dir.GetNextEntry(&entry)) == B_OK )
+		{
+			char name[B_FILE_NAME_LENGTH+1];
+			entry.GetName(name);
+			entry_ref ref;
+			entry.GetRef(&ref);
+			PRINT(("%s\n",name));
+			BMessage *msg = new BMessage(M_CHECK_FROM);
+			msg->AddRef("refs",&ref);
+			subMenu->AddItem(new BMenuItem(name,msg));
+		}
+	}
+}
 
 /***********************************************************
  * QuitRequested

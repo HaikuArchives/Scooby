@@ -84,6 +84,7 @@ protected:
 				void	InstallToDeskbar();
 				void	RemoveFromDeskbar();
 			
+				void	AddCheckFromItems();
 private:
 		HMailList*		fMailList;
 		HMailCaption*	fMailCaption;
