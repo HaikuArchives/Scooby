@@ -49,12 +49,14 @@ HAttachmentList::~HAttachmentList()
 int32
 HAttachmentList::FindPart(const char* type)
 {
+	if(!type)
+		return -1;
 	int32 count = CountItems();
 	
 	HAttachmentItem **items = (HAttachmentItem**)Items();
 	for(int32 i = 0;i < count;i++)
 	{
-		if(items[i] && ::strcmp(items[i]->ContentType(),type) == 0)
+		if(items[i] &&items[i]->ContentType()&& ::strcmp(items[i]->ContentType(),type) == 0)
 			return i;
 	}
 	return -1;
