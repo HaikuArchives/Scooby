@@ -16,6 +16,7 @@
 #include <Debug.h>
 #include <ClassInfo.h>
 #include <stdlib.h>
+#include <StopWatch.h>
 
 #define TIME_FORMAT "%a, %m/%d/%Y, %r"
 
@@ -53,7 +54,8 @@ HMailItem::HMailItem(const entry_ref &ref,
 					  const char* reply,
 					  time_t 	  when,
 					  const char* priority,
-					  int8 enclosure)
+					  int8 enclosure,
+					  ino_t	node)
 	:CLVEasyItem(0, false, false, 18.0)
 	,fRef(ref)
 	,fStatus(status)
@@ -67,9 +69,14 @@ HMailItem::HMailItem(const entry_ref &ref,
 	,fEnclosure(enclosure)
 	,fDeleteMe(false)
 {
-	BEntry entry(&ref);
-	entry.GetNodeRef(&fNodeRef);
-	//fDate = ctime(&fWhen);
+	if(node == 0)
+	{
+		BEntry entry(&fRef);
+		entry.GetNodeRef(&fNodeRef);
+	}else{
+		fNodeRef.node = node;
+		fNodeRef.device = ref.device;
+	}
 	struct tm* time = localtime(&fWhen);
 	char *tmp = fDate.LockBuffer(24);
 	::strftime(tmp, 64,TIME_FORMAT, time);
@@ -78,7 +85,10 @@ HMailItem::HMailItem(const entry_ref &ref,
 	SetColumnContent(2,fFrom.String());
 	SetColumnContent(3,fTo.String());
 	SetColumnContent(4,fDate.String());
-	ResetIcon();
+	//if(fStatus.Compare("New") == 0)
+		RefreshStatus();
+	//else
+	//	ResetIcon();
 }
 
 /***********************************************************
@@ -147,8 +157,9 @@ HMailItem::SetRead()
 		node.ReadAttrString(B_MAIL_ATTR_STATUS,&fStatus);
 		if(fStatus.Compare("New")!=0 )
 			return;
-		node.WriteAttr(B_MAIL_ATTR_STATUS,B_STRING_TYPE,0,"Read",5);
 		fStatus = "Read";
+		PRINT(("Written\n"));
+		node.WriteAttrString(B_MAIL_ATTR_STATUS,&fStatus);
 		ResetIcon();
 	}
 }

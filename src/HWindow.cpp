@@ -463,6 +463,18 @@ HWindow::MessageReceived(BMessage *message)
 		be_app->PostMessage(&msg);
 		break;
 	}
+	// Invalidate mail item
+	case M_INVALIDATE_MAIL:
+	{
+		HMailItem *item;
+		if(message->FindPointer("mail",(void**)&item) == B_OK)
+		{
+			int32 index = fMailList->IndexOf(item);
+			if(index >=0)
+				fMailList->InvalidateItem(index);
+		}
+		break;
+	}
 	// Open query folder
 	case M_OPEN_QUERY:
 	{
@@ -540,7 +552,7 @@ HWindow::MessageReceived(BMessage *message)
 			fDetailView->SetInfo("","","");
 		
 		// recalc unread mails
-		bool read;
+		/*bool read;
 		if(message->FindBool("read",&read) == B_OK)
 		{
 			if(read)
@@ -555,7 +567,7 @@ HWindow::MessageReceived(BMessage *message)
 				fFolderList->InvalidateItem(sel);
 			}
 		}
-		
+		*/
 		ChangeDeskbarIcon(DESKBAR_NORMAL_ICON);
 		break;
 	}
@@ -1123,7 +1135,7 @@ HWindow::DeleteMails()
 		int32 selected; 
 		int32 count_selected = 0;
 		int32 sel_index = 0;
-		int32 unread_mails = 0;
+		//int32 unread_mails = 0;
 		HMailItem *mail(NULL);
 		while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
 		{
@@ -1133,21 +1145,23 @@ HWindow::DeleteMails()
 			count_selected++;
 			msg.AddPointer("mail",mail);
 			msg.AddRef("refs",&mail->fRef);
-			if(!mail->IsRead())
-				unread_mails++;
+			//if(!mail->IsRead())
+			//	unread_mails++;
 		}
+		/*
 		if(unread_mails>0)
 		{
 			from->SetName(from->Unread()-unread_mails);
 			fFolderList->InvalidateItem(sel);
 		}
+		*/
 		PostMessage(&msg);
 	}else{
 		// IMAP4 mails
 		int32 selected; 
 		int32 count_selected = 0;
 		int32 sel_index = 0;
-		int32 unread_mails = 0;
+		//int32 unread_mails = 0;
 		HIMAP4Item *mail(NULL);
 		while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
 		{
@@ -1156,8 +1170,8 @@ HWindow::DeleteMails()
 				continue;
 			count_selected++;
 			mail->Delete();
-			if(!mail->IsRead())
-				unread_mails++;
+			//if(!mail->IsRead())
+			//	unread_mails++;
 			delete mail;
 		}
 		

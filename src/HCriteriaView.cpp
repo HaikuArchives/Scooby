@@ -112,7 +112,7 @@ HCriteriaView::SetValue(int32 attr,
  * Draw
  ***********************************************************/
 void
-HCriteriaView::Draw(BRect updateRect)
+HCriteriaView::Draw(BRect /*updateRect*/)
 {
 	BRect rect = Bounds();
 	if(!IsFocus())
