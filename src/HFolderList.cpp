@@ -192,9 +192,14 @@ HFolderList::MessageReceived(BMessage *message)
 					item->StartGathering();
 			}
 		}
-		//AddList(&list);
 		SortItems();
 		fPointerList.AddList(&list);
+		// Check inbox
+		bool check_inbox;
+		((HApp*)be_app)->Prefs()->GetData("check_inbox",&check_inbox);
+		if(check_inbox)
+			Select(1);
+		
 		break;
 	}
 	
