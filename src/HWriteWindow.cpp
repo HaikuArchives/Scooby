@@ -263,6 +263,9 @@ HWriteWindow::InitGUI()
 	toolbox->AddButton("Later",utils.GetBitmapResource('BBMP',"Send Later"),
 					new BMessage(M_SEND_LATER),"Send Later");
 	toolbox->AddSpace();
+	toolbox->AddButton("Print",utils.GetBitmapResource('BBMP',"Printer"),new BMessage(M_PRINT_MESSAGE),_("Print"));
+	
+	toolbox->AddSpace();
 	toolbox->AddButton("Attach",utils.GetBitmapResource('BBMP',"Enclosure"),
 					new BMessage(M_ADD_ENCLOSURE),"Add Enclosure");
 	

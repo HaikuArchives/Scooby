@@ -800,7 +800,8 @@ HWindow::MessageReceived(BMessage *message)
 				::strcmp(name,"Fwd") == 0||
 				::strcmp(name,"Next") == 0||
 				::strcmp(name,"Prev") == 0||
-				::strcmp(name,"Trash") == 0){
+				::strcmp(name,"Trash") == 0 ||
+				::strcmp(name,"Print") == 0){
 			if(sel < 0)
 				btn->SetEnabled(false);
 			else
