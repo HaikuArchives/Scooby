@@ -5,7 +5,7 @@ RSRCS= ./resources/Icon.rsrc ./resources/Resource.rsrc
 # Libraries
 LIBS= root be textencoding netapi net tracker mail
 # Library path
-LIBPATHS= /boot/home/config/lib 
+LIBPATHS= 
 # System include path
 SYSTEM_INCLUDE_PATHS =
 # Local include path 
@@ -72,13 +72,13 @@ SRCS= ./src/HFolderItem.cpp\
 #-------------------------------------------------------
 #	determine wheather running on x86 or ppc
 ifeq ($(USE_SPLOCALE),1)
-	LIBS += SpLocaleApp
+	LIBS += /boot/home/config/lib/SpLocaleApp
 	LOCAL_INCLUDE_PATHS += /boot/home/config/include
 	DEFINES += USE_SPLOCALE
 endif
 
 ifeq ($(USE_ICONV),1)
-	LIBS += iconv
+	LIBS += /boot/home/config/lib/libiconv.so
 	LOCAL_INCLUDE_PATHS += /boot/home/config/include
 	DEFINES += USE_ICONV
 endif
