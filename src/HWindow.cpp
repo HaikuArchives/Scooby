@@ -185,6 +185,18 @@ HWindow::InitMenu()
 	utils.AddMenuItem(aMenu,_("Move To Trash"),M_DELETE_MSG,this,this,'T',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();
+	// Status menu
+    BMenu *statusMenu = new BMenu(_("Status"));
+    const char* status[] = {"New","Read","Replied","Forwarded"};
+    
+    for(int32 i = 0;i < (int32)(sizeof(status)/sizeof(status[0]));i++)
+    {
+    	msg = new BMessage(M_CHANGE_MAIL_STATUS);
+    	msg->AddString("status",status[i]);
+    	utils.AddMenuItem(statusMenu,_(status[i]),msg,this,this,0,0);
+    }
+    aMenu->AddItem(statusMenu);
+	aMenu->AddSeparatorItem();
     utils.AddMenuItem(aMenu,_("Filter"),M_FILTER_MAIL,this,this,0,0);
     utils.AddMenuItem(aMenu,_("Add To BlackList"),M_ADD_TO_BLACK_LIST,this,this,0,0,
     						rsrc_utils.GetBitmapResource('BBMP',"BlackList"));
@@ -379,6 +391,29 @@ HWindow::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
+	// Change mail status
+	case M_CHANGE_MAIL_STATUS:
+	{
+		BNode node;
+		entry_ref ref;
+		int32 sel,index = 0;
+		
+		const char* status;
+		if(message->FindString("status",&status) != B_OK)
+			break;
+		fMailList->SetOldSelection(NULL);
+		while( (sel = fMailList->CurrentSelection(index++)) >= 0)
+		{
+			HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
+			if(!item)
+				continue;
+			ref = item->Ref();
+			if(node.SetTo(&ref) != B_OK)
+				continue;
+			node.WriteAttr(B_MAIL_ATTR_STATUS,B_STRING_TYPE,0,status,::strlen(status)+1);
+		}
+		break;
+	}
 	// Show Open File Panel
 	case M_IMPORT_PLAIN_TEXT_MAIL:
 		ShowOpenPanel(M_CONVERT_PLAIN_TO_MAIL);

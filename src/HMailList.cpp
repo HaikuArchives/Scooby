@@ -473,6 +473,20 @@ HMailList::MouseDown(BPoint pos)
     	item->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(item);
     	theMenu->AddSeparatorItem();
+ 		// Status menu
+    	BMenu *statusMenu = new BMenu(_("Status"));
+    	statusMenu->SetFont(&font);
+    	const char* status[] = {"New","Read","Replied","Forwarded"};
+    	
+    	for(int32 i = 0;i < (int32)(sizeof(status)/sizeof(status[0]));i++)
+    	{
+    		msg = new BMessage(M_CHANGE_MAIL_STATUS);
+    		msg->AddString("status",status[i]);
+    		item = new IconMenuItem(_(status[i]),msg,0,0,NULL);
+    		statusMenu->AddItem(item);
+    	}
+    	theMenu->AddItem(statusMenu);
+    	theMenu->AddSeparatorItem();
     	// Open with menu
     	 OpenWithMenu *submenu = new OpenWithMenu(_("Open With…"),"text/x-email");
     	 submenu->SetFont(&font);

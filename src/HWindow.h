@@ -53,7 +53,8 @@ enum{
 	M_CONVERT_PLAIN_TO_MAIL = 'mCVP',
 	M_IMPORT_MBOX = 'mMBX',
 	M_CONVERT_MBOX_TO_MAILS = 'mCMm',
-	M_ADD_TO_BLACK_LIST = 'mAtB'
+	M_ADD_TO_BLACK_LIST = 'mAtB',
+	M_CHANGE_MAIL_STATUS = 'mChM'
 };
 
 class HWindow: public BWindow {
