@@ -50,7 +50,7 @@ WARNINGS = ALL
 
 ifeq ($(CHECK_MEMORY), true)
 	OPTIMIZE=NONE
-	COMPILER_FLAGS := -fcheck-memory-usage -D_NO_INLINE_ASM=1 -D_KERNEL_MODE=1
+	COMPILER_FLAGS := -g -fcheck-memory-usage -D_NO_INLINE_ASM=1 -D_KERNEL_MODE=1
 endif
 
 # Sources
