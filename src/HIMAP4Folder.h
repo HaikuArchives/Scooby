@@ -46,12 +46,12 @@ public:
 protected:
 			void		IMAPGetList();
 		status_t		IMAPConnect();
-			time_t		MakeTime_t(const char* date);
 	static	int32		GetListThread(void* data);
 			void		GatherChildFolders();
 			void		StoreSettings();
 			
 			int32		FindParent(const char* name,const char* path,BList *list);
+		HIMAP4Folder*	MakeNewFolder(const char* utf8Name,const char *utf7Path);
 private:
 	IMAP4Client			*fClient;
 		BString			fServer;

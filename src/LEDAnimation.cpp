@@ -43,9 +43,7 @@ LEDAnimation::Stop()
 	status_t err;
 	::wait_for_thread(fThread,&err);
 
-	LED(B_NUM_LOCK,false);
-	LED(B_CAPS_LOCK,false);
-	LED(B_SCROLL_LOCK,false);	
+	::set_keyboard_locks(0);		
 }
 
 /***********************************************************

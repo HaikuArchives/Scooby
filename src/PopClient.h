@@ -54,8 +54,6 @@ public:
 			void	InitBlackList();
 		//!Send command to server.
 		status_t	SendCommand(const char* cmd);	
-		//!Make time_t struct from date string.
-	static	time_t	MakeTime_t(const char* date);
 		//!Make MD5 digest string. (You need to free output buffer.)
 			char*	MD5Digest (unsigned char *s);
 		//!Returns the last POP command response log.

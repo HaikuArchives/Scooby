@@ -49,12 +49,12 @@ HIMAP4Folder::~HIMAP4Folder()
 {
 	StoreSettings();
 	EmptyMailList();
-	if(fClient)
+	if(!IsChildFolder()&&fClient)
 	{
 		fClient->Logout();
 		fClient->Close();
+		delete fClient;
 	}
-	delete fClient;
 }
 
 /***********************************************************
@@ -191,6 +191,7 @@ HIMAP4Folder::IMAPGetList()
 			PRINT(("FetchFields ERROR\n"));
 			continue;
 		}
+		PRINT(("%s\n",date.String()));
 		// ConvertToUTF8
 		encode.Mime2UTF8(subject);
 		encode.Mime2UTF8(from);
@@ -296,16 +297,8 @@ HIMAP4Folder::GatherChildFolders()
 		char *buf = new char[strlen(displayName)*4];
 		IMAP4UTF72UTF8(buf,displayName);
 		
-		pointerList.AddItem((folder = new HIMAP4Folder(buf,(char*)namelist.ItemAt(i)
-											,server
-											,port
-											,login
-											,password
-											,list)));
+		pointerList.AddItem((folder = MakeNewFolder(buf,(char*)namelist.ItemAt(i) )));
 		delete[] buf;
-		folder->SetFolderGathered(true);
-		folder->SetChildFolder(true);
-		folder->SetAccountName(AccountName());
 		free( name );
 	}
 	
@@ -366,23 +359,16 @@ HIMAP4Folder::CreateChildFolder(const char* utf8)
 {
 	if(fClient->Create(utf8,fRemoteFolderPath.String()) == B_OK)	
 	{
-		char *name = new char[strlen(utf8)*4];
-		IMAP4UTF72UTF8(name,(char*)utf8);
+		char *utf7 = new char[strlen(utf8)*4];
+		UTF8IMAP4UTF7(utf7,(char*)utf8);
 		BString path;
 		if(IsChildFolder())
 			path+=fRemoteFolderPath;
-		path+=name;
-		delete[] name;
+		path+=utf7;
+		delete[] utf7;
 		
-		HIMAP4Folder *folder = new HIMAP4Folder(utf8
-												,path.String()
-												,fServer.String()
-												,fPort
-												,fLogin.String()
-												,fPassword.String()
-												,fOwner);
-		folder->SetAccountName(AccountName());
-		folder->SetChildFolder(true);
+		HIMAP4Folder *folder = MakeNewFolder(utf8,path.String());
+		
 		BMessage childMsg(M_ADD_UNDER_ITEM);
 		childMsg.AddPointer("item",folder);
 		childMsg.AddPointer("parent",this);
@@ -402,76 +388,21 @@ HIMAP4Folder::Move(const char* indexList,const char* dest_folder)
 }
 
 /***********************************************************
- * MakeTime_t
+ * MakeNewFolder
  ***********************************************************/
-time_t
-HIMAP4Folder::MakeTime_t(const char* date)
+HIMAP4Folder*
+HIMAP4Folder::MakeNewFolder(const char* utf8name,const char* utf7path)
 {
-	const char* mons[] = {"Jan","Feb","Mar","Apr","May"
-						,"Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
-	const char* wdays[] = {"Sun","Mon","Tue","Wed","Thu"
-						,"Fri","Sat"};
-	
-	char swday[5];
-	int wday=0;
-	int day;
-	char smon[4];
-	int mon;
-	//char stime[9];
-	int year;
-	int hour;
-	int min;
-	int sec;
-	int gmt_off = 0;
-	char offset[5];
-	// Mon, 16 Oct 2000 00:50:04 +0900 or Mon, 16 Oct 00 00:50:04 +0900
-	int num_scan  = ::sscanf(date,"%3s,%d%3s%d %2d:%2d:%2d %5s"
-				,swday,&day,smon,&year,&hour,&min,&sec,offset);
-	if(num_scan != 8)
-	{
-		// 9 Nov 2000 11:30:23 -0000
-		num_scan = ::sscanf(date, "%d%3s%d %2d:%2d:%2d %5s"
-					,&day,smon,&year,&hour,&min,&sec,offset);
-		DEBUG_ONLY(
-			if(num_scan != 7)
-				printf("Unknown date format\n");
-		);
-	}
-	//PRINT(("M:%s H:%d M:%d S:%d\n",smon,hour,min,sec));
-	// month
-	for(mon = 0;mon < 12;mon++)
-	{
-		if(strncmp(mons[mon],smon,3) == 0)
-			break;
-	}
-	// week of day
-	if(num_scan == 8)
-	{
-		for(wday = 0;wday < 12;wday++)
-		{
-			if(strncmp(wdays[wday],swday,3) == 0)
-				break;
-		}
-	}
-	// offset 
-	char op = offset[0];
-	float off = atof(offset+1);
-	if(op == '+')
-		gmt_off  = static_cast<int>((off/100.0)*60*60);
-	if(op == '-')
-		gmt_off  = static_cast<int>(-(off/100.0)*60*60);
-	struct tm btime;
-	btime.tm_sec = sec;
-	btime.tm_min = min;
-	btime.tm_hour = hour;
-	btime.tm_mday = day;
-	btime.tm_mon = mon;
-	if(year > 1900)
-		btime.tm_year = year-1900;
-	else
-		btime.tm_year = 2000 + year;
-	if(num_scan == 8)
-		btime.tm_wday = wday;
-	btime.tm_gmtoff = gmt_off;
-	return mktime(&btime);	
+	HIMAP4Folder *folder = new HIMAP4Folder(utf8name
+									,utf7path
+									,fServer.String()
+									,fPort
+									,fLogin.String()
+									,fPassword.String()
+									,fOwner);
+	folder->SetAccountName(AccountName());
+	folder->SetChildFolder(true);
+	folder->SetFolderGathered(true); // not need to gather child folders.
+	folder->fClient = fClient;
+	return folder;
 }

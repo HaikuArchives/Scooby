@@ -36,5 +36,7 @@ char*	cistrstr(char *cs, char *ct);
 //! Read mail attr checking. if you set default value and it doesn't have attr, default value will be written.
 status_t	ReadNodeAttrString(BNode *node,const char* attrName,BString *out,const char* defaultValue=NULL);
 //! Show Alert.
-void	Alert(alert_type type,const char* format,...);
+void		Alert(alert_type type,const char* format,...);
+//! Convert date string to time_t
+time_t	MakeTime_t(const char* date);
 #endif
