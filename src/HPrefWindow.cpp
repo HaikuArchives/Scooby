@@ -27,26 +27,21 @@ HPrefWindow::HPrefWindow(BRect win_rect)
 	BTabView *tabview = new BTabView(rect,"tabview");
 	tabview->SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
 	
-	BTab *tab;
 	BRect frame = tabview->Bounds();
 //*********** Other Setting ******************/
-	tab = new BTab();
-	tabview->AddTab(fGeneralView = new HGeneralSettingView(frame),tab);
-	tab->SetLabel(_("General"));
+	tabview->AddTab(fGeneralView = new HGeneralSettingView(frame));
+	tabview->TabAt(0)->SetLabel(_("General"));
 	
 //*********** Account Setting ******************/
-	tab = new BTab();
-	tabview->AddTab(fAccountView = new HAccountView(frame),tab);
-	tab->SetLabel(_("Account"));
+	tabview->AddTab(fAccountView = new HAccountView(frame));
+	tabview->TabAt(1)->SetLabel(_("Account"));
 
 //*********** Filter Setting ******************/
-	tab = new BTab();
-	tabview->AddTab(fFilterView = new HFilterView(frame),tab);
-	tab->SetLabel(_("Filters"));
+	tabview->AddTab(fFilterView = new HFilterView(frame));
+	tabview->TabAt(2)->SetLabel(_("Filters"));
 //*********** Signature Setting ******************/
-	tab = new BTab();
-	tabview->AddTab(fSignatureView = new HSignatureView(frame),tab);
-	tab->SetLabel(_("Signature"));
+	tabview->AddTab(fSignatureView = new HSignatureView(frame));
+	tabview->TabAt(3)->SetLabel(_("Signature"));
 	
 	AddChild(tabview);
 	

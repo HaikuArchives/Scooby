@@ -10,6 +10,7 @@
 #include "HHtmlMailView.h"
 #include "HMailList.h"
 #include "HAttachmentList.h"
+#include "HTabView.h"
 
 #include <Menu.h>
 #include <MenuItem.h>
@@ -20,8 +21,6 @@
 #include <Beep.h>
 #include <Messenger.h>
 #include <ClassInfo.h>
-#include <TabView.h>
-
 
 /***********************************************************
  * Constructor
@@ -491,7 +490,7 @@ HReadWindow::DispatchMessage(BMessage *message,BHandler *handler)
 			}
 		}else{
 			BScrollBar *bar(NULL);
-			BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
+			HTabView *tabview = cast_as(fMailView->FindView("tabview"),HTabView);
 			if(tabview->Selection() == 0)
 			{
 				BView *view(NULL);
@@ -546,7 +545,7 @@ HReadWindow::PrintMessage(BMessage *message)
 		msg.AddPointer("view",fMailView);
 	}else{
 		// HTML mode
-		BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
+		HTabView *tabview = cast_as(fMailView->FindView("tabview"),HTabView);
 		sel = tabview->Selection();
 		
 		if(sel < 0)
