@@ -65,7 +65,7 @@ HHtmlView::HHtmlView(BRect rect,
  ***********************************************************/
 HHtmlView::~HHtmlView()
 {
-	delete fShelf;	
+	delete fShelf;
 }
 
 /***********************************************************
@@ -130,14 +130,12 @@ HHtmlView::Stop()
  * SetEncoding
  ***********************************************************/
 void
-HHtmlView::SetEncoding(int32 encoding_index)
+HHtmlView::SetEncoding(EncodingMessages encoding)
 {
-	// not implemented yet
-	// I have no clue to set encoding :(
-/*	BMessage msg('NPCP');
-	msg.AddInt32("encoding",encoding_index);
-	Window()->PostMessage(&msg,fNetPositiveView);	
-*/
+	BMessage msg(encoding);
+	BView *view = fNetPositiveView->FindView("__NetPositive__HTMLView");
+	if(view)
+		Window()->PostMessage(&msg,view);	
 }
 
 /***********************************************************
