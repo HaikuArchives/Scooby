@@ -7,17 +7,17 @@
 #include <Handler.h>
 #include <Messenger.h>
 
+class BQuery;
+
 class HQueryItem : public HFolderItem
 {
 public:
 					HQueryItem(const entry_ref &ref,
 								BListView *target);
-					~HQueryItem();
-	//@{
-	//!Override function.
-			void	StartRefreshCache();
-			void	StartGathering();
-	//@}
+	virtual			~HQueryItem();
+	
+	virtual	void	StartRefreshCache();
+	virtual void	StartGathering();
 protected:
 			void	Fetching();
 	static	int32	FetchingThread(void* data);

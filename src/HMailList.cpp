@@ -9,7 +9,6 @@
 #include "IconMenuItem.h"
 #include "OpenWithMenu.h"
 #include "HIMAP4Item.h"
-#include "Utilities.h"
 
 #include <StorageKit.h>
 #include <Window.h>
@@ -20,7 +19,6 @@
 #include <PopUpMenu.h>
 #include <MenuItem.h>
 #include <E-mail.h>
-#include <PropertyInfo.h>
 
 /***********************************************************
  * Scripting properties
@@ -91,8 +89,6 @@ HMailList::HMailList(BRect frame,
 	SetSortKey(sort_key);
 	rgb_color selection_col = {184,194, 255,255};
 	SetItemSelectColor(true, selection_col);
-	
-	SetHovering(false);
 }
 
 /***********************************************************
@@ -424,7 +420,6 @@ HMailList::MouseDown(BPoint pos)
 	BMessage *msg;
     Window()->CurrentMessage()->FindInt32("buttons", &buttons); 
     MakeFocus(true);
-    HApp *app = (HApp*)be_app;
 	IconMenuItem *item;
     // Right click 
     if(buttons == B_SECONDARY_MOUSE_BUTTON)
@@ -451,43 +446,42 @@ HMailList::MouseDown(BPoint pos)
     	 font.SetSize(10);
     	 theMenu->SetFont(&font);
     	 
-    	 item = new IconMenuItem(_("Open Message in New Window" B_UTF8_ELLIPSIS),new BMessage(M_INVOKE_MAIL),0,0,
-							app->GetIcon("Read"),false);
-		 item->SetEnabled( (sel >= 0)?true:false);
+    	 item = new IconMenuItem(_("New Message"),new BMessage(M_NEW_MSG),'N',0,
+							utils.GetBitmapResource('BBMP',"New Message"));
 		 theMenu->AddItem(item);
 		 theMenu->AddSeparatorItem();
 	
     	 
     	 msg = new BMessage(M_REPLY_MESSAGE);
     	 msg->AddBool("reply_all",false);
-    	 item = new IconMenuItem(_("Reply to Sender Only" B_UTF8_ELLIPSIS),msg,'R',0,
+    	 item = new IconMenuItem(_("Reply"),msg,'R',0,
     	 						utils.GetBitmapResource('BBMP',"Reply"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
     	 
      	 msg = new BMessage(M_REPLY_MESSAGE);
     	 msg->AddBool("reply_all",true);
-    	 item = new IconMenuItem(_("Reply to All" B_UTF8_ELLIPSIS),msg,'R',B_SHIFT_KEY,
+    	 item = new IconMenuItem(_("Reply To All"),msg,'R',B_SHIFT_KEY,
     	 						utils.GetBitmapResource('BBMP',"Reply To All"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
     	 
-    	 item = new IconMenuItem(_("Forward" B_UTF8_ELLIPSIS),new BMessage(M_FORWARD_MESSAGE),'J',0,
+    	 item = new IconMenuItem(_("Forward"),new BMessage(M_FORWARD_MESSAGE),'J',0,
     	 						utils.GetBitmapResource('BBMP',"Forward"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
     	 theMenu->AddSeparatorItem();
-    	 item = new IconMenuItem(_("Move to Trash"),new BMessage(M_DELETE_MSG),'T',0,
+    	 item = new IconMenuItem(_("Move To Trash"),new BMessage(M_DELETE_MSG),'T',0,
     	 						utils.GetBitmapResource('BBMP',"Trash"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
     	// Add to people menu
     	theMenu->AddSeparatorItem();
-    	item = new IconMenuItem(_("Save as People" B_UTF8_ELLIPSIS),new BMessage(M_ADD_TO_PEOPLE),0,0,
-    	 						app->GetIcon("Person"),false);
+    	item = new IconMenuItem(_("Save as People"),new BMessage(M_ADD_TO_PEOPLE),0,0,
+    	 						utils.GetBitmapResource('BBMP',"Person"));
     	item->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(item);
-    	item = new IconMenuItem(_("Add to BlackList"),new BMessage(M_ADD_TO_BLACK_LIST),0,0,
+    	item = new IconMenuItem(_("Add To BlackList"),new BMessage(M_ADD_TO_BLACK_LIST),0,0,
     							utils.GetBitmapResource('BBMP',"BlackList"));
     	item->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(item);
@@ -504,11 +498,10 @@ HMailList::MouseDown(BPoint pos)
     		item = new IconMenuItem(_(status[i]),msg,0,0,NULL);
     		statusMenu->AddItem(item);
     	}
-    	statusMenu->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(statusMenu);
     	theMenu->AddSeparatorItem();
     	// Open with menu
-    	 OpenWithMenu *submenu = new OpenWithMenu(_("Open With" B_UTF8_ELLIPSIS),"text/x-email");
+    	 OpenWithMenu *submenu = new OpenWithMenu(_("Open With…"),"text/x-email");
     	 submenu->SetFont(&font);
 		// Get icon for executable file
 		BMimeType exe("application/x-vnd.Be-elfexecutable");
@@ -557,18 +550,15 @@ HMailList::InitiateDrag(BPoint  point,
 		if(sel < 0)
 			return false;
 		msg.AddInt32("sel",sel);
-		PRINT(("%d\n",sel));
 		int32 selected; 
 		int32 sel_index = 0;
-		entry_ref ref;
 		while((selected = CurrentSelection(sel_index++)) >= 0)
 		{
 			item= MailAt(selected);
 			if(!item)
 				continue;
 			msg.AddPointer("pointer",item);
-			ref = item->Ref();
-			msg.AddRef("refs",&ref);
+			msg.AddRef("refs",&item->fRef);
 			//PRINT(("Sel:%d\n",selected));
 		}
 			
@@ -814,7 +804,7 @@ HMailList::MarkOldSelectionAsRead()
 			entry_ref ref = fOldSelection->Ref();
 			BNode node(&ref);
 			BString status;
-			ReadNodeAttrString(&node,B_MAIL_ATTR_STATUS,&status);
+			node.ReadAttrString(B_MAIL_ATTR_STATUS,&status);
 			if(status.Compare("New") == 0)
 				node.WriteAttr(B_MAIL_ATTR_STATUS,B_STRING_TYPE,0,"Read",5);
 		}

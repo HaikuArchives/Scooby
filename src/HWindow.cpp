@@ -17,12 +17,13 @@
 #include "RectUtils.h"
 #include "TrackerUtils.h"
 #include "HSmtpClientView.h"
-#include "SmtpLooper.h"
+#include "SmtpClient.h"
 #include "HToolbarButton.h"
 #include "OpenWithMenu.h"
 #include "HReadWindow.h"
 #include "HDeskbarView.h"
 #include "HIMAP4Item.h"
+#include "HIMAP4Window.h"
 #include "HIMAP4Folder.h"
 #include "HHtmlMailView.h"
 #include "HTabView.h"
@@ -99,31 +100,33 @@ HWindow::InitMenu()
 	MenuUtils utils;
 	BMessage *msg;
 	ResourceUtils rsrc_utils;
-	HApp* app = (HApp*)be_app;
+	BString label;
 //// ------------------------ File Menu ----------------------    
 	aMenu = new BMenu(_("File"));
-	utils.AddMenuItem(aMenu,_("New Folder" B_UTF8_ELLIPSIS),M_CREATE_FOLDER_DIALOG,this,this,0,0,
-						app->GetIcon("OpenFolder"),false);
+	utils.AddMenuItem(aMenu,_("New Folder"),M_CREATE_FOLDER_DIALOG,this,this,0,0,
+						rsrc_utils.GetBitmapResource('BBMP',"OpenFolder"));
 	
-	utils.AddMenuItem(aMenu,_("Open Query Folder" B_UTF8_ELLIPSIS),M_OPEN_QUERY,this,this,0,0,
-							app->GetIcon("OpenQuery"),false);
+	utils.AddMenuItem(aMenu,_("Open Query Folder"),M_OPEN_QUERY,this,this,0,0,
+							rsrc_utils.GetBitmapResource('BBMP',"OpenQuery"));
 	utils.AddMenuItem(aMenu,_("Empty Trash"),M_EMPTY_TRASH,this,this,'T',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();
-	subMenu = new BMenu(_("Import"));
-	utils.AddMenuItem(subMenu,_("Plain Text Mails" B_UTF8_ELLIPSIS),M_IMPORT_PLAIN_TEXT_MAIL,this,this);
-	utils.AddMenuItem(subMenu,_("mbox" B_UTF8_ELLIPSIS),M_IMPORT_MBOX,this,this);
+	subMenu = new BMenu("Import");
+	utils.AddMenuItem(subMenu,_("Plain Text Mails"),M_IMPORT_PLAIN_TEXT_MAIL,this,this);
+	utils.AddMenuItem(subMenu,_("mbox"),M_IMPORT_MBOX,this,this);
 	aMenu->AddItem(subMenu);
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
-	utils.AddMenuItem(aMenu,_("Page Setup" B_UTF8_ELLIPSIS),M_PAGE_SETUP_MESSAGE,
+	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,
 							be_app,be_app,'P',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"PageSetup"));
 	aMenu->AddSeparatorItem();
-	utils.AddMenuItem(aMenu,_("Preferences" B_UTF8_ELLIPSIS),M_PREF_MSG,this,this);
+	label = _("Preferences");
+	label << "…";
+	utils.AddMenuItem(aMenu,label.String(),M_PREF_MSG,this,this);
 	aMenu->AddSeparatorItem();
-	utils.AddMenuItem(aMenu,_("About Scooby" B_UTF8_ELLIPSIS),B_ABOUT_REQUESTED,be_app,be_app);
+	utils.AddMenuItem(aMenu,_("About Scooby…"),B_ABOUT_REQUESTED,be_app,be_app);
 #ifndef USE_SPLOCALE
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("Quit"),B_QUIT_REQUESTED,this,this,'Q',0);
@@ -144,7 +147,7 @@ HWindow::InitMenu()
    	aMenu->AddSeparatorItem();
  	msg = new BMessage(M_SHOW_FIND_WINDOW);
  	msg->AddPointer("targetwindow",this);
-   	utils.AddMenuItem(aMenu,_("Find" B_UTF8_ELLIPSIS),msg,be_app,be_app,'F',0);
+   	utils.AddMenuItem(aMenu,_("Find"),msg,be_app,be_app,'F',0);
    	msg = new BMessage(M_FIND_NEXT_WINDOW);
  	msg->AddPointer("targetwindow",this);
    	utils.AddMenuItem(aMenu,_("Find Next"),msg,be_app,be_app,'G',0);
@@ -166,23 +169,23 @@ HWindow::InitMenu()
 	menubar->AddItem( aMenu );
 ////------------------------- Message Menu ---------------------
 	aMenu = new BMenu(_("Message"));
-	utils.AddMenuItem(aMenu,_("New Message" B_UTF8_ELLIPSIS),M_NEW_MSG,this,this,'N',0,
+	utils.AddMenuItem(aMenu,_("New Message"),M_NEW_MSG,this,this,'N',0,
 							rsrc_utils.GetBitmapResource('BBMP',"New Message"));
 	aMenu->AddSeparatorItem();
 	
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",false);
-	utils.AddMenuItem(aMenu,_("Reply to Sender Only" B_UTF8_ELLIPSIS),msg,this,this,'R',0,
+	utils.AddMenuItem(aMenu,_("Reply"),msg,this,this,'R',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Reply"));
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",true);
-	utils.AddMenuItem(aMenu,_("Reply to All" B_UTF8_ELLIPSIS),msg,this,this,'R',B_SHIFT_KEY,
+	utils.AddMenuItem(aMenu,_("Reply To All"),msg,this,this,'R',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"Reply To All"));
 							
-	utils.AddMenuItem(aMenu,_("Forward" B_UTF8_ELLIPSIS),M_FORWARD_MESSAGE,this,this,'J',0,
+	utils.AddMenuItem(aMenu,_("Forward"),M_FORWARD_MESSAGE,this,this,'J',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Forward"));
 	aMenu->AddSeparatorItem();
-	utils.AddMenuItem(aMenu,_("Move to Trash"),M_DELETE_MSG,this,this,'T',0,
+	utils.AddMenuItem(aMenu,_("Move To Trash"),M_DELETE_MSG,this,this,'T',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();
     utils.AddMenuItem(aMenu,_("Filter"),M_FILTER_MAIL,this,this,0,0);
@@ -361,20 +364,20 @@ HWindow::InitGUI()
 	toolbox->AddButton("New",utils.GetBitmapResource('BBMP',"New Message"),new BMessage(M_NEW_MSG),_("New Message"));
 	BMessage *msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",false);
-	toolbox->AddButton("Reply",utils.GetBitmapResource('BBMP',"Reply"),msg,"Reply to Sender Only");
+	toolbox->AddButton("Reply",utils.GetBitmapResource('BBMP',"Reply"),msg,"Reply Message");
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",true);
-	toolbox->AddButton("All",utils.GetBitmapResource('BBMP',"Reply To All"),msg,_("Reply to All"));
+	toolbox->AddButton("All",utils.GetBitmapResource('BBMP',"Reply To All"),msg,_("Reply To All"));
 	toolbox->AddButton("Fwd",utils.GetBitmapResource('BBMP',"Forward"),new BMessage(M_FORWARD_MESSAGE),_("Forward Message"));
 	toolbox->AddSpace();
-	toolbox->AddButton("Print",utils.GetBitmapResource('BBMP',"Printer"),new BMessage(M_PRINT_MESSAGE),_("Print Message"));
+	toolbox->AddButton("Print",utils.GetBitmapResource('BBMP',"Printer"),new BMessage(M_PRINT_MESSAGE),_("Print"));
 	
 	toolbox->AddSpace();
-	toolbox->AddButton("Trash",utils.GetBitmapResource('BBMP',"Trash"),new BMessage(M_DELETE_MSG),_("Move Message to Trash"));
+	toolbox->AddButton("Trash",utils.GetBitmapResource('BBMP',"Trash"),new BMessage(M_DELETE_MSG),_("Move To Trash"));
 	
 	toolbox->AddSpace();
 	toolbox->AddButton("Next",utils.GetBitmapResource('BBMP',"Next"),new BMessage(M_SELECT_NEXT_MAIL),_("Next Message"));
-	toolbox->AddButton("Prev",utils.GetBitmapResource('BBMP',"Prev"),new BMessage(M_SELECT_PREV_MAIL),_("Previous Message"));
+	toolbox->AddButton("Prev",utils.GetBitmapResource('BBMP',"Prev"),new BMessage(M_SELECT_PREV_MAIL),_("Prev Message"));
 	
 	AddChild(toolbox);
 	
@@ -456,6 +459,21 @@ HWindow::MessageReceived(BMessage *message)
 		HMailItem *mail(NULL);
 		if(message->FindPointer("pointer",(void**)&mail) == B_OK)
 		{
+/*			entry_ref ref = mail->Ref();
+			BPath path(&ref);
+			path.GetParent(&path);
+			entry_ref folder_ref;
+			::get_ref_for_path(path.Path(),&folder_ref);
+			int32 fol = fFolderList->FindFolder(folder_ref);
+			
+			HFolderItem *item(NULL);
+			if(fol < 0)
+				goto send;
+			item = cast_as(fFolderList->ItemAt(fol),HFolderItem);
+			if(!item)
+				goto send;
+			*/
+//send:
 			// send 
 			bool send_now;
 			message->FindBool("send",&send_now);
@@ -565,6 +583,16 @@ HWindow::MessageReceived(BMessage *message)
 		HFolderItem *item = cast_as(fFolderList->ItemAt(sel),HFolderItem);
 		if(item && item->FolderType() != IMAP4_TYPE)
 			item->Launch();
+		else if(item && item->FolderType() == IMAP4_TYPE)
+		{
+			HIMAP4Folder *imap = cast_as(item,HIMAP4Folder);
+			if(!imap || imap->IsChildFolder())
+				break;
+			RectUtils utils;
+			BRect rect = utils.CenterRect(230,200);
+			HIMAP4Window *window = new HIMAP4Window(rect,this,imap);
+			window->Show();	
+		}
 		break;
 	}
 	// Set mail content
@@ -831,10 +859,22 @@ HWindow::MessageReceived(BMessage *message)
 		BRect rect;
 		rect = RectUtils().CenterRect(250,70);
 		int32 index = fFolderList->CurrentSelection();
-		HFolderItem *item=NULL;
-		if(index>=0)
-			item = (HFolderItem*)fFolderList->ItemAt(index);
-		HCreateFolderDialog *dialog = new HCreateFolderDialog(rect,_("New Folder"),item);
+		char buf[B_PATH_NAME_LENGTH];
+		if(index < 0)
+		{
+			BPath mail_folder;
+			::find_directory(B_USER_DIRECTORY,&mail_folder);
+			mail_folder.Append("mail");
+			::strcpy(buf,mail_folder.Path());
+		}else{
+			HFolderItem *item = cast_as(fFolderList->ItemAt(index),HFolderItem);
+			if(!item)
+				break;
+			entry_ref ref = item->Ref();
+			BPath mail_folder(&ref);
+			::strcpy(buf,mail_folder.Path());
+		}
+		HCreateFolderDialog *dialog = new HCreateFolderDialog(rect,_("New Folder"),buf);
 		dialog->Show();
 		break;
 	}
@@ -1015,15 +1055,22 @@ HWindow::MenusBeginning()
 		EnableMenuItem(item,true);
 	else
 		EnableMenuItem(item,false);
-	// Rebuild check from items
+	// Recreate check from items
+	// Delete all items
+	BMenu *subMenu = KeyMenuBar()->SubmenuAt(2);
+	subMenu = subMenu->SubmenuAt(1);
+	int32 count = subMenu->CountItems();
+	while(count>0)
+		delete subMenu->RemoveItem(--count);
 	AddCheckFromItems();
+	//
 }
 
 /***********************************************************
  * CheckFrom
  ***********************************************************/
 void
-HWindow::CheckFrom(entry_ref &ref)
+HWindow::CheckFrom(entry_ref ref)
 {
 	// reset idle time
 	fCheckIdleTime = time(NULL);
@@ -1078,7 +1125,9 @@ HWindow::PopConnect()
 		else{
 			entry_ref ref;
 			entry.GetRef(&ref);
-			AddPopServer(ref,sendMsg);
+			if(AddPopServer(ref,sendMsg) != B_OK)
+				(new BAlert("",_("Account file corrupted"),_("OK"),
+						NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		}
 	}
 	if(!sendMsg.IsEmpty())
@@ -1090,7 +1139,7 @@ HWindow::PopConnect()
  * AddPopServer
  ***********************************************************/
 status_t
-HWindow::AddPopServer(entry_ref& ref,BMessage &sendMsg)
+HWindow::AddPopServer(entry_ref ref,BMessage &sendMsg)
 {
 	BFile file;
 	BMessage msg;
@@ -1116,10 +1165,8 @@ HWindow::AddPopServer(entry_ref& ref,BMessage &sendMsg)
 			
 	int16 proto;
 	if(msg.FindInt16("protocol_type",&proto) != B_OK)
-		return B_ERROR;
-	if(proto == 2) // if protocol type is IMAP4, we need to skip.
-		return B_NOT_ALLOWED;
-		
+		proto = 0;
+	
 	int16 retrieve;
 	if(msg.FindInt16("retrieve",&retrieve) != B_OK)
 		retrieve = 0;
@@ -1136,11 +1183,11 @@ HWindow::AddPopServer(entry_ref& ref,BMessage &sendMsg)
 		
 	if(msg.FindString("pop_password",&password) != B_OK)
 		return B_ERROR;
+	BString pass("");
 	int32 len = strlen(password);
-	char* pass = new char[len+1];
 	for(int32 k = 0;k < len;k++)
-		pass[k] =(char)(255-password[k]);
-	pass[len] = '\0';
+		pass << (char)(255-password[k]);
+	
 	sendMsg.AddString("name",name);
 	sendMsg.AddString("address",host);
 	sendMsg.AddInt16("port",atoi(port));
@@ -1151,7 +1198,6 @@ HWindow::AddPopServer(entry_ref& ref,BMessage &sendMsg)
 	sendMsg.AddString("uidl",uidl);
 	
 	sendMsg.AddString("password",pass);
-	delete[] pass;
 	return B_OK;
 }
 
@@ -1241,10 +1287,11 @@ HWindow::DeleteMails()
 	}else{
 		// IMAP4 mails
 		int32 selected; 
+		int32 sel_index = 0;
 		int32 unread_mails = 0;
 		HIMAP4Item *mail(NULL);
 		
-		while((selected = fMailList->CurrentSelection(0)) >= 0)
+		while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
 		{
 			mail=cast_as(fMailList->RemoveItem(selected),HIMAP4Item);
 			if(!mail)
@@ -1282,7 +1329,7 @@ HWindow::AddToPeople()
 			BNode node(&ref);
 			if(node.InitCheck() != B_OK)
 				continue;
-			ReadNodeAttrString(&node,B_MAIL_ATTR_FROM,&from);
+			node.ReadAttrString(B_MAIL_ATTR_FROM,&from);
 			
 			int32 index = from.FindFirst("<");
 			BString name("");
@@ -1340,9 +1387,15 @@ HWindow::ForwardMail(HMailItem *item)
 	if(file.InitCheck() != B_OK)
 		return;
 	BString subject("");
-	ReadNodeAttrString(&file,B_MAIL_ATTR_SUBJECT,&subject);
+	file.ReadAttrString(B_MAIL_ATTR_SUBJECT,&subject);
 	
 	subject.Insert("Fwd:",0);
+	off_t size;
+	file.GetSize(&size);
+	char *buf = new char[size+1];
+	size = file.Read(buf,size);
+	buf[size] = '\0';
+	
 	BRect rect;
 	((HApp*)be_app)->Prefs()->GetData("write_window_rect",&rect);
 	MakeWriteWindow(subject.String()
@@ -1354,6 +1407,7 @@ HWindow::ForwardMail(HMailItem *item)
 					,item
 					,false
 					,true);
+	delete[] buf;
 }
 
 /***********************************************************
@@ -1408,10 +1462,10 @@ HWindow::ReplyMail(HMailItem *item,bool reply_all)
 	if(file.InitCheck() != B_OK)
 		return;
 	BString to(""),subject(""),reply(""),cc("");
-	ReadNodeAttrString(&file,B_MAIL_ATTR_FROM,&to);
-	ReadNodeAttrString(&file,B_MAIL_ATTR_CC,&cc);
-	ReadNodeAttrString(&file,B_MAIL_ATTR_SUBJECT,&subject);
-	ReadNodeAttrString(&file,B_MAIL_ATTR_REPLY,&reply);
+	file.ReadAttrString(B_MAIL_ATTR_FROM,&to);
+	file.ReadAttrString(B_MAIL_ATTR_CC,&cc);
+	file.ReadAttrString(B_MAIL_ATTR_SUBJECT,&subject);
+	file.ReadAttrString(B_MAIL_ATTR_REPLY,&reply);
 	
 	if(reply.Length() > 0)
 		to = reply;
@@ -1434,11 +1488,17 @@ HWindow::ReplyMail(HMailItem *item,bool reply_all)
 	//
 	if( strncmp(subject.String(),"Re:",3) != 0)
 	{
-		if(subject != "" && subject[0] == ' ')
+		if(subject[0] == ' ')
 			subject.Insert("Re:",0);
 		else
 			subject.Insert("Re: ",0);
 	}
+	off_t size;
+	file.GetSize(&size);
+	char *buf = new char[size+1];
+	size = file.Read(buf,size);
+	buf[size] = '\0';
+	
 	MakeWriteWindow(subject.String()
 					,to.String()
 					,NULL
@@ -1446,7 +1506,9 @@ HWindow::ReplyMail(HMailItem *item,bool reply_all)
 					,NULL
 					,NULL
 					,item
-					,true);					
+					,true);
+					
+	delete[] buf;
 }
 
 /***********************************************************
@@ -1606,7 +1668,7 @@ HWindow::MakeReadWindow(entry_ref ref,BMessenger *messenger)
 	BNode node(&ref);
 	BRect rect;
 
-	ReadNodeAttrString(&node,B_MAIL_ATTR_STATUS,&status);
+	node.ReadAttrString(B_MAIL_ATTR_STATUS,&status);
 	
 	if(status.Compare("Sent")==0 ||
 		 status.Compare("Pending") == 0||
@@ -1646,6 +1708,7 @@ HWindow::RemoveFromDeskbar()
 void
 HWindow::EmptyTrash()
 {
+	TrackerUtils utils;
 	int32 count = fFolderList->CountItems();
 	HFolderItem *trash(NULL);
 		
@@ -1667,19 +1730,6 @@ HWindow::EmptyTrash()
 	BEntry entry;
 	BPath path(&ref);
 	
-	BMessage msg(M_MOVE_FILE);
-	
-	BPath desktopTrash;
-	::find_directory(B_USER_DIRECTORY,&desktopTrash);
-	desktopTrash.Append("Desktop");
-	desktopTrash.Append("Trash");
-	
-	if(!desktopTrash.Path())
-	{
-		(new BAlert("",_("Could not find Trash folder."),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
-		return;
-	}
-	
 	while( err == B_OK )
 	{
 		if( (err = dir.GetNextRef( &ref )) == B_OK)
@@ -1687,15 +1737,14 @@ HWindow::EmptyTrash()
 			if(entry.SetTo(&ref) != B_OK)
 				continue;
 			if(entry.Exists())
-			{
-				msg.AddRef("refs",&ref);
-				msg.AddString("path",desktopTrash.Path());
-			}
+				utils.MoveToTrash(ref);
 		}
 	}
+	if(fFolderList->CurrentSelection() == fFolderList->IndexOf(trash))
+		fMailList->MakeEmpty();
 	
-	if(!msg.IsEmpty())
-		be_app->PostMessage(&msg);
+	trash->EmptyMailList();
+	fFolderList->InvalidateItem(fFolderList->IndexOf(trash));	
 }
 
 /***********************************************************
@@ -1704,14 +1753,9 @@ HWindow::EmptyTrash()
 void
 HWindow::AddCheckFromItems()
 {
+	// Delete all items
 	BMenu *subMenu = KeyMenuBar()->SubmenuAt(2);
-	if(!subMenu) return;
 	subMenu = subMenu->SubmenuAt(1);
-	if(!subMenu) return;
-	// Delete all items	
-	int32 count = subMenu->CountItems();
-	while(count>0)
-		delete subMenu->RemoveItem(--count);
 	// Add items
 	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
@@ -1732,12 +1776,9 @@ HWindow::AddCheckFromItems()
 			entry.GetName(name);
 			entry_ref ref;
 			entry.GetRef(&ref);
-			if(!fFolderList->IsIMAP4Account(ref))
-			{
-				BMessage *msg = new BMessage(M_CHECK_FROM);
-				msg->AddRef("refs",&ref);
-				subMenu->AddItem(new BMenuItem(name,msg));
-			}
+			BMessage *msg = new BMessage(M_CHECK_FROM);
+			msg->AddRef("refs",&ref);
+			subMenu->AddItem(new BMenuItem(name,msg));
 		}
 	}
 }
@@ -1751,7 +1792,29 @@ HWindow::DeleteFolder(int32 sel)
 	HFolderItem *item = cast_as(fFolderList->RemoveFolder(sel),HFolderItem);
 	if(!item)
 		return;
-	item->DeleteMe();
+	TrackerUtils utils;
+	
+	switch(item->FolderType())
+	{
+	case FOLDER_TYPE:
+	case QUERY_TYPE:
+		utils.MoveToTrash(item->Ref());
+		break;
+	case IMAP4_TYPE:
+	{
+		BPath path;
+		::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+		path.Append(APP_NAME);
+		path.Append("Accounts");
+		path.Append("IMAP4");
+		path.Append(item->FolderName());
+		
+		entry_ref ref;
+		::get_ref_for_path(path.Path(),&ref);		
+		utils.MoveToTrash(ref);
+		break;
+	}
+	}
 	delete item;
 }
 
@@ -1895,11 +1958,17 @@ HWindow::Plain2BeMail(const char* path)
 	BFile input(path,B_READ_ONLY);
 	if(input.InitCheck() != B_OK)
 		return;
-	BString str;
-	str << input;
+	off_t size;
+	input.GetSize(&size);
+	char *all_content = new char[size+1];
+	size = input.Read(all_content,size);
+	all_content[size] = '\0';
+	
 	entry_ref folder_ref,file_ref;
 	bool del;
-	fPopClientView->SaveMail(str.String(),&folder_ref,&del);
+	fPopClientView->SaveMail(all_content,&folder_ref,&del);
+	
+	delete[] all_content;
 }
 
 /***********************************************************
@@ -1998,7 +2067,7 @@ HWindow::AddToBlackList(int32 index)
 		{
 			p++;
 			if(*p != ' ')
-				from = *p;
+				from.SetTo(*p, 1);
 		}else{
 			if(*p != ' ')
 				from += *p;
@@ -2043,10 +2112,6 @@ HWindow::PlayLEDAnimaiton()
 bool
 HWindow::QuitRequested()
 {	
-	// To avoid corrupting folder structure caches, wait for gathering folders.
-	if(!fFolderList->IsGatheredLocalFolders())
-		return false;
-		
 	if(fPopClientView->IsRunning())
 	{
 		int32 btn = (new BAlert("",_("POP3 session is running"),_("Force Quit"),_("Wait"),NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();

@@ -1,34 +1,53 @@
 #ifndef __SMTPCLIENTVIEW_H__
 #define __SMTPCLIENTVIEW_H__
 
-#include "HProgressBarView.h"
+#include <View.h>
+
+class BStringView;
 
 class HMailItem;
-class SmtpLooper;
+class SmtpClient;
 
 enum{
-	M_SEND_MAIL = 'SENM',
-	M_SMTP_ABORT='mSmA'
+	M_SEND_MAIL = 'SENM'
 };
 
-class HSmtpClientView :public HProgressBarView {
+class HSmtpClientView :public BView {
 public:
 						HSmtpClientView(BRect rect,const char* name);
-						~HSmtpClientView();
+	virtual				~HSmtpClientView();
 	
+			void	StartBarberPole();
+			void	StopBarberPole();
+			
+			void	StartProgress() {fShowingProgress = true;}
+			void	StopProgress() {fShowingProgress = false;}
+	
+			void	Update(float delta);
+			void	SetValue(float value);
+			void	SetMaxValue(float max) { fMaxValue = max;}
+			
 			void	SendMail(HMailItem *item);
+			
 			bool	IsRunning() const {return fIsRunning;}
+			
 			void	Cancel();
 protected:
-	//@{
-	//!Override function.
-			void	MessageReceived(BMessage *message);
-			void	MouseDown(BPoint point);
-	//@}
+	virtual void	MessageReceived(BMessage *message);
+	virtual void	Draw(BRect updateRect);
+	virtual	void	Pulse();
+		
+			BRect	BarberPoleInnerRect() const;	
+			BRect	BarberPoleOuterRect() const;
 private:
+	BStringView		*fStringView;
+	BBitmap			*fBarberPoleBits;
+	int32			fLastBarberPoleOffset;
+	bool 			fShowingBarberPole;
+	bool			fShowingProgress;	
+	float			fMaxValue;
+	float			fCurrentValue;
 	bool			fIsRunning;
-	SmtpLooper		*fSmtpLooper;
-	
-	typedef		HProgressBarView	_inherited;
+	SmtpClient		*fSmtpClient;
 };
 #endif

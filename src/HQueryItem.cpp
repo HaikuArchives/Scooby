@@ -2,7 +2,6 @@
 #include "HMailItem.h"
 #include "HApp.h"
 #include "HFolderList.h"
-#include "Utilities.h"
 
 #include <Node.h>
 #include <Bitmap.h>
@@ -50,7 +49,7 @@ HQueryItem::HQueryItem(const entry_ref &ref,
 		node.SetTo(&new_ref);
 	}
 	if(node.InitCheck() == B_OK)
-		ReadNodeAttrString(&node,"_trk/qrystr",&fPredicate);
+		node.ReadAttrString("_trk/qrystr",&fPredicate);
 }
 
 /***********************************************************
@@ -148,7 +147,7 @@ HQueryItem::Fetching()
 		BBitmap *icon = ((HApp*)be_app)->GetIcon("OpenQuery");
 		SetColumnContent(1,icon,2.0,false,false);
 		
-		SetUnreadCount(fUnread);
+		SetName(fUnread);
 		InvalidateMe();
 	}DEBUG_ONLY(
 	else{

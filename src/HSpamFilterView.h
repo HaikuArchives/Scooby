@@ -16,16 +16,13 @@ enum{
 class HSpamFilterView :public BView {
 public:
 						HSpamFilterView(BRect rect);
-						~HSpamFilterView();
+	virtual				~HSpamFilterView();
 	
 			void		Save();
 			void		Load();
 protected:
-	//@{
-	//!Override function.
-			void		MessageReceived(BMessage *msg);
-			void		AttachedToWindow();
-	//@}
+	virtual void		MessageReceived(BMessage *msg);
+	virtual	void		AttachedToWindow();
 private:
 	BListView*			fAddressList;
 	BTextControl*		fAddressCtrl;

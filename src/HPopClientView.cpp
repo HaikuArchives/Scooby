@@ -1,13 +1,16 @@
 #include "HPopClientView.h"
-#include "PopLooper.h"
+#include "ResourceUtils.h"
+#include "PopClient.h"
 #include "HApp.h"
 #include "Encoding.h"
 #include "HWindow.h"
 #include "ExtraMailAttr.h"
 #include "TrackerUtils.h"
 #include "TrackerString.h"
-#include "Utilities.h"
 
+#include <Autolock.h>
+#include <Bitmap.h>
+#include <Region.h>
 #include <Window.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,18 +25,29 @@
 #include <Beep.h>
 #include <ClassInfo.h>
 #include <ctype.h>
-#include <PopUpMenu.h>
-#include <MenuItem.h>
 
+#define DIVIDER 120
+//#define MAIL_FOLDER "Mail"
 #define MAIL_FOLDER "mail"
+
+const rgb_color kLightGray = {150, 150, 150, 255};
+const rgb_color kGray = {100, 100, 100, 255};
+const rgb_color kBlack = {0,0,0,255};
+const rgb_color kWhite = {255,255,255,255};
 
 /***********************************************************
  * Constructor
  ***********************************************************/
 HPopClientView::HPopClientView(BRect frame,
 						const char* name)
-	:HProgressBarView(frame,name)
-	,fPopLooper(NULL)
+	:BView(frame,name,B_FOLLOW_ALL,B_WILL_DRAW|B_PULSE_NEEDED)
+	,fLastBarberPoleOffset(0)
+	,fShowingBarberPole(false)
+	,fShowingProgress(false)
+	,fBarberPoleBits(NULL)
+	,fMaxValue(0)
+	,fCurrentValue(0)
+	,fPopClient(NULL)
 	,fStartPos(0)
 	,fStartSize(-1)
 	,fRetrieve(0)
@@ -45,6 +59,17 @@ HPopClientView::HPopClientView(BRect frame,
 	,fMailCurrentIndex(0)
 	,fMailMaxIndex(0)
 {
+	BFont font(be_fixed_font);
+	font.SetSize(10);
+	SetFont(&font);
+	
+	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
+	
+	BRect rect(Bounds());
+	rect.left += DIVIDER;
+	
+	fStringView = new BStringView(rect,"","",B_FOLLOW_BOTTOM|B_FOLLOW_LEFT_RIGHT);
+	AddChild(fStringView);
 }
 
 /***********************************************************
@@ -52,8 +77,9 @@ HPopClientView::HPopClientView(BRect frame,
  ***********************************************************/
 HPopClientView::~HPopClientView()
 {
-	if(fPopLooper)
-		fPopLooper->PostMessage(B_QUIT_REQUESTED);
+	delete fBarberPoleBits;
+	if(fPopClient)
+		fPopClient->PostMessage(B_QUIT_REQUESTED);
 	if(fPopServers)
 		delete fPopServers;
 }
@@ -66,9 +92,6 @@ HPopClientView::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
-	case M_POP_ABORT:
-		Cancel();
-		break;
 	case H_ERROR_MESSAGE:
 	{
 		PRINT(("POP ERROR\n"));
@@ -78,9 +101,8 @@ HPopClientView::MessageReceived(BMessage *message)
 			err_str += message->FindString("log");
 		beep();
 		(new BAlert("",err_str.String(),"OK",NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
-		if(fPopLooper)
-			fPopLooper->PostMessage(B_QUIT_REQUESTED);
-		fPopLooper = NULL;
+		fPopClient->PostMessage(B_QUIT_REQUESTED);
+		fPopClient = NULL;
 		break;
 	}
 	case M_QUIT_FINISHED:
@@ -91,7 +113,7 @@ HPopClientView::MessageReceived(BMessage *message)
 		int32 count;
 		type_code type;
 		fPopServers->GetInfo("address",&type,&count);
-		SetText("");
+		fStringView->SetText("");
 	
 		if(fServerIndex < count)
 		{
@@ -99,9 +121,8 @@ HPopClientView::MessageReceived(BMessage *message)
 			Window()->PostMessage(M_POP_CONNECT,this);
 		}else{
 			// Quit pop session
-			if(fPopLooper)
-				fPopLooper->PostMessage(B_QUIT_REQUESTED);
-			SetText("");
+			fPopClient->PostMessage(B_QUIT_REQUESTED);
+			fStringView->SetText("");
 			fIsRunning = false;
 			delete fPopServers;
 			fPopServers = NULL;
@@ -155,20 +176,18 @@ HPopClientView::MessageReceived(BMessage *message)
 	// conect success
 	case H_CONNECT_MESSAGE:
 	{	
-		SetText("Login" B_UTF8_ELLIPSIS);
+		fStringView->SetText("Login…");
 		BMessage msg(H_LOGIN_MESSAGE);
 		msg.AddString("login",fLogin);
 		msg.AddString("password",fPassword);
 		msg.AddBool("apop",fUseAPOP);
-		if(fPopLooper)
-			fPopLooper->PostMessage(&msg);
+		fPopClient->PostMessage(&msg);
 		break;
 	}
 	// login success
 	case H_LOGIN_MESSAGE:
-		SetText("UIDL" B_UTF8_ELLIPSIS);
-		if(fPopLooper)
-			fPopLooper->PostMessage(H_UIDL_MESSAGE);
+		fStringView->SetText("UIDL…");
+		fPopClient->PostMessage(H_UIDL_MESSAGE);
 		break;
 	// list success
 	case H_UIDL_MESSAGE:
@@ -189,10 +208,9 @@ HPopClientView::MessageReceived(BMessage *message)
 			
 			if(list.Length() == 0)
 			{
-				if(fPopLooper)
-					fPopLooper->PostMessage(B_QUIT_REQUESTED);
-				fPopLooper = NULL;
-				SetText("");
+				fPopClient->PostMessage(B_QUIT_REQUESTED);
+				fPopClient = NULL;
+				fStringView->SetText("");
 				break;
 			}
 			// make list
@@ -230,10 +248,9 @@ HPopClientView::MessageReceived(BMessage *message)
 			
 			if(count==0)
 			{
-				if(fPopLooper)
-					fPopLooper->PostMessage(B_QUIT_REQUESTED);
-				fPopLooper = NULL;
-				SetText("");
+				fPopClient->PostMessage(B_QUIT_REQUESTED);
+				fPopClient = NULL;
+				fStringView->SetText("");
 				break;
 			}
 			BString label("RETR [ ");
@@ -241,18 +258,16 @@ HPopClientView::MessageReceived(BMessage *message)
 			fMailCurrentIndex = (startpos == 0)?1:startpos;
 			fMailMaxIndex = count;
 			label << fMailCurrentIndex << " / " << fMailMaxIndex << " ]";
-			SetText(label.String());
+			fStringView->SetText(label.String());
 			StopBarberPole();
 			StartProgress();
-			if(fPopLooper)
-				fPopLooper->PostMessage(&msg);
+			fPopClient->PostMessage(&msg);
 		}else{
 			// POP3 server is not support UIDL command
 			fCanUseUIDL = false;
 			PRINT(("UIDL not supported\n"));
-			SetText("LIST" B_UTF8_ELLIPSIS);
-			if(fPopLooper)
-				fPopLooper->PostMessage(H_LIST_MESSAGE);
+			fStringView->SetText("LIST…");
+			fPopClient->PostMessage(H_LIST_MESSAGE);
 		}
 		break;
 	}
@@ -282,10 +297,9 @@ HPopClientView::MessageReceived(BMessage *message)
 			if(!is_delete && message->FindBool("end"))
 			{
 				SetNextRecvPos(fUidl.String());
-				if(fPopLooper)
-					fPopLooper->PostMessage(B_QUIT_REQUESTED);
-				fPopLooper = NULL;
-				SetText("");
+				fPopClient->PostMessage(B_QUIT_REQUESTED);
+				fPopClient = NULL;
+				fStringView->SetText("");
 				break;
 			}else if(is_delete && message->FindBool("end")){
 				int32 count;
@@ -300,15 +314,13 @@ HPopClientView::MessageReceived(BMessage *message)
 					SetMaxValue(fMailMaxIndex);
 					BString label("DEL [ ");
 					label << fMailCurrentIndex << " / " << fMailMaxIndex << " ]";
-					SetText(label.String() );
-					if(fPopLooper)
-						fPopLooper->PostMessage(&fDeleteMails);
+					fStringView->SetText(label.String() );
+					fPopClient->PostMessage(&fDeleteMails);
 					
 				}else{
-					if(fPopLooper)
-						fPopLooper->PostMessage(B_QUIT_REQUESTED);
-					fPopLooper = NULL;
-					SetText("");
+					fPopClient->PostMessage(B_QUIT_REQUESTED);
+					fPopClient = NULL;
+					fStringView->SetText("");
 				}
 				break;
 			}
@@ -317,7 +329,7 @@ HPopClientView::MessageReceived(BMessage *message)
 			BString label("RETR [ ");
 			label << fMailCurrentIndex << " / " << fMailMaxIndex << " ]";
 			//PRINT(("%s\n",label.String() ));
-			SetText(label.String() );
+			fStringView->SetText(label.String() );
 		}
 		break;
 	}
@@ -331,13 +343,12 @@ HPopClientView::MessageReceived(BMessage *message)
 			fMailCurrentIndex = index-1;
 			BString label("DEL [ ");
 			label << fMailCurrentIndex << "/" << fMailMaxIndex << " ]";
-			SetText(label.String());
+			fStringView->SetText(label.String());
 			if(message->FindBool("end"))
 			{
-				if(fPopLooper)
-					fPopLooper->PostMessage(B_QUIT_REQUESTED);
-				fPopLooper = NULL;
-				SetText("");
+				fPopClient->PostMessage(B_QUIT_REQUESTED);
+				fPopClient = NULL;
+				fStringView->SetText("");
 				SetNextRecvPos("");
 			}
 		}
@@ -345,9 +356,8 @@ HPopClientView::MessageReceived(BMessage *message)
 	}
 	// last success
 	case H_LAST_MESSAGE:
-		SetText("");
-		if(fPopLooper)
-			fPopLooper->PostMessage(B_QUIT_REQUESTED);
+		fStringView->SetText("");
+		fPopClient->PostMessage(B_QUIT_REQUESTED);
 		break;
 	// Set max size of progress bar
 	case H_SET_MAX_SIZE:
@@ -369,7 +379,7 @@ HPopClientView::MessageReceived(BMessage *message)
 		break;
 	}
 	default:
-		_inherited::MessageReceived(message);	
+		BView::MessageReceived(message);	
 	}
 	return;
 }
@@ -387,23 +397,23 @@ HPopClientView::PopConnect(const char* name,
 	fPassword = pass;
 	
 	StartBarberPole();
-	if(fPopLooper)
-		fPopLooper->PostMessage(B_QUIT_REQUESTED);
-	fPopLooper = new PopLooper(this,Window());
-	if(fPopLooper->Lock())
+	if(fPopClient)
+		fPopClient->PostMessage(B_QUIT_REQUESTED);
+	fPopClient = new PopClient(this,Window());
+	if(fPopClient->Lock())
 	{
-		fPopLooper->InitBlackList();
-		fPopLooper->Unlock();
+		fPopClient->InitBlackList();
+		fPopClient->Unlock();
 	}
 	BString label(_("Connecting to"));
 	label += " ";
 	label += address;
-	label += B_UTF8_ELLIPSIS;
-	SetText(label.String());
+	label +=  "…";
+	fStringView->SetText(label.String());
 	BMessage msg(H_CONNECT_MESSAGE);
 	msg.AddString("address",address);
 	msg.AddInt16("port",port);
-	fPopLooper->PostMessage(&msg);
+	fPopClient->PostMessage(&msg);
 }
 
 
@@ -423,10 +433,7 @@ HPopClientView::GetHeaderParam(BString &out,const char* content,int32 offset)
 		if(content[i] =='\n')
 		{
 			if(isalpha(content[i+1])|| content[i+1] == '\r'|| content[i+1] == '\n' )
-				break;
-			// skip first space character at the new line. 
-			else if(content[i+1] == ' ' ||content[i+1] == '\t')
-				i+=2;
+				break; 
 		}
 		if(content[i] != '\r' && content[i] != '\n' )
 		 	out += content[i++];
@@ -717,6 +724,102 @@ HPopClientView::Filter(const char* in_key,int32 operation,const char *attr_value
 }
 
 /***********************************************************
+ * MakeTime_t
+ ***********************************************************/
+time_t
+HPopClientView::MakeTime_t(const char* date)
+{
+	const char* mons[] = {"Jan","Feb","Mar","Apr","May"
+						,"Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+	const char* wdays[] = {"Sun","Mon","Tue","Wed","Thu"
+						,"Fri","Sat"};
+
+	char swday[5];
+	int wday=0;
+	int day;
+	char smon[4];
+	int mon;
+	//char stime[9];
+	int year;
+	int hour;
+	int min;
+	int sec;
+	int gmt_off = 0;
+	char offset[5];
+	// Mon, 16 Oct 2000 00:50:04 +0900 or Mon, 16 Oct 00 00:50:04 +0900
+	int num_scan  = ::sscanf(date,"%3s,%d%3s%d %2d:%2d:%2d %5s"
+				,swday,&day,smon,&year,&hour,&min,&sec,offset);
+	if(num_scan != 8)
+	{
+		// 9 Nov 2000 11:30:23 -0000 or  29 Jan 01 9:16:08 PM
+		num_scan = ::sscanf(date, "%d%3s%d %2d:%2d:%2d %5s"
+					,&day,smon,&year,&hour,&min,&sec,offset);
+		if(strcasecmp(offset,"PM") == 0)
+        		hour += 12;
+        ::strcpy(offset,"-0000");	
+        
+		if(num_scan != 7)
+		{
+			// 01 Feb 01 12:22:42 PM
+			num_scan = sscanf(date, "%d %3s %3d %d %2d:%2d %5s",
+                                        &day, smon, &year, &hour, &min,&sec,offset);
+        	if(strcasecmp(offset,"PM") == 0)
+        		hour += 12;
+        	if (num_scan != 7) 
+        	{
+        		// Return current time if this can not parse date
+        	 	PRINT(("Unknown date format\n"));
+				return time(NULL);
+			}
+		}
+	}
+	// month
+	for(mon = 0;mon < 12;mon++)
+	{
+		if(strncmp(mons[mon],smon,3) == 0)
+			break;
+	}
+	// week of day
+	if(num_scan == 8)
+	{
+		for(wday = 0;wday < 12;wday++)
+		{
+			if(strncmp(wdays[wday],swday,3) == 0)
+				break;
+		}
+	}
+	// offset 
+	char op = offset[0];
+	float off = atof(offset+1);
+	if(op == '+')
+		gmt_off  = static_cast<int>((off/100.0)*60*60);
+	else if(op == '-')
+		gmt_off  = static_cast<int>(-(off/100.0)*60*60);
+	else
+		gmt_off = 0;
+	struct tm btime;
+	btime.tm_sec = sec;
+	btime.tm_min = min;
+	btime.tm_hour = hour;
+	btime.tm_mday = day;
+	btime.tm_mon = mon;
+	
+	if(year < 100)
+	{
+		if(year < 70)
+			year+=2000;
+		else
+			year+=1900;
+	}
+	btime.tm_year = year - 1900;
+	
+	if(num_scan == 8)
+		btime.tm_wday = wday;
+	btime.tm_gmtoff = gmt_off;
+	return mktime(&btime);
+}
+
+/***********************************************************
  * SetNextRecvPos
  ***********************************************************/
 void
@@ -748,6 +851,130 @@ HPopClientView::SetNextRecvPos(const char *uidl)
 }
 
 /***********************************************************
+ * Draw
+ ***********************************************************/
+void
+HPopClientView::Draw(BRect updateRect)
+{
+	BView::Draw(updateRect);
+	// show barber pole
+	if(fShowingBarberPole || fShowingProgress)
+	{
+		BRect barberPoleRect = BarberPoleOuterRect();
+		
+		
+		BeginLineArray(4);
+		AddLine(barberPoleRect.LeftTop(), barberPoleRect.RightTop(), kLightGray);
+		AddLine(barberPoleRect.LeftTop(), barberPoleRect.LeftBottom(), kLightGray);
+		AddLine(barberPoleRect.LeftBottom(), barberPoleRect.RightBottom(), kWhite);
+		AddLine(barberPoleRect.RightBottom(), barberPoleRect.RightTop(), kWhite);
+		EndLineArray();
+		
+		barberPoleRect.InsetBy(1, 1);
+	
+		if(!fBarberPoleBits)
+			fBarberPoleBits= ResourceUtils().GetBitmapResource('BBMP',"LongBarberPole");
+		BRect destRect(fBarberPoleBits ? fBarberPoleBits->Bounds() : BRect(0, 0, 0, 0));
+		destRect.OffsetTo(barberPoleRect.LeftTop() - BPoint(0, fLastBarberPoleOffset));
+		fLastBarberPoleOffset -= 1;
+		if (fLastBarberPoleOffset < 0)
+			fLastBarberPoleOffset = 5;
+		BRegion region;
+		region.Set(BarberPoleInnerRect());
+		ConstrainClippingRegion(&region);	
+
+		if (fBarberPoleBits && fShowingBarberPole)
+			DrawBitmap(fBarberPoleBits, destRect);
+		if (fShowingProgress)
+		{
+			SetHighColor(ui_color(B_KEYBOARD_NAVIGATION_COLOR));
+			float width = destRect.Width();
+			if(fMaxValue)
+				destRect.right = destRect.left + width * (fCurrentValue/fMaxValue);
+			FillRect( destRect);
+		}
+	}
+}
+
+/***********************************************************
+ * Return barber pole inner rect
+ ***********************************************************/
+BRect 
+HPopClientView::BarberPoleInnerRect() const
+{
+	BRect result = Bounds();
+	result.InsetBy(3, 3);
+	result.right = result.left+ DIVIDER-20;
+	result.bottom = result.top + 4;
+	return result;
+}
+
+/***********************************************************
+ * Return barber pole outer rect
+ ***********************************************************/
+BRect 
+HPopClientView::BarberPoleOuterRect() const
+{
+	BRect result(BarberPoleInnerRect());
+	result.InsetBy(-1, -1);
+	return result;
+}
+
+/***********************************************************
+ * Pulse
+ ***********************************************************/
+void
+HPopClientView::Pulse()
+{
+	if (!fShowingBarberPole)
+		return;
+	Invalidate(BarberPoleOuterRect());
+}
+
+/***********************************************************
+ * Start BarberPole Animation
+ ***********************************************************/
+void
+HPopClientView::StartBarberPole()
+{
+	BAutolock lock(Window());
+	fShowingBarberPole = true;
+	Invalidate();
+}
+
+/***********************************************************
+ * Stop BarberPole Animation
+ ***********************************************************/
+void
+HPopClientView::StopBarberPole()
+{
+	BAutolock lock(Window());
+	fShowingBarberPole = false;
+	Invalidate();
+}
+
+/***********************************************************
+ * Update
+ ***********************************************************/
+void
+HPopClientView::Update(float delta)
+{
+	fCurrentValue+=delta;
+	Invalidate();
+}
+
+/***********************************************************
+ * SetValue
+ ***********************************************************/
+void
+HPopClientView::SetValue(float value)
+{
+	fCurrentValue = value;
+	Invalidate();
+}
+
+
+/***********************************************************
  * PlayNotifySound
  ***********************************************************/
 void
@@ -770,44 +997,5 @@ HPopClientView::PlayNotifySound()
 void
 HPopClientView::Cancel()
 {
-	fPopLooper->ForceQuit();
-	StopBarberPole();
-	StopProgress();
-}
-
-/***********************************************************
- * MouseDown
- ***********************************************************/
-void
-HPopClientView::MouseDown(BPoint pos)
-{
-	int32 buttons;
-	Window()->CurrentMessage()->FindInt32("buttons", &buttons); 
-	if(fIsRunning)
-    {	 
-    	BPopUpMenu *theMenu = new BPopUpMenu("RIGHT_CLICK",false,false);
-    	BFont font(be_plain_font);
-    	font.SetSize(10);
-    	theMenu->SetFont(&font);
-    	
-    	theMenu->AddItem(new BMenuItem(_("Abort"),new BMessage(M_POP_ABORT)));
-    	
-    	
-    	BRect r;
-        ConvertToScreen(&pos);
-        r.top = pos.y - 5;
-        r.bottom = pos.y + 5;
-        r.left = pos.x - 5;
-        r.right = pos.x + 5;
-    	
-    	BMenuItem *theItem = theMenu->Go(pos, false,true,r);  
-    	if(theItem)
-    	{
-    	 	BMessage*	aMessage = theItem->Message();
-			if(aMessage)
-				this->Window()->PostMessage(aMessage,this);
-	 	} 
-	 	delete theMenu;
-    }else
-    	_inherited::MouseDown(pos);
+	fPopClient->ForceQuit();
 }

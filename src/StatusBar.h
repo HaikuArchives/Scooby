@@ -5,27 +5,26 @@
 #include <List.h>
 #include "StatusItem.h"
 
-//!Statusbar
 class StatusBar :public BView{
 public:
-		//!Constructor.
 					StatusBar(BRect rect,
 							const char* name,
 							uint32 resize,
 							uint32 flags=B_WILL_DRAW);
-		//!Add new StatusItem.
-			void	AddItem(const char* name //!< Status item name.
-							,const char* initialText //!<Initial text.
-							,void (*pulseFunc)(StatusItem* item) //!Update callback func.
-							);
-		//!Remove item by name.
-			void	RemoveItem(const char* name/*!Status item name.*/);
-		//!Rearrange items width after start item.
+	virtual			~StatusBar();
+	
+	
+			void	AddItem(const char* name,
+							const char* initialText,
+							void (*pulseFunc)(StatusItem* item));
+							
+			void	RemoveItem(const char* name);
+			
 			void	RearrangeItems(StatusItem *start,float delta);
 			
 protected:
 
 private:
-	BList			fItemList; //!<Status item pointer list.
+	BList			fItemList;
 };
 #endif

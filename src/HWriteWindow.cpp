@@ -7,7 +7,7 @@
 #include "HPrefs.h"
 #include "Encoding.h"
 #include "HSmtpClientView.h"
-#include "SmtpLooper.h"
+#include "SmtpClient.h"
 #include "HEnclosureView.h"
 #include "ArrowButton.h"
 #include "HEnclosureItem.h"
@@ -20,8 +20,6 @@
 #include "Utilities.h"
 #include "StatusBar.h"
 #include "AddOnMenu.h"
-#include "ExtraMailAttr.h"
-#include "base64.h"
 
 #include <MenuBar.h>
 #include <ClassInfo.h>
@@ -113,7 +111,11 @@ HWriteWindow::HWriteWindow(BRect rect
 		{
 			HString header;
 			BString line;
-			header << *fReplyFile;
+			char *buf = header.LockBuffer(header_len+1);
+			fReplyFile->Read(buf,header_len);
+			buf[header_len] = '\0';
+			header.UnlockBuffer();		
+			
 			int32 pos = 0;
 			BString charset;
 			
@@ -149,26 +151,7 @@ HWriteWindow::HWriteWindow(BRect rect
 			}	
 		}
 		fTextView->LoadMessage(fReplyFile,reply,false,NULL);
-		// Insert date and nick
-//		char replyLabel[1024];
-		BString from;
-		time_t t;
-		ReadNodeAttrString(fReplyFile,B_MAIL_ATTR_FROM,&from);
-		fReplyFile->ReadAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&t,sizeof(time_t));
-		from += _(" wrote:\n");
-/*		const char* kTimeFormat;
-		char date[64];
-		((HApp*)be_app)->Prefs()->GetData("time_format",&kTimeFormat);
-		::strftime(date, 64,kTimeFormat, localtime(&t));
-
-#ifdef __INTEL__
-		::snprintf(replyLabel,1024,_("%s wrote:\n"),from.String());
-#else
-		::sprintf(replyLabel,_("%s wrote:\n"),from.String());
-#endif
-*/
-		fTextView->Select(0,0);
-		fTextView->Insert(from.String());
+		
 	}else{
 		int32 encoding;
 		((HApp*)be_app)->Prefs()->GetData("encoding",&encoding);
@@ -216,13 +199,13 @@ HWriteWindow::HWriteWindow(BRect rect,const char* name,entry_ref &ref)
 	
 		for(int32 i = 0;i < 4;i++)
 		{	
-			if(ReadNodeAttrString(&file,kAttr[i],&attrString) == B_OK)
+			if(file.ReadAttrString(kAttr[i],&attrString) == B_OK)
 			{
 				ctrl = cast_as(FindView(kFieldLabels[i]),BTextControl);
 				ctrl->SetText(attrString.String());
 			}
 		}
-		if(ReadNodeAttrString(&file,B_MAIL_ATTR_FROM,&attrString) == B_OK)
+		if(file.ReadAttrString(B_MAIL_ATTR_FROM,&attrString) == B_OK)
 			fTopView->SetFrom(attrString.String());
 	}
 	// Read file
@@ -332,11 +315,11 @@ HWriteWindow::InitMenu()
 	GetDraftsPath(path);
 	AddChildItem(subMenu,path.Path(),M_OPEN_DRAFT);
 	subMenu->AddSeparatorItem();
-	utils.AddMenuItem(subMenu,_("Edit drafts" B_UTF8_ELLIPSIS),M_EDIT_DRAFTS,this,this);
+	utils.AddMenuItem(subMenu,_("Edit drafts"),M_EDIT_DRAFTS,this,this);
 	
 	aMenu->AddItem(subMenu);
 	utils.AddMenuItem(aMenu,_("Save as draft"),M_SAVE_DRAFT,this,this,'S',B_SHIFT_KEY
-					,rsrc_utils.GetBitmapResource('BBMP',"Draft"));
+					,rsrc_utils.GetBitmapResource('BBMP',"Send Later"));
 	
 	aMenu->AddSeparatorItem();
 	
@@ -345,7 +328,7 @@ HWriteWindow::InitMenu()
 	
 	AddChildItem(subMenu,path.Path(),M_OPEN_TEMPLATE);
 	subMenu->AddSeparatorItem();
-	utils.AddMenuItem(subMenu,_("Edit templates" B_UTF8_ELLIPSIS),M_EDIT_TEMPLATES,this,this);
+	utils.AddMenuItem(subMenu,_("Edit templates"),M_EDIT_TEMPLATES,this,this);
 	
 	aMenu->AddItem(subMenu);
 	utils.AddMenuItem(aMenu,_("Save as template"),M_SAVE_TEMPLATE,this,this,0,0);
@@ -353,7 +336,7 @@ HWriteWindow::InitMenu()
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
-	utils.AddMenuItem(aMenu,_("Page Setup" B_UTF8_ELLIPSIS),M_PAGE_SETUP_MESSAGE,be_app,be_app,'P',B_SHIFT_KEY,
+	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,be_app,be_app,'P',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"PageSetup"));
 	aMenu->AddSeparatorItem();					
 	utils.AddMenuItem(aMenu,_("Close"),B_QUIT_REQUESTED,this,this,'W',0);
@@ -373,26 +356,25 @@ HWriteWindow::InitMenu()
    	aMenu->AddSeparatorItem();
    	BMessage *msg = new BMessage(M_SHOW_FIND_WINDOW);
  	msg->AddPointer("targetwindow",this);
-   	utils.AddMenuItem(aMenu,_("Find" B_UTF8_ELLIPSIS),msg,be_app,be_app,'F',0);
+   	utils.AddMenuItem(aMenu,_("Find"),msg,be_app,be_app,'F',0);
    	msg = new BMessage(M_FIND_NEXT_WINDOW);
  	msg->AddPointer("targetwindow",this);
    	utils.AddMenuItem(aMenu,_("Find Next"),msg,be_app,be_app,'G',0);
    	aMenu->AddSeparatorItem();
    	utils.AddMenuItem(aMenu,_("Check Spelling"),M_ENABLE_SPELLCHECKING,this,this,';',0);
-   	utils.AddMenuItem(aMenu,_("Show Ruler"),M_SHOW_RULER,this,this);
    	utils.AddMenuItem(aMenu,_("Quote Selection"),M_QUOTE_SELECTION,this,this);
 	
    	// Mail
 	aMenu = new BMenu(_("Mail"));
 	utils.AddMenuItem(aMenu,_("Send Now"),M_SEND_NOW,this,this,'M',0,
 					rsrc_utils.GetBitmapResource('BBMP',"Send"));
-	utils.AddMenuItem(aMenu,_("Send Later"),M_SEND_LATER,this,this,'L',0,
-					rsrc_utils.GetBitmapResource('BBMP',"Send Later"));
+	//utils.AddMenuItem(aMenu,_("Send Later"),M_SEND_LATER,this,this,'L',0,
+	//				rsrc_utils.GetBitmapResource('BBMP',"Send Later"));
 	menubar->AddItem( aMenu );
 	
 	aMenu = new BMenu(_("Message"));
 	subMenu = new BMenu(_("Attachments"));
-	utils.AddMenuItem(subMenu,_("Add Attachment" B_UTF8_ELLIPSIS),M_ADD_ENCLOSURE,this,this,'A',B_SHIFT_KEY);
+	utils.AddMenuItem(subMenu,_("Add Attachment"),M_ADD_ENCLOSURE,this,this,'A',B_SHIFT_KEY);
 	utils.AddMenuItem(subMenu,_("Remove Attachment"),M_DEL_ENCLOSURE,this,this,0,0);
 	aMenu->AddItem(subMenu);
 	subMenu = new BMenu(_("Priority"));
@@ -457,6 +439,8 @@ HWriteWindow::InitGUI()
 	ArrowButton *button = cast_as(fTopView->FindView("addr_arrow"),ArrowButton);
 	button->SetState((int32)bValue);
 	fTopView->EnableJump(!bValue);
+	if(fReplyItem)
+		fTopView->SetFrom(fReplyItem->fTo.String());
 	rect.OffsetBy(0,rect.Height()+1);
 	prefs->GetData("expand_enclosure",&bValue);
 
@@ -474,24 +458,16 @@ HWriteWindow::InitGUI()
 	rect.right -= B_V_SCROLL_BAR_WIDTH;
 	rect.bottom = Bounds().bottom - B_H_SCROLL_BAR_HEIGHT*2;
 	fTextView = new HMailView(rect,false,NULL);
+	
 	BScrollView *scroll = new BScrollView("scroll",fTextView,B_FOLLOW_ALL,
 										B_WILL_DRAW,true,true);
 	AddChild(scroll);
 	scroll->ScrollBar(B_VERTICAL)->ResizeBy(0,B_H_SCROLL_BAR_HEIGHT);
-	
-	bool ruler;
-	((HApp*)be_app)->Prefs()->GetData("use_ruler",&ruler);
-	
-	fTextView->UseRuler(ruler);
-	float limit;
-	((HApp*)be_app)->Prefs()->GetData("wrapping_limit",&limit);
-	fTextView->SetRightLimit(limit);
-	
 	fTextView->SetDoesUndo(true);
 	/********** Statusbar **************/
 	BRect statusRect(Bounds());
 	statusRect.top = statusRect.bottom - B_H_SCROLL_BAR_HEIGHT;
-	StatusBar *statusbar = new StatusBar(statusRect,NULL,B_FOLLOW_BOTTOM|B_FOLLOW_LEFT_RIGHT,B_WILL_DRAW);
+	StatusBar *statusbar = new StatusBar(statusRect,NULL,B_FOLLOW_ALL,B_WILL_DRAW);
 	AddChild(statusbar);
 	BString label;
 	label = _("Row");
@@ -513,13 +489,11 @@ HWriteWindow::InitGUI()
 	if(kToolbarHeight == 50)
 		toolbox->UseLabel(true);
 	toolbox->AddButton("Send",utils.GetBitmapResource('BBMP',"Send"),
-					new BMessage(M_SEND_NOW),"Send Message");
-	toolbox->AddButton("Later",utils.GetBitmapResource('BBMP',"Send Later"),
-					new BMessage(M_SEND_LATER),"Send Later");
-	toolbox->AddButton("Draft",utils.GetBitmapResource('BBMP',"Draft"),
-					new BMessage(M_SAVE_DRAFT),"Save Message As Draft");
+					new BMessage(M_SEND_NOW),"Send");
+	toolbox->AddButton("Draft",utils.GetBitmapResource('BBMP',"Send Later"),
+					new BMessage(M_SEND_LATER),"Save As Draft");
 	toolbox->AddSpace();
-	toolbox->AddButton("Print",utils.GetBitmapResource('BBMP',"Printer"),new BMessage(M_PRINT_MESSAGE),_("Print Message"));
+	toolbox->AddButton("Print",utils.GetBitmapResource('BBMP',"Printer"),new BMessage(M_PRINT_MESSAGE),_("Print"));
 	
 	toolbox->AddSpace();
 	toolbox->AddButton("Attach",utils.GetBitmapResource('BBMP',"Enclosure"),
@@ -527,18 +501,7 @@ HWriteWindow::InitGUI()
 	
 	
 	AddChild(toolbox);
-	if(fReplyItem)
-		fTopView->SetFrom(fReplyItem->fTo.String());	
-	else{
-		BMenuField *field = cast_as(fTopView->FindView("FromMenu"),BMenuField);
-		BMenuItem *item(NULL);
-		item = field->Menu()->FindMarked();
-		if(item)
-		{
-			fTopView->ChangeAccount(item->Label());
-			item->SetMarked(true);	
-		}
-	}
+	
 }
 
 /***********************************************************
@@ -590,12 +553,8 @@ HWriteWindow::MessageReceived(BMessage *message)
 		}
 		break;
 	}
-	// Show, hide ruler
-	case M_SHOW_RULER:
-		fTextView->UseRuler(!fTextView->IsUsingRuler());
-		break;
 	// Send Later
-	case M_SEND_LATER:
+	/*case M_SEND_LATER:
 	{	
 		fSent = true;
 		entry_ref ref;
@@ -605,7 +564,7 @@ HWriteWindow::MessageReceived(BMessage *message)
 		
 		if( SaveMail(false,ref,multipart) == B_OK)
 		{
-			WriteReplyStatus();
+			//WriteReplyStatus();
 			
 			BMessage msg(M_CREATE_MAIL);
 			HMailItem *item = new HMailItem(ref);
@@ -616,7 +575,7 @@ HWriteWindow::MessageReceived(BMessage *message)
 			RemoveDraft();
 		}
 		break;
-	}
+	}*/
 	// Open draft
 	case M_OPEN_DRAFT:
 	{
@@ -626,6 +585,7 @@ HWriteWindow::MessageReceived(BMessage *message)
 		break;
 	}
 	// Save as draft
+	case M_SEND_LATER:
 	case M_SAVE_DRAFT:
 		SaveAsDraft();
 		break;
@@ -728,10 +688,16 @@ HWriteWindow::MessageReceived(BMessage *message)
 		BFile file(&ref,B_READ_ONLY);
 		if(file.InitCheck() != B_OK)
 			return;
-		BString str;
-		str << file;
+		off_t size;
+		file.GetSize(&size);
+		char *buf = new char[size+1];
+		size = file.Read(buf,size);
+		buf[size] = '\0';
+		int32 length = strlen(buf);
 		int32 offset = fTextView->TextLength();
-		fTextView->Insert(offset,str.String(),str.Length());
+		fTextView->Insert(offset,buf,length);
+		delete[] buf;
+		PRINT(("ADD SIGNATURE\n"));		
 		break;
 	}
 	// Add enclosure
@@ -983,8 +949,6 @@ HWriteWindow::MenusBeginning()
    		}
    		be_clipboard->Unlock();
    	}
-   	
-   	MarkMenuItem(KeyMenuBar()->FindItem(M_SHOW_RULER),fTextView->IsUsingRuler());
 }
 
 /***********************************************************
@@ -996,7 +960,7 @@ HWriteWindow::WriteReplyStatus()
 	if(!fReplyFile || !fReplyItem)
 		return;
 	BString status;
-	ReadNodeAttrString(fReplyFile,B_MAIL_ATTR_STATUS,&status);
+	fReplyFile->ReadAttrString(B_MAIL_ATTR_STATUS,&status);
 	if(fReply)
 		status = "Replied";
 	else if(fForward)
@@ -1064,7 +1028,6 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	
 	BFile AccountFile(path.Path(),B_READ_ONLY);
 	BString smtp_host(""),reply("");
-	bool smtp_auth=false;
 	if(AccountFile.InitCheck() == B_OK)
 	{
 		BMessage msg;
@@ -1074,7 +1037,6 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 			smtp_host = "";
 		if(msg.FindString("reply_to",&reply) != B_OK)
 			reply = "";
-		msg.FindBool("smtp_auth",&smtp_auth);
 	}else{
 		BString label(_("Cound not find account file"));
 		label << ":" << path.Path();
@@ -1097,7 +1059,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 		   day, dd, mon, yyyy, hh, mm, ss, TimeZoneOffset(&now));
 #endif
 	// make header
-	BString header(""),version("");
+	BString header("");
 	from = fTopView->From();
 	BString encoded_from(from),encoded_to(to),encoded_cc(cc),encoded_bcc(bcc);
 	encode.UTF82Mime(encoded_from,encoding);
@@ -1116,8 +1078,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 		header << "Reply-To: " << reply << "\n";
 	header << "Date: " << timeBuf << "\n";
 	header << "MIME-Version: 1.0" << "\n";
-	GetAppVersion(version);
-	header << "X-Mailer: " << XMAILER <<" (version " << version <<")" << "\n";
+	header << "X-Mailer: " << XMAILER << "\n";
 	// Get priority
 	int32 priority = 3;
 	BMenu *subMenu = KeyMenuBar()->SubmenuAt(3);
@@ -1191,9 +1152,6 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	file.WriteAttrString(B_MAIL_ATTR_MIME,&mime);
 	file.WriteAttrString(B_MAIL_ATTR_REPLY,&reply);
 	file.WriteAttr(B_MAIL_ATTR_ATTACHMENT,B_BOOL_TYPE,0,&is_multipart,sizeof(bool));
-	file.WriteAttr(B_MAIL_ATTR_SMTP_AUTH,B_BOOL_TYPE,0,&smtp_auth,sizeof(bool));
-	file.WriteAttr(B_MAIL_ATTR_ACCOUNT,B_STRING_TYPE,0,path.Leaf(),strlen(path.Leaf())+1);
-	
 	BString attrPriority;
 	attrPriority += priority;
 	switch(priority)
@@ -1262,34 +1220,31 @@ HWriteWindow::WriteAllPart(BString &out,const char* boundary)
 				PRINT(("File not found\n"));
 				continue;
 			}
-			// Encode attachment by base64
 			off_t size;
 			file.GetSize(&size);
 			char *buf = new char[size+1];
-			char *outBuf = new char[size*4];
+			char *outBuf = new char[size*2];
 			size = file.Read(buf,size);
 			buf[size] = '\0';
-			size = encode64(outBuf,buf,size);
+			size = encode_base64(outBuf,buf,size);
 			outBuf[size] = '\0';
-			
 			char name[B_FILE_NAME_LENGTH+1];
 			BEntry entry(&ref);
 			entry.GetName(name);
 			BNodeInfo info(&file);
 			char type[B_MIME_TYPE_LENGTH+1];
 			type[0] = '\0';
-			
 			if( info.GetType(type) != B_OK)
 			{
-				// Guess mime type
-				::update_mime_info(BPath(&ref).Path(),false,true,false);
+				BPath path(&ref);
+				BString cmd("/bin/mimeset \"");
+				cmd << path.Path() << "\"";
+				::system(cmd.String());
 				if(info.GetType(type) != B_OK)
 					type[0] = '\0';
 			}
-			// Could not guess mimetype
 			if(!type)
 				strcpy(type,"application/octet-stream");
-			
 			encodedName = name;
 			encode.UTF82Mime(encodedName,encoding);
 			str << boundary << "\n";
@@ -1365,11 +1320,6 @@ HWriteWindow::QuitRequested()
 	prefs->SetData("expand_enclosure",expand);
 	// Save Window Rect
 	prefs->SetData("write_window_rect",Frame());
-	
-	bool ruler = fTextView->IsUsingRuler();
-	prefs->SetData("use_ruler",ruler);
-	float limit = fTextView->RightLimit();
-	prefs->SetData("wrapping_limit",limit);
 	return BWindow::QuitRequested();
 }
 
@@ -1410,14 +1360,18 @@ HWriteWindow::TimeZoneOffset(time_t *now)
  * OpenTemplate
  ***********************************************************/
 void
-HWriteWindow::OpenTemplate(entry_ref& ref)
+HWriteWindow::OpenTemplate(entry_ref ref)
 {
 	BFile file(&ref,B_READ_ONLY);
 	if(file.InitCheck() != B_OK)
 		return;
-	BString str;
-	str << file;
-	fTextView->SetText(str.String());
+	off_t size;
+	file.GetSize(&size);
+	char *buf = new char[size+1];
+	size = file.Read(buf,size);
+	buf[size] = '\0';
+	
+	fTextView->SetText(buf);
 }
 
 /***********************************************************
@@ -1468,7 +1422,7 @@ HWriteWindow::SaveAsTemplate()
  * OpenDraft
  ***********************************************************/
 void
-HWriteWindow::OpenDraft(entry_ref& ref)
+HWriteWindow::OpenDraft(entry_ref ref)
 {	
 	BFile *file = new BFile(&ref,B_READ_ONLY);
 	if(file->InitCheck() != B_OK)
@@ -1484,7 +1438,7 @@ HWriteWindow::OpenDraft(entry_ref& ref)
 	for(int32 i = 0;i < 4;i++)
 	{
 		PRINT(("%s\n",kAttr_Name[i]));
-		err = ReadNodeAttrString(file,kAttr_Name[i],&attr);
+		err = file->ReadAttrString(kAttr_Name[i],&attr);
 		control = cast_as(fTopView->FindView(kAttr_Name[i]),BTextControl);
 		if(control && err == B_OK && attr.Length() >0)
 			control->SetText(attr.String());

@@ -1,8 +1,8 @@
 #include "HAccountView.h"
 #include "HApp.h"
 #include "TrackerUtils.h"
-#include "Utilities.h"
 #include "NumberControl.h"
+#include "Utilities.h"
 
 #include <Path.h>
 #include <Directory.h>
@@ -22,9 +22,6 @@
 #include <RadioButton.h>
 #include <StringView.h>
 #include <MenuField.h>
-
-const char* kLabel[] = {"Account Name:","E-Mail:","Host:","Port:","Login:",
-							"Password:","SMTP host:","Real name:","Reply to:"};
 
 /***********************************************************
  * Constructor
@@ -112,8 +109,10 @@ HAccountView::InitGUI()
 	rect.bottom = Bounds().bottom - 65;
 	BBox *box = new BBox(rect,"Account Info");
 	box->SetLabel(_("Account Info"));
-	const float kDivider = StringWidth(_("Account Name:"))+5;
-
+	const float kDivider = StringWidth(_("POP password:"))+5;
+	const char* kLabel[] = {_("Account Name:"),_("E-Mail:"),_("POP host:"),_("POP port:"),_("POP user name:"),
+							_("POP password:"),_("SMTP host:"),_("Real name:"),
+							_("Reply to:")};
 	BTextControl *ctrl;
 	frame = box->Bounds();
 	frame.InsetBy(10,20);
@@ -121,7 +120,7 @@ HAccountView::InitGUI()
 	frame.bottom = frame.top +25;
 	for(int32 i = 0;i < 9;i++)
 	{
-		ctrl = new BTextControl(frame,_(kLabel[i]),_(kLabel[i]),"",NULL);
+		ctrl = new BTextControl(frame,kLabel[i],kLabel[i],"",NULL);
 		ctrl->SetDivider(kDivider);
 		box->AddChild(ctrl);
 		if(i == 0)
@@ -137,8 +136,6 @@ HAccountView::InitGUI()
 	BMenu *menu = new BMenu("protocol");
 	menu->AddItem(new BMenuItem("POP3",NULL));
 	menu->AddItem(new BMenuItem("APOP",NULL));
-	menu->AddItem(new BMenuItem("IMAP4",NULL));
-	
 	menu->SetRadioMode(true);
 	menu->SetLabelFromMarked(true);
 	menu->ItemAt(0)->SetMarked(true);
@@ -146,38 +143,12 @@ HAccountView::InitGUI()
 												,menu);
 	menuField->SetDivider(kDivider);
 	box->AddChild(menuField);
-	
-	frame.OffsetBy(0,23);
-	menu = new BMenu("signature");
-	menu->AddItem(new BMenuItem(_("<none>"),NULL));
-	// Scan all signatures
-	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
-	path.Append(APP_NAME);
-	path.Append("Signatures");
-	dir.SetTo(path.Path());
-	char name[B_FILE_NAME_LENGTH];
-	while(dir.GetNextEntry(&entry) == B_OK)
-	{
-		if(entry.IsDirectory())
-			continue;
-		entry.GetName(name);
-		menu->AddItem(new BMenuItem(name,NULL));
-	}
-	menu->SetRadioMode(true);
-	menu->SetLabelFromMarked(true);
-	menu->ItemAt(0)->SetMarked(true);
-	menuField = new BMenuField(frame,"signature",_("Signature:")
-												,menu);
-	menuField->SetDivider(kDivider);
-	box->AddChild(menuField);
-	
 	AddChild(box);
-	// POP3 Options
+
 	rect.OffsetBy(rect.Width()+3,0);
 	rect.right = Bounds().right - 5;
-	rect.bottom = rect.top + rect.Height()/2;
 	box= new BBox(rect,"retrieving_option");
-	box->SetLabel(_("POP3 Options"));
+	box->SetLabel(_("Retrieving Options"));
 	frame = box->Bounds();
 	frame.InsetBy(10,20);
 	frame.bottom = frame.top +25;
@@ -203,19 +174,8 @@ HAccountView::InitGUI()
 	BStringView *string_view = new BStringView(frame,"days",_("days"));
 	box->AddChild(string_view);
 	AddChild(box);
-	// SMTP options
-	rect.OffsetBy(0,rect.Height());
-	rect.top += 3;
-	box= new BBox(rect,"smtp_option");
-	box->SetLabel(_("SMTP Options"));
+
 	
-	frame = box->Bounds();
-	frame.InsetBy(10,20);
-	frame.bottom = frame.top + 25;
-	BCheckBox *checkbox = new BCheckBox(frame,"smtp_auth",_("Use SMTP authentication"),NULL);
-	box->AddChild(checkbox);
-	
-	AddChild(box);
 	// Apply change button
 	rect.bottom = Bounds().bottom - 30;
 	rect.right = Bounds().right - 10;
@@ -289,12 +249,15 @@ HAccountView::MessageReceived(BMessage *message)
 void
 HAccountView::OpenAccount(int32 index)
 {
+	const char* kLabel[] = {_("Account Name:"),_("E-Mail:"),_("POP host:"),_("POP port:"),_("POP user name:"),
+							_("POP password:"),_("SMTP host:"),_("Real name:"),
+							_("Reply to:")};
 	if(index<0)
 	{
 err:
 		for(int32 i = 0;i < 9;i++)
 		{
-			BTextControl *ctrl = cast_as(FindView(_(kLabel[i])),BTextControl);
+			BTextControl *ctrl = cast_as(FindView(kLabel[i]),BTextControl);
 			ctrl->SetText("");
 		}
 		BRadioButton *radio = cast_as(FindView("leave"),BRadioButton);
@@ -326,18 +289,20 @@ err:
 	
 	for(int32 i = 0;i < 9;i++)
 	{
-		const char* str;
+		BString str;
 		msg.FindString(kName[i],&str);
-		BTextControl *ctrl = cast_as(FindView(_(kLabel[i])),BTextControl);
-		if(i == 5){		
-			int32 len = strlen(str);
-			char *pass = new char[len+1];
+		BTextControl *ctrl = cast_as(FindView(kLabel[i]),BTextControl);
+		if(i == 5)
+		{		
+			const char* text = str.String();
+			BString pass("");
+			int32 len = strlen(text);
 			for(int32 k = 0;k < len;k++)
-				pass[k] = (char)(255-str[k]);
-			pass[len] = '\0';
-			ctrl->SetText(pass);
+				pass << (char)(255-text[k]);
+			ctrl->SetText(pass.String());
 		}else{
-			ctrl->SetText(str);
+			msg.FindString(kName[i],&str);
+			ctrl->SetText(str.String());
 		}
 	}
 	
@@ -366,28 +331,6 @@ err:
 	msg.FindInt16("protocol_type",&protocol);
 	field->Menu()->ItemAt(protocol)->SetMarked(true);
 	
-	bool smtp_auth;
-	BCheckBox *checkbox = cast_as(FindView("smtp_auth"),BCheckBox);
-	if(msg.FindBool("smtp_auth",&smtp_auth) == B_OK)
-		checkbox->SetValue(smtp_auth);
-	else
-		checkbox->SetValue(B_CONTROL_OFF);
-	
-	const char* kPath;
-	msg.FindString("signature",&kPath);
-	field = cast_as(FindView("signature"),BMenuField);
-	BMenu *menu = field->Menu();
-	
-	if(!kPath || ::strlen(kPath) == 0)
-		menu->ItemAt(0)->SetMarked(true);
-	else{
-		path.SetTo(kPath);
-		BMenuItem *menuitem = menu->FindItem(path.Leaf());
-		if(menuitem)
-			menuitem->SetMarked(true);
-		else
-			menu->ItemAt(0)->SetMarked(true);
-	}
 	SetEnableControls(true);
 }
 
@@ -403,12 +346,21 @@ HAccountView::New()
 	path.Append("Accounts");
 	::create_directory(path.Path(),0777);
 	
-	BDirectory dir(path.Path());
-	BFile file;
-	entry_ref ref;
-	TrackerUtils().SmartCreateFile(&file,&dir,_("New Account"),"",B_READ_WRITE,&ref);
+	const char* kDefaultName = "New Account";
+	path.Append(kDefaultName);
 	
-	path.SetTo(&ref);	
+	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE|B_FAIL_IF_EXISTS);
+	status_t err = file.InitCheck();
+	int32 i = 1;
+	while(err != B_OK)
+	{
+		path.GetParent(&path);
+		BString newName(kDefaultName);
+		newName << i++;
+		path.Append(newName.String());
+		err = file.SetTo(path.Path(),B_WRITE_ONLY|B_CREATE_FILE|B_FAIL_IF_EXISTS);
+	}
+	
 	fListView->AddItem(new BStringItem(path.Leaf()));
 	
 	const char* kName[] = {"name","address","pop_host","pop_port","pop_user",
@@ -426,8 +378,6 @@ HAccountView::New()
 	msg.AddInt16("retrieve",0);
 	msg.AddInt32("delete_day",5);
 	msg.AddInt16("protocol_type",0);
-	msg.AddBool("smtp_auth",false);
-	msg.AddString("signature","");
 	msg.Flatten(&file);
 }
 
@@ -456,7 +406,7 @@ HAccountView::SaveAccount(int32 index)
 		BEntry entry(path.Path());
 		if(entry.Rename(ctrl->Text()) != B_OK)
 		{
-			(new BAlert("",_("Could not create the account file"),_("OK")))->Go();
+			(new BAlert("",_("Could not create account file"),_("OK")))->Go();
 			PRINT(("LINE:%d\n",__LINE__));
 			return;
 		}
@@ -472,11 +422,15 @@ HAccountView::SaveAccount(int32 index)
 	{
 		if(file.SetTo(path.Path(),B_WRITE_ONLY|B_CREATE_FILE|B_ERASE_FILE) != B_OK)
 		{
-			(new BAlert("",_("Could not create the account file"),_("OK")))->Go();
+			(new BAlert("",_("Could not create account file"),_("OK")))->Go();
 			PRINT(("LINE:%d\n",__LINE__));
 		}
 		return;
 	}
+	
+	const char* kLabel[] = {_("Account Name:"),_("E-Mail:"),_("POP host:"),_("POP port:"),_("POP user name:"),
+							_("POP password:"),_("SMTP host:"),_("Real name:"),
+							_("Reply to:")};
 	const char* kName[] = {"name","address","pop_host","pop_port","pop_user",
 						"pop_password","smtp_host","real_name","reply_to"};
 
@@ -486,18 +440,16 @@ HAccountView::SaveAccount(int32 index)
 	msg.Unflatten(&file);
 	for(int32 i = 0;i < 9;i++)
 	{
-		ctrl = cast_as(FindView(_(kLabel[i])),BTextControl);
+		ctrl = cast_as(FindView(kLabel[i]),BTextControl);
 		if(i == 5)
 		{
 			const char* text = ctrl->Text();
+			BString pass("");
 			int32 len = strlen(text);
-			char *pass = new char[len+1];
 			for(int32 k = 0;k < len;k++)
-				pass[k] = (char)(255-text[k]);
-			pass[len] = '\0';
+				pass << (char)(255-text[k]);
 			msg.RemoveData(kName[i]);
 			msg.AddString(kName[i],pass);
-			delete[] pass;
 		}else{
 			msg.RemoveData(kName[i]);
 			msg.AddString(kName[i],ctrl->Text());
@@ -528,23 +480,6 @@ HAccountView::SaveAccount(int32 index)
 	msg.RemoveData("protocol_type");
 	msg.AddInt16("protocol_type",protocol);
 	
-	BCheckBox *checkbox = cast_as(FindView("smtp_auth"),BCheckBox);
-	msg.RemoveData("smtp_auth");
-	msg.AddBool("smtp_auth",checkbox->Value());
-	
-	field = cast_as(FindView("signature"),BMenuField);
-	menu = field->Menu();
-	if(menu->IndexOf(menu->FindMarked())==0)
-		msg.AddString("signature","");
-	else if(menu->FindMarked()){
-		BPath path;
-		::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
-		path.Append(APP_NAME);
-		path.Append("Signatures");
-		path.Append(menu->FindMarked()->Label());
-		msg.AddString("signature",path.Path());
-	}
-	
 	file.Seek(0,SEEK_SET);
 	ssize_t numBytes;
 	msg.Flatten(&file,&numBytes);
@@ -558,10 +493,13 @@ HAccountView::SaveAccount(int32 index)
 void
 HAccountView::SetEnableControls(bool enable)
 {
+	const char* kLabel[] = {_("Account Name:"),_("E-Mail:"),_("POP host:"),_("POP port:"),_("POP user name:"),
+							_("POP password:"),_("SMTP host:"),_("Real name:"),
+							_("Reply to:")};
 	BTextControl *ctrl;					
 	for(int32 i = 0;i < 9;i++)
 	{
-		ctrl = cast_as(FindView(_(kLabel[i])),BTextControl);
+		ctrl = cast_as(FindView(kLabel[i]),BTextControl);
 		ctrl->SetEnabled(enable);
 	}
 	
@@ -578,20 +516,6 @@ HAccountView::SetEnableControls(bool enable)
 	button->SetEnabled(enable);
 
 	BMenuField *field = cast_as(FindView("protocol"),BMenuField);
-	field->SetEnabled(enable);
-	if(!enable)
-		field->Menu()->ItemAt(0)->SetMarked(true);
-		
-	BStringView *stringView = cast_as(FindView("days"),BStringView);
-	stringView->SetHighColor((enable)?
-						tint_color(ui_color(B_PANEL_BACKGROUND_COLOR),B_DARKEN_MAX_TINT)
-						:tint_color(ui_color(B_PANEL_BACKGROUND_COLOR),B_DARKEN_3_TINT));
-	stringView->Invalidate();
-	
-	BCheckBox *checkbox = cast_as(FindView("smtp_auth"),BCheckBox);
-	checkbox->SetEnabled(enable);
-	
-	field = cast_as(FindView("signature"),BMenuField);
 	field->SetEnabled(enable);
 	if(!enable)
 		field->Menu()->ItemAt(0)->SetMarked(true);

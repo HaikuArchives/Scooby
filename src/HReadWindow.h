@@ -13,45 +13,34 @@ enum{
 	M_PREV_MESSAGE = 'mPre'
 };
 
-
-//!Read window.
 class HReadWindow :public BWindow{
 public:
-			//!Constructor.
-						HReadWindow(BRect rect	//!<Read window's frame.
-									,entry_ref ref	//!<entry_ref to be read.
-									,BMessenger *messenger = NULL //!<Messenger for scripting.
-									);
+						HReadWindow(BRect rect,
+									entry_ref ref,
+									BMessenger *messenger = NULL);
+	virtual				~HReadWindow();
 	
 protected:
-			//!Destructor.
-						~HReadWindow();
-	//@{
-	//! Override function.
-		 	void		MessageReceived(BMessage *message);
-		 	bool		QuitRequested();
-		 	void		MenusBeginning();
-		 	void		DispatchMessage(BMessage *message,BHandler *handler);
-	//@}
-			//!Initialize all GUI.
+	virtual void		MessageReceived(BMessage *message);
+	virtual	bool		QuitRequested();
+	virtual void		MenusBeginning();
+	virtual void		DispatchMessage(BMessage *message,BHandler *handler);
 			void		InitGUI();
-			//!Initialize menubar.
 			void		InitMenu();
-			//!Load mail message.
+			
 			void		LoadMessage(entry_ref ref);
-			//!Send selection changed message to messenger.
+			
 			void		Select(entry_ref ref);
-			//!Send fetch prev or next file message to messenger.
-			void		SiblingItem(int32 what/*!<Prev:'sprv' Next:'snxt' */);
-			//!Mark a mail as read.
+			void		SiblingItem(int32 what);
+			
 			void		SetRead();
-			//!Print out message.
+		
 			void		PrintMessage(BMessage *message);
 private:
-	BView*				fMailView;			//!< Mail body view.
-	HDetailView*		fDetailView;		//!< Defail info view displayed top of window.
-	BMessenger*			fMessenger;			//!< Scriping target messenger.
-		entry_ref		fRef;				//!< Opened file's entry_ref.
-		int32			fCurrentIndex;		//!< Opened mail's list index.(use for scripting.)
+	BView*				fMailView;
+	HDetailView*		fDetailView;
+	BMessenger*			fMessenger;
+		entry_ref		fRef;
+		int32			fCurrentIndex;
 };
 #endif

@@ -1,24 +1,51 @@
 #include "HSmtpClientView.h"
+#include "ResourceUtils.h"
 #include "HMailItem.h"
-#include "SmtpLooper.h"
+#include "SmtpClient.h"
 #include "HApp.h"
 
 #include <Font.h>
+#include <Autolock.h>
+#include <Bitmap.h>
+#include <Region.h>
+#include <StringView.h>
 #include <Window.h>
 #include <Debug.h>
 #include <Beep.h>
 #include <Alert.h>
-#include <PopUpMenu.h>
-#include <MenuItem.h>
+
+#define DIVIDER 120
+
+const rgb_color kLightGray = {150, 150, 150, 255};
+const rgb_color kGray = {100, 100, 100, 255};
+const rgb_color kBlack = {0,0,0,255};
+const rgb_color kWhite = {255,255,255,255};
 
 /***********************************************************
  * Constructor
  ***********************************************************/
 HSmtpClientView::HSmtpClientView(BRect frame,const char* name)
-	:_inherited(frame,name)
+	:BView(frame,name,B_FOLLOW_ALL,B_WILL_DRAW|B_PULSE_NEEDED)
+	,fBarberPoleBits(NULL)
+	,fLastBarberPoleOffset(0)
+	,fShowingBarberPole(false)
+	,fShowingProgress(false)
+	,fMaxValue(0)
+	,fCurrentValue(0)
 	,fIsRunning(false)
-	,fSmtpLooper(NULL)
+	,fSmtpClient(NULL)
 {
+	BFont font(be_fixed_font);
+	font.SetSize(10);
+	SetFont(&font);
+	
+	BRect rect(Bounds());
+	rect.left += DIVIDER;
+	
+	fStringView = new BStringView(rect,"","",B_FOLLOW_BOTTOM|B_FOLLOW_LEFT_RIGHT);
+	AddChild(fStringView);
+	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
+	//StartBarberPole();
 }
 
 /***********************************************************
@@ -26,8 +53,9 @@ HSmtpClientView::HSmtpClientView(BRect frame,const char* name)
  ***********************************************************/
 HSmtpClientView::~HSmtpClientView()
 {
-	if(fSmtpLooper)
-		fSmtpLooper->PostMessage(B_QUIT_REQUESTED);
+	delete fBarberPoleBits;
+	if(fSmtpClient)
+		fSmtpClient->PostMessage(B_QUIT_REQUESTED);
 }
 
 
@@ -39,23 +67,20 @@ HSmtpClientView::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
-	case M_SMTP_ABORT:
-		Cancel();
-		break;
 	// Send mails
 	case M_SEND_MAIL:
 	{
-		if(!fSmtpLooper)
-			fSmtpLooper = new SmtpLooper(this,Window());
+		if(!fSmtpClient)
+			fSmtpClient = new SmtpClient(this,Window());
 		fIsRunning = true;
 		//int32 count;
 		//type_code type;
 		//message->GetInfo("pointer",&type,&count);
 		message->what = M_SMTP_CONNECT;
-		fSmtpLooper->PostMessage(message);
+		fSmtpClient->PostMessage(message);
 		StopProgress();
 		StartBarberPole();
-		SetText(_("Sending Mail" B_UTF8_ELLIPSIS));
+		fStringView->SetText(_("Sending Mails…"));
 		break;
 	}
 	// End of smtp session
@@ -64,10 +89,10 @@ HSmtpClientView::MessageReceived(BMessage *message)
 		fIsRunning = false;
 		StopBarberPole();
 		StopProgress();
-		SetText("");
-		if(fSmtpLooper)
-			fSmtpLooper->PostMessage(B_QUIT_REQUESTED);
-		fSmtpLooper = NULL;
+		fStringView->SetText("");
+		if(fSmtpClient)
+			fSmtpClient->PostMessage(B_QUIT_REQUESTED);
+		fSmtpClient = NULL;
 		PRINT(("SMTP END\n"));
 		break;
 	}
@@ -103,9 +128,133 @@ HSmtpClientView::MessageReceived(BMessage *message)
 		break;
 	}
 	default:
-		_inherited::MessageReceived(message);
+		BView::MessageReceived(message);
 	}
 }
+
+/***********************************************************
+ * Draw
+ ***********************************************************/
+void
+HSmtpClientView::Draw(BRect updateRect)
+{
+	BView::Draw(updateRect);
+	// show barber pole
+	if(fShowingBarberPole || fShowingProgress)
+	{
+		BRect barberPoleRect = BarberPoleOuterRect();
+		
+		
+		BeginLineArray(4);
+		AddLine(barberPoleRect.LeftTop(), barberPoleRect.RightTop(), kLightGray);
+		AddLine(barberPoleRect.LeftTop(), barberPoleRect.LeftBottom(), kLightGray);
+		AddLine(barberPoleRect.LeftBottom(), barberPoleRect.RightBottom(), kWhite);
+		AddLine(barberPoleRect.RightBottom(), barberPoleRect.RightTop(), kWhite);
+		EndLineArray();
+		
+		barberPoleRect.InsetBy(1, 1);
+	
+		if(!fBarberPoleBits)
+			fBarberPoleBits= ResourceUtils().GetBitmapResource('BBMP',"RedLongBarberPole");
+		BRect destRect(fBarberPoleBits ? fBarberPoleBits->Bounds() : BRect(0, 0, 0, 0));
+		destRect.OffsetTo(barberPoleRect.LeftTop() - BPoint(0, fLastBarberPoleOffset));
+		fLastBarberPoleOffset -= 1;
+		if (fLastBarberPoleOffset < 0)
+			fLastBarberPoleOffset = 5;
+		BRegion region;
+		region.Set(BarberPoleInnerRect());
+		ConstrainClippingRegion(&region);	
+
+		if (fBarberPoleBits && fShowingBarberPole)
+			DrawBitmap(fBarberPoleBits, destRect);
+		if (fShowingProgress)
+		{
+			SetHighColor(255,0,0);
+			float width = destRect.Width();
+			if(fMaxValue)
+				destRect.right = destRect.left + width * (fCurrentValue/fMaxValue);
+			FillRect( destRect);
+		}
+	}
+}
+
+/***********************************************************
+ * Return barber pole inner rect
+ ***********************************************************/
+BRect 
+HSmtpClientView::BarberPoleInnerRect() const
+{
+	BRect result = Bounds();
+	result.InsetBy(3, 3);
+	result.right = result.left+ DIVIDER-20;
+	result.bottom = result.top + 4;
+	return result;
+}
+
+/***********************************************************
+ * Return barber pole outer rect
+ ***********************************************************/
+BRect 
+HSmtpClientView::BarberPoleOuterRect() const
+{
+	BRect result(BarberPoleInnerRect());
+	result.InsetBy(-1, -1);
+	return result;
+}
+
+/***********************************************************
+ * Pulse
+ ***********************************************************/
+void
+HSmtpClientView::Pulse()
+{
+	if (!fShowingBarberPole)
+		return;
+	Invalidate(BarberPoleOuterRect());
+}
+
+/***********************************************************
+ * Start BarberPole Animation
+ ***********************************************************/
+void
+HSmtpClientView::StartBarberPole()
+{
+	BAutolock lock(Window());
+	fShowingBarberPole = true;
+	Invalidate();
+}
+
+/***********************************************************
+ * Stop BarberPole Animation
+ ***********************************************************/
+void
+HSmtpClientView::StopBarberPole()
+{
+	BAutolock lock(Window());
+	fShowingBarberPole = false;
+	Invalidate();
+}
+
+/***********************************************************
+ * Update
+ ***********************************************************/
+void
+HSmtpClientView::Update(float delta)
+{
+	fCurrentValue+=delta;
+	Invalidate();
+}
+
+/***********************************************************
+ * SetValue
+ ***********************************************************/
+void
+HSmtpClientView::SetValue(float value)
+{
+	fCurrentValue = value;
+	Invalidate();
+}
+
 
 /***********************************************************
  * Cancel
@@ -113,45 +262,5 @@ HSmtpClientView::MessageReceived(BMessage *message)
 void
 HSmtpClientView::Cancel()
 {
-	fSmtpLooper->ForceQuit();
-	
-	StopBarberPole();
-	StopProgress();
-}
-
-/***********************************************************
- * MouseDown
- ***********************************************************/
-void
-HSmtpClientView::MouseDown(BPoint pos)
-{
-	int32 buttons;
-	Window()->CurrentMessage()->FindInt32("buttons", &buttons); 
-	if(fIsRunning)
-    {	 
-    	BPopUpMenu *theMenu = new BPopUpMenu("RIGHT_CLICK",false,false);
-    	BFont font(be_plain_font);
-    	font.SetSize(10);
-    	theMenu->SetFont(&font);
-    	
-    	theMenu->AddItem(new BMenuItem(_("Abort"),new BMessage(M_SMTP_ABORT)));
-    	
-    	
-    	BRect r;
-        ConvertToScreen(&pos);
-        r.top = pos.y - 5;
-        r.bottom = pos.y + 5;
-        r.left = pos.x - 5;
-        r.right = pos.x + 5;
-    	
-    	BMenuItem *theItem = theMenu->Go(pos, false,true,r);  
-    	if(theItem)
-    	{
-    	 	BMessage*	aMessage = theItem->Message();
-			if(aMessage)
-				this->Window()->PostMessage(aMessage,this);
-	 	} 
-	 	delete theMenu;
-    }else
-    	_inherited::MouseDown(pos);
+	fSmtpClient->ForceQuit();
 }

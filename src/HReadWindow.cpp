@@ -81,13 +81,12 @@ HReadWindow::InitGUI()
 		rect.bottom -= B_H_SCROLL_BAR_HEIGHT;
 		HMailView *mailView = new HMailView(rect,true,NULL);
 		mailView->MakeEditable(false);
-		BScrollView *scroll = new BScrollView("scroller",mailView,B_FOLLOW_ALL,B_WILL_DRAW,false,true);
+		BScrollView *scroll = new BScrollView("scroller",mailView,B_FOLLOW_ALL,0,false,true);
 		AddChild(scroll);
 		//================ StatusBar ==================
 		BRect statusRect(Bounds());
 		statusRect.top = statusRect.bottom - B_H_SCROLL_BAR_HEIGHT;
-		statusRect.OffsetBy(0,1);
-		StatusBar *statusbar = new StatusBar(statusRect,NULL,B_FOLLOW_BOTTOM|B_FOLLOW_LEFT_RIGHT,B_WILL_DRAW);
+		StatusBar *statusbar = new StatusBar(statusRect,NULL,B_FOLLOW_ALL,B_WILL_DRAW);
 		AddChild(statusbar);
 		BString label;
 		label = _("Size");
@@ -123,20 +122,20 @@ HReadWindow::InitGUI()
 	toolbox->AddSpace();
 	BMessage *msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",false);
-	toolbox->AddButton("Reply",utils.GetBitmapResource('BBMP',"Reply"),msg,"Reply to Sender Only");
+	toolbox->AddButton("Reply",utils.GetBitmapResource('BBMP',"Reply"),msg,"Reply Message");
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",true);
-	toolbox->AddButton("All",utils.GetBitmapResource('BBMP',"Reply To All"),msg,"Reply to All");
+	toolbox->AddButton("All",utils.GetBitmapResource('BBMP',"Reply To All"),msg,"Reply Message To All");
 	toolbox->AddButton("Fwd",utils.GetBitmapResource('BBMP',"Forward"),new BMessage(M_FORWARD_MESSAGE),"Forward Message");
 	toolbox->AddSpace();
-	toolbox->AddButton("Trash",utils.GetBitmapResource('BBMP',"Trash"),new BMessage(M_DELETE_MSG),_("Move Message to Trash"));
+	toolbox->AddButton("Trash",utils.GetBitmapResource('BBMP',"Trash"),new BMessage(M_DELETE_MSG),_("Move To Trash"));
 	toolbox->AddSpace();
-	toolbox->AddButton("Print",utils.GetBitmapResource('BBMP',"Printer"),new BMessage(M_PRINT_MESSAGE),_("Print Message"));
+	toolbox->AddButton("Print",utils.GetBitmapResource('BBMP',"Printer"),new BMessage(M_PRINT_MESSAGE),_("Print"));
 	if(fMessenger)
 	{
 		toolbox->AddSpace();
 		toolbox->AddButton("Next",utils.GetBitmapResource('BBMP',"Next"),new BMessage(M_NEXT_MESSAGE),"Next Message");
-		toolbox->AddButton("Prev",utils.GetBitmapResource('BBMP',"Prev"),new BMessage(M_PREV_MESSAGE),"Previous Message");
+		toolbox->AddButton("Prev",utils.GetBitmapResource('BBMP',"Prev"),new BMessage(M_PREV_MESSAGE),"Prev Message");
 	}
 	
 	AddChild(toolbox);
@@ -158,7 +157,7 @@ HReadWindow::InitMenu()
 	aMenu = new BMenu(_("File"));
 	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
-	utils.AddMenuItem(aMenu,_("Page Setup" B_UTF8_ELLIPSIS),M_PAGE_SETUP_MESSAGE,be_app,be_app,'P',B_SHIFT_KEY,
+	utils.AddMenuItem(aMenu,_("Page Setup…"),M_PAGE_SETUP_MESSAGE,be_app,be_app,'P',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"PageSetup"));
 	aMenu->AddSeparatorItem();					
 	utils.AddMenuItem(aMenu,_("Close"),B_QUIT_REQUESTED,this,this,'W',0);
@@ -177,30 +176,30 @@ HReadWindow::InitMenu()
    	aMenu->AddSeparatorItem();
    	msg = new BMessage(M_SHOW_FIND_WINDOW);
  	msg->AddPointer("targetwindow",this);
-   	utils.AddMenuItem(aMenu,_("Find" B_UTF8_ELLIPSIS),msg,be_app,be_app,'F',0);
+   	utils.AddMenuItem(aMenu,_("Find"),msg,be_app,be_app,'F',0);
    	msg = new BMessage(M_FIND_NEXT_WINDOW);
  	msg->AddPointer("targetwindow",this);
    	utils.AddMenuItem(aMenu,_("Find Next"),msg,be_app,be_app,'G',0);
    	menubar->AddItem(aMenu);
 	////------------------------- Message Menu ---------------------
 	aMenu = new BMenu(_("Message"));
-	utils.AddMenuItem(aMenu,_("New Message" B_UTF8_ELLIPSIS),M_NEW_MSG,this,this,'N',0,
+	utils.AddMenuItem(aMenu,_("New Message"),M_NEW_MSG,this,this,'N',0,
 							rsrc_utils.GetBitmapResource('BBMP',"New Message"));
 	aMenu->AddSeparatorItem();
 	
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",false);
-	utils.AddMenuItem(aMenu,_("Reply to Sender Only" B_UTF8_ELLIPSIS),msg,this,this,'R',0,
+	utils.AddMenuItem(aMenu,_("Reply"),msg,this,this,'R',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Reply"));
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",true);
-	utils.AddMenuItem(aMenu,_("Reply to All" B_UTF8_ELLIPSIS),msg,this,this,'R',B_SHIFT_KEY,
+	utils.AddMenuItem(aMenu,_("Reply To All"),msg,this,this,'R',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"Reply To All"));
 							
-	utils.AddMenuItem(aMenu,_("Forward" B_UTF8_ELLIPSIS),M_FORWARD_MESSAGE,this,this,'J',0,
+	utils.AddMenuItem(aMenu,_("Forward"),M_FORWARD_MESSAGE,this,this,'J',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Forward"));
 	aMenu->AddSeparatorItem();
-	utils.AddMenuItem(aMenu,_("Move to Trash"),M_DELETE_MSG,this,this,'T',0,
+	utils.AddMenuItem(aMenu,_("Move To Trash"),M_DELETE_MSG,this,this,'T',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();
     
@@ -324,17 +323,20 @@ HReadWindow::LoadMessage(entry_ref ref)
 		PostMessage(M_SET_CONTENT,fMailView);
 		return;
 	}
-	BString from,subject,cc,to,time;
+	BString from,subject,cc,to;
 	time_t when;
-	ReadNodeAttrString(file,B_MAIL_ATTR_FROM,&from);
-	ReadNodeAttrString(file,B_MAIL_ATTR_SUBJECT,&subject);
+	file->ReadAttrString(B_MAIL_ATTR_FROM,&from);
+	file->ReadAttrString(B_MAIL_ATTR_SUBJECT,&subject);
 	file->ReadAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&when,sizeof(time_t));
-	ReadNodeAttrString(file,B_MAIL_ATTR_CC,&cc);
-	ReadNodeAttrString(file,B_MAIL_ATTR_TO,&to);
+	file->ReadAttrString(B_MAIL_ATTR_CC,&cc);
+	file->ReadAttrString(B_MAIL_ATTR_TO,&to);
 	
-	HMailItem::MakeTime(time,when);
-	fDetailView->SetInfo(subject.String(),from.String(),time.String(),cc.String(),to.String());
-	
+	const char* kTimeFormat = "%a, %m/%d/%Y, %r";
+	char *buf = new char[64];
+	struct tm* time = localtime(&when);
+	 ::strftime(buf, 64,kTimeFormat, time);
+	fDetailView->SetInfo(subject.String(),from.String(),buf,cc.String(),to.String());
+	delete[] buf;
 	BMessage msg(M_SET_CONTENT);
 	msg.AddPointer("pointer",file);
 	PostMessage(&msg,fMailView);
@@ -516,7 +518,7 @@ HReadWindow::SetRead()
 	if(node.InitCheck() == B_OK)
 	{
 		BString status;
-		ReadNodeAttrString(&node,B_MAIL_ATTR_STATUS,&status);
+		node.ReadAttrString(B_MAIL_ATTR_STATUS,&status);
 		if(status.Compare("New") == 0)
 		{
 			status = "Read";

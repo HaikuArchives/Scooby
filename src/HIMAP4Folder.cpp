@@ -4,9 +4,6 @@
 #include "Encoding.h"
 #include "HWindow.h"
 #include "HFolderList.h"
-#include "HString.h"
-#include "Utilities.h"
-#include "utf7.h"
 
 #include <Alert.h>
 #include <Bitmap.h>
@@ -35,11 +32,10 @@ HIMAP4Folder::HIMAP4Folder(const char* name,
 	,fPort(port)
 	,fLogin(login)
 	,fPassword(password)
-	,fRemoteFolderPath(folder_name)
+	,fRemoteFolderName(folder_name)
 	,fFolderGathered(false)
 	,fChildItem(false)
 {
-	SetAccountName(name);
 }
 
 /***********************************************************
@@ -49,12 +45,12 @@ HIMAP4Folder::~HIMAP4Folder()
 {
 	StoreSettings();
 	EmptyMailList();
-	if(!IsChildFolder()&&fClient)
+	if(fClient)
 	{
 		fClient->Logout();
 		fClient->Close();
-		delete fClient;
 	}
+	delete fClient;
 }
 
 /***********************************************************
@@ -78,7 +74,7 @@ HIMAP4Folder::StoreSettings()
 	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
 	
 	BMessage msg(B_SIMPLE_DATA);
-	msg.AddString("folder",fRemoteFolderPath.String() );
+	msg.AddString("folder",fRemoteFolderName.String() );
 	msg.AddString("server",fServer.String() );
 	msg.AddInt16("port",fPort);
 	msg.AddString("login",fLogin.String() );
@@ -153,15 +149,9 @@ HIMAP4Folder::IMAPGetList()
 	}
 	if(!fChildItem)
 		GatherChildFolders();
-	if(fRemoteFolderPath.Length() == 0)
-	{
-		if(fOwner->IndexOf(this) == fOwner->CurrentSelection())
-				fOwner->Window()->PostMessage(M_STOP_MAIL_BARBER_POLE);
-		return;
-	}	
 	
 	int32 mail_count = 0;
-	if( (mail_count = fClient->Select(fRemoteFolderPath.String())) < 0)
+	if( (mail_count = fClient->Select(fRemoteFolderName.String())) < 0)
 	{
 		(new BAlert("",_("Could not select remote folder"),_("OK")
 						,NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
@@ -191,7 +181,6 @@ HIMAP4Folder::IMAPGetList()
 			PRINT(("FetchFields ERROR\n"));
 			continue;
 		}
-		PRINT(("%s\n",date.String()));
 		// ConvertToUTF8
 		encode.Mime2UTF8(subject);
 		encode.Mime2UTF8(from);
@@ -207,11 +196,11 @@ HIMAP4Folder::IMAPGetList()
 											priority.String(),
 											(attachment)?1:0,
 											i,
-											fClient,this
+											fClient
 											));
 		if(!read) fUnread++;
 	}
-	SetUnreadCount(fUnread);
+	SetName(fUnread);
 	
 	fDone = true;
 	
@@ -232,17 +221,19 @@ HIMAP4Folder::IMAPConnect()
 {
 	delete fClient;
 	fClient = new IMAP4Client();
-	PRINT(("IMAP4 Connect Start:%s %d\n",fServer.String(),fPort));
+	PRINT(("IMAP4 Connect Start\n"));
 	if( fClient->Connect(fServer.String(),fPort) != B_OK)
 	{
-		Alert(B_STOP_ALERT,"%s\nAddress:%s Port:%d",_("Could not connect to IMAP4 server"),fServer.String(),fPort);
+		(new BAlert("",_("Could not connect to IMAP4 server"),"OK",
+						NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		delete fClient;
 		fClient = NULL;
 		return B_ERROR;
 	}
 	if( fClient->Login(fLogin.String(),fPassword.String()) != B_OK)
 	{
-		Alert(B_STOP_ALERT,_("Could not login to IMAP4 server"));
+		(new BAlert("",_("Could not login to IMAP4 server"),_("OK"),
+						NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		delete fClient;
 		fClient = NULL;	
 		return B_ERROR;
@@ -261,14 +252,20 @@ HIMAP4Folder::GatherChildFolders()
 		return;
 	BList namelist,pointerList;
 	
-	int32 count = fClient->List(fRemoteFolderPath.String(),&namelist);
+	int32 count = fClient->List(fRemoteFolderName.String(),&namelist);
 	if(count <= 0)
 		return;
 	
 	BMessage childMsg(M_ADD_UNDER_ITEM);
 	char displayName[B_FILE_NAME_LENGTH];
 	char *p;
-		
+	
+	const char* server = fServer.String();
+	const char* login = fLogin.String();
+	const char* password = fPassword.String();
+	int16 port = fPort;
+	BListView *list = fOwner;
+	
 	HIMAP4Folder *folder;
 	
 	for(int32 i = 0;i < count;i++)
@@ -287,12 +284,15 @@ HIMAP4Folder::GatherChildFolders()
 			p = name;
 		::strcpy(displayName,p);
 		displayName[::strlen(p)] = '\0';
-		// Convert UTF7 to UTF8
-		char *buf = new char[strlen(displayName)*4];
-		IMAP4UTF72UTF8(buf,displayName);
-		
-		pointerList.AddItem((folder = MakeNewFolder(buf,(char*)namelist.ItemAt(i) )));
-		delete[] buf;
+		pointerList.AddItem((folder = new HIMAP4Folder(displayName,name
+											,server
+											,port
+											,login
+											,password
+											,list)));
+		folder->SetFolderGathered(true);
+		folder->SetChildFolder(true);
+		PRINT(("%s\n",name));
 		free( name );
 	}
 	
@@ -300,7 +300,7 @@ HIMAP4Folder::GatherChildFolders()
 	for(int32 i = 0;i < count;i++)
 	{
 		folder = (HIMAP4Folder*)pointerList.ItemAt(i);
-		index = FindParent(folder->FolderName(),folder->RemoteFolderPath(),&pointerList);
+		index = FindParent(folder->FolderName(),folder->RemoteFolderName(),&pointerList);
 		childMsg.AddPointer("parent",(index < 0)?this:(HIMAP4Folder*)pointerList.ItemAt(index));
 		childMsg.AddBool("expand",(index < 0)?true:false);
 		childMsg.AddPointer("item",folder);
@@ -330,73 +330,83 @@ HIMAP4Folder::FindParent(const char* name,const char* folder_path,BList *list)
 	for(int32 i = 0;i < count;i++)
 	{
 		folder = (HIMAP4Folder*)list->ItemAt(i);
-		if(strcmp(folder->RemoteFolderPath(),path) == 0)
+		if(strcmp(folder->RemoteFolderName(),path) == 0)
 			return i;
 	}
 	return -1;
 }
 
 /***********************************************************
- * DeleteMe
+ * MakeTime_t
  ***********************************************************/
-void
-HIMAP4Folder::DeleteMe()
+time_t
+HIMAP4Folder::MakeTime_t(const char* date)
 {
-	fClient->Delete(fRemoteFolderPath.String());
-}
-
-/***********************************************************
- * CreateChildFolder
- ***********************************************************/
-void
-HIMAP4Folder::CreateChildFolder(const char* utf8)
-{
-	if(fClient->Create(utf8,fRemoteFolderPath.String()) == B_OK)	
+	const char* mons[] = {"Jan","Feb","Mar","Apr","May"
+						,"Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+	const char* wdays[] = {"Sun","Mon","Tue","Wed","Thu"
+						,"Fri","Sat"};
+	
+	char swday[5];
+	int wday=0;
+	int day;
+	char smon[4];
+	int mon;
+	//char stime[9];
+	int year;
+	int hour;
+	int min;
+	int sec;
+	int gmt_off = 0;
+	char offset[5];
+	// Mon, 16 Oct 2000 00:50:04 +0900 or Mon, 16 Oct 00 00:50:04 +0900
+	int num_scan  = ::sscanf(date,"%3s,%d%3s%d %2d:%2d:%2d %5s"
+				,swday,&day,smon,&year,&hour,&min,&sec,offset);
+	if(num_scan != 8)
 	{
-		char *utf7 = new char[strlen(utf8)*4];
-		UTF8IMAP4UTF7(utf7,(char*)utf8);
-		BString path;
-		if(IsChildFolder())
-			path+=fRemoteFolderPath;
-		path+=utf7;
-		delete[] utf7;
-		
-		HIMAP4Folder *folder = MakeNewFolder(utf8,path.String());
-		
-		BMessage childMsg(M_ADD_UNDER_ITEM);
-		childMsg.AddPointer("item",folder);
-		childMsg.AddPointer("parent",this);
-		childMsg.AddBool("expand",false);
-		fOwner->Window()->PostMessage(&childMsg,fOwner);
+		// 9 Nov 2000 11:30:23 -0000
+		num_scan = ::sscanf(date, "%d%3s%d %2d:%2d:%2d %5s"
+					,&day,smon,&year,&hour,&min,&sec,offset);
+		DEBUG_ONLY(
+			if(num_scan != 7)
+				printf("Unknown date format\n");
+		);
 	}
-}
-
-/***********************************************************
- * Move
- ***********************************************************/
-status_t
-HIMAP4Folder::Move(const char* indexList,const char* dest_folder)
-{
-	fClient->Select(RemoteFolderPath());
-	return fClient->Copy(indexList,dest_folder);
-}
-
-/***********************************************************
- * MakeNewFolder
- ***********************************************************/
-HIMAP4Folder*
-HIMAP4Folder::MakeNewFolder(const char* utf8name,const char* utf7path)
-{
-	HIMAP4Folder *folder = new HIMAP4Folder(utf8name
-									,utf7path
-									,fServer.String()
-									,fPort
-									,fLogin.String()
-									,fPassword.String()
-									,fOwner);
-	folder->SetAccountName(AccountName());
-	folder->SetChildFolder(true);
-	folder->SetFolderGathered(true); // not need to gather child folders.
-	folder->fClient = fClient;
-	return folder;
+	//PRINT(("M:%s H:%d M:%d S:%d\n",smon,hour,min,sec));
+	// month
+	for(mon = 0;mon < 12;mon++)
+	{
+		if(strncmp(mons[mon],smon,3) == 0)
+			break;
+	}
+	// week of day
+	if(num_scan == 8)
+	{
+		for(wday = 0;wday < 12;wday++)
+		{
+			if(strncmp(wdays[wday],swday,3) == 0)
+				break;
+		}
+	}
+	// offset 
+	char op = offset[0];
+	float off = atof(offset+1);
+	if(op == '+')
+		gmt_off  = static_cast<int>((off/100.0)*60*60);
+	if(op == '-')
+		gmt_off  = static_cast<int>(-(off/100.0)*60*60);
+	struct tm btime;
+	btime.tm_sec = sec;
+	btime.tm_min = min;
+	btime.tm_hour = hour;
+	btime.tm_mday = day;
+	btime.tm_mon = mon;
+	if(year > 1900)
+		btime.tm_year = year-1900;
+	else
+		btime.tm_year = 2000 + year;
+	if(num_scan == 8)
+		btime.tm_wday = wday;
+	btime.tm_gmtoff = gmt_off;
+	return mktime(&btime);	
 }
