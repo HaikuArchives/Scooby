@@ -38,7 +38,7 @@ HHtmlView::HHtmlView(BRect rect,
     message_replicant.AddString("add_on",B_NETPOSITIVE_APP_SIGNATURE); 
    	message_replicant.AddString("url",buf);
    	delete[] buf; 
-    message_replicant.AddBool("openAsText",0); 
+    message_replicant.AddBool("openAsText",false); 
     message_replicant.AddInt32("encoding",GetDefaultEncoding()); 
     message_replicant.AddString("class","NPBaseView"); 
     message_replicant.AddString("_name","NetPositive"); 
