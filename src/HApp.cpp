@@ -191,17 +191,56 @@ HApp::MessageReceived(BMessage *message)
 void
 HApp::ArgvReceived(int32 argc,char** argv)
 {
+	bool send = false;
+	BString subject,to,cc,bcc,body,enclosure_path;
+	
 	for(int32 i = 0;i < argc;i++)
 	{
 		char *p;
+		PRINT(("%d %s\n",i,argv[i]));
 		if((p= strstr(argv[i],"mailto:")) )
 		{
 			p+=7;
-			if( !MakeMainWindow(p,true) )
-			{
-				fWindow->MakeWriteWindow(NULL,p);		
-			}
+			to = p;
+			send = true;
 			break;
+		}else if(strcmp(argv[i],"-subject") == 0){
+			subject = argv[++i];
+			send = true;
+		}else if(strcmp(argv[i],"-body") == 0){
+			body = argv[++i];
+			send = true;
+		}else if(strcmp(argv[i],"ccto:") == 0){
+			p+=5;
+			cc = p;
+			send = true;
+		}else if(strcmp(argv[i],"enclosure:") == 0){
+			p+=10;
+			enclosure_path = p;
+			send = true;
+		}else if(strcmp(argv[i],"bccto:") == 0){
+			p+=6;
+			bcc = p;
+			send = true;
+		}else if( strcmp(argv[i],"--help") == 0){
+			printf(" usage: Scooby [ mailto:<address> ] [ -subject \"<text>\" ] [ ccto:<address> ] [ bccto:<address> ] [ -body \"<body text>\" ] [ enclosure:<path> ] [ <message to read> ...]\n");
+			exit(0);
+		}
+	}
+	
+	if(send)
+	{
+		MakeMainWindow(true);
+		
+		if(fWindow->Lock())
+		{
+			fWindow->MakeWriteWindow(subject.String() // subject to cc bcc body	 enclosure_path
+									,to.String()
+									,cc.String()
+									,bcc.String()
+									,body.String()
+									,enclosure_path.String());
+			fWindow->Unlock();
 		}
 	}
 	_inherited::ArgvReceived(argc,argv);
@@ -215,7 +254,7 @@ HApp::RefsReceived(BMessage *message)
 {
 	message->PrintToStream();
 	fWindow->RefsReceived(message);
-	MakeMainWindow(NULL,true);
+	MakeMainWindow(true);
 }
 
 /***********************************************************
@@ -231,14 +270,14 @@ HApp::ReadyToRun()
  * MakeMainWindow
  ***********************************************************/
 bool
-HApp::MakeMainWindow(const char* mail_addr,bool hidden)
+HApp::MakeMainWindow(bool hidden)
 {
 	if(fWindow)
 		return false;
 	
 	BRect rect;
 	fPref->GetData("window_rect",&rect);
-	fWindow = new HWindow(rect,APP_NAME,mail_addr);
+	fWindow = new HWindow(rect,APP_NAME);
 	
 	if(hidden)
 		fWindow->Minimize(true);
