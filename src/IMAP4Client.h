@@ -47,5 +47,6 @@ private:
 		BString			fLogin;
 		BString			fPassword;
 		BString			fFolderName;
+		time_t			fIdleTime;
 };
 #endif
