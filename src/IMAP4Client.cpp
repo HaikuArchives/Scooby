@@ -17,7 +17,7 @@ const bigtime_t kIMAP4ClientTimeout = 1000000*60; // 60 sec
  * Constructor.
  ***********************************************************/
 IMAP4Client::IMAP4Client()
-	:BNetEndpoint(SOCK_STREAM)
+	:_inherited(SOCK_STREAM)
 	,fCommandCount(0)
 	,fIdleTime(0)
 {

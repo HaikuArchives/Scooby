@@ -16,7 +16,7 @@ const bigtime_t kTimeout = 1000000*180; //timeout 180 secs
  * Constructor
  ***********************************************************/
 PopClient::PopClient()
-	:BNetEndpoint()
+	:_inherited()
 {
 }
 

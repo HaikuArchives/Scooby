@@ -22,7 +22,7 @@ enum AuthType{
  * Constructor
  ***********************************************************/
 SmtpClient::SmtpClient()
-	:BNetEndpoint()
+	:_inherited()
 	,fAuthType(0)
 {
 }
