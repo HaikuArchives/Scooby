@@ -11,6 +11,7 @@
 HWrapTextView::HWrapTextView(BRect rect,const char* name,int32 resize,int32 flag)
 		:_inherited(rect,name,BRect(4.0,4.0,rect.right-rect.left-4.0,rect.bottom-rect.top-4.0),resize,flag)
 		,fUseRuler(false)
+		,fRightLimit(490.0F)
 		,fRulerView(NULL)
 {
 }
@@ -29,14 +30,18 @@ HWrapTextView::~HWrapTextView()
 void
 HWrapTextView::AddRuler()
 {
-	if(!fRulerView)
+	if(!fRulerView && Parent())
 	{
-		BRect rect = TextRect();
-		rect.top += RULER_HEIGHT;
-		rect = Bounds();
+		ResizeBy(0,-(RULER_HEIGHT+1));
+		MoveBy(0,RULER_HEIGHT+1);
+		
+		BRect rect = Bounds();
+		rect = Parent()->Bounds();
+		rect.top += 2;
+		rect.OffsetBy(2,0);
 		rect.bottom = rect.top + RULER_HEIGHT;
 		fRulerView = new HRulerView(rect,"ruler",this);
-		AddChild(fRulerView);
+		Parent()->AddChild(fRulerView);
 		ResetTextRect();
 	}
 }
@@ -52,6 +57,10 @@ HWrapTextView::RemoveRuler()
 		fRulerView->RemoveSelf();
 		delete fRulerView;
 		fRulerView=NULL;
+		
+		ResizeBy(0,RULER_HEIGHT+1);
+		MoveBy(0,-(RULER_HEIGHT+1));
+		
 		ResetTextRect();
 	}
 }
@@ -114,10 +123,7 @@ HWrapTextView::ResetTextRect()
 	textRect.right -= 4.0;
 	textRect.bottom -= 4.0;
 	if(fUseRuler)
-	{
-		textRect.top += RULER_HEIGHT;
 		textRect.right = fRightLimit;
-	}
 	SetTextRect(textRect);
 }
 
@@ -127,81 +133,73 @@ HWrapTextView::ResetTextRect()
 void
 HWrapTextView::GetHardWrapedText(BString &out)
 {
+	MakeEditable(false);
+	
 	BFont font;
 	uint32 propa;
 	GetFontAndColor(&font,&propa);
-	const char* text = Text();
 	out = "";
 	
-	float lineWidth = 0;
-	BString c;
+	BString line;
 	int32 length = TextLength();
 	float view_width = TextRect().Width();
-	int32 linefeedCount = CountLines();
-	int32 nextbytes = 0;
-	int32 k = 0;
-	int32 *insertPos = new int32[linefeedCount];
+	char c=0;
+	bool inserted;
 	
-	// Check positions to insert linefeeds
-	for(int32 i = 0;i < length;i++)
+	for(int32 i=0;i < length;i++)
 	{
-		c = text[i];
-		nextbytes = ByteLength(c[0])-1;
-		
-		for(int32 j = 1;j <= nextbytes;j++)
-			c += text[i+j];
-		i += nextbytes;
-		lineWidth += font.StringWidth(c.String());
-		if(view_width <= lineWidth || c[0] == '\n')
+		c = ByteAt(i);
+		if(c == '\n')
 		{
-			lineWidth = 0;
-			if(c[0] != '\n')
+			line = "";
+			continue;
+		}
+		line += c;
+		if(font.StringWidth(line.String())>view_width)
+		{
+			// Back 1 charactor.
+			i--;
+			line.Truncate(line.Length()-1);
+			// Insert line break.
+			inserted = false;
+			int32 len = line.Length();
+			for(int32 k = 0;k<len;k++)
 			{
-				lineWidth = font.StringWidth(c.String());
-				int32 oldLen = i - c.Length();
-				for(int32 n = 0;n <oldLen;n++)
+				if(CanEndLine(i-k))
 				{
-					if(CanEndLine(oldLen-n))
-					{
-						int32 skip = ByteLength(text[oldLen-n])-1;
-						insertPos[k++] = oldLen-n+1+skip;
-						int32 charLen = n - skip;
-						char *tmp = new char[charLen+1];
-						::strncpy(tmp,&text[oldLen-n+1+skip],charLen);
-						tmp[charLen] = '\0';
-						c.Insert(tmp,0);
-						lineWidth = font.StringWidth(c.String());
-						delete[] tmp;
-						break;
-					}
+					Insert(i-k+1,"\n",1);
+					inserted=true;
+					i = i-k+1;
+					break;
 				}
 			}
+			// If could not find proper position, add line break to end.
+			if(!inserted)
+				Insert(i,"\n",1);
+			line = "";
 		}
 	}
-	
-	// Insert linefeeds
-	out = text;
-	for(int32 i = 0;i < k;i++)
-	{
-		out.Insert('\n',1,insertPos[i]+i);
-	}
-	delete[] insertPos;
+	out = Text();
 	//PRINT(("%s\n",out.String()));
+	MakeEditable(true);
 }
 
 /***********************************************************
- * ByteLength: Calculate UTF-8 charactor byte length
+ * ScrollTo
  ***********************************************************/
-int32
-HWrapTextView::ByteLength(char c)
+void
+HWrapTextView::ScrollTo(BPoint pos)
 {
-	if( !(c & 0x80) )
-		return 1;
-	if((c & 0x20)&&(c & 0x40))
-		return 3;
-	return 2;
+	if(fRulerView)
+	{
+		pos.PrintToStream();
+		BPoint rulerPos=pos;
+		rulerPos.y=0;
+		fRulerView->ScrollTo(rulerPos);
+		fRulerView->Invalidate();
+	}
+	_inherited::ScrollTo(pos);
 }
-
 
 /***********************************************************
  * SetFontAndColor

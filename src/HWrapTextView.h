@@ -24,8 +24,8 @@ public:
 		void			AddRuler();
 		void			RemoveRuler();
 		
-		int32			ByteLength(char c);
 		void			GetHardWrapedText(BString &out);
+		
 		//! Hide BTextControls SetFontAndColor.
 		void			SetFontAndColor(const BFont		*inFont, 
 										uint32			inMode = B_FONT_ALL,
@@ -35,6 +35,8 @@ public:
 										const BFont		*inFont,
 										uint32			inMode = B_FONT_ALL,
 										const rgb_color	*inColor = NULL);
+		virtual void	ScrollTo(BPoint pos);
+
 protected:
 		virtual void	FrameResized(float width, float height);
 private:
