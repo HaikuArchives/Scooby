@@ -5,12 +5,6 @@
 #include <String.h>
 #include <map>
 
-enum{
-	M_CR = 1,
-	M_LF,
-	M_CRLF
-};
-
 class Encoding {
 public:
 					Encoding();
