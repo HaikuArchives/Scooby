@@ -8,6 +8,7 @@
 #include "HFindWindow.h"
 #include "HReadWindow.h"
 #include "HWriteWindow.h"
+#include "ResourceUtils.h"
 
 #include <String.h>
 #include <Debug.h>
@@ -40,12 +41,14 @@ HApp::HApp() :LocaleApp(APP_SIG)
 	fPref->LoadPrefs();
 	SetPulseRate(100000);
 	AddSoundEvent("New E-mail");
-
+	
 	BRect rect(100,100,300,170);
 	fFindWindow = new HFindWindow(rect,_("Find"));
 	fFindWindow->Hide();
 	fFindWindow->Show();
-	
+	// Load all mail icons
+	InitIcons();
+	//
 #ifdef CHECK_NETPOSITIVE
 	fFilterAdded(false)
 	
@@ -60,6 +63,24 @@ HApp::~HApp()
 {
 	delete fPref;
 	delete fPrintSettings;
+	// delete all icons
+	delete fReadMailIcon;
+	delete fNewMailIcon;
+	delete fEnclosureIcon;
+	delete fForwardedMailIcon;
+	delete fSentMailIcon;
+	delete fRepliedMailIcon;
+	delete fPriority1;
+	delete fPriority2;
+	delete fPriority4;
+	delete fPriority5;
+	delete fOpenFolderIcon;
+	delete fCloseFolderIcon;
+	delete fOpenQueryIcon;
+	delete fCloseQueryIcon;
+	delete fOpenIMAPIcon;
+	delete fCloseIMAPIcon;
+	//
 #ifdef CHECK_NETPOSITIVE
 	delete fMessageFilter;
 #endif
@@ -490,6 +511,74 @@ HApp::ShowFindWindow()
 		fFindWindow->Activate();
 		fFindWindow->Unlock();
 	}
+}
+
+/***********************************************************
+ * InitIconCache
+ ***********************************************************/
+void
+HApp::InitIcons()
+{
+	ResourceUtils utils;
+	fNewMailIcon = utils.GetBitmapResource('BBMP',"New");
+	fReadMailIcon = utils.GetBitmapResource('BBMP',"Read");
+	fSentMailIcon = utils.GetBitmapResource('BBMP',"Sent");
+	fRepliedMailIcon = utils.GetBitmapResource('BBMP',"Replied");
+	fForwardedMailIcon = utils.GetBitmapResource('BBMP',"Forwarded");
+	fEnclosureIcon = utils.GetBitmapResource('BBMP',"Enclosure");
+	fPriority1 = utils.GetBitmapResource('BBMP',"1");
+	fPriority2 = utils.GetBitmapResource('BBMP',"2");
+	fPriority4 = utils.GetBitmapResource('BBMP',"4");
+	fPriority5 = utils.GetBitmapResource('BBMP',"5");
+	fOpenFolderIcon = utils.GetBitmapResource('BBMP',"OpenFolder");
+	fCloseFolderIcon = utils.GetBitmapResource('BBMP',"CloseFolder");
+	fOpenQueryIcon = utils.GetBitmapResource('BBMP',"OpenQuery");
+	fCloseQueryIcon = utils.GetBitmapResource('BBMP',"CloseQuery");
+	fOpenIMAPIcon = utils.GetBitmapResource('BBMP',"OpenIMAP");
+	fCloseIMAPIcon = utils.GetBitmapResource('BBMP',"CloseIMAP");
+}
+
+/***********************************************************
+ * GetIcon
+ ***********************************************************/
+BBitmap*
+HApp::GetIcon(const char* icon_name)
+{
+	BBitmap *bitmap(NULL);
+	
+	if(strcmp(icon_name,"New") == 0)
+		bitmap = fNewMailIcon;
+	else if(strcmp(icon_name,"Read") == 0)
+		bitmap = fReadMailIcon;
+	else if(strcmp(icon_name,"Sent") == 0)
+		bitmap = fSentMailIcon;
+	else if(strcmp(icon_name,"Replied") == 0)
+		bitmap = fRepliedMailIcon;
+	else if(strcmp(icon_name,"Forwarded") == 0)
+		bitmap = fForwardedMailIcon;
+	else if(strcmp(icon_name,"Enclosure")== 0)
+		bitmap = fEnclosureIcon;
+	else if(strcmp(icon_name,"1")== 0)
+		bitmap = fPriority1;
+	else if(strcmp(icon_name,"2")== 0)
+		bitmap = fPriority2;
+	else if(strcmp(icon_name,"4")== 0)
+		bitmap = fPriority4;
+	else if(strcmp(icon_name,"5")== 0)
+		bitmap = fPriority5;
+	else if(strcmp(icon_name,"OpenFolder")== 0)
+		bitmap = fOpenFolderIcon;
+	else if(strcmp(icon_name,"CloseFolder")== 0)
+		bitmap = fCloseFolderIcon;
+	else if(strcmp(icon_name,"OpenQuery")== 0)
+		bitmap = fOpenQueryIcon;
+	else if(strcmp(icon_name,"CloseQuery")== 0)
+		bitmap = fCloseQueryIcon;
+	else if(strcmp(icon_name,"OpenIMAP")== 0)
+		bitmap = fOpenIMAPIcon;
+	else if(strcmp(icon_name,"CloseIMAP")== 0)
+		bitmap = fCloseIMAPIcon;	
+	return bitmap;
 }
 
 /***********************************************************

@@ -204,25 +204,24 @@ HMailItem::RefreshStatusWithThread(void *data)
 void
 HMailItem::ResetIcon()
 {
-	ResourceUtils utils;
-	BBitmap *icon = utils.GetBitmapResource('BBMP',fStatus.String());
+	HApp* app = (HApp*)be_app;
+	
+	BBitmap *icon = app->GetIcon(fStatus.String());
+	
 	RefreshTextColor();
 	
 	if(icon)
-		SetColumnContent(0,icon,2.0,true,false);
-	delete icon;
+		SetColumnContent(0,icon,2.0,false);
 	
-	icon = utils.GetBitmapResource('BBMP',fPriority.String());
+	icon = app->GetIcon(fPriority.String());
 	if(icon)
-		SetColumnContent(5,icon,2.0,true,false);
-	delete icon;
+		SetColumnContent(5,icon,2.0,false,false);
 	
 	if(fEnclosure == 1)
 	{
-		icon = utils.GetBitmapResource('BBMP',"Enclosure");
+		icon = app->GetIcon("Enclosure");
 		if(icon)
-			SetColumnContent(6,icon,2.0,true,false);
-		delete icon;
+			SetColumnContent(6,icon,2.0,false,false);
 	}
 }
 

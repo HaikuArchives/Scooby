@@ -1,6 +1,6 @@
 #include "HQueryItem.h"
 #include "HMailItem.h"
-#include "ResourceUtils.h"
+#include "HApp.h"
 #include "HFolderList.h"
 
 #include <Node.h>
@@ -74,9 +74,8 @@ HQueryItem::StartRefreshCache()
 		return;
 	fDone = false;
 	// Set icon to open folder
-	BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"CloseQuery");
-	SetColumnContent(1,icon,2.0,true,false);
-	delete icon;
+	BBitmap *icon = ((HApp*)be_app)->GetIcon("CloseQuery");
+	SetColumnContent(1,icon,2.0,false,false);
 	StartGathering();
 }
 
@@ -145,9 +144,9 @@ HQueryItem::Fetching()
 		fDone = true;
 		
 		// Set icon to open folder
-		BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"OpenQuery");
-		SetColumnContent(1,icon,2.0,true,false);
-		delete icon;
+		BBitmap *icon = ((HApp*)be_app)->GetIcon("OpenQuery");
+		SetColumnContent(1,icon,2.0,false,false);
+		
 		SetName(fUnread);
 		InvalidateMe();
 	}DEBUG_ONLY(

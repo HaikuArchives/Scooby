@@ -1,6 +1,5 @@
 #include "HIMAP4Folder.h"
 #include "HApp.h"
-#include "ResourceUtils.h"
 #include "HIMAP4Item.h"
 #include "Encoding.h"
 #include "HWindow.h"
@@ -103,9 +102,9 @@ HIMAP4Folder::StartRefreshCache()
 		return;
 	fDone = false;
 	// Set icon to open folder
-	BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"CloseFolder");
-	SetColumnContent(1,icon,2.0,true,false);
-	delete icon;
+	BBitmap *icon = ((HApp*)be_app)->GetIcon("CloseFolder");
+	SetColumnContent(1,icon,2.0,false,false);
+	
 	StartGathering();
 }
 
@@ -206,9 +205,8 @@ HIMAP4Folder::IMAPGetList()
 	fDone = true;
 	
 	// Set icon to open folder
-	BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"OpenIMAP");
-	SetColumnContent(1,icon,2.0,true,false);
-	delete icon;
+	BBitmap *icon = ((HApp*)be_app)->GetIcon("OpenIMAP");
+	SetColumnContent(1,icon,2.0,false,false);
 	
 	InvalidateMe();
 	fThread = -1;
