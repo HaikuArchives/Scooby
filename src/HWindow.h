@@ -45,7 +45,8 @@ enum{
 	M_REMOVE_MAIL_FROM_LIST = 'mRmL',
 	M_STOP_MAIL_BARBER_POLE = 'mSoB',
 	M_FILTER_MAIL = 'mFiM',
-	M_INVALIDATE_MAIL = 'mIVm'
+	M_INVALIDATE_MAIL = 'mIVm',
+	M_DELETE_FOLDER = 'mDEF'
 };
 
 class HWindow: public BWindow {
@@ -101,6 +102,8 @@ protected:
 				void	EmptyTrash();
 				
 				void	FilterMails(HMailItem *item);
+
+				void	DeleteFolder(int32 sel);
 private:
 		HMailList*		fMailList;
 		HMailCaption*	fMailCaption;

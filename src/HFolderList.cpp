@@ -662,6 +662,19 @@ HFolderList::MouseDown(BPoint pos)
     	 item = new BMenuItem(_("Add IMAP4 Folders"),new BMessage(M_ADD_IMAP4_FOLDER),0,0);
     	 item->SetEnabled((sel<0)?true:false);
     	 theMenu->AddItem(item);
+    	 item = new BMenuItem(_("IMAP4 Folder Properties"),new BMessage(M_OPEN_FOLDER),0,0);
+    	 if(sel < 0)
+    	 {
+    	 	item->SetEnabled(false);
+    	 }else{
+    	 	HFolderItem *folder = cast_as(ItemAt(sel),HFolderItem);
+    	 	item->SetEnabled((folder->FolderType() == IMAP4_TYPE)?true:false);
+    	 }
+    	 theMenu->AddItem(item);
+    	 theMenu->AddSeparatorItem();
+    	 item = new BMenuItem(_("Delete Folders"),new BMessage(M_DELETE_FOLDER),0,0);
+    	 item->SetEnabled((sel<0)?false:true);
+    	 theMenu->AddItem(item);
     	 
     	 BRect r;
          ConvertToScreen(&pos);
@@ -1031,6 +1044,28 @@ HFolderList::ProcessMails(BMessage *message)
 		}
 		} // end switch
 	}
+}
+
+/***********************************************************
+ * RemoveFolder
+ ***********************************************************/
+HFolderItem*
+HFolderList::RemoveFolder(int32 index)
+{
+	HFolderItem *item = cast_as(RemoveItem(index),HFolderItem);	
+	fPointerList.RemoveItem(item);
+	switch(item->FolderType())
+	{
+	case QUERY_TYPE:
+		if(!FullListHasItem(fQueryFolders))
+			RemoveItem(fQueryFolders);
+		break;
+	case IMAP4_TYPE:
+		if(!FullListHasItem(fIMAP4Folders))
+			RemoveItem(fIMAP4Folders);
+		break;
+	}
+	return item;
 }
 
 /***********************************************************
