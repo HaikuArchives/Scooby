@@ -18,6 +18,7 @@
 #include <FindDirectory.h>
 #include <Path.h>
 #include <string.h>
+#include <Deskbar.h>
 
 #include "HWindow.h"
 #include "MenuUtils.h"
@@ -194,15 +195,27 @@ HDeskbarView::Pulse()
 		BMessage reply;
 		BMessage msg(M_CHECK_SCOOBY_STATE);
 		msg.AddInt32("icon",fCurrentIconState);
-		scooby.SendMessage(&msg,&reply,1000000,1000000);
-		int32 icon;
-		if(reply.FindInt32("icon",&icon) != B_OK)
-			return;
-		if(icon == fCurrentIconState)
-			return;
+		if( scooby.SendMessage(&msg,&reply,1000000,1000000) == B_OK)
+		{
+			int32 icon;
+			if(reply.what == B_NO_REPLY)
+				goto err;
+			if(reply.FindInt32("icon",&icon) != B_OK)
+				return;
+			if(icon == fCurrentIconState)
+				return;
 		
-		ChangeIcon(icon);
-	}
+			ChangeIcon(icon);
+		}else{
+			goto err;
+		}
+	}else
+		goto err;
+	return;
+err:
+	// probably Scooby had crached
+	BDeskbar().RemoveItem(APP_NAME);
+
 }
 
 /***********************************************************
@@ -247,7 +260,7 @@ HDeskbarView::MouseDown(BPoint pos)
 				team_id id = be_roster->TeamFor(APP_SIG);
 				BMessenger messenger(APP_SIG,id);
 				messenger.SendMessage(aMessage);
-			}	
+			}
 		}
 	}
 	delete theMenu;
