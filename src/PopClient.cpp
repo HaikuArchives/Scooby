@@ -422,6 +422,7 @@ PopClient::Retr(int32 index,BString &content)
 	// Get mail content size when Retr command doesn't contain it
 	if(index != 0 && size <=0)
 	{	
+		PRINT(("Retr answer doesn't contain mail size\n"));
 		if(List(index,size_list) != B_OK) {
 			cout << fLog.String() << endl;
 			return B_ERROR;

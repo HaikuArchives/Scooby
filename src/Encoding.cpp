@@ -33,7 +33,8 @@ const char *kCharsets[] ={"ISO-8859-1",
 								"ISO-8859-13",
 								"ISO-8859-14",
 								"ISO-8859-15",
-								"WINDOWS-1251"};
+								"WINDOWS-1251",
+								"WINDWOS-1252"};
 	
 const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_ISO2_CONVERSION,
@@ -51,9 +52,10 @@ const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_ISO13_CONVERSION,
 								B_ISO14_CONVERSION,
 								B_ISO15_CONVERSION,
-								B_MS_WINDOWS_1251_CONVERSION};
+								B_MS_WINDOWS_1251_CONVERSION,
+								B_MS_WINDOWS_CONVERSION};
 
-const int32 kNumCharset = 17;
+const int32 kNumCharset = 18;
 
 const char kMimeBase[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
