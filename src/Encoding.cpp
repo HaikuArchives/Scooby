@@ -134,7 +134,7 @@ Encoding::ToMime(BString &inString, int32 encoding)
 	ConvertFromUTF8(inString,encoding);
 	// For japanese jis support	
 	if(encoding == B_JIS_CONVERSION)
-		inString << kJis_End;
+		inString += kJis_End;
 	int32 inlen = inString.Length();
 	const char *in = inString.String();
 	char *out = outString.LockBuffer(inString.Length() *3);
@@ -162,7 +162,7 @@ Encoding::ToMime(BString &inString, int32 encoding)
     out[i] = '\0';
     
     outString.UnlockBuffer(strlen(out));
-    outString << "?=";
+    outString += "?=";
     
     // Find encoding
     int32 encoding_index = -1;
@@ -179,8 +179,9 @@ Encoding::ToMime(BString &inString, int32 encoding)
     	return;
     
     inString = "=?";
-    inString << kCharsets[encoding_index] << "?B?";
-    inString << outString;
+    inString += kCharsets[encoding_index];
+    inString += "?B?";
+    inString += outString;
     return; 
 } 
 
@@ -213,7 +214,8 @@ Encoding::ISO2UTF8(BString &str,int32 &encoding)
 	const char *buf = str.String();
 	
 	BString key("=?");
-	key << kCharsets[encoding_index] << "?";
+	key += kCharsets[encoding_index];
+	key += "?";
 	
 	for(int32 i = 0;i < len;i++)
 	{
@@ -226,18 +228,18 @@ Encoding::ISO2UTF8(BString &str,int32 &encoding)
 			is_mime = false;
 			buf+=1;
 			MimeDecode(mime,quoted_printable);
-			result << mime;
+			result += mime;
 			mime = "";
 		}else{
 			if(!is_mime)
 			{
 				if(buf[i] != '\n' && buf[i] != '\r')
-					result << buf[i];
+					result += buf[i];
 				if(buf[i] == '\0')
 					break;
 			}else{
 				if(buf[i] != '\n' && buf[i] != '\r')
-					mime << buf[i];
+					mime += buf[i];
 			}
 		}
 	}
