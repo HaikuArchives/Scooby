@@ -530,7 +530,8 @@ HPopClientView::SaveMail(const char* all_content,
 	// create the e-mail file
 	BFile file;
 
-	TrackerUtils().SmartCreateFile(&file,&destDir,path.Leaf(),"_");
+	if(TrackerUtils().SmartCreateFile(&file,&destDir,path.Leaf(),"_") != B_OK)
+		PRINT(("Failed to save mail:%s",path.Leaf()));
 	// write e-mail attributes
 	file.Write(all_content,strlen(all_content));
 	file.SetSize(strlen(all_content));
