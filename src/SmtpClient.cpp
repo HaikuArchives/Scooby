@@ -95,6 +95,10 @@ SmtpClient::Login(const char* _login,const char* password)
 	const char* login = _login;		
 	char hex_digest[33];
 	BString out;
+	
+	int32 loginlen = ::strlen(login);
+	int32 passlen = ::strlen(password);
+	
 	if(fAuthType&CRAM_MD5)
 	{
 		//******* CRAM-MD5 Authentication ( not tested yet.)
@@ -108,7 +112,6 @@ SmtpClient::Login(const char* _login,const char* password)
 		baselen = ::decode64(base,base,baselen);
 		base[baselen] = '\0';
 		
-		int32 passlen = strlen(password);
 		::MD5HexHmac(hex_digest,
 				(const unsigned char*)base,
 				(int)baselen,
@@ -117,7 +120,7 @@ SmtpClient::Login(const char* _login,const char* password)
 		printf("%s\n%s\n",base,hex_digest);
 		delete[] base;
 		
-		char *resp = new char[(strlen(hex_digest)+strlen(login))*2+3];
+		char *resp = new char[(strlen(hex_digest)+loginlen)*2+3];
 		
 		::sprintf(resp,"%s %s",login,hex_digest);
 		baselen = ::encode64(resp,resp,strlen(resp));
@@ -131,9 +134,11 @@ SmtpClient::Login(const char* _login,const char* password)
 		if(atol(res)<500)
 			return B_OK;
 		
-	}else if(fAuthType&DIGEST_MD5){
+	}
+	/*if(fAuthType&DIGEST_MD5){
 	
-	}else if(fAuthType&LOGIN){
+	}*/
+	if(fAuthType&LOGIN){
 	//******* LOGIN Authentication ( tested. work fine)
 		SendCommand("AUTH LOGIN\r\n");
 		const char* res = fLog.String();
@@ -141,8 +146,8 @@ SmtpClient::Login(const char* _login,const char* password)
 		if(strncmp(res,"334",3)!=0)
 			return B_ERROR;
 		// Send login name as base64
-		char* login64 = new char[::strlen(login)*3+3];
-		::encode64(login64,(char*)login,strlen(login));
+		char* login64 = new char[loginlen*3+3];
+		::encode64(login64,(char*)login,loginlen);
 		::strcat(login64,"\r\n");
 		SendCommand(login64);
 		delete [] login64;
@@ -151,16 +156,35 @@ SmtpClient::Login(const char* _login,const char* password)
 		if(strncmp(res,"334",3)!=0)
 			return B_ERROR;
 		// Send password as base64
-		login64 = new char[::strlen(password)*3+3];
-		::encode64(login64,(char*)password,strlen(password));
+		login64 = new char[passlen*3+3];
+		::encode64(login64,(char*)password,passlen);
 		::strcat(login64,"\r\n");
 		SendCommand(login64);
 		delete[] login64;
 		res = fLog.String();
 		if(atol(res)<500)
 			return B_OK;
-	}else if(fAuthType&PLAIN){	
-	}	
+	}
+	//******* PLAIN Authentication ( not test yet.)
+	if(fAuthType&PLAIN){	
+		char* login64 = new char[((loginlen+1)*2+passlen)*3];
+		::memset(login64,0,((loginlen+1)*2+passlen)*3);
+		::memcpy(login64,login,loginlen);
+		::memcpy(login64+loginlen+1,login,loginlen);
+		::memcpy(login64+loginlen*2+2,password,passlen);
+		
+		::encode64(login64,login64,((loginlen+1)*2+passlen));
+		BString cmd ="AUTH PLAIN ";
+		cmd += login64;
+		cmd += "\r\n";
+		delete[] login64;
+		
+		SendCommand(cmd.String());	
+		const char* res = fLog.String();
+		if(atol(res)<500)
+			return B_OK;
+	}
+		
 	return B_ERROR;
 }
 
