@@ -103,26 +103,33 @@ HMailItem::HMailItem(const entry_ref &ref,
 	if(size <= 0)
 	{
 		BNode mailNode(&fRef);
-		mailNode.GetSize((off_t*)&size);
-		fSize = size;
+		off_t filesize;
+		mailNode.GetSize(&filesize);
+		fSize = size = filesize;
 		
 		if(mailNode.ReadAttrString(B_MAIL_ATTR_ACCOUNT,&fAccount) != B_OK)
 			fAccount = "";
 	
 	}
 	//
-	HString str_size,suffix("bytes");
-	float display_size = size;
+	char suffix[10];
+	::strcpy(suffix,"bytes");
+	char str_size[30];
+	float display_size = fSize;
 	if(display_size >= 1024 && display_size < 1048576)
 	{
-		suffix = "KB";
+		::strcpy(suffix,"KB");
 		display_size = display_size/1024.0;	
 	}else if(display_size >= 1048576){
-		suffix = "MB";
+		::strcpy(suffix,"MB");
 		display_size = display_size/1048576.0;
 	}
-	str_size.Format("%7.2f %s",display_size,suffix.String());
-	SetColumnContent(8,str_size.String());
+#ifdef __INTEL__
+	::snprintf(str_size,29,"%7.2f %s",display_size,suffix);		
+#else
+	::sprintf(str_size,"%7.2f %s",display_size,suffix);
+#endif
+	SetColumnContent(8,str_size);
 	SetColumnContent(9,fAccount.String());
 	
 	//fInitThread = ::spawn_thread(RefreshStatusWithThread,"MailInitThread",B_NORMAL_PRIORITY,this);
@@ -346,21 +353,28 @@ HMailItem::InitItem()
 		SetColumnContent(4,fDate.String());
 		SetColumnContent(7,fCC.String());
 		SetColumnContent(9,fAccount.String());
-		node.GetSize((off_t*)&fSize);
-		HString str_size,suffix("bytes");
+		
+		off_t filesize;
+		node.GetSize(&filesize);
+		fSize = filesize;
+		char suffix[10];
+		::strcpy(suffix,"bytes");
+		char str_size[30];
 		float display_size = fSize;
 		if(display_size >= 1024 && display_size < 1048576)
 		{
-			suffix = "KB";
+			::strcpy(suffix,"KB");
 			display_size = display_size/1024.0;	
 		}else if(display_size >= 1048576){
-			suffix = "MB";
+			::strcpy(suffix,"MB");
 			display_size = display_size/1048576.0;
 		}
-		str_size.Format("%7.2f %s",display_size,suffix.String());
-		SetColumnContent(8,str_size.String());
-		
-		//SetColumnContent(5,fPriority.String(),false);
+#ifdef __INTEL__
+		snprintf(str_size,29,"%7.2f %s",display_size,suffix);		
+#else
+		sprintf(str_size,"%7.2f %s",display_size,suffix);
+#endif
+		SetColumnContent(8,str_size);
 		ResetIcon();
 	}
 	return;
