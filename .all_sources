@@ -32,7 +32,6 @@ SRCS= ./src/HFolderItem.cpp\
 	./src/HIMAP4Item.cpp\
 	./src/HIMAP4Folder.cpp\
 	./src/IMAP4Client.cpp\
-	./src/HIMAP4Window.cpp\
 	./src/HSimpleFolderItem.cpp\
 	./src/HMailCache.cpp\
 	./src/HAttachmentList.cpp\
