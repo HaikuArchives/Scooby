@@ -158,7 +158,7 @@ HQueryItem::Fetching()
 					ref.set_name(dent->d_name);
 					if(node.SetTo(&ref) != B_OK)
 						continue;
-					node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH);
+					node.ReadAttr("BEOS:TYPE",'MIMS',0,type,B_MIME_TYPE_LENGTH);
 					if(::strcmp(type,B_MAIL_TYPE) == 0)
 					{
 						fMailList.AddItem(item = new HMailItem(ref));

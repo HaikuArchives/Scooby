@@ -28,9 +28,10 @@ LEDAnimation::~LEDAnimation()
 void
 LEDAnimation::Start()
 {
-	fOrigModifiers = ::modifiers();
 	if(fThread>=0)
 		return;
+	fOrigModifiers = ::modifiers();
+	::set_keyboard_locks(0);
 	fThread = ::spawn_thread(AnimationThread,"LED thread",B_NORMAL_PRIORITY,this);
 	::resume_thread(fThread);
 }

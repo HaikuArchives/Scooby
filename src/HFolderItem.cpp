@@ -342,7 +342,7 @@ HFolderItem::Gather()
 			/* Do something with the ref. */
 			if(node.SetTo(&ref) != B_OK)
 				continue;
-			node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH);
+			node.ReadAttr("BEOS:TYPE",'MIMS',0,type,B_MIME_TYPE_LENGTH);
 			if(::strcmp(type,B_MAIL_TYPE) == 0)
 			{
 				AddMail(item = new HMailItem(ref));
@@ -370,7 +370,7 @@ HFolderItem::Gather()
 		
 		if(node.SetTo(&ref) != B_OK)
 			continue;
-		if(node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH) <0)
+		if(node.ReadAttr("BEOS:TYPE",'MIMS',0,type,B_MIME_TYPE_LENGTH) <0)
 			continue;
 		if(::strcmp(type,B_MAIL_TYPE) == 0)
 			AddMail(item = new HMailItem(ref));

@@ -432,7 +432,7 @@ HFolderList::GetFolders(void* data)
 					continue;
 			}
 			
-			node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH);
+			node.ReadAttr("BEOS:TYPE",'MIMS',0,type,B_MIME_TYPE_LENGTH);
 			if(::strcmp(type,"application/x-vnd.Be-query") != 0)
 				continue;
 			
@@ -1011,7 +1011,7 @@ HFolderList::NodeMonitor(BMessage *message)
 				msg.AddPointer("item",folder);
 				Window()->PostMessage(&msg,this);
 			}else
-				AddQuery(ref);		
+				AddQuery(ref);
 			break;
 		}
 		case B_ENTRY_REMOVED:
@@ -1058,7 +1058,6 @@ HFolderList::AddQuery(entry_ref ref)
 	ReadNodeAttrString(&node,"BEOS:TYPE",&type);
 	if(type.Compare("application/x-vnd.Be-query") != 0)
 		return B_ERROR;
-	
 	HQueryItem *item = new HQueryItem(ref,this);
 	BMessage msg(M_ADD_FOLDER);
 	msg.AddPointer("item",item);

@@ -260,12 +260,13 @@ ReadNodeAttrString(BNode *node,const char* attrName,BString *out,const char* def
 	attr_info attr;
 	status_t err = B_OK;
 	// check whether it has the attribute.
-	if(node->GetAttrInfo(attrName,&attr) == B_OK && attr.type == B_STRING_TYPE)
+	if(node->GetAttrInfo(attrName,&attr) == B_OK &&
+		 (attr.type == B_STRING_TYPE||attr.type == B_MIME_TYPE || attr.type == 'MIMS') )
 	{
 		if(attr.size > 0)
 		{
 			char *buf = out->LockBuffer(attr.size+1);
-			node->ReadAttr(attrName,B_STRING_TYPE,0,buf,attr.size);
+			node->ReadAttr(attrName,attr.type,0,buf,attr.size);
 			out->UnlockBuffer();
 		}	
 	}else{
