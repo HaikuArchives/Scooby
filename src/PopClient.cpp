@@ -40,7 +40,7 @@ PopClient::Connect(const char* address,
 	
 	fLog = "";
 	status_t err;
-	err = _inherited::Connect(fHost.String(),fPort);
+	err = _inherited::Connect(address,port);
 	if(err != B_OK)
 		return err;
 		

@@ -712,9 +712,11 @@ IMAP4Client::Delete(const char* path)
 	}
 	//
 	BString out;
-	BString cmd = "DELETE ";
-	cmd += path;
-	if(SendCommand(cmd.String()) == B_OK)
+	char *cmd = new char[strlen(path)+8];
+	::sprintf(cmd,"DELETE %s",path);
+	status_t err =  SendCommand(cmd);
+	delete[] cmd;
+	if(err == B_OK)
 		return ReceiveResponse(out);
 	return B_ERROR;
 }
