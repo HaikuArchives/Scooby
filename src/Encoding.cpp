@@ -37,7 +37,8 @@ const char *kCharsets[] ={"ISO-8859-1",
 								"ISO-8859-14",
 								"ISO-8859-15",
 								"WINDOWS-1251",
-								"WINDWOS-1252"};
+								"WINDWOS-1252",
+								"UTF-8"};
 	
 const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_ISO2_CONVERSION,
@@ -56,7 +57,8 @@ const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_ISO14_CONVERSION,
 								B_ISO15_CONVERSION,
 								B_MS_WINDOWS_1251_CONVERSION,
-								B_MS_WINDOWS_CONVERSION};
+								B_MS_WINDOWS_CONVERSION,
+								B_UTF8_CONVERSION};
 
 
 /***********************************************************
@@ -127,7 +129,8 @@ Encoding::ToMime(BString &inString, int32 encoding)
 #endif
 	if(inString.Length() <= 0)
 		return;
-	ConvertFromUTF8(inString,encoding);
+	if(encoding>0)
+		ConvertFromUTF8(inString,encoding);
 	
 #ifndef USE_ICONV
 	// For japanese jis support	

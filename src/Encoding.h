@@ -5,6 +5,8 @@
 #include <String.h>
 #include <map>
 
+#define B_UTF8_CONVERSION -1
+
 //!Convert text to and from the Unicode UTF-8 encoding.
 class Encoding {
 public:
