@@ -56,7 +56,7 @@ SmtpClient::Connect(const char* address,int16 port,bool esmtp)
 		cmd = "HELO ";
 	else
 		cmd = "EHLO ";
-	cmd << address << CRLF;
+	cmd += address;
 	if( SendCommand(cmd.String()) != B_OK)
 	{
 		PRINT(("Err:%s\n",fLog.String()));
@@ -102,7 +102,7 @@ SmtpClient::Login(const char* _login,const char* password)
 	if(fAuthType&CRAM_MD5)
 	{
 		//******* CRAM-MD5 Authentication ( not tested yet.)
-		SendCommand("AUTH CRAM-MD5\r\n");
+		SendCommand("AUTH CRAM-MD5");
 		const char* res = fLog.String();
 		
 		if(strncmp(res,"334",3)!=0)
@@ -125,7 +125,6 @@ SmtpClient::Login(const char* _login,const char* password)
 		::sprintf(resp,"%s %s",login,hex_digest);
 		baselen = ::encode64(resp,resp,strlen(resp));
 		resp[baselen]='\0';
-		::strcat(resp,"\r\n");
 		SendCommand(resp);
 		
 		delete[] resp;
@@ -142,7 +141,7 @@ SmtpClient::Login(const char* _login,const char* password)
 	}
 	if(fAuthType&LOGIN){
 	//******* LOGIN Authentication ( tested. work fine)
-		SendCommand("AUTH LOGIN\r\n");
+		SendCommand("AUTH LOGIN");
 		const char* res = fLog.String();
 		
 		if(strncmp(res,"334",3)!=0)
@@ -150,7 +149,6 @@ SmtpClient::Login(const char* _login,const char* password)
 		// Send login name as base64
 		char* login64 = new char[loginlen*3+3];
 		::encode64(login64,(char*)login,loginlen);
-		::strcat(login64,"\r\n");
 		SendCommand(login64);
 		delete [] login64;
 		
@@ -160,7 +158,6 @@ SmtpClient::Login(const char* _login,const char* password)
 		// Send password as base64
 		login64 = new char[passlen*3+3];
 		::encode64(login64,(char*)password,passlen);
-		::strcat(login64,"\r\n");
 		SendCommand(login64);
 		delete[] login64;
 		res = fLog.String();
@@ -178,7 +175,6 @@ SmtpClient::Login(const char* _login,const char* password)
 		::encode64(login64,login64,((loginlen+1)*2+passlen));
 		BString cmd ="AUTH PLAIN ";
 		cmd += login64;
-		cmd += "\r\n";
 		delete[] login64;
 		
 		SendCommand(cmd.String());	
@@ -224,11 +220,14 @@ SmtpClient::ReceiveResponse(BString &out)
  * Command
  ***********************************************************/
 status_t
-SmtpClient::SendCommand(const char* cmd)
+SmtpClient::SendCommand(const char* _cmd,bool send_line_break)
 {
 	int32 len;
-	PRINT(("C:%s\n",cmd));
- 	if( Send(cmd, ::strlen(cmd)) == B_ERROR)
+	BString cmd=_cmd;
+	PRINT(("C:%s\n",_cmd));
+	if(send_line_break)
+		cmd += CRLF;
+ 	if( Send(cmd.String(), cmd.Length()) == B_ERROR)
 		return B_ERROR;
 	fLog = "";
 	// Receive
@@ -268,7 +267,7 @@ SmtpClient::SendMail(const char* from
 	BString cmd = "MAIL FROM: ";
 
 	ParseAddress(from,cmd);
-	if(SendCommand(cmd.String()) != B_OK)
+	if(SendCommand(cmd.String(),false) != B_OK)
 	{
 		PRINT(("Err: mail from\n"));
 		return B_ERROR;
@@ -289,7 +288,7 @@ SmtpClient::SendMail(const char* from
 			const char* kText = addr.String();
 			
 			ParseAddress(kText,cmd);
-			if(SendCommand(cmd.String()) != B_OK)
+			if(SendCommand(cmd.String(),false) != B_OK)
 			{
 				PRINT(("Err: rcpt\n"));
 				return B_ERROR;
@@ -298,7 +297,7 @@ SmtpClient::SendMail(const char* from
 		}
 	}
 	// Data
-	cmd = "DATA\r\n";
+	cmd = "DATA";
 	if(SendCommand(cmd.String()) != B_OK)
 	{
 		PRINT(("Err: data\n"));
@@ -339,7 +338,7 @@ SmtpClient::SendMail(const char* from
 		}
 	}
 
-	cmd = ".\r\n";
+	cmd = ".";
 	if( SendCommand(cmd.String()) != B_OK)
 	{
 		PRINT(("Err:Send content\n"));

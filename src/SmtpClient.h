@@ -35,7 +35,7 @@ public:
 			//!Parse one E-mail address from input string.
 	static	void		ParseAddress(const char* in,BString& out);
 			//!Send command and receive all response.
-			status_t	SendCommand(const char* cmd);
+			status_t	SendCommand(const char* cmd,bool send_line_break=true);
 			//!Receive all command response
 			int32		ReceiveResponse(BString &out);
 private:
