@@ -27,7 +27,7 @@
 /***********************************************************
  * Constructor
  ***********************************************************/
-HFolderItem::HFolderItem(entry_ref ref,BListView *target)
+HFolderItem::HFolderItem(const entry_ref &ref,BListView *target)
 	: CLVEasyItem(0, false, false, 20.0)
 	,fDone(false)
 	,fUnread(0)

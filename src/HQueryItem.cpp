@@ -14,7 +14,7 @@
 /***********************************************************
  * Constructor
  ***********************************************************/
-HQueryItem::HQueryItem(entry_ref ref,
+HQueryItem::HQueryItem(const entry_ref &ref,
 						BListView *target)
 			:HFolderItem(ref,target)
 			,fPredicate("")

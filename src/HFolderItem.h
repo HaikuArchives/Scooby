@@ -15,7 +15,7 @@ class HMailItem;
 class HFolderItem : public CLVEasyItem
 {
 public:
-					HFolderItem(entry_ref ref,BListView *owner);
+					HFolderItem(const entry_ref &ref,BListView *owner);
 	virtual			~HFolderItem();
 			
 	virtual	void	StartGathering();
