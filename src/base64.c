@@ -45,37 +45,46 @@ ssize_t encode64(char *out,char *_in, unsigned inlen)
 }
 
 
-ssize_t decode64(char *out,const char *in, unsigned inlen)
+ssize_t decode64(char *out,const char *_in, unsigned inlen)
 {
     unsigned len = 0,lup;
     int c1, c2, c3, c4;
-
-    if (in[0] == '+' && in[1] == ' ') in += 2;
-    if (*in == '\r') return -1;
-
+	int i,iR;
+	char *in = malloc(inlen+1);
+ 	memcpy(in,_in,inlen);
+ 	in[inlen] = '\0';
+ 	
+ 	i = 0;
+    iR=0;
+    if (in[i+0] == '+' && in[i+1] == ' ') i += 2;
+	
     for (lup=0;lup<inlen/4;lup++)
     {
-        c1 = in[0];
-        if (CHAR64(c1) == -1) return -1;
-        c2 = in[1];
-        if (CHAR64(c2) == -1) return -1;
-        c3 = in[2];
-        if (c3 != '=' && CHAR64(c3) == -1) return -1; 
-        c4 = in[3];
-        if (c4 != '=' && CHAR64(c4) == -1) return -1;
-        in += 4;
-        *out++ = (CHAR64(c1) << 2) | (CHAR64(c2) >> 4);
+    	if(in[i] == '\r'|| in[i] == '\n') 
+        { 
+            i++; 
+        	continue; 
+        } 
+        c1 = in[i+0];
+        c2 = in[i+1];
+        c3 = in[i+2];
+        c4 = in[i+3];
+        i += 4;
+        out[iR++] = (CHAR64(c1) << 2) | (CHAR64(c2) >> 4);
         ++len;
-        if (c3 != '=') {
-            *out++ = ((CHAR64(c2) << 4) & 0xf0) | (CHAR64(c3) >> 2);
+        if (c3 != '=')
+        {
+            out[iR++] = ((CHAR64(c2) << 4) & 0xf0) | (CHAR64(c3) >> 2);
             ++len;
-            if (c4 != '=') {
-                *out++ = ((CHAR64(c3) << 6) & 0xc0) | CHAR64(c4);
+            if (c4 != '=')
+            {
+                out[iR++] = ((CHAR64(c3) << 6) & 0xc0) | CHAR64(c4);
                 ++len;
             }
         }
     }
 
-    *out=0; /* terminate string */
-    return strlen(out);
+    out[iR]='\0'; /* terminate string */
+ 	free(in);
+ 	return strlen(out);
 }
