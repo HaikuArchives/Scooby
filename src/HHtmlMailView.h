@@ -40,7 +40,7 @@ protected:
 			void	ResetScrollBar();
 			void	ResetAttachmentList();
 			
-			void	ConvertToHtmlCharactor(char c,char* out);
+			void	ConvertToHtmlCharactor(char c,char* out,bool *translate_space);
 private:
 	HHtmlView*		fHtmlView;
 	CTextView*		fHeaderView;
