@@ -813,7 +813,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	path.Append(fTopView->AccountName());
 	
 	BFile AccountFile(path.Path(),B_READ_ONLY);
-	BString smtp_host(""),reply;
+	BString smtp_host(""),reply("");
 	if(AccountFile.InitCheck() == B_OK)
 	{
 		BMessage msg;
