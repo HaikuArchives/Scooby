@@ -15,8 +15,8 @@ const rgb_color kWhite = {255,255,255,255};
 /***********************************************************
  * Constructor
  ***********************************************************/
-HProgressBarView::HProgressBarView(BRect rect,const char* name)
-	:BView(rect,name,B_FOLLOW_ALL,B_WILL_DRAW|B_PULSE_NEEDED)
+HProgressBarView::HProgressBarView(BRect frame,const char* name)
+	:BView(frame,name,B_FOLLOW_ALL,B_WILL_DRAW|B_PULSE_NEEDED)
 	,fLastBarberPoleOffset(0)
 	,fShowingBarberPole(false)
 	,fShowingProgress(false)
