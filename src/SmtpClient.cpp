@@ -135,9 +135,11 @@ SmtpClient::Login(const char* _login,const char* password)
 			return B_OK;
 		
 	}
-	/*if(fAuthType&DIGEST_MD5){
-	
-	}*/
+	if(fAuthType&DIGEST_MD5){
+	//******* DIGEST-MD5 Authentication ( not written yet..)
+		fLog = "DIGEST-MD5 Authentication is not supported in Scooby";
+		return B_ERROR;
+	}
 	if(fAuthType&LOGIN){
 	//******* LOGIN Authentication ( tested. work fine)
 		SendCommand("AUTH LOGIN\r\n");
