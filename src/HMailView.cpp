@@ -808,12 +808,15 @@ HMailView::HighlightQuote(BTextView *view)
 		text.CopyInto(line,i,e);
 		j = 0;
 		if(line[0] == '>')
+		{	
 			j++;
-		if(line[1] == '>')
-			j++;
-		if(line[2] == '>')
-			j++;
-
+			if(line[1] == '>')
+			{
+				j++;
+				if(line[2] == '>')
+					j++;
+			}
+		}
 		rgb_color col = kBlack;
 			
 		if(j==1)
