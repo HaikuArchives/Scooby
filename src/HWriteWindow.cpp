@@ -49,7 +49,7 @@ HWriteWindow::HWriteWindow(BRect rect
 							,HMailItem *replyItem
 							,bool reply
 							,bool forward)
-	:BWindow(rect,name,B_DOCUMENT_WINDOW,0)
+	:BWindow(rect,name,B_DOCUMENT_WINDOW,B_ASYNCHRONOUS_CONTROLS)
 	,fFilePanel(NULL)
 	,fReply(reply)
 	,fForward(forward)
