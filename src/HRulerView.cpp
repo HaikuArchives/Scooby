@@ -73,8 +73,8 @@ HRulerView::DrawRuler()
 	pos.y = bounds.top + 7;
 	for(int32 i = 0;i < count;i++)
 	{
-		AddLine(BPoint(start,(i%10)?bounds.top+13:bounds.top+8),BPoint(start,bounds.bottom),black);
-		if(!(i%10))
+		AddLine(BPoint(start,(i%10==0)?bounds.top+8:bounds.top+13),BPoint(start,bounds.bottom),black);
+		if(i%10==0)
 		{
 			pos.x = start-3;
 #ifdef __INTEL__			
@@ -139,8 +139,8 @@ void
 HRulerView::FontReseted()
 {
 	fTextView->GetFontAndColor(0,&fFont);
-	int c = 'A';
-	fFontWidth = fFont.StringWidth((char*)&c);
+	const char* c = "A";
+	fFontWidth = fFont.StringWidth(c);
 	Invalidate();
 }
 
