@@ -493,6 +493,8 @@ IMAP4Client::ReceiveLine(BString &out)
 			out += c;
 			len += r;
 		}
+	}else{
+		(new BAlert("",_("IMAP4 socket timeout."),_("OK")))->Go();
 	}
 	//PRINT(("%s\n",out.String()));
 	return len;

@@ -428,7 +428,6 @@ PopClient::Retr(int32 index,BString &content)
 			size = atol(&size_list[++i]);
 		}
 	}
-	PRINT(("Size:%d\n",size));
 	// Send Retr command
 	if( SendCommand(cmd.String()) != B_OK)
 	{
@@ -599,17 +598,18 @@ PopClient::ReceiveLine(BString &line)
 	char c = 0;
 	line = "";
 	
-	while(c != '\n')
-	{
-		if(fEndpoint->IsDataPending(kTimeout))
+	if(fEndpoint->IsDataPending(kTimeout))
+	{	
+		while(c != '\n')
 		{
 			rcv = fEndpoint->Receive(&c,1);
 			if(rcv <=0)
 				break;
 			len += rcv;
 			line += c;
-		}else
-			break;
+		}
+	}else{
+		(new BAlert("",_("POP3 socket timeout."),_("OK")))->Go();
 	}
 	return len;
 }
