@@ -554,7 +554,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 			// Convert some latin 1 charactors
 			if((text[i] - 0xffffffc2) == 0 && 
 				(text[i+1] - 0xffffffa1) >= 0 &&
-				(text[i+1] - 0xffffffa1) < 35)
+				(text[i+1] - 0xffffffa1) < 94)
 			{
 				::sprintf(buf,"&#%d;",text[i+1]+161);
 				text++;
@@ -585,13 +585,6 @@ void
 HHtmlMailView::ConvertToHtmlCharactor(char c,char *out)
 {
 	::memset(out,0,10);
-/*	// Some Latin1 charactors
-	if(c & 0x80)
-	{
-		
-		::sprintf(out,"&#%d;",c);
-		return;
-	}*/ 
 	// Special charactors
 	switch(c)
 	{
@@ -605,7 +598,7 @@ HHtmlMailView::ConvertToHtmlCharactor(char c,char *out)
 		::strcpy(out,"&amp;");
 		break;
 	case '"':
-		::strcpy(out,"&quote;");
+		::strcpy(out,"&quot;");
 		break;
 	case '!':
 		::strcpy(out,"&#33;");
@@ -621,6 +614,9 @@ HHtmlMailView::ConvertToHtmlCharactor(char c,char *out)
 		break;
 	case '\n':
 		::sprintf(out,"<br>%c",c);
+		break;
+	case ' ':
+		::strcpy(out,"&nbsp;");
 		break;
 	default:
 		out[0] = c;
