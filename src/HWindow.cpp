@@ -885,11 +885,9 @@ HWindow::MenusBeginning()
 	BTextControl *ctrl(NULL);
 	if(CurrentFocus() == fMailView )
 	{	
-		BTextView *view;
+		BTextView *view(NULL);
 		if(is_kind_of(fMailView,HMailView))
 			view = cast_as(fMailView,BTextView);
-		else
-			view = cast_as(fMailView->FindView("NetPositive"),BTextView);
 		if(view)
 		{
 			view->GetSelection(&start,&end);
