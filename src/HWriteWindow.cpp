@@ -82,7 +82,6 @@ HWriteWindow::HWriteWindow(BRect rect
 	min_width = 400;
 	min_height = 300;
 	SetSizeLimits(min_width,max_width,min_height,max_height);
-	//AddShortcut('U',0,new BMessage(M_SELECT),fTextView);
 }
 
 /***********************************************************
@@ -224,8 +223,8 @@ HWriteWindow::InitGUI()
 	ArrowButton *button = cast_as(fTopView->FindView("addr_arrow"),ArrowButton);
 	button->SetState((int32)bValue);
 	fTopView->EnableJump(!bValue);
-	fTopView->SetFrom(fReplyItem->fTo.String());
-	
+	if(fReplyItem)
+		fTopView->SetFrom(fReplyItem->fTo.String());
 	rect.OffsetBy(0,rect.Height()+1);
 	prefs->GetData("expand_enclosure",&bValue);
 
