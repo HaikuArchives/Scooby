@@ -105,7 +105,7 @@ SmtpLooper::SendMail(HMailItem *item)
 		char *buf = new char[size+1];
 		if(!buf)
 		{
-			(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+			Alert(B_STOP_ALERT,_("Memory was exhausted"),B_STOP_ALERT);
 			return B_ERROR;
 		}
 		size = file.Read(buf,size);
@@ -126,8 +126,7 @@ SmtpLooper::SendMail(HMailItem *item)
 		else{
 			attrStatus = "Error";
 			beep();
-			(new BAlert("","Failed to send mails","OK",NULL,NULL
-						,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go(); 
+			Alert(B_STOP_ALERT,"Failed to send mails"); 
 		}
 		file.WriteAttrString(B_MAIL_ATTR_STATUS,&attrStatus);
 		item->RefreshStatus();	

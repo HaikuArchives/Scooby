@@ -1,10 +1,11 @@
 #ifndef __UTILITIES_H__
 #define __UTILITIES_H__
 
+#include <Alert.h>
 #include <TextView.h>
 class StatusItem;
 
-//!Misc functions.
+//Misc functions.
 
 //! Disallow meta keys in BTextView.
 void	DisallowMetaKeys(BTextView *);
@@ -34,4 +35,6 @@ bool 	GetParameter(const char *src,const char *param, char **dst);
 char*	cistrstr(char *cs, char *ct);
 //! Read mail attr checking. if you set default value and it doesn't have attr, default value will be written.
 status_t	ReadNodeAttrString(BNode *node,const char* attrName,BString *out,const char* defaultValue=NULL);
+//! Show Alert.
+void	Alert(alert_type type,const char* format,...);
 #endif

@@ -13,7 +13,6 @@
 #include <MenuItem.h>
 #include <ClassInfo.h>
 #include <fs_attr.h>
-#include <Alert.h>
 #include <Node.h>
 
 void
@@ -249,4 +248,32 @@ ReadNodeAttrString(BNode *node,const char* attrName,BString *out,const char* def
 			err = B_ERROR;
 	}
 	return err;	
+}
+
+/***********************************************************
+ * Alert
+ ***********************************************************/
+void Alert(alert_type type,const char* fmt, ...)
+{
+	int32 BUFFER_SIZE = 4096;
+	char *buf;
+	va_list args;
+	va_start(args,fmt);
+#if __INTEL__
+	int len = 0;
+	do{ 
+        buf = new char[BUFFER_SIZE]; 
+        len = ::vsnprintf( buf, BUFFER_SIZE, fmt, args); 
+        if ( len < BUFFER_SIZE ) 
+            (new BAlert("",buf,"OK"))->Go();
+        delete[] buf; 
+        BUFFER_SIZE *= 2;
+    } while( len >= BUFFER_SIZE );
+#else
+	buf = new char[BUFFER_SIZE];
+	::vsprintf(buf, fmt, args);
+	(new BAlert("",buf,_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,type))->Go();
+	delete[] buf;
+#endif
+	va_end(args);
 }
