@@ -49,6 +49,8 @@ public:
 
 		HFolderItem*	RemoveFolder(int32 index);
 				int32	GenarateFolderPathes(BMessage &msg);
+				bool	IsGatheredLocalFolders() const {return fGatheredLocalFolders;}
+
 protected:
 		virtual void 	MessageReceived(BMessage *message);		
 		static	int32 	GetFolders(void *data);
@@ -83,7 +85,8 @@ private:
 	HSimpleFolderItem	*fIMAP4Folders;
 	HSimpleFolderItem	*fQueryFolders; 
 		bool		fSkipMoveMail;
-		
+		bool		fGatheredLocalFolders;
+
 		typedef ColumnListView	_inherited;
 };
 #endif

@@ -41,6 +41,7 @@ HFolderList::HFolderList(BRect frame,
 	,fWatching(false)
 	,fSkipGathering(false)
 	,fSkipMoveMail(false)
+	,fGatheredLocalFolders(false)
 {
 	CLVColumn *expander_col;
 	this->AddColumn( expander_col = new CLVColumn(NULL,0.0,CLV_EXPANDER|CLV_LOCK_AT_BEGINNING|CLV_NOT_MOVABLE));
@@ -567,6 +568,7 @@ HFolderList::GetFolders(void* data)
 	
 	list->fThread =  -1;
 	list->Window()->PostMessage(M_GATHER_ALL_MAILS,list);
+	list->fGatheredLocalFolders = true;
 	return 0;
 }
 

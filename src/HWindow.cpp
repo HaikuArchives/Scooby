@@ -955,7 +955,7 @@ HWindow::MessageReceived(BMessage *message)
 			break;
 		if( ::strcmp(name,"Check") == 0)
 		{
-			if(fPopClientView->IsRunning())
+			if(fPopClientView->IsRunning() || !fFolderList->IsGatheredLocalFolders())
 				btn->SetEnabled(false);
 			else
 				btn->SetEnabled(true);
