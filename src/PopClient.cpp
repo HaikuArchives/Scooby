@@ -338,8 +338,10 @@ PopClient::List(int32 index,BString &size_list)
 	cmd += CRLF;
 	
 	if( SendCommand(cmd.String()) != B_OK)
+	{
+		PRINT(("LIST error:%s %d\n",__FILE__,__LINE__));
 		return B_ERROR;
-
+	}
 	size_list = "";
 	int32 r = 0;
 	if(index != 0)
@@ -376,8 +378,10 @@ PopClient::Uidl(int32 index,BString &outlist)
 	cmd += CRLF;
 	
 	if( SendCommand(cmd.String()) != B_OK)
+	{
+		PRINT(("UIDL error:%s %d\n",__FILE__,__LINE__));
 		return B_ERROR;
-	
+	}
 	outlist = "";
 	int32 r = 0;
 	
@@ -409,20 +413,29 @@ status_t
 PopClient::Retr(int32 index,BString &content)
 {
 	BString cmd = "RETR ";
-	cmd << index += CRLF;
+	cmd << index << CRLF;
 	PRINT(("%s\n",cmd.String() ));
 	if( SendCommand(cmd.String()) != B_OK)
+	{
+		PRINT(("Retr error:%s %d\n",__FILE__,__LINE__));
 		return B_ERROR;
+	}
 	const char* log = fLog.String();
 	int32 size = atol(&log[4]);
 	int32 r;
 	//PRINT(("Content size:%d\n",size));
-	BMessage msg(H_RECEIVING_MESSAGE);
-	msg.AddInt32("index",index);
-	msg.AddInt32("rcv",0);
-	content = "";
 	size += 4;
+	BMessage msg(H_SET_MAX_SIZE);
+	msg.AddInt32("max_size",size);
+	fLooper->PostMessage(&msg,fHandler);
+	
+	msg.MakeEmpty();
+	msg.what = H_RECEIVING_MESSAGE;
+	msg.AddInt32("index",index);
+	msg.AddInt32("size",0);
+	content = "";
 	char *buf = new char[size+1];
+	int32 content_len = 0;
 	while(1)
 	{
 		if(fEndpoint->IsDataPending(kTimeout))
@@ -431,16 +444,21 @@ PopClient::Retr(int32 index,BString &content)
 			if(r <= 0)
 				break;
 			size -= r;
+			content_len += r;
 			buf[r] = '\0';
 			content += buf;
-			msg.ReplaceInt32("rcv",r);
-			PostMessage(&msg,fHandler);
-			if( ::strstr(buf,"\n.\r\n") || size <=0 )
+			msg.ReplaceInt32("size",r);
+			fLooper->PostMessage(&msg,fHandler);
+			
+			if(content[content_len-1] == '\n' && 
+					content[content_len-2] == '\r' &&
+					content[content_len-3] == '.' &&
+					content[content_len-4] == '\n' )
 				break;
 		}
 	}
-	delete buf;
-	content.Truncate(content.Length()-3);
+	delete[] buf;
+	content.Truncate(content.Length()-4);
 	content.ReplaceAll("\n..","\n.");
 	return B_OK;
 }
@@ -455,7 +473,10 @@ PopClient::Delete(int32 index)
 	cmd << index << CRLF;
 	PRINT(("%s\n",cmd.String() ));
 	if( SendCommand(cmd.String()) != B_OK)
+	{
+		PRINT(("DELE error:%s %d\n",__FILE__,__LINE__));
 		return B_ERROR;
+	}
 	return B_OK;
 }
 
