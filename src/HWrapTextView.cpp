@@ -162,9 +162,9 @@ HWrapTextView::GetHardWrapedText(BString &out)
 			{
 				if(offview->CanEndLine(i-k))
 				{
-					offview->Insert(i-k+1,"\n",1);
+					offview->Insert(i-k,"\n",1);
 					inserted=true;
-					i = i-k+1;
+					i = i-k;
 					break;
 				}
 			}
