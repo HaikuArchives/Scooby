@@ -60,6 +60,9 @@ public:
 									const CLVListItem *a_Item2, 
 									int32 KeyColumn);
 	BListView*		Owner() const{return fOwner;}
+	
+			int32	ChildItems() const {return fChildItems;}
+			void	IncreaseChildItemCount() {fChildItems++;}
 protected:
 			void	RefreshCache();	
 			void	StartCreateCache(); // Create cache with thread
@@ -96,5 +99,6 @@ private:
 		int32		fFolderType;
 		bool		fUseCache;
 		node_ref	fNodeRef;
+		int32		fChildItems;
 };
 #endif

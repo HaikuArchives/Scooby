@@ -45,6 +45,7 @@ HFolderItem::HFolderItem(const entry_ref &ref,BListView *target)
 	,fCacheCancel(false)
 	,fRefreshThread(-1)
 	,fFolderType(FOLDER_TYPE)
+	,fChildItems(0)
 {	
 	BAutolock lock(target->Window());
 	target->Window()->AddHandler( (BHandler*)this );
@@ -90,6 +91,7 @@ HFolderItem::HFolderItem(const char* name,int32 type,BListView *target)
 	,fCacheCancel(false)
 	,fRefreshThread(-1)
 	,fFolderType(IMAP4_TYPE)
+	,fChildItems(0)
 {	
 	fMailList.MakeEmpty();
 	BBitmap *icon(NULL);
@@ -502,10 +504,9 @@ HFolderItem::ReadFromCache()
 	HMailCache cache(path.Path());
 	int32 count = cache.CountItems();
 	// check entry in directory and refs count
-	int32 children = ((ColumnListView*)fOwner)->FullListNumberOfSubitems(this);
-	if(children+count + fMailList.CountItems() != BDirectory(&fFolderRef).CountEntries() )
+	if(fChildItems+count + fMailList.CountItems() != BDirectory(&fFolderRef).CountEntries() )
 	{
-		PRINT(("Auto refresh\n"));
+		PRINT(("Auto refresh:%s\n",name.String()));
 		EmptyMailList();
 		return B_ERROR;
 	}		
@@ -560,44 +561,9 @@ HFolderItem::CreateCache()
 	}
 	path.Append(name.String());
 	fCacheCancel = false;
-#ifndef __NEW_CACHE__
-	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
-	if(file.InitCheck() == B_OK)
-	{
-		int32 count = fMailList.CountItems();
-		BMessage cache(B_SIMPLE_DATA);
-		cache.MakeEmpty();
-		HMailItem *item;
-		entry_ref ref;
-		for(register int32 i =0;i < count;i++)
-		{
-			item = (HMailItem*)fMailList.ItemAtFast(i);
-			if(!item)
-				continue;
-			ref = item->fRef;
-			cache.AddRef("refs",&ref);
-			cache.AddString("status",item->fStatus);
-			cache.AddString("subject",item->fSubject);
-			cache.AddString("from",item->fFrom);
-			cache.AddString("to",item->fTo);
-			cache.AddString("cc",item->fCC);
-			cache.AddString("reply",item->fReply);
-			cache.AddInt64("when",(int64)item->fWhen);
-			cache.AddString("priority",item->fPriority);
-			cache.AddInt8("enclosure",item->fEnclosure);
-			cache.AddInt64("ino_t",item->fNodeRef.node);
-			if(fCacheCancel)
-				break;
-		}
-		file.Seek(0,SEEK_SET);
-		ssize_t numBytes;
-		cache.Flatten(&file,&numBytes);
-		file.SetSize(numBytes);
-	}
-#else
+
 	HMailCache cache(path.Path());
 	cache.Save(fMailList);
-#endif
 }
 
 /***********************************************************
