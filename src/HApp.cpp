@@ -25,7 +25,7 @@
 /***********************************************************
  * Constructor
  ***********************************************************/
-HApp::HApp() :LocaleApp(APP_SIG)
+HApp::HApp() :_inherited(APP_SIG)
 	,fPrintSettings(NULL)
 	,fWindow(NULL)
 	,fWatchNetPositive(false)
@@ -117,17 +117,6 @@ HApp::MessageReceived(BMessage *message)
 		}
 		break;
 	}
-	// Check whether new mails have received from Deskbar replicant
-	case M_CHECK_SCOOBY_STATE:
-	{
-		int32 icon;
-		if(message->FindInt32("icon",&icon) != B_OK)
-			break;
-		BMessage msg(M_CHECK_SCOOBY_STATE);
-		msg.AddInt32("icon",fWindow->CurrentDeskbarIcon());
-		message->SendReply(&msg,(BHandler*)NULL,1000000);
-		break;
-	}
 	case M_SHOW_FIND_WINDOW:
 	{
 		ShowFindWindow();
@@ -183,6 +172,27 @@ HApp::MessageReceived(BMessage *message)
 		fFindWindow->PostMessage('mFnd');
 		break;
 	}
+	// Check whether new mails have received from Deskbar replicant
+	case M_CHECK_SCOOBY_STATE:
+	{
+		int32 icon;
+		if(message->FindInt32("icon",&icon) != B_OK)
+			break;
+		BMessage msg(M_CHECK_SCOOBY_STATE);
+		msg.AddInt32("icon",fWindow->CurrentDeskbarIcon());
+		message->SendReply(&msg,(BHandler*)NULL,1000000);
+		break;
+	}
+#ifdef USE_SPLOCALE
+	case MSG_LANGUAGE_CHANGED:
+	{
+		fWindow->Lock();
+		fWindow->Quit();
+		fWindow = NULL;
+		MakeMainWindow();
+		break;
+	}
+#endif
 	default:
 		_inherited::MessageReceived(message);
 	}	
