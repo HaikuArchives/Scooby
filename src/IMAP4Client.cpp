@@ -333,7 +333,7 @@ IMAP4Client::FetchFields(int32 index,
 
 	char first_line[50];
 	::sprintf(first_line,"* %ld FETCH",index);
-
+	BString *tmp=NULL;
 	if( SendCommand(cmd.String()) == B_OK)
 	{
 		while(1)
@@ -350,33 +350,51 @@ IMAP4Client::FetchFields(int32 index,
 				read = (line.FindFirst("\\Seen") != B_ERROR)?true:false;
 				
 			}
-			// Subject
-			if(strncmp("Subject:",p,8) == 0)
-				subject = &p[9];
-			// Date
-			else if(strncmp("Date:",p,5) == 0)
-				date = &p[6];
-			// From
-			else if(strncmp("From:",p,5) == 0)
-				from = &p[6];
-			// To
-			else if(strncmp("To:",p,3) == 0)
-				to = &p[4];
-			// Cc,
-			else if(strncmp("Cc:",p,3) == 0)
-				cc = &p[4];
-			// Reply
-			else if(strncmp("Reply-To:",p,9) == 0)
-				reply = &p[10];
-			// Priority
-			else if(strncmp("X-Priority:",p,11) == 0)
-				priority = &p[12];
-			// Content-Type
-			else if(strncmp("Content-Type:",p,13) == 0)
+			if(::strstr(p,":"))
 			{
-				p += 14;
-				attachment = (strncmp(p,"multipart",9) == 0)?true:false;	
+				// Subject
+				if(strncmp("Subject:",p,8) == 0){
+					subject = &p[9];
+					tmp = &subject;
+				// Date
+				}else if(strncmp("Date:",p,5) == 0){
+					date = &p[6];
+					tmp = &date;
+				// From
+				}else if(strncmp("From:",p,5) == 0){
+					from = &p[6];
+					tmp = &from;
+				// To
+				}else if(strncmp("To:",p,3) == 0){
+					to = &p[4];
+					tmp = &to;
+				// Cc,
+				}else if(strncmp("Cc:",p,3) == 0){
+					cc = &p[4];
+					tmp = &cc;
+				// Reply
+				}else if(strncmp("Reply-To:",p,9) == 0){
+					reply = &p[10];
+					tmp = &reply;
+				// Priority
+				}else if(strncmp("X-Priority:",p,11) == 0){
+					priority = &p[12];
+					tmp = NULL;
+				// Content-Type
+				}else if(strncmp("Content-Type:",p,13) == 0){
+					p += 14;
+					tmp = NULL;
+					attachment = (strncmp(p,"multipart",9) == 0)?true:false;	
+				}else
+					tmp = NULL;
+			}else{
+				if(tmp)
+				{
+					tmp->Append(p);
+					PRINT(("APPEND:%s\n",tmp->String()));
+				}
 			}
+			//PRINT(("Subject:%s\n",subject.String()));
 			state = CheckSessionEnd(line.String(),session);		
 			switch(state)
 			{
