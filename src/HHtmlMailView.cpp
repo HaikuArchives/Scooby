@@ -531,7 +531,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 		// Hight quoted text
 		case '>':
 		{
-			if(text[i-1] == '\n')
+			if(text[i-1] == '\n' || i == 0)
 			{
 				tmp += "<font color=\"";
 				
