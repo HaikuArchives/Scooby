@@ -100,6 +100,7 @@ PopClient::MessageReceived(BMessage *message)
 					BMessage msg(H_RETR_MESSAGE);
 					msg.AddString("content",content);
 					msg.AddInt32("index",index);
+					msg.AddBool("end",(i == count-1)?true:false);
 					fLooper->PostMessage(&msg,fHandler);
 				}
 				
@@ -123,6 +124,7 @@ PopClient::MessageReceived(BMessage *message)
 					else{
 						BMessage msg(H_DELETE_MESSAGE);
 						msg.AddInt32("index",index);
+						msg.AddBool("end",(count == 0)?true:false);
 						fLooper->PostMessage(&msg,fHandler);
 					}
 				}

@@ -478,7 +478,7 @@ HAccountView::SaveAccount(int32 index)
 	radio = cast_as(FindView("leave"),BRadioButton);
 
 	msg.RemoveData("retrieve");
-	if(radio->Value())
+	if(radio->Value() )
 		msg.AddInt16("retrieve",0);
 	else{
 		radio = cast_as(FindView("delete"),BRadioButton);
