@@ -583,6 +583,10 @@ HWindow::MessageReceived(BMessage *message)
 	case M_START_MAIL_BARBER_POLE:
 		fMailCaption->StartBarberPole();
 		break;
+	// Stop barberpole
+	case M_STOP_MAIL_BARBER_POLE:
+		fMailCaption->StopBarberPole();
+		break;
 	// Check from
 	case M_CHECK_FROM:
 	{

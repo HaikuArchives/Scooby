@@ -3,6 +3,7 @@
 #include "ResourceUtils.h"
 #include "HIMAP4Item.h"
 #include "Encoding.h"
+#include "HWindow.h"
 
 #include <Alert.h>
 #include <Bitmap.h>
@@ -12,6 +13,7 @@
 #include <FindDirectory.h>
 #include <File.h>
 #include <Directory.h>
+#include <ListView.h>
 
 /***********************************************************
  * Constructor
@@ -134,7 +136,11 @@ HIMAP4Folder::IMAPGetList()
 	if(!fClient)
 	{
 		if(IMAPConnect() != B_OK)
+		{
+			if(fOwner->IndexOf(this) == fOwner->CurrentSelection())
+				fOwner->Window()->PostMessage(M_STOP_MAIL_BARBER_POLE);
 			return;	
+		}
 	}
 	
 	PRINT(("FolderName:%s\n",fFolderName.String()));
@@ -143,6 +149,8 @@ HIMAP4Folder::IMAPGetList()
 	{
 		(new BAlert("",_("Could not select remote folder"),_("OK")
 						,NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		if(fOwner->IndexOf(this) == fOwner->CurrentSelection())
+				fOwner->Window()->PostMessage(M_STOP_MAIL_BARBER_POLE);
 		return;
 	}
 	

@@ -42,7 +42,8 @@ enum{
 	M_SEND_PENDING_MAILS = 'mSPM',
 	M_POP_CHECK = 'pCHC',
 	M_ADD_MAIL_TO_LIST = 'mAdL',
-	M_REMOVE_MAIL_FROM_LIST = 'mRmL'
+	M_REMOVE_MAIL_FROM_LIST = 'mRmL',
+	M_STOP_MAIL_BARBER_POLE = 'mSoB'
 };
 
 class HWindow: public BWindow {
