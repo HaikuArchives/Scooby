@@ -498,7 +498,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 	const char* kQuote2 = "#969600";
 	const char* kQuote3 = "#009696";
 	
-	char buf[10];
+	char buf[20];
 	Encoding encode;
 	bool translate_space = false;
 	BString out("");
@@ -579,7 +579,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 				BString uri("");
 				while(text[i] != '\0'&& IsURI(text[i]))
 					uri += text[i++];
-				
+				tmp += "<address>";
 				tmp += "<a href=\"";
 				tmp += uri;
 				tmp += "\"";
@@ -587,6 +587,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 				tmp += ">";
 				tmp += uri;
 				tmp += "</a>";
+				tmp += "</address>";
 				ConvertToHtmlCharactor(text[i],buf,&translate_space);
 				tmp += buf;
 			}else{
@@ -630,7 +631,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 void
 HHtmlMailView::ConvertToHtmlCharactor(char c,char *out,bool *translate_space)
 {
-	::memset(out,0,10);
+	::memset(out,0,20);
 	// Special charactors
 	switch(c)
 	{
@@ -660,6 +661,9 @@ HHtmlMailView::ConvertToHtmlCharactor(char c,char *out,bool *translate_space)
 		break;
 	case '\n':
 		::sprintf(out,"<br>%c",c);
+		break;
+	case '\t':
+		::strcpy(out,"&nbsp;&nbsp;&nbsp;");
 		break;
 	case ' ':
 		if(*translate_space)
