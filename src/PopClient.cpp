@@ -82,13 +82,7 @@ PopClient::MessageReceived(BMessage *message)
 			int32 count;
 			type_code type;
 			message->GetInfo("index",&type,&count);
-			/*bool is_delete;
-			int32 days;
-			if(message->FindBool("delete",&is_delete) != B_OK)
-				is_delete = false;
-			if(message->FindBool("delete_day",&days) != B_OK)
-				days = 0;
-			*/
+		
 			int32 index;
 			BString content;
 			for(int32 i = 0;i < count;i++)
@@ -107,12 +101,6 @@ PopClient::MessageReceived(BMessage *message)
 				}
 				
 			}
-			// delete server mails
-			/*if(!is_delete)
-				break;
-			message->what = H_DELETE_MESSAGE;
-			PostMessage(message);
-			*/
 			break;
 		}
 	// Del
