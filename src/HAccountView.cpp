@@ -278,8 +278,6 @@ err:
 	
 	BMessage msg;
 	msg.Unflatten(&file);
-	// For earlier version compatibility
-	bool refresh = false;
 	//
 	const char* kName[] = {"name","address","pop_host","pop_port","pop_user",
 						"pop_password","smtp_host","real_name","reply_to"};
@@ -297,25 +295,6 @@ err:
 			for(int32 k = 0;k < len;k++)
 				pass << (char)(255-text[k]);
 			ctrl->SetText(pass.String());
-		}else if(i == 1){
-			// For earlier version compatibility
-			if(msg.FindString(kName[i],&str) != B_OK)
-			{
-				msg.FindString(kName[8],&str);
-				if(str.Length() > 0)
-				{
-					ctrl->SetText(str.String());
-				}else{
-					msg.FindString(kName[4],&str);
-					str += "@";
-					BString tmp;
-					msg.FindString(kName[2],&tmp);
-					str += tmp;
-				}
-				refresh = true;
-			}
-			//
-			ctrl->SetText(str.String());
 		}else{
 			msg.FindString(kName[i],&str);
 			ctrl->SetText(str.String());
@@ -348,13 +327,6 @@ err:
 	field->Menu()->ItemAt(protocol)->SetMarked(true);
 	
 	SetEnableControls(true);
-	// For earlier version compatibility
-	if(refresh)
-	{
-		SaveAccount(index);
-		PRINT(("Account refreshed\n"));
-	}
-	//
 }
 
 /***********************************************************
