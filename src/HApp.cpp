@@ -22,6 +22,7 @@
 HApp::HApp() :LocaleApp(APP_SIG)
 	,fPrintSettings(NULL)
 	,fWindow(NULL)
+	,fWatchNetPositive(false)
 {
 	BPath path;
 	::find_directory(B_USER_DIRECTORY,&path);
@@ -33,7 +34,7 @@ HApp::HApp() :LocaleApp(APP_SIG)
 	fPref = new HPrefs(pref_name,APP_NAME);
 	delete[] pref_name;
 	fPref->LoadPrefs();
-	
+	SetPulseRate(100000);
 	AddSoundEvent("New E-mail");
 }
 
@@ -293,6 +294,13 @@ HApp::AddSoundEvent(const char* name)
 bool
 HApp::QuitRequested()
 {
+	// Wait for closing all NetPositive windows
+	if(IsNetPositiveRunning())
+	{
+		fWatchNetPositive = true;
+		return false;
+	}
+	// Remove all IMAP4 mails
 	RemoveTmpImapMails();
 	return _inherited::QuitRequested();
 }
@@ -324,6 +332,37 @@ HApp::RemoveTmpImapMails()
 	cmd += " 2> /dev/null";
 	
 	::system(cmd.String());
+}
+
+/***********************************************************
+ * IsNetPositiveRunning
+ *	Check whether NetPositive child windows is running
+ ***********************************************************/
+bool
+HApp::IsNetPositiveRunning()
+{
+	int32 count = CountWindows();
+	BWindow *window(NULL);
+	
+	for(int32 i = 0;i < count;i++)
+	{
+		window = WindowAt(i);
+		if(window && ::strcmp(window->Name(),"NetPositive") == 0)
+			return true;
+	}
+	return false;
+}
+
+/***********************************************************
+ * Pulse
+ ***********************************************************/
+void
+HApp::Pulse()
+{
+	if(fWatchNetPositive && !IsNetPositiveRunning())
+	{
+		PostMessage(B_QUIT_REQUESTED);
+	}
 }
 
 /***********************************************************
