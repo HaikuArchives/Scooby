@@ -433,6 +433,12 @@ HMailList::MouseDown(BPoint pos)
     	 font.SetSize(10);
     	 theMenu->SetFont(&font);
     	 
+    	 item = new IconMenuItem(_("New Message"),new BMessage(M_NEW_MSG),'N',0,
+							utils.GetBitmapResource('BBMP',"New Message"));
+		 theMenu->AddItem(item);
+		 theMenu->AddSeparatorItem();
+	
+    	 
     	 msg = new BMessage(M_REPLY_MESSAGE);
     	 msg->AddBool("reply_all",false);
     	 item = new IconMenuItem(_("Reply"),msg,'R',0,
