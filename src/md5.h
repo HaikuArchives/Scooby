@@ -43,6 +43,12 @@ void MD5Init PROTO_LIST ((MD5_CTX *));
 void MD5Update PROTO_LIST
   ((MD5_CTX *, unsigned char *, unsigned int));
 void MD5Final PROTO_LIST ((unsigned char [16], MD5_CTX *));
+void MD5Hmac(unsigned char *digest,
+              const unsigned char* text, int text_len,
+              const unsigned char* key, int key_len);
+void MD5HexHmac(char *hexdigest,
+                  const unsigned char* text, int text_len,
+                  const unsigned char* key, int key_len);
 
 #ifdef __cplusplus
 }
