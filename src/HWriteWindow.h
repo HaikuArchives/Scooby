@@ -30,9 +30,10 @@ enum{
 };
 
 
-
+//!E-Mail compose window.
 class HWriteWindow :public BWindow{
 public:
+					//!Constructor.
 					HWriteWindow(BRect rect,const char* name,
 								const char* subject = NULL,
 								const char* to = NULL,
@@ -43,7 +44,7 @@ public:
 								HMailItem *replyItem = NULL,
 								bool reply = false,
 								bool forward = false);
-					// Constructor for re-edit
+					//! Constructor for sent mails.
 					HWriteWindow(BRect rect,const char* name,entry_ref &ref);		
 protected:
 	virtual			~HWriteWindow();
@@ -76,7 +77,7 @@ protected:
 			
 			void	GetDraftsPath(BPath &path);
 			void	GetTemplatesPath(BPath &path);
-			// Nodemonitor for drafts and templates 
+			//! Nodemonitor for drafts and templates folders. 
 			void	NodeMonitor(BMessage *message);
 			// Add remove menu items
 			void	AddNewChildItem(entry_ref &ref);

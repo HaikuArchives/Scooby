@@ -9,8 +9,6 @@ class HFindWindow :public BWindow {
 public:
 	//!Constructor.
 						HFindWindow(BRect rect,const char* name);
-	//!Destructor.
-	virtual				~HFindWindow();
 	//! Set handler to send search message.
 			void		SetTarget(BHandler *handler) {fTarget = handler;}
 	//! Set quit flag.
@@ -26,6 +24,8 @@ public:
 	//! Add keyword to the hisotry.
 			void		AddToHistory(const char* text);
 protected:
+	//!Destructor.
+	virtual				~HFindWindow();
 	//@{
 	//!Override function.
 	virtual	void		MessageReceived(BMessage *message);
