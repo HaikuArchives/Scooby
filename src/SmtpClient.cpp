@@ -51,18 +51,23 @@ SmtpClient::Connect(const char* address,int16 port,bool esmtp)
 	BString line;
 	ReceiveResponse(line);
 	
-	BString cmd;
+	char *cmd = new char[::strlen(address)+6];
 	if(!esmtp)
-		cmd = "HELO ";
+		::strcpy(cmd,"HELO ");
 	else
-		cmd = "EHLO ";
-	cmd += address;
-	if( SendCommand(cmd.String()) != B_OK)
+		::strcpy(cmd,"EHLO ");
+		
+	if(address)
+		::strcat(cmd,address);
+	else
+		::strcat(cmd,"beos");
+		
+	if( SendCommand(cmd) != B_OK)
 	{
 		PRINT(("Err:%s\n",fLog.String()));
 		return B_ERROR;
 	}
-	
+	delete[] cmd;
 	// Check auth type
 	if(esmtp)
 	{
@@ -173,11 +178,14 @@ SmtpClient::Login(const char* _login,const char* password)
 		::memcpy(login64+loginlen*2+2,password,passlen);
 		
 		::encode64(login64,login64,((loginlen+1)*2+passlen));
-		BString cmd ="AUTH PLAIN ";
-		cmd += login64;
+		
+		char *cmd = new char[strlen(login64)+12];
+		::strcpy(cmd,"AUTH PLAIN ");
+		::strcat(cmd, login64);
 		delete[] login64;
 		
-		SendCommand(cmd.String());	
+		SendCommand(cmd);
+		delete[] cmd;	
 		const char* res = fLog.String();
 		if(atol(res)<500)
 			return B_OK;
@@ -220,15 +228,16 @@ SmtpClient::ReceiveResponse(BString &out)
  * Command
  ***********************************************************/
 status_t
-SmtpClient::SendCommand(const char* _cmd,bool send_line_break)
+SmtpClient::SendCommand(const char* cmd,bool send_line_break)
 {
 	int32 len;
-	BString cmd=_cmd;
-	PRINT(("C:%s\n",_cmd));
-	if(send_line_break)
-		cmd += CRLF;
- 	if( Send(cmd.String(), cmd.Length()) == B_ERROR)
+	PRINT(("C:%s\n",cmd));
+	if( Send(cmd, ::strlen(cmd)) == B_ERROR)
 		return B_ERROR;
+	if(send_line_break)
+		if( Send(CRLF, 2) == B_ERROR)
+			return B_ERROR;
+	
 	fLog = "";
 	// Receive
 	while(1)
@@ -297,8 +306,7 @@ SmtpClient::SendMail(const char* from
 		}
 	}
 	// Data
-	cmd = "DATA";
-	if(SendCommand(cmd.String()) != B_OK)
+	if(SendCommand("DATA") != B_OK)
 	{
 		PRINT(("Err: data\n"));
 		return B_ERROR;
@@ -337,9 +345,8 @@ SmtpClient::SendMail(const char* from
 				SentSize(sent_len,cookie);
 		}
 	}
-
-	cmd = ".";
-	if( SendCommand(cmd.String()) != B_OK)
+	
+	if( SendCommand(".") != B_OK)
 	{
 		PRINT(("Err:Send content\n"));
 		return B_ERROR;
