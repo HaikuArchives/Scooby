@@ -67,6 +67,12 @@ HMailList::HMailList(BRect frame,
  ***********************************************************/
 HMailList::~HMailList()
 {
+	int32 sel = CurrentSelection();
+	if(sel >= 0)
+	{
+		fOldSelection = cast_as(ItemAt(sel),HMailItem);
+		MarkOldSelectionAsRead();
+	}
 	SetInvocationMessage(NULL);
 	delete fCurrentFolder;
 }
