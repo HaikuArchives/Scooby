@@ -735,9 +735,10 @@ PopClient::MD5Digest (unsigned char *s)
 void
 PopClient::ForceQuit()
 {
+	if(!fEndpoint)
+		return;
+	
 	fEndpoint->Close();
-	delete fEndpoint;
-	fEndpoint = NULL;
 }
 
 /***********************************************************

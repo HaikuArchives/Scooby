@@ -216,7 +216,7 @@ HPopClientView::MessageReceived(BMessage *message)
 			char *buf = const_cast<char*>(list.String());
 			char *p = strtok(buf,"\n");
 			int size,index,count = 0;
-			char uidl[35];
+			char uidl[1024];
 			while(p)
 			{
 				if(strlen(p) <= 1)

@@ -337,8 +337,16 @@ HHtmlMailView::LoadMessage(BFile *file)
 	char *parameter = NULL;
 	char *charset = NULL;
 	int32 header_len,content_len;
-	file->ReadAttr(B_MAIL_ATTR_HEADER,B_INT32_TYPE,0,&header_len,sizeof(int32));
-	file->ReadAttr(B_MAIL_ATTR_CONTENT,B_INT32_TYPE,0,&content_len,sizeof(int32));
+	if(file->ReadAttr(B_MAIL_ATTR_HEADER,B_INT32_TYPE,0,&header_len,sizeof(int32)) < 0 || header_len < 0)
+	{
+		(new BAlert("",_("Could not read mail attributes"),_("OK")))->Go();
+		return;
+	}
+	if(file->ReadAttr(B_MAIL_ATTR_CONTENT,B_INT32_TYPE,0,&content_len,sizeof(int32)) < 0|| content_len < 0)
+	{
+		(new BAlert("",_("Could not read mail attributes"),_("OK")))->Go();
+		return;
+	}
 	// Load message from file
 	off_t size;
 	file->GetSize(&size);
