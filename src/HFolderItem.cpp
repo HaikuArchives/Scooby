@@ -616,7 +616,7 @@ HFolderItem::EmptyMailList()
 	register int32 count = fMailList.CountItems();
 	
 	while(count>0)
-		delete (HMailItem*)fMailList.RemoveItem(--count);	
+		delete static_cast<HMailItem*>(fMailList.RemoveItem(--count));	
 }
 
 /***********************************************************

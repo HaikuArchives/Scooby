@@ -359,7 +359,7 @@ HFolderList::DeleteAll()
 
 	while(count>0)
 	{
-		HFolderItem *item = (HFolderItem*)fPointerList.RemoveItem(--count);
+		HFolderItem *item = static_cast<HFolderItem*>(fPointerList.RemoveItem(--count));
 		delete item;
 	}
 }
