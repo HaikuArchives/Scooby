@@ -47,9 +47,9 @@ HHtmlView::HHtmlView(BRect rect,
     message_replicant.AddInt32("_resize_mode",B_FOLLOW_ALL); 
     message_replicant.AddBool("showToolbars",use_toolbar); 
 
-    BShelf* shelf = new BShelf(this,false,"NetShelf"); 
-    shelf->SetDisplaysZombies(true);
-    if(shelf->AddReplicant(&message_replicant,BPoint(0,0)) == B_OK)
+    fShelf = new BShelf(this,false,"NetShelf"); 
+    fShelf->SetDisplaysZombies(true);
+    if(fShelf->AddReplicant(&message_replicant,BPoint(0,0)) == B_OK)
     {
    		fNetPositiveView = FindView("NetPositive");
    		fNetPositiveView->SetResizingMode(B_FOLLOW_ALL);
@@ -64,6 +64,7 @@ HHtmlView::HHtmlView(BRect rect,
  ***********************************************************/
 HHtmlView::~HHtmlView()
 {
+	delete fShelf;	
 }
 
 /***********************************************************

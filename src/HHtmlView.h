@@ -28,5 +28,6 @@ protected:
 
 private:
 	BView*			fNetPositiveView;
+	BShelf*			fShelf;
 };
 #endif
