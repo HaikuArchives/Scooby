@@ -35,7 +35,7 @@ protected:
 		status_t		IMAPConnect();
 			time_t		MakeTime_t(const char* date);
 	static	int32		GetListThread(void* data);
-	
+			void		GatherChildFolders();
 			void		StoreSettings();
 private:
 	IMAP4Client			*fClient;
@@ -44,5 +44,7 @@ private:
 		BString			fLogin;
 		BString			fPassword;
 		BString			fRemoteFolderName;
+		BString			fDisplayedFolderName;
+		bool			fFolderGathered;
 };
 #endif
