@@ -1270,7 +1270,7 @@ HFolderList::SaveFolderStructure()
 /***********************************************************
  * LoadFolders
  ***********************************************************/
-bool
+void
 HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 						,BMessage &rootFolders,BMessage &childFolders)
 {
@@ -1294,7 +1294,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		if(ref != inRef)
 			continue;
 		if(entry.SetTo(&ref) != B_OK)
-			return false;
+			return;
 		fFoldersCache->FindInt32("time",i,&modified_time);
 		fFoldersCache->FindInt32("indent",i,&indent);
 		fFoldersCache->FindBool("expanded",i,&expanded);
@@ -1412,6 +1412,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		free(dirents);
 #endif
 	}
+	return;
 }
 
 /***********************************************************
