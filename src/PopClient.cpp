@@ -95,7 +95,7 @@ normal:
 	}	
 	// Send Password
 	cmd = new char[::strlen(password)+8];
-	::sprintf("PASS %s\r\n",password);
+	::sprintf(cmd,"PASS %s\r\n",password);
 	err = SendCommand(cmd);
 	delete[] cmd;
 	
