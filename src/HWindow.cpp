@@ -1262,10 +1262,8 @@ HWindow::MoveMails(BMessage *message)
 		item_path.Append(BPath(&ref).Leaf());
 		::get_ref_for_path(item_path.Path(),&ref);
 	}
-	// To avoid NetPositive's dead lock
-	// Can't select next mail
-	//
-	if(old_selection > 0)
+	
+	if(old_selection >= 0)
 		fMailList->Select( old_selection + 1 );
 }
 
