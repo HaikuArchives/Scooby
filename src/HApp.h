@@ -22,7 +22,8 @@ class HPrefs;
 enum{
 	M_SHOW_FIND_WINDOW = 'mSfW',
 	M_FIND_NEXT_WINDOW = 'mFnN',
-	M_MOVE_FILE = 'mMvF'
+	M_MOVE_FILE = 'mMvF',
+	M_TRASH_FILE = 'mTrF'
 };
 
 #ifndef USE_SPLOCALE

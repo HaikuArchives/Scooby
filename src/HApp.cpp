@@ -100,6 +100,25 @@ HApp::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
+	case M_TRASH_FILE:
+	{
+		entry_ref ref;
+//		const char* path;
+		
+		int32 count;
+		type_code type;
+		message->GetInfo("refs",&type,&count);
+		PRINT(("Count:%d\n",count));
+		for(int32 i = 0;i < count;i++)
+		{
+			if(message->FindRef("refs",i,&ref) == B_OK)
+			{
+				PRINT(("DELETE\n"));
+				TrackerUtils().MoveToTrash(ref);
+			}
+		}
+		break;
+	}	
 	// Move file
 	case M_MOVE_FILE:
 	{
@@ -708,7 +727,6 @@ HApp::MoveFile(entry_ref file_ref,const char *kDir_Path)
 	//
 	BPath filePath(&file_ref);
 	BDirectory destDir(kDir_Path);
-
 	TrackerUtils().SmartMoveFile(file_ref,&destDir,"_");
 }
 

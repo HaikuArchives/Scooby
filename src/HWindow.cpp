@@ -1663,23 +1663,10 @@ HWindow::EmptyTrash()
 		
 	entry_ref ref = trash->Ref();
 	BDirectory dir( &ref );
-   	status_t err = B_NO_ERROR;
+   	status_t err = B_OK;
 	BEntry entry;
-	BPath path(&ref);
-	
-	BMessage msg(M_MOVE_FILE);
-	
-	BPath desktopTrash;
-	::find_directory(B_USER_DIRECTORY,&desktopTrash);
-	desktopTrash.Append("Desktop");
-	desktopTrash.Append("Trash");
-	
-	if(!desktopTrash.Path())
-	{
-		(new BAlert("",_("Could not find Trash folder."),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
-		return;
-	}
-	
+
+	BMessage msg(M_TRASH_FILE);
 	while( err == B_OK )
 	{
 		if( (err = dir.GetNextRef( &ref )) == B_OK)
@@ -1689,7 +1676,6 @@ HWindow::EmptyTrash()
 			if(entry.Exists())
 			{
 				msg.AddRef("refs",&ref);
-				msg.AddString("path",desktopTrash.Path());
 			}
 		}
 	}
