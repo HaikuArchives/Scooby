@@ -162,8 +162,11 @@ HWriteWindow::HWriteWindow(BRect rect
 		char date[64];
 		((HApp*)be_app)->Prefs()->GetData("time_format",&kTimeFormat);
 		::strftime(date, 64,kTimeFormat, localtime(&t));
+#ifdef __INTEL__
 		::snprintf(replyLabel,1024,_("On %s, %s wrote:\n"),date,from.String());
-		
+#else
+		::sprintf(replyLabel,_("On %s, %s wrote:\n"),date,from.String());
+#endif
 		fTextView->Select(0,0);
 		fTextView->Insert(replyLabel);
 	}else{
