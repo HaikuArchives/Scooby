@@ -150,23 +150,13 @@ HSignatureView::MessageReceived(BMessage *message)
 		folder_path.Append(APP_NAME);
 		folder_path.Append("Signatures");
 		::create_directory(folder_path.Path(),0777);
-		BPath path(folder_path.Path());
-		path.Append("Untitled");
 		
+		BDirectory dir(folder_path.Path());
 		BFile file;
-		status_t err = B_ERROR;
-		int32 i = 1;
-		while(err != B_OK)
-		{
-			err = file.SetTo(path.Path(),B_WRITE_ONLY|B_CREATE_FILE|B_FAIL_IF_EXISTS);
-			if(err == B_OK)
-				break;
-			BString new_name("Untitled");
-			new_name << i;
-			path.SetTo(folder_path.Path());
-			path.Append(new_name.String());
-		}
-		fListView->AddItem(new BStringItem(path.Leaf()));
+		entry_ref ref;
+		TrackerUtils().SmartCreateFile(&file,&dir,_("Untitled"),"",B_READ_WRITE,&ref);
+		folder_path.SetTo(&ref);
+		fListView->AddItem(new BStringItem(folder_path.Leaf()));
 		break;
 	}
 	case M_DEL_SIGNATURE:

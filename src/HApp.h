@@ -32,18 +32,21 @@ class HApp :public SpLocaleApp{
 #endif
 public:
 							HApp();
-		virtual				~HApp();
+							~HApp();
 		HPrefs*				Prefs() {return fPref;}
 		BWindow*			MainWindow() {return (BWindow*)fWindow;}
 		BBitmap*			GetIcon(const char* icon_name);
 protected:
-		virtual void		MessageReceived(BMessage *msg);
-		virtual bool		QuitRequested();
-		virtual void		AboutRequested();
-		virtual void		ReadyToRun();
-		virtual void		RefsReceived(BMessage *message);
-		virtual void		ArgvReceived(int32 argc,char **argv);
-		virtual void		Pulse();
+		//@{
+		//!Override function.
+				void		MessageReceived(BMessage *msg);
+				bool		QuitRequested();
+				void		AboutRequested();
+				void		ReadyToRun();
+				void		RefsReceived(BMessage *message);
+				void		ArgvReceived(int32 argc,char **argv);
+				void		Pulse();
+		//@}
 				bool		MakeMainWindow(bool hidden = false);
 				void		Print(BView *textview,BView *detail,const char* job_name);
 				void		PageSetup();
@@ -89,6 +92,7 @@ private:
 		BBitmap*			fCloseQueryIcon;
 		BBitmap*			fOpenIMAPIcon;
 		BBitmap*			fCloseIMAPIcon;
+		BBitmap*			fPersonIcon;
 		//
 #ifndef USE_SPLOCALE
 		typedef	BApplication	_inherited;
@@ -97,6 +101,3 @@ private:
 #endif
 };
 #endif
-
-
-

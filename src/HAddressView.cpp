@@ -5,6 +5,7 @@
 #include "HPrefs.h"
 #include "ArrowButton.h"
 #include "IconMenuItem.h"
+#include "Utilities.h"
 
 #include <TextControl.h>
 #include <StringView.h>
@@ -25,6 +26,10 @@
 #include <FindDirectory.h>
 #include <SupportDefs.h>
 
+typedef struct PersonData{
+	char* group;
+	char* email;
+};
 
 /***********************************************************
  * Constructor
@@ -145,18 +150,11 @@ HAddressView::InitGUI()
 	BVolume volume;
 	BVolumeRoster().GetBootVolume(&volume);
 	query.SetVolume(&volume);
-	
-	query.PushAttr("META:email");
-	query.PushString("*");
-	query.PushOp(B_EQ);
-	query.PushAttr("META:email2");
-	query.PushString("*");
-	query.PushOp(B_EQ);
-	query.PushOp(B_OR);
-	
+	query.SetPredicate("((META:email=*)&&(BEOS:TYPE=application/x-person))");
+
 	if(!fReadOnly && query.Fetch() == B_OK)
 	{
-		BString addr1,addr2,name,group,nick;
+		BString addr[4],name,group,nick;
 		entry_ref ref;
 		BList peopleList;
 	
@@ -167,31 +165,32 @@ HAddressView::InitGUI()
 			if(node.InitCheck() != B_OK)
 				continue;
 			
-			if(node.ReadAttrString("META:name",&name) != B_OK)
-				continue;
-			if(node.ReadAttrString("META:email",&addr1) != B_OK)
-				addr1 = "";
-			if(node.ReadAttrString("META:email2",&addr2) != B_OK)
-				addr2 = "";
-			if(node.ReadAttrString("META:group",&group) != B_OK)
-				group = "";
-			if(node.ReadAttrString("META:nickname",&nick) != B_OK)
-				nick = "";
-			if(addr1.Length() > 0)
-			{
-				if(nick.Length() != 0)
-				{
-					nick += " <";
-					nick += addr1;
-					nick += ">";
-					fAddrList.AddItem(strdup(nick.String()));
-				}
-				fAddrList.AddItem(strdup(addr1.String()));
-				
-				BString title = name;
-				title << " <" << addr1 << ">";
+			ReadNodeAttrString(&node,"META:name",&name);		
+			ReadNodeAttrString(&node,"META:email",&addr[0]);
+			ReadNodeAttrString(&node,"META:email2",&addr[1]);
+			ReadNodeAttrString(&node,"META:email3",&addr[2]);
+			ReadNodeAttrString(&node,"META:email4",&addr[3]);
+			ReadNodeAttrString(&node,"META:group",&group);
+			ReadNodeAttrString(&node,"META:nickname",&nick);
 			
-				AddPersonToList(peopleList,title.String(),group.String());
+			for(int32 i = 0;i < 4;i++)
+			{
+				if(addr[i].Length() > 0)
+				{
+					if(nick.Length() > 0)
+					{
+						nick += " <";
+						nick += addr[i];
+						nick += ">";
+						fAddrList.AddItem(strdup(nick.String()));
+					}
+					fAddrList.AddItem(strdup(addr[i].String()));
+					
+					BString title = name;
+					title << " <" << addr[i] << ">";
+				
+					AddPersonToList(peopleList,title.String(),group.String());
+				}
 			}
 		}
 		
@@ -412,6 +411,8 @@ HAddressView::SetFrom(const char* in_address)
 	BDirectory dir(path.Path());
 	status_t err = B_OK;
 	BEntry entry;
+	bool changed = false;
+	
 	while(err == B_OK)
 	{
 		if( (err = dir.GetNextEntry(&entry)) != B_OK  )
@@ -422,7 +423,7 @@ HAddressView::SetFrom(const char* in_address)
 			BMessage msg;
 			msg.Unflatten(&file);
 			BString myAddress;
-		
+			PRINT(("%s\n",in_address));
 			if(msg.FindString("address",&myAddress) != B_OK)
 				myAddress = "";
 			// Change account
@@ -436,8 +437,21 @@ HAddressView::SetFrom(const char* in_address)
 				BMenuItem *item = menu->FindItem(name);
 				if(item)
 					item->SetMarked(true);
+				changed=true;
 				break;
 			}
+		}
+	}
+	
+	if(!changed && cast_as(Window()->FindView("HMailView"),BTextView))
+	{
+		BMenuField *field = cast_as(FindView("FromMenu"),BMenuField);
+		BMenuItem *item(NULL);
+		item = field->Menu()->FindMarked();
+		if(item)
+		{
+			ChangeAccount(item->Label());
+			item->SetMarked(true);	
 		}
 	}
 }
@@ -476,6 +490,23 @@ HAddressView::ChangeAccount(const char* name)
 		if(name.Length() > 0)
 			from << ">";
 		fFrom->SetText(from.String());
+		// Insert signature.
+		BTextView *view = cast_as(Window()->FindView("HMailView"),BTextView);
+		if(view)
+		{	
+			const char* sig_path;
+			if(msg.FindString("signature",&sig_path) == B_OK)
+			{
+				BFile sigfile(sig_path,B_READ_ONLY);
+				if(sigfile.InitCheck() == B_OK)
+				{
+					BString str;
+					str << "\n" << sigfile;
+					view->Insert(view->TextLength(),str.String(),str.Length());
+					view->Select(0,0);
+				}
+			}
+		}
 	}
 }
 
@@ -549,7 +580,7 @@ HAddressView::AddPerson(BMenu *menu
 							, uint32 modifiers)
 {
 	BMenu *subMenu(NULL);
-	ResourceUtils rutils;
+	HApp *app = (HApp*)be_app;
 	MenuUtils utils;
 	
 	if(::strlen(group) > 0)
@@ -582,18 +613,18 @@ HAddressView::AddPerson(BMenu *menu
 			font.SetSize(10);
 			subMenu->SetFont(&font);
 			IconMenuItem *iconItem = new IconMenuItem(subMenu,message,0,0
-						,rutils.GetBitmapResource('BBMP',"OpenFolder"));
+						,app->GetIcon("OpenFolder"),false);
 			iconItem->SetTarget(this,Window());
 		
 			menu->AddItem(iconItem);
 		}
 		// Add item
 		utils.AddMenuItem(subMenu,title,msg,this,Window(),shortcut,modifiers
-						,rutils.GetBitmapResource('BBMP',"Person"));
+						,app->GetIcon("Person"),false);
 		
 	}else
 		utils.AddMenuItem(menu,title,msg,this,Window(),shortcut,modifiers
-						,rutils.GetBitmapResource('BBMP',"Person"));
+						,app->GetIcon("Person"),false);
 }
 
 /***********************************************************

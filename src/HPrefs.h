@@ -8,16 +8,7 @@ class HPrefs:public HSetting
 public:
 			HPrefs(const char* name = K_PREFS_FILE_NAME
 					, const char* dir_name = NULL);
-	virtual		~HPrefs();
-	
 protected:
-	virtual void	MakeDefault();
+		 void	MakeDefault();
 };
 #endif
-
-
-
-
-
-
-

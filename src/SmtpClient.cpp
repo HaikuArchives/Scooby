@@ -1,31 +1,30 @@
 #include "SmtpClient.h"
-#include "HApp.h"
-#include "HMailItem.h"
-#include "Encoding.h"
+#include "md5.h"
+#include "base64.h"
 
+#include <stdlib.h>
 #include <Debug.h>
-#include <Handler.h>
-#include <Message.h>
-#include <Entry.h>
-#include <File.h>
 #include <E-mail.h>
-#include <Path.h>
-#include <Beep.h>
-#include <Alert.h>
 
 #define CRLF "\r\n"
 #define xEOF    236
 
+#define SMTP_RESPONSE_SIZE 8192
+
+enum AuthType{
+	LOGIN=1,
+	PLAIN=1<<2,
+	CRAM_MD5=1<<3,
+	DIGEST_MD5=1<<4
+};
+
 /***********************************************************
  * Constructor
  ***********************************************************/
-SmtpClient::SmtpClient(BHandler *handler,BLooper *looper)
-	:BLooper()
-	,fEndpoint(NULL)
-	,fHandler(handler)
-	,fLooper(looper)
+SmtpClient::SmtpClient()
+	:_inherited()
+	,fAuthType(0)
 {
-	Run();
 }
 
 /***********************************************************
@@ -33,114 +32,216 @@ SmtpClient::SmtpClient(BHandler *handler,BLooper *looper)
  ***********************************************************/
 SmtpClient::~SmtpClient()
 {
-	if(fEndpoint)
-		fEndpoint->Close();
-	delete fEndpoint;
+	Close();
 }
 
-
-/***********************************************************
- * MessageReceived
- ***********************************************************/
-void
-SmtpClient::MessageReceived(BMessage *message)
-{
-	switch(message->what)
-	{
-	case M_SMTP_CONNECT:
-	{
-		HMailItem *item(NULL);
-		int32 count;
-		type_code type;
-		message->GetInfo("pointer",&type,&count);
-		for(int32 i = 0;i < count;i++)
-		{
-			message->FindPointer("pointer",i,(void**)&item);
-			SendMail(item);
-		}
-		break;
-	}
-	default:
-		BLooper::MessageReceived(message);
-	}
-}
 
 /***********************************************************
  * Connect
  ***********************************************************/
 status_t
-SmtpClient::Connect(const char* address,int16 port)
+SmtpClient::Connect(const char* address,int16 port,bool esmtp)
 {
-	if(fEndpoint)
-		SmtpQuit();
-	fEndpoint = new BNetEndpoint();
-	if( fEndpoint->Connect(address,port) != B_OK)
+	if(_inherited::Connect(address,port) != B_OK)
 	{
 		PRINT(("Err:Unknown host\n"));
 		return B_ERROR;	
 	}
 	
 	BString line;
-	ReceiveLine(line);
+	ReceiveResponse(line);
 	
-	BString cmd = "HELO ";
-	cmd << address << CRLF;
-	if( SendCommand(cmd.String()) != B_OK)
+	char *cmd = new char[::strlen(address)+6];
+	if(!esmtp)
+		::sprintf(cmd,"HELO %s",(address)?address:"beos");
+	else
+		::sprintf(cmd,"EHLO %s",(address)?address:"beos");
+				
+	if( SendCommand(cmd) != B_OK)
 	{
 		PRINT(("Err:%s\n",fLog.String()));
+		delete[] cmd;
 		return B_ERROR;
+	}
+	delete[] cmd;
+	// Check auth type
+	if(esmtp)
+	{
+		const char* res = fLog.String();
+		char* p;
+		if((p=::strstr(res,"250-AUTH")))
+		{
+			if(::strstr(p,"LOGIN"))
+				fAuthType |= LOGIN;
+			if(::strstr(p,"PLAIN"))
+				fAuthType |= PLAIN;	
+			if(::strstr(p,"CRAM-MD5"))
+				fAuthType |= CRAM_MD5;
+			if(::strstr(p,"DIGEST-MD5"))
+				fAuthType |= DIGEST_MD5;
+		}
 	}
 	PRINT(("SMTP:Connect success\n"));
 	return B_OK;
 }
 
 /***********************************************************
- * ReadData
+ * Login
  ***********************************************************/
-int32
-SmtpClient::ReceiveLine(BString &line)
+status_t
+SmtpClient::Login(const char* _login,const char* password)
 {
-	bigtime_t timeout = 1000000*180; //timeout 180 secs
-	int32 len = 0,rcv;
-	int c = 0;
-	line = "";
+	if(fAuthType==0)
+		return B_ERROR;
+	const char* login = _login;		
+	char hex_digest[33];
+	BString out;
 	
-	if(fEndpoint->IsDataPending(timeout))
+	int32 loginlen = ::strlen(login);
+	int32 passlen = ::strlen(password);
+	
+	if(fAuthType&CRAM_MD5)
 	{
-		while(c != '\n'&& c != EOF && c != xEOF)
-		{
-			rcv = fEndpoint->Receive(&c,1);
-			if(rcv <=0)
-				break;
-			len += rcv;
-			line += (char)c;
-		}		
-	}else{
-		(new BAlert("",_("SMTP socket timeout."),_("OK")))->Go();
+		//******* CRAM-MD5 Authentication ( not tested yet.)
+		SendCommand("AUTH CRAM-MD5");
+		const char* res = fLog.String();
+		
+		if(strncmp(res,"334",3)!=0)
+			return B_ERROR;
+		char *base = new char[::strlen(&res[4])+1];
+		int32 baselen = ::strlen(base);
+		baselen = ::decode64(base,base,baselen);
+		base[baselen] = '\0';
+		
+		::MD5HexHmac(hex_digest,
+				(const unsigned char*)base,
+				(int)baselen,
+				(const unsigned char*)password,
+				(int)passlen);
+		printf("%s\n%s\n",base,hex_digest);
+		delete[] base;
+		
+		char *resp = new char[(strlen(hex_digest)+loginlen)*2+3];
+		
+		::sprintf(resp,"%s %s",login,hex_digest);
+		baselen = ::encode64(resp,resp,strlen(resp));
+		resp[baselen]='\0';
+		SendCommand(resp);
+		
+		delete[] resp;
+		
+		res = fLog.String();
+		if(atol(res)<500)
+			return B_OK;
+		
 	}
-	return len;
+	if(fAuthType&DIGEST_MD5){
+	//******* DIGEST-MD5 Authentication ( not written yet..)
+		fLog = "DIGEST-MD5 Authentication is not supported in Scooby";
+		return B_ERROR;
+	}
+	if(fAuthType&LOGIN){
+	//******* LOGIN Authentication ( tested. work fine)
+		SendCommand("AUTH LOGIN");
+		const char* res = fLog.String();
+		
+		if(strncmp(res,"334",3)!=0)
+			return B_ERROR;
+		// Send login name as base64
+		char* login64 = new char[loginlen*3+3];
+		::encode64(login64,(char*)login,loginlen);
+		SendCommand(login64);
+		delete [] login64;
+		
+		res = fLog.String();
+		if(strncmp(res,"334",3)!=0)
+			return B_ERROR;
+		// Send password as base64
+		login64 = new char[passlen*3+3];
+		::encode64(login64,(char*)password,passlen);
+		SendCommand(login64);
+		delete[] login64;
+		res = fLog.String();
+		if(atol(res)<500)
+			return B_OK;
+	}
+	//******* PLAIN Authentication ( not test yet.)
+	if(fAuthType&PLAIN){	
+		char* login64 = new char[((loginlen+1)*2+passlen)*3];
+		::memset(login64,0,((loginlen+1)*2+passlen)*3);
+		::memcpy(login64,login,loginlen);
+		::memcpy(login64+loginlen+1,login,loginlen);
+		::memcpy(login64+loginlen*2+2,password,passlen);
+		
+		::encode64(login64,login64,((loginlen+1)*2+passlen));
+		
+		char *cmd = new char[strlen(login64)+12];
+		::sprintf(cmd,"AUTH PLAIN %s",login64);
+		delete[] login64;
+		
+		SendCommand(cmd);
+		delete[] cmd;	
+		const char* res = fLog.String();
+		if(atol(res)<500)
+			return B_OK;
+	}
+		
+	return B_ERROR;
 }
 
+/***********************************************************
+ * ReceiveResponse
+ ***********************************************************/
+int32
+SmtpClient::ReceiveResponse(BString &out)
+{
+	out = "";
+	int32 len = 0,r;
+	char buf[SMTP_RESPONSE_SIZE];
+	bigtime_t timeout = 1000000*180; //timeout 180 secs
+	
+	if(IsDataPending(timeout))
+	{	
+		while(1)
+		{
+			r = Receive(buf,SMTP_RESPONSE_SIZE-1);
+			if(r <= 0)
+				break;
+			len += r;
+			out.Append(buf,r);
+			if(strstr(buf,"\r\n"))
+				break;
+		}
+	}else{
+		fLog = "SMTP socket timeout.";
+	}
+	PRINT(("S:%s\n",out.String()));
+	return len;
+}
 
 /***********************************************************
  * Command
  ***********************************************************/
 status_t
-SmtpClient::SendCommand(const char* cmd)
+SmtpClient::SendCommand(const char* cmd,bool send_line_break)
 {
 	int32 len;
- 	if( fEndpoint->Send(cmd, ::strlen(cmd)) == B_ERROR)
+	PRINT(("C:%s\n",cmd));
+	if( Send(cmd, ::strlen(cmd)) == B_ERROR)
 		return B_ERROR;
+	if(send_line_break)
+		if( Send(CRLF, 2) == B_ERROR)
+			return B_ERROR;
+	
 	fLog = "";
 	// Receive
 	while(1)
 	{
-		len = ReceiveLine(fLog);
-	
+		len = ReceiveResponse(fLog);
+		
 		if(len <= 0)
 			return B_ERROR;
-		PRINT(("%s\n",fLog.String()));
-		if(fLog.Length() > 4 && fLog[3] == ' ')
+		if(fLog.Length() > 4 && (fLog[3] == ' '||fLog[3] == '-'))
 		{
 			const char* top = fLog.String();
 			int32 num = atol( top );
@@ -158,91 +259,19 @@ SmtpClient::SendCommand(const char* cmd)
  * SendMail
  ***********************************************************/
 status_t
-SmtpClient::SendMail(HMailItem *item)
-{
-	entry_ref ref = item->Ref();
-	BFile file(&ref,B_READ_ONLY);
-	BPath path(&ref);
-	PRINT(("Path:%s\n",path.Path()));
-	if(file.InitCheck() == B_OK)
-	{
-		BString smtp_server("");
-		if(file.ReadAttrString(B_MAIL_ATTR_SMTP_SERVER,&smtp_server) != B_OK)
-		{
-			PRINT(("ERR:SMTP_SERVER\n"));
-			return B_ERROR;
-		}
-		
-		PRINT(("SMTP:%s\n",smtp_server.String()));
-		if(Connect(smtp_server.String()) != B_OK)
-		{
-			PRINT(("ERR:CONNECT ERROR\n"));
-			PostError("Cound not connect to smtp server");
-			return B_ERROR;		
-		}
-		
-		
-		int32 header_len;
-		
-		file.ReadAttr(B_MAIL_ATTR_HEADER,B_INT32_TYPE,0,&header_len,sizeof(int32));
-		
-		off_t size;
-		file.GetSize(&size);
-		char *buf = new char[size+1];
-		if(!buf)
-		{
-			(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
-			return B_ERROR;
-		}
-		size = file.Read(buf,size);
-		buf[size] = '\0';
-		// parse header
-		BString from,to,cc,bcc;
-		file.ReadAttrString(B_MAIL_ATTR_FROM,&from);
-		file.ReadAttrString(B_MAIL_ATTR_TO,&to);
-		file.ReadAttrString(B_MAIL_ATTR_CC,&cc);
-		file.ReadAttrString(B_MAIL_ATTR_BCC,&bcc);
-		if(cc.Length() > 0)
-			to << "," << cc;
-		if(bcc.Length() > 0)
-			to << "," << bcc;
-		BString attrStatus("");
-		if(SendMail(from.String(),to.String(),buf) == B_OK)
-			attrStatus = "Sent";
-		else{
-			attrStatus = "Error";
-			beep();
-			(new BAlert("","Failed to send mails","OK",NULL,NULL
-						,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go(); 
-		}
-		file.WriteAttrString(B_MAIL_ATTR_STATUS,&attrStatus);
-		item->RefreshStatus();	
-		delete[] buf;
-		SmtpQuit();
-		fLooper->PostMessage(M_SMTP_END,fHandler);
-		PRINT(("Posted\n"));
-	}DEBUG_ONLY(
-	else {
-		PRINT(("INIT ERROR\n"));
-	}
-	);
-	return B_OK;
-}
-
-
-/***********************************************************
- * SendMail
- ***********************************************************/
-status_t
-SmtpClient::SendMail(const char* from,
-				const char* to,
-				const char* content)
+SmtpClient::SendMail(const char* from
+					,const char* to
+					,const char* content
+					,void (*TotalSize)(int32,void*)
+					,void (*SentSize)(int32,void*)
+					,void* cookie
+					)
 {
 	// Set mail from
 	BString cmd = "MAIL FROM: ";
 
 	ParseAddress(from,cmd);
-	if(SendCommand(cmd.String()) != B_OK)
+	if(SendCommand(cmd.String(),false) != B_OK)
 	{
 		PRINT(("Err: mail from\n"));
 		return B_ERROR;
@@ -263,8 +292,7 @@ SmtpClient::SendMail(const char* from,
 			const char* kText = addr.String();
 			
 			ParseAddress(kText,cmd);
-			PRINT(("%s\n",cmd.String() ));
-			if(SendCommand(cmd.String()) != B_OK)
+			if(SendCommand(cmd.String(),false) != B_OK)
 			{
 				PRINT(("Err: rcpt\n"));
 				return B_ERROR;
@@ -273,23 +301,18 @@ SmtpClient::SendMail(const char* from,
 		}
 	}
 	// Data
-	cmd = "DATA\r\n";
-	if(SendCommand(cmd.String()) != B_OK)
+	if(SendCommand("DATA") != B_OK)
 	{
 		PRINT(("Err: data\n"));
 		return B_ERROR;
 	}
 	// Content
-	len = ::strlen(content);
 	BString line("");
-	BMessage msg(M_SET_MAX_SIZE);
-	msg.AddInt32("max_size",len);
-	fLooper->PostMessage(&msg,fHandler);
-	// send content
-	int32 send_len = 0;
-	msg.MakeEmpty();
-	msg.what = M_SEND_MAIL_SIZE;
-	msg.AddInt32("size",send_len);
+	len = ::strlen(content);
+	if(TotalSize)
+		TotalSize(len,cookie);
+		
+	int32 sent_len;
 	for(int32 i = 0;i < len;i++)
 	{
 		line += content[i];
@@ -310,20 +333,23 @@ SmtpClient::SendMail(const char* from,
 				line += "\r\n";
 				line_len = line.Length();
 			}
-			send_len = fEndpoint->Send(line.String(),line_len);
-			msg.ReplaceInt32("size",send_len);
-			fLooper->PostMessage(&msg,fHandler);
+			if((sent_len = Send(line.String(),line_len))<=0)
+				goto err;
 			line="";
+			if(SentSize)
+				SentSize(sent_len,cookie);
 		}
 	}
-
-	cmd = ".\r\n";
-	if( SendCommand(cmd.String()) != B_OK)
+	
+	if( SendCommand(".") != B_OK)
 	{
 		PRINT(("Err:Send content\n"));
 		return B_ERROR;
 	}
 	return B_OK;
+err:
+	PRINT(("Err:Fail to send contenn"));
+	return B_ERROR;
 }
 
 /***********************************************************
@@ -357,29 +383,6 @@ SmtpClient::ParseAddress(const char* in,BString& out)
 	}
 }
 
-/***********************************************************
- * PostError
- ***********************************************************/
-void
-SmtpClient::PostError(const char* log)
-{
-	BMessage msg(M_SMTP_ERROR);
-	msg.AddString("log",log);
-	fLooper->PostMessage(&msg,fHandler);
-}
-
-/***********************************************************
- * ForceQuit
- ***********************************************************/
-void
-SmtpClient::ForceQuit()
-{
-	if(!fEndpoint)
-		return;
-	int sd = fEndpoint->Socket();
-//	::closesocket(sd);
-	::close(sd);
-}
 
 /***********************************************************
  * SmtpQuit
@@ -387,8 +390,6 @@ SmtpClient::ForceQuit()
 status_t
 SmtpClient::SmtpQuit()
 {
-	if(!fEndpoint)
-		return B_OK;
 	// Send Quit
 	BString cmd = "QUIT\r\n";
 	if( SendCommand(cmd.String()) != B_OK)
@@ -396,18 +397,5 @@ SmtpClient::SmtpQuit()
 		PRINT(("Err:Quit\n"));
 		return B_ERROR;
 	}
-	fEndpoint->Close();
-	delete fEndpoint;
-	fEndpoint = NULL;
 	return B_OK;
-}
-
-/***********************************************************
- * QuitRequested
- ***********************************************************/
-bool
-SmtpClient::QuitRequested()
-{
-	SmtpQuit();
-	return BLooper::QuitRequested();
 }

@@ -58,14 +58,16 @@ enum{
 	M_CHANGE_MAIL_STATUS = 'mChM'
 };
 
+//! Main window.
 class HWindow: public BWindow {
 public:
+					//!Constructor.
 						HWindow(BRect rect,
 								const char* name);
 
-
+					//!Returns folder selection index.
 				int32	FolderSelection();
-				
+					//!Make compose window and show.
 				void	MakeWriteWindow(const char* subject = NULL,
 									const char* to = NULL,
 									const char* cc = NULL,
@@ -75,58 +77,75 @@ public:
 									HMailItem *replyItem = NULL,
 									bool reply = false,
 									bool forward = false);
-									
+					//!Make read window and show.					
 				void	MakeReadWindow(entry_ref ref,BMessenger *messenger = NULL);
+					//!Handle B_REFS_RECEIVED message.
 				void	RefsReceived(BMessage *message);
-				
+					//!Start playing keyboard LED animation.
 				void	PlayLEDAnimaiton();
+					//!Returns current deskbar icon state.
 				int32	CurrentDeskbarIcon()const {return fCurrentDeskbarIcon;}
+					//!Store current deskbar icon state.
 				void	ChangeDeskbarIcon(int32 icon) {fCurrentDeskbarIcon = icon;}
-
+					//!Show open file panel.
 				void	ShowOpenPanel(int32 what);
-				
+					//!Returns folder list pointer.
 		HFolderList*	FolderList() {return fFolderList;}
+					//!Returns mail list pointer.
 		HMailList*		MailList() {return fMailList;}
 protected:		
-		virtual			~HWindow();
-
-		virtual void	MessageReceived(BMessage *message);
-		virtual bool	QuitRequested();
-		virtual void	MenusBeginning();
-		virtual void	DispatchMessage(BMessage *message,BHandler *handler);
+				//!Destructor.
+						~HWindow();
+		//@{
+		//!Override function.
+			 	void	MessageReceived(BMessage *message);
+			 	bool	QuitRequested();
+			 	void	MenusBeginning();
+			 	void	DispatchMessage(BMessage *message,BHandler *handler);
+		//@}
+				//!Initialize all GUI.
 				void	InitGUI();
+				//!Initialize menubar.
 				void	InitMenu();
-				
+				//!Connect and fetch mail from all accounts.
 				void	PopConnect();
-				void	CheckFrom(entry_ref ref);
+				//!Connect and fetch mail from selected account.
+				void	CheckFrom(entry_ref &ref/*!<Account file's entry_ref*/);
+				//!Send mails which have "Pending" status.
 				void	SendPendingMails();
-					
+				//!Add new person file.
 				void	AddToPeople();
-				
+				//!Move mails to another folder.
 				void	MoveMails(BMessage *message);
+				//!Move mail to trash folder.
 				void	DeleteMails();
-				
+				//!Create reply mails.
 				void	ReplyMail(HMailItem *item,bool reply_all = false);
+				//!Create forword mails.
 				void	ForwardMail(HMailItem *item);
-				
+				//!This function will be call when mail list item was double clicked.
 				void	InvokeMailItem();
-				
-			status_t	AddPopServer(entry_ref ref,BMessage &sendMsg);
-			
+				//!Add one POP3 server to check target.
+			status_t	AddPopServer(entry_ref &ref,BMessage &sendMsg);
+				//!Install the deskbar icon.
 				void	InstallToDeskbar();
+				//!Remove the deskar icon.
 				void	RemoveFromDeskbar();
-			
+				//!Rebuild Check from menu.
 				void	AddCheckFromItems();
+				//!Empty mail trash folder.
 				void	EmptyTrash();
-				
+				//!Move mail with filter.
 				void	FilterMails(HMailItem *item);
+				//!Delete folder.
 				void	DeleteFolder(int32 sel);
-				
+				//!Print mail message.
 				void	PrintMessage(BMessage *message);
-				
+				//!Convert plain text file to BeOS style E-mail file.
 				void	Plain2BeMail(const char* path);
+				//!Convert mbox format file to BeOS style E-mail files.
 				void	MBox2BeMail(const char* path);
-				
+				//!Add selected mail address to blacklist.
 				void	AddToBlackList(int32 sel);
 				
 private:
@@ -146,4 +165,3 @@ private:
 		LEDAnimation	*fLEDAnimation;
 };
 #endif		
-				

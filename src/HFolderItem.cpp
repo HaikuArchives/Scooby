@@ -8,6 +8,7 @@
 #include "Utilities.h"
 #include "ColumnListView.h"
 #include "HMailList.h"
+#include "TrackerUtils.h"
 
 #include <Path.h>
 #include <Node.h>
@@ -150,7 +151,7 @@ HFolderItem::AddMail(HMailItem *item)
 	::watch_node(&item->fNodeRef,B_WATCH_ATTR,this);
 	
 	if(!item->IsRead())
-		SetName(fUnread+1);
+		SetUnreadCount(fUnread+1);
 }
 
 /***********************************************************
@@ -161,7 +162,7 @@ HFolderItem::RemoveMail(HMailItem* item)
 {
 	fMailList.RemoveItem(item);
 	if(!item->IsRead())
-		SetName(fUnread-1);
+		SetUnreadCount(fUnread-1);
 	::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
 }
 
@@ -182,7 +183,7 @@ HFolderItem::RemoveMail(entry_ref& ref)
 		{
 			item = (HMailItem*)fMailList.RemoveItem(i);
 			if(!item->IsRead())
-				SetName(fUnread-1);
+				SetUnreadCount(fUnread-1);
 			::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
 			return item;
 		}
@@ -201,7 +202,7 @@ HFolderItem::RemoveMail(node_ref &nref)
 	{
 		fMailList.RemoveItem(item);
 		if(!item->IsRead())
-				SetName(fUnread-1);
+				SetUnreadCount(fUnread-1);
 		::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
 		PRINT(("remove\n"));
 		return item;
@@ -250,7 +251,7 @@ HFolderItem::AddMails(BList* list)
 			unread++;
 		::watch_node(&item->fNodeRef,B_WATCH_ATTR,this);
 	}
-	SetName(fUnread+unread);
+	SetUnreadCount(fUnread+unread);
 }
 
 /***********************************************************
@@ -295,7 +296,7 @@ HFolderItem::ThreadFunc(void*data)
 	HFolderItem *item = (HFolderItem*)data;
 	item->Gather();
 	BListView *list = item->fOwner;
-	item->SetName(item->fUnread);
+	item->SetUnreadCount(item->fUnread);
 	BAutolock lock(list->Window());
 	list->InvalidateItem(((ColumnListView*)list)->IndexOf(item));
 	return 0;
@@ -372,15 +373,11 @@ HFolderItem::Gather()
 		if(node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH) <0)
 			continue;
 		if(::strcmp(type,B_MAIL_TYPE) == 0)
-		{
 			AddMail(item = new HMailItem(ref));
-			if(item&&!item->IsRead())
-				fUnread++;
-		}
 	}
 	// free all dirents
 	for(i = 0;i < count;i++)
-		free(dirents[i++]);
+		free(dirents[i]);
 	free(dirents);
 #endif		
 	//fMailList.SortItems(HFolderItem::CompareFunc);
@@ -389,7 +386,7 @@ HFolderItem::Gather()
 	BBitmap *icon = ((HApp*)be_app)->GetIcon("OpenFolder");
 	SetColumnContent(ICON_COLUMN,icon,2.0,false,false);
 	
-	SetName(fUnread);
+	SetUnreadCount(fUnread);
 	
 	fThread = -1;
 	InvalidateMe();
@@ -399,10 +396,10 @@ HFolderItem::Gather()
 }
 
 /***********************************************************
- * SetName
+ * SetUnreadCount
  ***********************************************************/
 void
-HFolderItem::SetName(int32 unread)
+HFolderItem::SetUnreadCount(int32 unread)
 {
 	//if(!IsDone())
 	//	return;
@@ -425,7 +422,7 @@ HFolderItem::RefreshCache()
 {
 	EmptyMailList();
 	PRINT(("Refresh Folder\n"));
-	SetName(0);
+	SetUnreadCount(0);
 	fDone = false;
 	fCancel = false;
 	// Set icon to open folder
@@ -916,7 +913,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 			item->RefreshStatus();
 			// if the status was changed, change unreaded mail count
 			if(read != item->IsRead())
-				SetName((!item->IsRead())?fUnread+1:fUnread-1);
+				SetUnreadCount((!item->IsRead())?fUnread+1:fUnread-1);
 			InvalidateMe();
 			// post invalidate item message to window
 			BMessage msg(M_INVALIDATE_MAIL);
@@ -967,6 +964,16 @@ void
 HFolderItem::RemoveSettings()
 {
 	
+}
+
+/***********************************************************
+ * DeleteMe
+ ***********************************************************/
+void
+HFolderItem::DeleteMe()
+{
+	TrackerUtils utils;
+	utils.MoveToTrash(Ref());
 }
 
 /***********************************************************

@@ -4,6 +4,7 @@
 #include "HPrefs.h"
 #include "HMailItem.h"
 #include "HString.h"
+#include "Utilities.h"
 
 #include <String.h>
 #include <Entry.h>
@@ -21,6 +22,7 @@
 #include <stdlib.h>
 #include <View.h>
 #include <StopWatch.h>
+
 
 const rgb_color kBorderColor = ui_color(B_PANEL_BACKGROUND_COLOR);
 
@@ -89,7 +91,7 @@ HMailItem::HMailItem(const entry_ref &ref,
 		fNodeRef.device = ref.device;
 	}
 
-	MakeTime(fDate);
+	MakeTime(fDate,fWhen);
 
 	SetColumnContent(1,fSubject.String());
 	SetColumnContent(2,fFrom.String());
@@ -105,9 +107,7 @@ HMailItem::HMailItem(const entry_ref &ref,
 		mailNode.GetSize(&filesize);
 		fSize = size = filesize;
 		
-		if(mailNode.ReadAttrString(B_MAIL_ATTR_ACCOUNT,&fAccount) != B_OK)
-			fAccount = "";
-	
+		ReadNodeAttrString(&mailNode,B_MAIL_ATTR_ACCOUNT,&fAccount);
 	}
 	//
 	char suffix[10];
@@ -168,7 +168,7 @@ HMailItem::HMailItem(const char* status,
 	,fAccount(account)
 	,fSize(size)
 {
-	MakeTime(fDate);
+	MakeTime(fDate,fWhen);
 	SetColumnContent(1,fSubject.String());
 	SetColumnContent(2,fFrom.String());
 	SetColumnContent(3,fTo.String());
@@ -217,7 +217,7 @@ HMailItem::SetRead()
 	BNode node(&fRef);
 	if(node.InitCheck() == B_OK)
 	{
-		node.ReadAttrString(B_MAIL_ATTR_STATUS,&fStatus);
+		ReadNodeAttrString(&node,B_MAIL_ATTR_STATUS,&fStatus);
 		if(fStatus.Compare("New")!=0 )
 			return;
 		fStatus = "Read";
@@ -297,7 +297,7 @@ HMailItem::RefreshStatus()
 	BNode node(&fRef);
 	if(node.InitCheck() == B_OK)
 	{
-		node.ReadAttrString(B_MAIL_ATTR_STATUS,&fStatus);
+		ReadNodeAttrString(&node,B_MAIL_ATTR_STATUS,&fStatus);
 		ResetIcon();
 	}
 }
@@ -314,30 +314,23 @@ HMailItem::InitItem()
 	
 	if(node.InitCheck() == B_OK)
 	{
-		if(node.GetAttrInfo(B_MAIL_ATTR_SUBJECT,&attr) == B_OK)
-			node.ReadAttrString(B_MAIL_ATTR_SUBJECT,&fSubject);
-		if(node.GetAttrInfo(B_MAIL_ATTR_CC,&attr) == B_OK)
-			node.ReadAttrString(B_MAIL_ATTR_CC,&fCC);
-		if(node.GetAttrInfo(B_MAIL_ATTR_ACCOUNT,&attr) == B_OK)
-			node.ReadAttrString(B_MAIL_ATTR_ACCOUNT,&fAccount);	
-		if(node.GetAttrInfo(B_MAIL_ATTR_FROM,&attr) == B_OK)
-			node.ReadAttrString(B_MAIL_ATTR_FROM,&fFrom);
-		if(node.GetAttrInfo(B_MAIL_ATTR_TO,&attr) == B_OK)
-			node.ReadAttrString(B_MAIL_ATTR_TO,&fTo);
-		if(node.GetAttrInfo(B_MAIL_ATTR_STATUS,&attr) == B_OK)
-			node.ReadAttrString(B_MAIL_ATTR_STATUS,&fStatus);
-		if(node.GetAttrInfo(B_MAIL_ATTR_WHEN,&attr) == B_OK)
+		ReadNodeAttrString(&node,B_MAIL_ATTR_SUBJECT,&fSubject,"");
+		ReadNodeAttrString(&node,B_MAIL_ATTR_CC,&fCC,"");
+		ReadNodeAttrString(&node,B_MAIL_ATTR_ACCOUNT,&fAccount,"");	
+		ReadNodeAttrString(&node,B_MAIL_ATTR_FROM,&fFrom,"");
+		ReadNodeAttrString(&node,B_MAIL_ATTR_TO,&fTo,"");
+		ReadNodeAttrString(&node,B_MAIL_ATTR_STATUS,&fStatus,"New");
+		if(node.GetAttrInfo(B_MAIL_ATTR_WHEN,&attr) == B_OK && attr.size > 0)
 		{	
 			node.ReadAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&fWhen,sizeof(time_t));
-			MakeTime(fDate);
+			MakeTime(fDate,fWhen);
 		}
-		if(node.GetAttrInfo(B_MAIL_ATTR_PRIORITY,&attr) == B_OK)
-			node.ReadAttrString(B_MAIL_ATTR_PRIORITY,&fPriority);
+		ReadNodeAttrString(&node,B_MAIL_ATTR_PRIORITY,&fPriority,"");
 		int32 priority = atoi(fPriority.String() );
 		fPriority = "";
 		fPriority << priority;
 	
-		if(node.GetAttrInfo(B_MAIL_ATTR_ATTACHMENT,&attr) == B_OK)
+		if(node.GetAttrInfo(B_MAIL_ATTR_ATTACHMENT,&attr) == B_OK && attr.size > 0)
 		{
 			bool enclosure;
 			node.ReadAttr(B_MAIL_ATTR_ATTACHMENT,B_BOOL_TYPE,0,&enclosure,sizeof(bool));
@@ -386,12 +379,8 @@ int HMailItem::CompareItems(const CLVListItem *a_Item1,
 								const CLVListItem *a_Item2, 
 								int32 KeyColumn)
 {
-	const HMailItem* Item1 = dynamic_cast<const HMailItem*>(a_Item1);
-	const HMailItem* Item2 = dynamic_cast<const HMailItem*>(a_Item2);
-	
-	ASSERT( Item1 );
-	ASSERT( Item2 );
-	
+	const HMailItem* Item1 = cast_as(a_Item1,const HMailItem);
+	const HMailItem* Item2 = cast_as(a_Item2,const HMailItem);
 	
 	if(!Item1 && Item2)
 		return -1;
@@ -526,28 +515,32 @@ HMailItem::DrawItemColumn(BView* owner,
 									int32 column_index, 
 									bool complete)
 {
+	if(((BListView*)owner)->IndexOf(this)%2)
+		SetBackgroundColor(NULL);
+	else{
+		rgb_color col = tint_color(owner->ViewColor(),1.05F);
+		SetBackgroundColor(&col);
+	}
 	_inherited::DrawItemColumn(owner,item_column_rect,column_index,complete);
 	// Stroke line
 	rgb_color old_col = owner->HighColor();
-	
-	owner->SetHighColor(kBorderColor);
+	owner->SetHighColor(tint_color(owner->ViewColor(),1.07F));
 	
 	BPoint start,end;
 	start.y = end.y = item_column_rect.bottom;
 	start.x = 0;
 	end.x = owner->Bounds().right;
-	
 	owner->StrokeLine(start,end);
-	owner->SetHighColor(old_col);
+	owner->SetHighColor(old_col); 
 }
 
 /***********************************************************
  * MakeTime
  ***********************************************************/
 void
-HMailItem::MakeTime(BString &out)
+HMailItem::MakeTime(BString &out,time_t &when)
 {
-	struct tm* time = localtime(&fWhen);
+	struct tm* time = localtime(&when);
 	char *tmp = out.LockBuffer(64);
 
 	const char* kTimeFormat;
