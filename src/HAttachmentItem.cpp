@@ -1,5 +1,6 @@
 #include "HAttachmentItem.h"
 #include "Encoding.h"
+#include "HApp.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -26,12 +27,12 @@ HAttachmentItem::HAttachmentItem(const char* name,
 	,fCharset(NULL)
 	,fName(NULL)
 {
-	fName = (name)?name:"Unknown";
+	fName = (name)?name:_("Unknown");
 	
 	Encoding().Mime2UTF8(fName);
 	
 	SetColumnContent(1,fName.String());
-	SetColumnContent(2,(content_type)?content_type:"(Unknown)");
+	SetColumnContent(2,(content_type)?content_type:_("(Unknown)"));
 	
 	char *size = new char[15];
 	float d = 0;
@@ -39,13 +40,13 @@ HAttachmentItem::HAttachmentItem(const char* name,
 	if(data_len < 1024)
 	{
 		d = data_len;
-		::strcpy(unit,"bytes");
+		::strcpy(unit,_("bytes"));
 	}else if(data_len >= 1024 && data_len < 1024*1024){
 		d = data_len/1024.0;
-		::strcpy(unit,"KB");
+		::strcpy(unit,_("KB"));
 	}else{
 		d = data_len/(1024.0*1024.0);
-		::strcpy(unit,"MB");
+		::strcpy(unit,_("MB"));
 	}
 	::sprintf(size,"%6.2f %s",d,unit);
 	SetColumnContent(3,size);

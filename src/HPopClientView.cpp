@@ -491,7 +491,7 @@ HPopClientView::SaveMail(const char* all_content,
 	header.Append(all_content,header_len);
 	
 	if(subject.Length() == 0)
-		subject = "Untitled";
+		subject = _("Untitled");
 	if(strstr(header.String(),"Content-Type: multipart"))
 		is_multipart = true;
 	

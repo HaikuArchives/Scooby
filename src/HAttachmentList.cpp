@@ -2,6 +2,7 @@
 #include "CLVColumn.h"
 #include "HAttachmentItem.h"
 #include "HHtmlMailView.h"
+#include "HApp.h"
 
 #include <PopUpMenu.h>
 #include <Menu.h>
@@ -25,7 +26,7 @@ HAttachmentList::HAttachmentList(BRect frame,
 {
 	AddColumn( new CLVColumn(NULL,22,CLV_LOCK_AT_BEGINNING|CLV_NOT_MOVABLE|
 		CLV_NOT_RESIZABLE|CLV_PUSH_PASS|CLV_MERGE_WITH_RIGHT) );
-	const char* kLabels[] = {"Name","Content-Type","Size"};
+	const char* kLabels[] = {_("Name"),_("Content-Type"),_("Size")};
 	CLVColumn*			column;
 	for(int32 i = 0;i < 3;i++)
 	{
@@ -80,10 +81,10 @@ HAttachmentList::MouseDown(BPoint pos)
     	BFont font(be_plain_font);
     	font.SetSize(10);
     	theMenu->SetFont(&font);
-    	BMenuItem *item = new BMenuItem("Save As" B_UTF8_ELLIPSIS,new BMessage(M_SAVE_ATTACHMENT));
+    	BMenuItem *item = new BMenuItem(_("Save As" B_UTF8_ELLIPSIS),new BMessage(M_SAVE_ATTACHMENT));
     	item->SetEnabled((sel < 0)?false:true);
     	theMenu->AddItem(item);
-    	item = new BMenuItem("Open",new BMessage(M_OPEN_ATTACHMENT));
+    	item = new BMenuItem(_("Open"),new BMessage(M_OPEN_ATTACHMENT));
     	item->SetEnabled((sel < 0)?false:true);
     	theMenu->AddItem(item);
 		BRect r;

@@ -458,9 +458,9 @@ int HMailItem::CompareItems(const CLVListItem *a_Item1,
 	
 	int pos1 = 0,pos2 = 0;
 	
-	if(strncasecmp(text1,"Re:",3) == 0)
+	if(strncasecmp(text1,_("Re:"),3) == 0)
 		pos1 = (text1[4]==' ')?4:3;
-	if(strncasecmp(text2,"Re:",3) == 0)
+	if(strncasecmp(text2,_("Re:"),3) == 0)
 		pos2 = (text2[4]==' ')?4:3;
 	
 	return strcasecmp(text1+pos1,text2+pos2);

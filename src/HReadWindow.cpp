@@ -119,15 +119,15 @@ HReadWindow::InitGUI()
 	HToolbar *toolbox = new HToolbar(toolrect,B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP);
 	if(kToolbarHeight == 50)
 		toolbox->UseLabel(true);
-	toolbox->AddButton("New",utils.GetBitmapResource('BBMP',"New Message"),new BMessage(M_NEW_MSG),"New Message");
+	toolbox->AddButton("New",utils.GetBitmapResource('BBMP',"New Message"),new BMessage(M_NEW_MSG),_("New Message"));
 	toolbox->AddSpace();
 	BMessage *msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",false);
-	toolbox->AddButton("Reply",utils.GetBitmapResource('BBMP',"Reply"),msg,"Reply to Sender Only");
+	toolbox->AddButton("Reply",utils.GetBitmapResource('BBMP',"Reply"),msg,_("Reply to Sender Only"));
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",true);
-	toolbox->AddButton("All",utils.GetBitmapResource('BBMP',"Reply To All"),msg,"Reply to All");
-	toolbox->AddButton("Fwd",utils.GetBitmapResource('BBMP',"Forward"),new BMessage(M_FORWARD_MESSAGE),"Forward Message");
+	toolbox->AddButton("All",utils.GetBitmapResource('BBMP',"Reply To All"),msg,_("Reply to All"));
+	toolbox->AddButton("Fwd",utils.GetBitmapResource('BBMP',"Forward"),new BMessage(M_FORWARD_MESSAGE),_("Forward Message"));
 	toolbox->AddSpace();
 	toolbox->AddButton("Trash",utils.GetBitmapResource('BBMP',"Trash"),new BMessage(M_DELETE_MSG),_("Move Message to Trash"));
 	toolbox->AddSpace();
@@ -135,8 +135,8 @@ HReadWindow::InitGUI()
 	if(fMessenger)
 	{
 		toolbox->AddSpace();
-		toolbox->AddButton("Next",utils.GetBitmapResource('BBMP',"Next"),new BMessage(M_NEXT_MESSAGE),"Next Message");
-		toolbox->AddButton("Prev",utils.GetBitmapResource('BBMP',"Prev"),new BMessage(M_PREV_MESSAGE),"Previous Message");
+		toolbox->AddButton("Next",utils.GetBitmapResource('BBMP',"Next"),new BMessage(M_NEXT_MESSAGE),_("Next Message"));
+		toolbox->AddButton("Prev",utils.GetBitmapResource('BBMP',"Prev"),new BMessage(M_PREV_MESSAGE),_("Previous Message"));
 	}
 	
 	AddChild(toolbox);

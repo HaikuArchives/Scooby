@@ -384,7 +384,7 @@ HWindow::InitGUI()
 	toolbox->AddButton("New",utils.GetBitmapResource('BBMP',"New Message"),new BMessage(M_NEW_MSG),_("New Message"));
 	BMessage *msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",false);
-	toolbox->AddButton("Reply",utils.GetBitmapResource('BBMP',"Reply"),msg,"Reply to Sender Only");
+	toolbox->AddButton("Reply",utils.GetBitmapResource('BBMP',"Reply"),msg,_("Reply to Sender Only"));
 	msg = new BMessage(M_REPLY_MESSAGE);
 	msg->AddBool("reply_all",true);
 	toolbox->AddButton("All",utils.GetBitmapResource('BBMP',"Reply To All"),msg,_("Reply to All"));
@@ -1481,12 +1481,12 @@ HWindow::ReplyMail(HMailItem *item,bool reply_all)
 		}
 	}
 	//
-	if( strncmp(subject.String(),"Re:",3) != 0)
+	if( strncmp(subject.String(),_("Re:"),3) != 0)
 	{
 		if(subject != "" && subject[0] == ' ')
-			subject.Insert("Re:",0);
+			subject.Insert(_("Re:"),0);
 		else
-			subject.Insert("Re: ",0);
+			subject.Insert(_("Re: "),0);
 	}
 	MakeWriteWindow(subject.String()
 					,to.String()

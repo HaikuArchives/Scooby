@@ -172,7 +172,7 @@ void SizeUpdate(StatusItem *item)
 	if(!view) return;
 	int32 size = view->TextLength();
 	BString label;
-	label << _("Size") << ": " << size << " byte";
+	label << _("Size") << ": " << size << " " << _("byte");
 	if(size != 0)
 		label += "s";
 	item->SetLabel( label.String() );
@@ -204,7 +204,7 @@ bool GetParameter(const char *src,const char *param, char **dst)
 		out = new char[len+1];
 		if(!out)
 		{
-			(new BAlert("","Memory was exhausted","OK"))->Go();
+			(new BAlert("",_("Memory was exhausted"),_("OK")))->Go();
 			return false;
 		}
 		::strncpy(out, offset,len);
@@ -353,13 +353,14 @@ time_t MakeTime_t(const char* date)
 		{
 			// 01 Feb 01 12:22:42 PM
 			num_scan = sscanf(date, "%d %3s %3d %d %2d:%2d %5s",
-                                  &day, smon, &year, &hour, &min,&sec,offset);
+                                  &day, smon, &year, &hour, &min, &sec, offset);
             if(strcasecmp(offset,"PM") == 0)
 				hour += 12;
 			if (num_scan != 7)
 			{
 			// Return current time if this can not parse date
-				PRINT(("Unknown date format\n"));
+				PRINT((_("Unknown date format")));
+				PRINT(("\n"));
 					return time(NULL);
 			}
 		}

@@ -138,7 +138,7 @@ HHtmlMailView::MessageReceived(BMessage *message)
 					continue;
 				name = item->Name();
 				PRINT(("%s\n",name));
-				SaveAttachment(sel,ref,(!name)?"Unknown":name);
+				SaveAttachment(sel,ref,(!name)?_("Unknown"):name);
 			}
 		}
 		break;
@@ -204,7 +204,7 @@ HHtmlMailView::OpenAttachment(int32 sel )
 	BPath path;
 	entry_ref ref;
 	::find_directory(B_COMMON_TEMP_DIRECTORY,&path);
-	path.Append((name)?name:"Unknown");
+	path.Append((name)?name:_("Unknown"));
 	::get_ref_for_path(path.Path(),&ref);
 	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
 	

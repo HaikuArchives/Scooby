@@ -731,7 +731,7 @@ void HMailView::Open(hyper_text *enclosure)
 							Encoding().Mime2UTF8(decodedName);
 							sprintf(name1, "%s", decodedName.String());
 						}else{
-							sprintf(name1, "Untitled");
+							sprintf(name1, _("Untitled"));
 						}
 						strcpy(name, name1);
 						while (dir.Contains(name)) {
@@ -1282,7 +1282,7 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 						strcpy(enclosure->name, str);
 					}
 					else
-						sprintf(str, "Untitled");
+						sprintf(str, _("Untitled"));
 					index = 0;
 					
 					BString decodedName(str);

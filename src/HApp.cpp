@@ -111,7 +111,7 @@ HApp::MessageReceived(BMessage *message)
 		{
 			if(message->FindRef("refs",i,&ref) == B_OK)
 			{
-printf("%d\n",i);
+printf("%ld\n",i);
 				PRINT(("DELETE\n"));
 				TrackerUtils().MoveToTrash(ref);
 			}

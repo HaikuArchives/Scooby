@@ -59,7 +59,7 @@ HFolderItem::HFolderItem(const entry_ref &ref,BListView *target)
 	if(BPath(&ref).InitCheck() == B_OK)
 		fName = BPath(&ref).Leaf();
 	else
-		fName = "Unknown";
+		fName = _("Unknown");
 	fMailList.MakeEmpty();
 	
 	BBitmap *icon(NULL);
@@ -913,7 +913,6 @@ HFolderItem::NodeMonitor(BMessage *message)
 	{
 		PRINT(("ATTR CHANGED\n"));
 		HMailItem *item = FindMail(nref);
-		bool read;
 		if(item)
 		{
 			// Refresh mail file status with real node

@@ -155,7 +155,9 @@ HWriteWindow::HWriteWindow(BRect rect
 		time_t t;
 		ReadNodeAttrString(fReplyFile,B_MAIL_ATTR_FROM,&from);
 		fReplyFile->ReadAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&t,sizeof(time_t));
-		from += _(" wrote:\n");
+		from += " ";
+		from += _("wrote:");
+		from += "\n";
 /*		const char* kTimeFormat;
 		char date[64];
 		((HApp*)be_app)->Prefs()->GetData("time_format",&kTimeFormat);
@@ -1021,7 +1023,7 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 
 	BString subject(fTopView->Subject());
 	if(subject.Length() == 0)
-		subject = "Untitled";
+		subject = _("Untitled");
 	BString encoded_subject(subject);
 	
 	Encoding encode;
