@@ -906,7 +906,13 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	BFile file;
 
 	BDirectory destDir(path.Path());
-	TrackerUtils().SmartCreateFile(&file,&destDir,filename.String(),"_");
+	if(TrackerUtils().SmartCreateFile(&file,&destDir,filename.String(),"_") != B_OK)
+	{
+		BString label(_("Cound not create file"));
+		label << ":" << path.Path() << "/" << filename;
+		(new BAlert("",label.String(),_("OK")))->Go();
+		return B_ERROR;
+	}
 	// make smtp server
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
@@ -924,6 +930,11 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 			smtp_host = "";
 		if(msg.FindString("reply_to",&reply) != B_OK)
 			reply = "";
+	}else{
+		BString label(_("Cound not find account file"));
+		label << ":" << path.Path();
+		(new BAlert("",label.String(),_("OK")))->Go();
+		return B_ERROR;
 	}
 	// make date 
 	time_t now = time(NULL);

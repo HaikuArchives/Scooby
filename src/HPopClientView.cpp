@@ -288,7 +288,7 @@ HPopClientView::MessageReceived(BMessage *message)
 			fMailCurrentIndex = index+1;
 			entry_ref folder_ref,file_ref;
 			bool is_delete;
-			SaveMail(content,&folder_ref,&file_ref,&is_delete);
+			SaveMail(content,&folder_ref,&is_delete);
 	
 			if(is_delete)
 				fDeleteMails.AddInt32("index",index);
@@ -448,7 +448,6 @@ HPopClientView::GetHeaderParam(BString &out,const char* content,int32 offset)
 void
 HPopClientView::SaveMail(const char* all_content,
 						entry_ref* folder_ref,
-						entry_ref *file_ref,
 						bool *is_delete)
 {
 	fGotMails = true;
@@ -525,12 +524,11 @@ HPopClientView::SaveMail(const char* all_content,
 	BPath path = folder_path.String();
 	::create_directory(path.Path(),0777);
 	BDirectory destDir(path.Path());
-	path.Append(subject.String());
 	PRINT(("path:%s\n",path.Path() ));
 	// create the e-mail file
 	BFile file;
-
-	if(TrackerUtils().SmartCreateFile(&file,&destDir,path.Leaf(),"_") != B_OK)
+	
+	if(TrackerUtils().SmartCreateFile(&file,&destDir,subject.String(),"_") != B_OK)
 		PRINT(("Failed to save mail:%s",path.Leaf()));
 	// write e-mail attributes
 	file.Write(all_content,strlen(all_content));
@@ -569,9 +567,6 @@ HPopClientView::SaveMail(const char* all_content,
 	BNodeInfo ninfo(&file);
 	ninfo.SetType("text/x-email");
 	entry_ref ref;
-	::get_ref_for_path(path.Path(),&ref);
-	*file_ref = ref;
-	path.GetParent(&path);
 	::get_ref_for_path(path.Path(),&ref);
 	*folder_ref =ref;
 	return;

@@ -1929,7 +1929,7 @@ HWindow::Plain2BeMail(const char* path)
 	
 	entry_ref folder_ref,file_ref;
 	bool del;
-	fPopClientView->SaveMail(all_content,&folder_ref,&file_ref,&del);
+	fPopClientView->SaveMail(all_content,&folder_ref,&del);
 	
 	delete[] all_content;
 }
@@ -1988,7 +1988,7 @@ HWindow::MBox2BeMail(const char* path)
 						break;	
 				}
 				UpdateIfNeeded();
-				fPopClientView->SaveMail(msgStr.String(),&folder_ref,&file_ref,&del);
+				fPopClientView->SaveMail(msgStr.String(),&folder_ref,&del);
 			}
 		}
 	}

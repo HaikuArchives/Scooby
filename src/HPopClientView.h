@@ -41,7 +41,6 @@ public:
 
 			void	SaveMail(const char* content,
 							entry_ref *folder_ref,
-							entry_ref *file_ref,
 							bool *is_delete);
 			int16	RetrieveType() const {return fRetrieve;}
 protected:
