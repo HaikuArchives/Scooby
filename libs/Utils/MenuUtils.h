@@ -30,7 +30,8 @@ class MenuUtils
 							, const BLooper* looper = NULL
 							, char shortcut = 0
 							, uint32 modifiers = 0
-							, BBitmap *bitmap = NULL);
+							, BBitmap *bitmap = NULL
+							, bool copyBitmap = true);
 		void	AddMenuItem(BMenu* menu
 							, const char* name
 							, BMessage *message
@@ -38,7 +39,8 @@ class MenuUtils
 							, const BLooper* looper = NULL
 							, char shortcut = 0
 							, uint32 modifiers = 0
-							, BBitmap *bitmap = NULL);
+							, BBitmap *bitmap = NULL
+							, bool copyBitmap = true);
 		void	AddMenuItem(BMenu* menu
 							, BMenu* submenu
 							, BMessage *message
@@ -46,7 +48,8 @@ class MenuUtils
 							, const BLooper* looper = NULL
 							, char shortcut = 0
 							, uint32 modifiers = 0
-							, BBitmap *bitmap = NULL);
+							, BBitmap *bitmap = NULL
+							, bool copyBitmap = true);
 		void	AddMenuItem(BMenu* menu
 							, BMenu* submenu
 							, const uint32 what
@@ -54,7 +57,8 @@ class MenuUtils
 							, const BLooper* looper = NULL
 							, char shortcut = 0
 							, uint32 modifiers = 0
-							, BBitmap *bitmap = NULL);
+							, BBitmap *bitmap = NULL
+							, bool copyBitmap = true);
 		void	SetFamilyAndStyle(BMenu* font_menu
 							,const char* family
 							,const char* style);

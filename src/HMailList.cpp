@@ -424,6 +424,7 @@ HMailList::MouseDown(BPoint pos)
 	BMessage *msg;
     Window()->CurrentMessage()->FindInt32("buttons", &buttons); 
     MakeFocus(true);
+    HApp *app = (HApp*)be_app;
 	IconMenuItem *item;
     // Right click 
     if(buttons == B_SECONDARY_MOUSE_BUTTON)
@@ -451,7 +452,7 @@ HMailList::MouseDown(BPoint pos)
     	 theMenu->SetFont(&font);
     	 
     	 item = new IconMenuItem(_("Open Message in New Window" B_UTF8_ELLIPSIS),new BMessage(M_INVOKE_MAIL),0,0,
-							utils.GetBitmapResource('BBMP',"Read"));
+							app->GetIcon("Read"),false);
 		 item->SetEnabled( (sel >= 0)?true:false);
 		 theMenu->AddItem(item);
 		 theMenu->AddSeparatorItem();
@@ -483,7 +484,7 @@ HMailList::MouseDown(BPoint pos)
     	// Add to people menu
     	theMenu->AddSeparatorItem();
     	item = new IconMenuItem(_("Save as People" B_UTF8_ELLIPSIS),new BMessage(M_ADD_TO_PEOPLE),0,0,
-    	 						utils.GetBitmapResource('BBMP',"Person"));
+    	 						app->GetIcon("Person"),false);
     	item->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(item);
     	item = new IconMenuItem(_("Add to BlackList"),new BMessage(M_ADD_TO_BLACK_LIST),0,0,
