@@ -9,7 +9,7 @@
 #include <Entry.h>
 
 enum{
-M_GET_VOLUMES = 'HLGV',
+M_GET_FOLDERS = 'HLGV',
 M_LOCAL_SELECTION_CHANGED = 'HLSC',
 M_ADD_UNDER_ITEM = 'HLAU',
 M_ADD_FOLDER = 'HLAV',
