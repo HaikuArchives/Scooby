@@ -23,7 +23,7 @@ protected:
 			void	SetEnableControls(bool enalbe);
 			void	SaveItem(int32 sel);
 			void	OpenItem(int32 sel);
-
+	virtual	void	AttachedToWindow();
 private:
 	CTextView*		fTextView;
 	BListView*		fListView;

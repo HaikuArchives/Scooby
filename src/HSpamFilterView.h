@@ -22,6 +22,7 @@ public:
 			void		Load();
 protected:
 	virtual void		MessageReceived(BMessage *msg);
+	virtual	void		AttachedToWindow();
 private:
 	BListView*			fAddressList;
 	BTextControl*		fAddressCtrl;

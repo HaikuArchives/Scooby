@@ -306,6 +306,8 @@ HSignatureView::SetEnableControls(bool enable)
 	BButton *button;
 	button = cast_as(FindView("apply"),BButton);
 	button->SetEnabled(enable);
+	button = cast_as(FindView("del"),BButton);
+	button->SetEnabled(enable);
 }
 
 /***********************************************************

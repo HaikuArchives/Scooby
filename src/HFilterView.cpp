@@ -597,3 +597,23 @@ HFilterView::RefreshCriteriaScroll()
 	BScrollBar *sbar = scroll->ScrollBar(B_VERTICAL);
 	sbar->SetRange(0,(scroll->Bounds().Height()<count*30)?(count*30-scroll->Bounds().Height()):0 );
 }
+
+/***********************************************************
+ * AttachedToWindow
+ ***********************************************************/
+void
+HFilterView::AttachedToWindow()
+{
+	BButton *button;
+	button = cast_as(FindView("add"),BButton);
+	button->SetTarget(this);
+	button = cast_as(FindView("del"),BButton);
+	button->SetTarget(this);
+	button = cast_as(FindView("criteria_add"),BButton);
+	button->SetTarget(this);
+	button = cast_as(FindView("criteria_del"),BButton);
+	button->SetTarget(this);
+	button = cast_as(FindView("apply"),BButton);
+	button->SetTarget(this);
+	fListView->SetTarget(this);
+}

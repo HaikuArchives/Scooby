@@ -520,3 +520,19 @@ HAccountView::SetEnableControls(bool enable)
 	if(!enable)
 		field->Menu()->ItemAt(0)->SetMarked(true);
 }
+
+/***********************************************************
+ * AttachedToWindow
+ ***********************************************************/
+void
+HAccountView::AttachedToWindow()
+{
+	BButton *button;
+	button = cast_as(FindView("add"),BButton);
+	button->SetTarget(this);
+	button = cast_as(FindView("del"),BButton);
+	button->SetTarget(this);
+	button = cast_as(FindView("apply"),BButton);
+	button->SetTarget(this);
+	fListView->SetTarget(this);
+}

@@ -80,38 +80,12 @@ HPrefWindow::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
-	case M_ADD_FILTER_MSG:
-	case M_DEL_FILTER_MSG:
-	case M_FILTER_CHG:
-	case M_FILTER_SAVE_CHANGED:
-	case M_ADD_CRITERIA_MSG:
-	case M_DEL_CRITERIA_MSG:
-		PostMessage(message,fFilterView);
-		break;
-	case M_ADD_ACCOUNT:
-	case M_DEL_ACCOUNT:
-	case M_CHANGE_ACCOUNT:
-	case M_ACCOUNT_SAVE_CHANGED:
-		PostMessage(message,fAccountView);
-		break;
-	case M_SIGNATURE_SAVE_CHANGED:
-	case M_ADD_SIGNATURE:
-	case M_DEL_SIGNATURE:
-	case M_CHANGE_SIGNATURE:
-		PostMessage(message,fSignatureView);
-		break;
 	case M_FONT_CHANGED:
 	case 'FSel':
 		PostMessage(message,fGeneralView);
 		break;
 	case M_ADD_FOLDERS:
 		fFilterView->AddFolderItem(message);
-		break;
-	case M_SPAM_ADDRESS_MODIFIED:
-	case M_SPAM_OK:
-	case M_SPAM_DEL:
-	case M_SPAM_SELECTION_CHANGED:
-		PostMessage(message,fSpamFilterView);
 		break;
 	default:
 		BWindow::MessageReceived(message);

@@ -44,12 +44,12 @@ HSpamFilterView::HSpamFilterView(BRect rect)
 	
 	rect.left = rect.right + 20;
 	rect.right = rect.left + 70;
-	fAddBtn = new BButton(rect,NULL,_("Add"),new BMessage(M_SPAM_OK));
+	fAddBtn = new BButton(rect,"add",_("Add"),new BMessage(M_SPAM_OK));
 	fAddBtn->SetEnabled(false);
 	AddChild(fAddBtn);
 	
 	rect.OffsetBy(rect.Width()+10,0);
-	fDeleteBtn = new BButton(rect,NULL,_("Delete"),new BMessage(M_SPAM_DEL));
+	fDeleteBtn = new BButton(rect,"del",_("Delete"),new BMessage(M_SPAM_DEL));
 	fDeleteBtn->SetEnabled(false);
 	AddChild(fDeleteBtn);
 	
@@ -187,4 +187,19 @@ HSpamFilterView::Load()
 		if(line.Length() > 0)
 			fAddressList->AddItem(new BStringItem(line.String()));
 	}
+}
+
+/***********************************************************
+ * AttachedToWindow
+ ***********************************************************/
+void
+HSpamFilterView::AttachedToWindow()
+{
+	BButton *button;
+	button = cast_as(FindView("add"),BButton);
+	button->SetTarget(this);
+	button = cast_as(FindView("del"),BButton);
+	button->SetTarget(this);
+	fAddressList->SetTarget(this);
+	fAddressCtrl->SetTarget(this);
 }
