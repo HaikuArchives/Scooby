@@ -110,7 +110,7 @@ protected:
 				//!Connect and fetch mail from all accounts.
 				void	PopConnect();
 				//!Connect and fetch mail from selected account.
-				void	CheckFrom(entry_ref ref/*!<Account file's entry_ref*/);
+				void	CheckFrom(entry_ref &ref/*!<Account file's entry_ref*/);
 				//!Send mails which have "Pending" status.
 				void	SendPendingMails();
 				//!Add new person file.
