@@ -153,6 +153,9 @@ HFilterView::InitGUI()
 	rect.OffsetBy(30,0);
 	fNameControl = new BTextControl(rect,"name",_("Name:"),"",NULL);
 	fNameControl->SetDivider(StringWidth("Name:")+5);
+	// Disallow charactors that could not use filename
+	fNameControl->TextView()->DisallowChar('/');
+	fNameControl->TextView()->DisallowChar(':');
 	AddChild(fNameControl);
 	
 	// Apply change button

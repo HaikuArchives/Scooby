@@ -891,6 +891,8 @@ HWindow::PopConnect()
 			break;
 		if( entry.GetPath(&path) != B_NO_ERROR )
 			break;
+		else if(entry.IsDirectory())
+			continue;
 		else{
 			entry_ref ref;
 			entry.GetRef(&ref);
@@ -1533,6 +1535,8 @@ HWindow::AddCheckFromItems()
 	{
 		if((err = dir.GetNextEntry(&entry)) == B_OK )
 		{
+			if(entry.IsDirectory())
+				continue;
 			char name[B_FILE_NAME_LENGTH+1];
 			entry.GetName(name);
 			entry_ref ref;
