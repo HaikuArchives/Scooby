@@ -24,16 +24,20 @@ protected:
 		virtual void		ReadyToRun();
 		virtual void		RefsReceived(BMessage *message);
 		virtual void		ArgvReceived(int32 argc,char **argv);
+		virtual void		Pulse();
 				bool		MakeMainWindow(const char* mail_addr=NULL,
 											bool hidden = false);
 				void		Print(BView *textview,BView *detail,const char* job_name);
 				void		PageSetup();
 				void		AddSoundEvent(const char* name);
 				void		RemoveTmpImapMails();
+				
+				bool		IsNetPositiveRunning();
 private:		
 		BMessage*			fPrintSettings;
 		HWindow 			*fWindow;
 		HPrefs				*fPref;
+		bool				fWatchNetPositive;
 		typedef	LocaleApp	_inherited;
 };
 #endif
