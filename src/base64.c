@@ -18,17 +18,19 @@ ssize_t encode64(char *out,char *_in, unsigned inlen)
 {
     unsigned char oval;
  	static char basis64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
- 	int i;
+ 	int i,len;
  	char *in = malloc(inlen+1);
  	memcpy(in,_in,inlen);
  	in[inlen] = '\0';
  	
  	i =0;
+ 	len = 0;
  	for (; inlen >= 3; inlen -= 3){
         *out++ = basis64[in[i+0] >> 2];
         *out++ = basis64[((in[i+0] << 4) & 0x30) | (in[i+1] >> 4)];
         *out++ = basis64[((in[i+1] << 2) & 0x3c) | (in[i+2] >> 6)];
         *out++ = basis64[in[i+2] & 0x3f];
+     	len+=4;
         i += 3;
     }
     if (inlen > 0) {
@@ -38,10 +40,11 @@ ssize_t encode64(char *out,char *_in, unsigned inlen)
         *out++ = basis64[oval];
         *out++ = (inlen < 2) ? '=' : basis64[(in[i+1] << 2) & 0x3c];
         *out++ = '=';
+        len += 4;
     }
     *out = '\0';
     free(in);
-    return strlen((const char*)out);
+    return len;
 }
 
 
@@ -86,5 +89,5 @@ ssize_t decode64(char *out,const char *_in, unsigned inlen)
 
     out[iR]='\0'; /* terminate string */
  	free(in);
- 	return strlen(out);
+ 	return len;
 }
