@@ -71,6 +71,11 @@ HDaemonApp::MessageReceived(BMessage *message)
 			fRunner->SetInterval(interval);
 		}
 		break;
+	case M_LAUNCH_SCOOBY:
+	{
+		be_roster->Launch("application/x-vnd.takamatsu-scooby");
+		break;
+	}
 	// Error
 	case H_ERROR_MESSAGE:
 	{

@@ -17,7 +17,8 @@ enum{
 	M_CHECK_NOW = 'mChN',
 	M_NEW_MESSAGE = 'mNeM',
 	M_RELOAD_SETTING = 'mRES',
-	M_RESET_ICON = 'mREI'
+	M_RESET_ICON = 'mREI',
+	M_LAUNCH_SCOOBY = 'mLSc'
 };
 
 
