@@ -437,7 +437,7 @@ HWindow::MessageReceived(BMessage *message)
 	// Folder selection was changed 
 	case M_LOCAL_SELECTION_CHANGED:
 	{
-		fDetailView->SetInfo("","","");
+		fDetailView->SetInfo("","","","","");
 		PostMessage(M_SET_CONTENT,fMailView);
 		PostMessage(message,fMailList);
 		
@@ -533,7 +533,7 @@ HWindow::MessageReceived(BMessage *message)
 		if(message->FindRef("refs",&ref) != B_OK)
 		{
 			fMailView->SetContent(NULL);
-			fDetailView->SetInfo("","","");
+			fDetailView->SetInfo("","","","","");
 			break;
 		}
 		// this file pointer will be deleted at MailView
@@ -546,14 +546,17 @@ HWindow::MessageReceived(BMessage *message)
 		}
 		fMailView->SetContent(file);
 		// set header view
-		const char* kSubject,*kFrom,*kDate;
+		const char* kSubject,*kFrom,*kDate,*kCc,*kTo;
 	
 		if(message->FindString("subject",&kSubject) == B_OK &&
 			message->FindString("from",&kFrom) == B_OK &&
-			message->FindString("when",&kDate) == B_OK)
-			fDetailView->SetInfo(kSubject,kFrom,kDate);
+			message->FindString("when",&kDate) == B_OK &&
+			message->FindString("cc",&kCc) == B_OK &&
+			message->FindString("to",&kTo) == B_OK)
+			
+			fDetailView->SetInfo(kSubject,kFrom,kDate,kCc,kTo);
 		else
-			fDetailView->SetInfo("","","");
+			fDetailView->SetInfo("","","","","");
 		
 		// recalc unread mails
 		/*bool read;
@@ -773,6 +776,10 @@ HWindow::MessageReceived(BMessage *message)
 	case M_SELECT_NEXT_MAIL:
 	case M_SELECT_PREV_MAIL:
 		PostMessage(message,fMailList);
+		break;
+	// Expand attributes
+	case M_EXPAND_ATTRIBUTES:
+		PostMessage(message,fDetailView);
 		break;
 	// Update toolbar buttons
 	case M_UPDATE_TOOLBUTTON:
