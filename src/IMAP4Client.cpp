@@ -108,11 +108,11 @@ IMAP4Client::List(const char* folder_name,BList *namelist)
 	BAutolock lock(fSocketLocker);
 	BString cmd("LIST ");
 	
-	cmd << "\"/" << "\" "; 
+	cmd << "\"" << "\" "; 
 	if(folder_name && strlen(folder_name) > 0)
-		cmd << "\"" << folder_name << "/*\"";
+		cmd << "\"" << folder_name << "/%\"";
 	else
-		cmd += "\"*\"";
+		cmd += "\"%\"";
 	BString out;
 	SendCommand(cmd.String());
 	int32 cmdNumber = fCommandCount;
@@ -149,6 +149,8 @@ IMAP4Client::List(const char* folder_name,BList *namelist)
 		if(pos != B_ERROR)
 		{
 			const char* data = out.String();
+			if(strstr(data,"\\Noselect"))
+				continue;
 			while(data[pos] != '"')
 				buf[i++] = data[pos++];
 			buf[i] = '\0';
@@ -182,7 +184,7 @@ IMAP4Client::Select(const char* folder_name)
 			if(r <=0)
 				break;
 			// get mail count
-			if(mail_count <0 && out.FindFirst("EXISTS") != B_NO_ERROR)
+			if(mail_count <0 && ::strstr(out.String(),"EXISTS"))
 				mail_count = atol(&out[2]);
 			// check session end
 			state = CheckSessionEnd(out.String(),cmdNumber);		
