@@ -197,6 +197,7 @@ HFolderItem::RemoveMail(node_ref &nref)
 	if(item)
 	{
 		fMailList.RemoveItem(item);
+		PRINT(("remove\n"));
 		return item;
 	}
 	return NULL;
