@@ -99,24 +99,23 @@ SmtpClient::Connect(const char* address,int16 port)
 int32
 SmtpClient::ReceiveLine(BString &line)
 {
-	bigtime_t timeout = 1000000*60; //timeout 60 secs
+	bigtime_t timeout = 1000000*180; //timeout 180 secs
 	int32 len = 0,rcv;
 	char c = 0;
 	line = "";
 	
-	while(c != '\n')
+	if(fEndpoint->IsDataPending(timeout))
 	{
-		if(fEndpoint->IsDataPending(timeout))
+		while(c != '\n')
 		{
 			rcv = fEndpoint->Receive(&c,1);
 			if(rcv <=0)
 				break;
 			len += rcv;
 			line += c;
-			if(c == '\n')
-				break;
-		}else
-			break;			
+		}		
+	}else{
+		(new BAlert("",_("SMTP socket timeout."),_("OK")))->Go();
 	}
 	return len;
 }
