@@ -147,11 +147,12 @@ HAccountView::InitGUI()
 	menuField->SetDivider(kDivider);
 	box->AddChild(menuField);
 	AddChild(box);
-
+	// POP3 Options
 	rect.OffsetBy(rect.Width()+3,0);
 	rect.right = Bounds().right - 5;
+	rect.bottom = rect.top + rect.Height()/2;
 	box= new BBox(rect,"retrieving_option");
-	box->SetLabel(_("Retrieving Options"));
+	box->SetLabel(_("POP3 Options"));
 	frame = box->Bounds();
 	frame.InsetBy(10,20);
 	frame.bottom = frame.top +25;
@@ -177,8 +178,19 @@ HAccountView::InitGUI()
 	BStringView *string_view = new BStringView(frame,"days",_("days"));
 	box->AddChild(string_view);
 	AddChild(box);
-
+	// SMTP options
+	rect.OffsetBy(0,rect.Height());
+	rect.top += 3;
+	box= new BBox(rect,"smtp_option");
+	box->SetLabel(_("SMTP Options"));
 	
+	frame = box->Bounds();
+	frame.InsetBy(10,20);
+	frame.bottom = frame.top + 25;
+	BCheckBox *checkbox = new BCheckBox(frame,"smtp_auth",_("Use SMTP authentication"),NULL);
+	box->AddChild(checkbox);
+	
+	AddChild(box);
 	// Apply change button
 	rect.bottom = Bounds().bottom - 30;
 	rect.right = Bounds().right - 10;
@@ -330,6 +342,13 @@ err:
 	msg.FindInt16("protocol_type",&protocol);
 	field->Menu()->ItemAt(protocol)->SetMarked(true);
 	
+	bool smtp_auth;
+	BCheckBox *checkbox = cast_as(FindView("smtp_auth"),BCheckBox);
+	if(msg.FindBool("smtp_auth",&smtp_auth) == B_OK)
+		checkbox->SetValue(smtp_auth);
+	else
+		checkbox->SetValue(B_CONTROL_OFF);
+	
 	SetEnableControls(true);
 }
 
@@ -377,6 +396,7 @@ HAccountView::New()
 	msg.AddInt16("retrieve",0);
 	msg.AddInt32("delete_day",5);
 	msg.AddInt16("protocol_type",0);
+	msg.AddBool("smtp_auth",false);
 	msg.Flatten(&file);
 }
 
@@ -475,6 +495,10 @@ HAccountView::SaveAccount(int32 index)
 	msg.RemoveData("protocol_type");
 	msg.AddInt16("protocol_type",protocol);
 	
+	BCheckBox *checkbox = cast_as(FindView("smtp_auth"),BCheckBox);
+	msg.RemoveData("smtp_auth");
+	msg.AddBool("smtp_auth",checkbox->Value());
+	
 	file.Seek(0,SEEK_SET);
 	ssize_t numBytes;
 	msg.Flatten(&file,&numBytes);
@@ -517,6 +541,9 @@ HAccountView::SetEnableControls(bool enable)
 						tint_color(ui_color(B_PANEL_BACKGROUND_COLOR),B_DARKEN_MAX_TINT)
 						:tint_color(ui_color(B_PANEL_BACKGROUND_COLOR),B_DARKEN_3_TINT));
 	stringView->Invalidate();
+	
+	BCheckBox *checkbox = cast_as(FindView("smtp_auth"),BCheckBox);
+	checkbox->SetEnabled(enable);
 }
 
 /***********************************************************
