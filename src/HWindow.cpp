@@ -463,35 +463,10 @@ HWindow::MessageReceived(BMessage *message)
 	case M_DELETE_MSG:
 		DeleteMails();
 		break;
+	// Print message
 	case M_PRINT_MESSAGE:
-	{
-		int32 sel = fMailList->CurrentSelection();
-		if(sel < 0)
-			break;
-		HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
-		BMessage msg(*message);
-		
-		if(is_kind_of(fMailView,HMailView))
-		{
-			// Normal mode
-			msg.AddPointer("view",fMailView);
-		}else{
-			// HTML mode
-			BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
-			int32 sel = tabview->Selection();
-			
-			if(sel != 0)
-				break;
-			BView *view = FindView("__NetPositive__HTMLView");
-			if(!view)
-				break;
-			msg.AddPointer("view",view);	
-		}
-		msg.AddPointer("detail",fDetailView);
-		msg.AddString("job_name",item->fSubject.String());
-		be_app->PostMessage(&msg);
+		PrintMessage(message);
 		break;
-	}
 	// Invalidate mail item
 	case M_INVALIDATE_MAIL:
 	{
@@ -1765,6 +1740,51 @@ HWindow::FilterMails(HMailItem *item)
 		out_path.Compare(default_path.Path()) == 0)
 		return;
 	MoveFile(ref,out_path.String());
+}
+
+/***********************************************************
+ * PrintMessage
+ ***********************************************************/
+void
+HWindow::PrintMessage(BMessage *message)
+{
+	int32 sel = fMailList->CurrentSelection();
+	if(sel < 0)
+		return;
+	HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
+	BMessage msg(*message);
+	
+	if(is_kind_of(fMailView,HMailView))
+	{
+		// Normal mode
+		msg.AddPointer("view",fMailView);
+	}else{
+		// HTML mode
+		BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
+		sel = tabview->Selection();
+		
+		if(sel < 0)
+			return;
+		BView *view(NULL);
+		switch(sel)
+		{
+		case 0:
+			view = FindView("__NetPositive__HTMLView");
+			break;
+		case 1:
+			view = FindView("headerview");
+			break;
+		case 2:
+			view = FindView("attachmentlist");
+			break;
+		}
+		if(!view)
+			return;
+		msg.AddPointer("view",view);	
+	}
+	msg.AddPointer("detail",fDetailView);
+	msg.AddString("job_name",item->fSubject.String());
+	be_app->PostMessage(&msg);
 }
 
 /***********************************************************

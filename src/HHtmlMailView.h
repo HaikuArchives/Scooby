@@ -40,6 +40,7 @@ protected:
 			void	ResetScrollBar();
 			void	ResetAttachmentList();
 			
+			void	ConvertLinkToBlankWindow(BString &str);
 			void	ConvertToHtmlCharactor(char c,char* out,bool *translate_space);
 private:
 	HHtmlView*		fHtmlView;
