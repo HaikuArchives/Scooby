@@ -172,7 +172,7 @@ HMailList::SelectionChanged()
 	
 	MarkOldSelectionAsRead();
 	
-	if(sel <0 && SelectionCount() > 1)
+	if(sel <0 || SelectionCount() > 1)
 	{
 		// set content view empty
 		Window()->PostMessage(M_SET_CONTENT);
