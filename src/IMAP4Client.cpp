@@ -277,9 +277,51 @@ IMAP4Client::MarkAsDelete(int32 index)
 			return B_ERROR;
 	}
 	//
-	return Store(index,"\\Deleted");	
+	if(Store(index,"\\Deleted") != B_OK)
+	{
+		PRINT(("Could not store the delete flag\n"));
+		return B_ERROR;
+	}
+	return Expurge();
 }
 
+/***********************************************************
+ * Expurge
+ ***********************************************************/
+status_t
+IMAP4Client::Expurge()
+{
+	// Check connection
+	if(!IsAlive())
+	{
+		PRINT(("Re-connect\n"));
+		status_t err = Reconnect();
+		if(err != B_OK)
+			return B_ERROR;
+	}
+	//
+	BString out;
+	int32 state;
+	
+	if(SendCommand("EXPURGE") == B_OK)
+	{
+		int32 cmdNumber = fCommandCount;
+		
+		while(1)
+		{
+			ReceiveLine(out);
+			state = CheckSessionEnd(out.String(),cmdNumber);		
+			switch(state)
+			{
+			case IMAP_SESSION_OK:
+				return B_OK;
+			case IMAP_SESSION_BAD:
+				return B_ERROR;
+			}
+		}
+	}
+	return B_ERROR;
+}
 
 /***********************************************************
  * FetchField
