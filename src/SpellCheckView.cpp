@@ -23,6 +23,7 @@ SpellCheckView::SpellCheckView(BRect frame,
 	:_inherited(frame,name,/*textRect,*/resize,flags)
 	,fCheckThreadID(-1)
 	,fEnabled(false)
+	,fIsIM(false)
 {
 	SetStylable(true);
 	InitDictionaries();
@@ -39,6 +40,7 @@ SpellCheckView::SpellCheckView(BRect		frame,
 	:_inherited(frame,name,textRect,initialFont,initialColor,resizeMask,flags)
 	,fCheckThreadID(-1)
 	,fEnabled(false)
+	,fIsIM(false)
 {
 	SetStylable(true);
 	InitDictionaries();
