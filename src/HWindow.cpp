@@ -124,8 +124,13 @@ HWindow::InitMenu()
 	utils.AddMenuItem(aMenu,label.String(),M_PREF_MSG,this,this);
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("About Scooby…"),B_ABOUT_REQUESTED,be_app,be_app);
+#ifndef USE_SPLOCALE
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("Quit"),B_QUIT_REQUESTED,this,this,'Q',0);
+#else
+	aMenu->AddSeparatorItem();
+    ((SpLocaleApp*)be_app)->AddToFileMenu(aMenu,false,true,true);
+#endif
     menubar->AddItem( aMenu );
     // Edit
 	aMenu = new BMenu(_("Edit"));

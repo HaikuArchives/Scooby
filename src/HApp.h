@@ -1,7 +1,13 @@
 #ifndef __HAPP_H__
 #define __HAPP_H__
 
-#include "LocaleApp.h"
+#ifndef USE_SPLOCALE
+	#include "LocaleApp.h"
+#else
+	#include "SpLocaleApp.h"
+	#define _( String ) SpTranslate( String )
+#endif
+
 #include <MessageFilter.h>
 
 #define APP_NAME		"Scooby"
@@ -17,7 +23,11 @@ enum{
 	M_FIND_NEXT_WINDOW = 'mFnN'
 };
 
+#ifndef USE_SPLOCALE
 class HApp :public LocaleApp{
+#else
+class HApp :public SpLocaleApp{
+#endif
 public:
 							HApp();
 		virtual				~HApp();
@@ -76,6 +86,10 @@ private:
 		BBitmap*			fOpenIMAPIcon;
 		BBitmap*			fCloseIMAPIcon;
 		//
+#ifndef USE_SPLOCALE
 		typedef	LocaleApp	_inherited;
+#else
+		typedef SpLocaleApp _inherited;	
+#endif
 };
 #endif
