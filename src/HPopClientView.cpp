@@ -320,7 +320,7 @@ HPopClientView::MessageReceived(BMessage *message)
 			SetValue(0);
 			BString label("RETR [ ");
 			label << fMailCurrentIndex << " / " << fMailMaxIndex << " ]";
-			PRINT(("%s\n",label.String() ));
+			//PRINT(("%s\n",label.String() ));
 			fStringView->SetText(label.String() );
 		}
 		break;
