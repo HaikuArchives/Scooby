@@ -206,7 +206,8 @@ HDeskbarView::Pulse()
 		
 			ChangeIcon(icon);
 		}
-	}
+	}else
+		goto err;
 	return;
 err:
 	// probably scooby_daemon had crached
