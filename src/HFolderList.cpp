@@ -1312,7 +1312,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		for(i = i+1;i < count;i++)
 		{
 			if(fFoldersCache->FindRef("refs",i,&ref)!= B_OK)
-				break;	
+				continue;	
 			if(entry.SetTo(&ref) != B_OK)
 				continue;
 			fFoldersCache->FindInt32("time",i,&modified_time);
