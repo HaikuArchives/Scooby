@@ -142,6 +142,11 @@ HFolderList::MessageReceived(BMessage *message)
 	}
 	case M_ADD_UNDER_ITEM:
 	{
+		bool tree_mode;
+		((HApp*)be_app)->Prefs()->GetData("tree_mode",&tree_mode);
+		if(!tree_mode)
+			break;
+			
 		CLVColumn *expander_col = ColumnAt(0);
 		if(!expander_col->IsShown())
 			expander_col->SetShown(true);
@@ -226,7 +231,37 @@ HFolderList::MessageReceived(BMessage *message)
 		
 		break;
 	}
-	
+	case M_REMOVE_FOLDER:
+	{
+		int32 count,index;
+		type_code type;
+		entry_ref ref;
+		message->GetInfo("refs",&type,&count);
+		HFolderItem *item,*parent;
+		
+		for(int32 i = 0;i < count;i++)
+		{
+			if(message->FindRef("refs",i,&ref) != B_OK)
+				continue;
+				
+			index = FindFolder(ref);
+			if(index < 0)
+				continue;
+			item = cast_as(ItemAt(index),HFolderItem);
+			if(!item)
+				continue;
+			parent = cast_as(Superitem(item),HFolderItem);
+			if(parent)
+			{
+				int32 child_count = FullListNumberOfSubitems(parent);
+				if(child_count == 0)
+					parent->SetSuperItem(false);
+			}
+			fPointerList.RemoveItem(item);
+			delete item;
+		}
+		break;
+	}
 	case M_INVALIDATE:
 	{
 		int32 i;
@@ -355,19 +390,16 @@ HFolderList::GetFolders(void* data)
 #else
 	int32 i=0;
 	struct dirent **dirents = NULL;
-	
 	count = GetAllDirents(path.Path(),&dirents);
 	while(count>i && !list->fCancel )
 	{
-		if(::strcmp(dirents[i]->d_name,".") == 0 || ::strcmp(dirents[i]->d_name,"..")== 0)
-		{
-			free(dirents[i++]);
+		dent = dirents[i++];
+		if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
 			continue;
-		}
-		ref.device = dirents[i]->d_pdev;
-		ref.directory = dirents[i]->d_pino;
-		ref.set_name(dirents[i]->d_name);
-		free(dirents[i++]);
+		ref.device = dent->d_pdev;
+		ref.directory = dent->d_pino;
+		ref.set_name(dent->d_name);
+		
 		if(entry.SetTo(&ref) != B_OK)
 			continue;
 		char link_path[B_PATH_NAME_LENGTH];
@@ -382,6 +414,8 @@ HFolderList::GetFolders(void* data)
 				GetChildFolders(entry,item,list,childMsg);
 		}
 	}
+	for(i = 0;i < count;i++)
+		free(dirents[i++]);
 	free(dirents);
 #endif
 	/********* QUERY ***********/
@@ -541,6 +575,7 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 	
 	int32 count,i=0;
 	struct dirent **dirents = NULL;
+	struct dirent *dent;
 	entry_ref ref;
 	BEntry entry;
 	BPath path;
@@ -549,13 +584,13 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 	count = GetAllDirents(path.Path(),&dirents);
 	while(count>i)
 	{
-		if(::strcmp(dirents[i]->d_name,".") == 0 || ::strcmp(dirents[i]->d_name,"..")== 0)
+		dent = dirents[i++];
+		if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
 			continue;
 		
-		ref.device = dirents[i]->d_pdev;
-		ref.directory = dirents[i]->d_pino;
-		ref.set_name(dirents[i]->d_name);
-		
+		ref.device = dent->d_pdev;
+		ref.directory = dent->d_pino;
+		ref.set_name(dent->d_name);
 		if(entry.SetTo(&ref) != B_OK)
 			continue;
 		if(entry.IsDirectory())
@@ -564,7 +599,8 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 			childMsg.AddPointer("item",(item = new HFolderItem(ref,list)));
 			childMsg.AddPointer("parent",parentItem);	
 			parentItem->IncreaseChildItemCount();
-			GetChildFolders(entry,item,list,childMsg);			
+			GetChildFolders(entry,item,list,childMsg);
+			
 		} 
 	}
 	// free all dirents

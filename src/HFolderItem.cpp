@@ -755,26 +755,48 @@ HFolderItem::NodeMonitor(BMessage *message)
 			break;
 		ninfo.SetTo(&node);
 		ninfo.GetType(mime_type);
-		if(::strcmp(mime_type,B_MAIL_TYPE) != 0)
-			break;
-		AddMail((item = new HMailItem(ref)));
-		if( IsSelected() )
-			((HFolderList*)fOwner)->AddToMailList(item);
 		
-		InvalidateMe();
+		if(::strcmp(mime_type,B_MAIL_TYPE) == 0)
+		{
+			AddMail((item = new HMailItem(ref)));
+			if( IsSelected() )
+				((HFolderList*)fOwner)->AddToMailList(item);
+		
+			InvalidateMe();
+		}else if(node.IsDirectory()){
+			HFolderItem *folder = new HFolderItem(ref,fOwner);
+			BMessage msg(M_ADD_UNDER_ITEM);
+			msg.AddPointer("parent",this);
+			msg.AddPointer("item",folder);
+			fOwner->Window()->PostMessage(&msg,fOwner);
+		}
 		break;
 	case B_ENTRY_REMOVED:
 	{
 		node_ref nref;
 		message->FindInt32("device", &nref.device);
 		message->FindInt64("node", &nref.node);
+		BDirectory dir(&nref);
 		
-		HMailItem *item = RemoveMail(nref);
-		if(IsSelected())
-			((HFolderList*)fOwner)->RemoveFromMailList(item,true);
-		else
-			delete item;	
-		InvalidateMe();
+		if(dir.IsFile())
+		{
+			HMailItem *item = RemoveMail(nref);
+			if(IsSelected())
+				((HFolderList*)fOwner)->RemoveFromMailList(item,true);
+			else
+				delete item;	
+			InvalidateMe();
+		}else if(dir.IsDirectory()){
+			BEntry entry;
+			
+			if(dir.GetEntry(&entry) == B_OK)
+			{
+				entry.GetRef(&ref);
+				BMessage msg(M_REMOVE_FOLDER);
+				msg.AddRef("refs",&ref);
+				fOwner->Window()->PostMessage(&msg,fOwner);
+			}
+		}
 		PRINT(("REMOVE\n"));
 		break;
 	}
@@ -807,14 +829,22 @@ HFolderItem::NodeMonitor(BMessage *message)
 			
 			ninfo.SetTo(&node);
 			ninfo.GetType(mime_type);
-			if(::strcmp(mime_type,B_MAIL_TYPE) != 0)
-				break;
-			::get_ref_for_path(file_path.Path(),&ref);
-			HMailItem* item;
-			AddMail((item = new HMailItem(ref)));
-			if(IsSelected())
-				((HFolderList*)fOwner)->AddToMailList(item);
-			InvalidateMe();	
+			if(::strcmp(mime_type,B_MAIL_TYPE) == 0)
+			{
+				::get_ref_for_path(file_path.Path(),&ref);
+				HMailItem* item;
+				AddMail((item = new HMailItem(ref)));
+				if(IsSelected())
+					((HFolderList*)fOwner)->AddToMailList(item);
+				InvalidateMe();
+			}else if(node.IsDirectory()){
+				::get_ref_for_path(file_path.Path(),&ref);
+				HFolderItem *folder = new HFolderItem(ref,fOwner);
+				BMessage msg(M_ADD_UNDER_ITEM);
+				msg.AddPointer("parent",this);
+				msg.AddPointer("item",folder);
+				fOwner->Window()->PostMessage(&msg,fOwner);
+			}	
 		}
 		// Remove mails
 		else if(::strncmp(from_path.Path(),myPath.Path(),my_path_len) == 0)
@@ -822,14 +852,29 @@ HFolderItem::NodeMonitor(BMessage *message)
 			node_ref old_nref;
 			old_nref.device =from_nref.device;
 			message->FindInt64("node", &old_nref.node);
-			HMailItem *item = RemoveMail(old_nref);
-			if(!item)
-				break;
-			if(IsSelected())
-				((HFolderList*)fOwner)->RemoveFromMailList(item,true);
-			else
-				delete item;
-			InvalidateMe();
+			BDirectory dir(&old_nref);
+		
+			if(dir.IsFile())
+			{
+				HMailItem *item = RemoveMail(old_nref);
+				if(!item)
+					break;
+				if(IsSelected())
+					((HFolderList*)fOwner)->RemoveFromMailList(item,true);
+				else
+					delete item;
+				InvalidateMe();
+			}else if(dir.IsDirectory()){
+				BEntry entry;
+			
+				if(dir.GetEntry(&entry) == B_OK)
+				{
+					entry.GetRef(&ref);
+					BMessage msg(M_REMOVE_FOLDER);
+					msg.AddRef("refs",&ref);
+					fOwner->Window()->PostMessage(&msg,fOwner);
+				}
+			}
 		}
 		break;
 		}
