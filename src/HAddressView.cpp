@@ -153,14 +153,10 @@ HAddressView::InitGUI()
 	query.PushAttr("META:email");
 	query.PushString("*");
 	query.PushOp(B_EQ);
-	query.PushAttr("META:email2");
-	query.PushString("*");
-	query.PushOp(B_EQ);
-	query.PushOp(B_OR);
 	
 	if(!fReadOnly && query.Fetch() == B_OK)
 	{
-		BString addr1,addr2,name,group,nick;
+		BString addr[4],name,group,nick;
 		entry_ref ref;
 		BList peopleList;
 	
@@ -173,29 +169,36 @@ HAddressView::InitGUI()
 			
 			if(node.ReadAttrString("META:name",&name) != B_OK)
 				continue;
-			if(node.ReadAttrString("META:email",&addr1) != B_OK)
-				addr1 = "";
-			if(node.ReadAttrString("META:email2",&addr2) != B_OK)
-				addr2 = "";
+			if(node.ReadAttrString("META:email",&addr[0]) != B_OK)
+				addr[0] = "";
+			if(node.ReadAttrString("META:email2",&addr[1]) != B_OK)
+				addr[1] = "";
+			if(node.ReadAttrString("META:email3",&addr[2]) != B_OK)
+				addr[2] = "";
+			if(node.ReadAttrString("META:email4",&addr[3]) != B_OK)
+				addr[3] = "";
 			if(node.ReadAttrString("META:group",&group) != B_OK)
 				group = "";
 			if(node.ReadAttrString("META:nickname",&nick) != B_OK)
 				nick = "";
-			if(addr1.Length() > 0)
+			for(int32 i = 0;i < 4;i++)
 			{
-				if(nick.Length() != 0)
+				if(addr[i].Length() > 0)
 				{
-					nick += " <";
-					nick += addr1;
-					nick += ">";
-					fAddrList.AddItem(strdup(nick.String()));
-				}
-				fAddrList.AddItem(strdup(addr1.String()));
+					if(nick.Length() != 0)
+					{
+						nick += " <";
+						nick += addr[i];
+						nick += ">";
+						fAddrList.AddItem(strdup(nick.String()));
+					}
+					fAddrList.AddItem(strdup(addr[i].String()));
+					
+					BString title = name;
+					title << " <" << addr[i] << ">";
 				
-				BString title = name;
-				title << " <" << addr1 << ">";
-			
-				AddPersonToList(peopleList,title.String(),group.String());
+					AddPersonToList(peopleList,title.String(),group.String());
+				}
 			}
 		}
 		
