@@ -24,15 +24,6 @@ HPrefs::MakeDefault()
 	fDefaultMessage->AddPoint("horizontalsplit",BPoint(0,200));
 	fDefaultMessage->AddRect("window_rect",rect);
 	
-	const char* kLabel[] = {"Subject","From","To","When","P","A"};
-	
-	for(int32 i = 0;i < 6;i++)
-	{
-		fDefaultMessage->AddFloat(kLabel[i],100);
-		BString str = kLabel[i];
-		str<<"_IsShown";
-		fDefaultMessage->AddBool(str.String(),true);
-	}
 	fDefaultMessage->AddInt32("sort_key",1);
 	
 	const char* kOrder= "order";
