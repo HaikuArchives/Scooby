@@ -16,6 +16,7 @@
 #include <Autolock.h>
 #include <FindDirectory.h>
 #include <SymLink.h>
+#include <E-mail.h>
 
 /***********************************************************
  * Constructor
@@ -105,23 +106,40 @@ HQueryItem::Fetching()
 	fQuery->SetVolume(&volume);
 	fQuery->SetPredicate(fPredicate.String());
 	
-	BString type;
+	char type[B_MIME_TYPE_LENGTH+1];
 	BNode node;
 	HMailItem *item(NULL);
 	if(fQuery->Fetch() == B_OK)
 	{
 		entry_ref ref;
-		while(fQuery->GetNextRef(&ref) == B_OK)
+		char buf[4096];
+		dirent *dent;
+		int32 count;
+		int32 offset;
+	
+		while((count = fQuery->GetNextDirents((dirent *)buf, 4096)) > 0)
 		{
-			if(node.SetTo(&ref) != B_OK)
-				continue;
-			if(node.ReadAttrString("BEOS:TYPE",&type)!= B_OK)
-				continue;
-			if(type.Compare("text/x-email") == 0)
+			offset = 0;
+			/* Now we step through the dirents. */ 
+			while (count-- > 0)
 			{
-				fMailList.AddItem(item = new HMailItem(ref));
-				if(item && !item->IsRead() )
-					fUnread++;
+				dent = (dirent *)buf + offset;
+				offset +=  dent->d_reclen;
+				/* Skip . and .. directory */
+				if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
+					continue;
+				ref.device = dent->d_pdev;
+				ref.directory = dent->d_pino;
+				ref.set_name(dent->d_name);
+				if(node.SetTo(&ref) != B_OK)
+					continue;
+				node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH);
+				if(::strcmp(type,B_MAIL_TYPE) == 0)
+				{
+					fMailList.AddItem(item = new HMailItem(ref));
+					if(item && !item->IsRead() )
+						fUnread++;
+				}
 			}
 		}
 		fDone = true;

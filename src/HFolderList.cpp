@@ -278,23 +278,37 @@ HFolderList::GetFolders(void* data)
 	char name[B_FILE_NAME_LENGTH];
 	//
    	entry.GetRef(&ref);
-
+	char buf[4096];
+	dirent *dent;
+	int32 count;
+	int32 offset;
+	
 	BMessage msg(M_ADD_FOLDER);
 	msg.MakeEmpty();
 	BMessage childMsg(M_ADD_UNDER_ITEM);
 	childMsg.MakeEmpty();
-	while( err == B_OK && !list->fCancel )
+	
+	while( (count = dir.GetNextDirents((dirent *)buf, 4096)) > 0 && !list->fCancel )
 	{
-		err = dir.GetNextEntry(&entry,false);	
-		if( entry.InitCheck() != B_NO_ERROR )
-			break;
-		else if(entry.IsDirectory()){
+		offset = 0;
+		/* Now we step through the dirents. */ 
+		while (count-- > 0)
+		{
+			dent = (dirent *)buf + offset; 
+			offset +=  dent->d_reclen;
+			/* Skip . and .. directory */
+			if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
+				continue;
+			ref.device = dent->d_pdev;
+			ref.directory = dent->d_pino;
+			ref.set_name(dent->d_name);
+			
+			if(entry.SetTo(&ref) != B_OK)
+				continue;
 			char link_path[B_PATH_NAME_LENGTH];
 			BSymLink link(path.Path());
 			if(B_BAD_VALUE == link.ReadLink(link_path,B_PATH_NAME_LENGTH)&& entry.IsDirectory())
 			{
-				char name[B_FILE_NAME_LENGTH];
-				entry.GetName(name);
 				entry.GetRef(&ref);
 				item = new HFolderItem(ref,list);
 				msg.AddPointer("item",item);
@@ -313,37 +327,39 @@ HFolderList::GetFolders(void* data)
 	HQueryItem *query(NULL);
 	BNode node;
 	
-	BString type;
-	while( err == B_OK && !list->fCancel )
+	char type[B_MIME_TYPE_LENGTH+1];
+	while( (count = dir.GetNextDirents((dirent *)buf, 4096)) > 0 && !list->fCancel )
 	{
-		err = dir.GetNextEntry(&entry,false);	
-		if( entry.InitCheck() != B_NO_ERROR )
-			break;
-		if( entry.GetPath(&path) != B_NO_ERROR )
-			break;
-		else{
-			entry.GetRef(&ref);
+		offset = 0;
+		/* Now we step through the dirents. */ 
+		while (count-- > 0)
+		{
+			dent = (dirent *)buf + offset; 
+			offset +=  dent->d_reclen;
+			/* Skip . and .. directory */
+			if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
+				continue;
+			ref.device = dent->d_pdev;
+			ref.directory = dent->d_pino;
+			ref.set_name(dent->d_name);
 			if( node.SetTo(&ref) != B_OK)
 				continue;
-			
 			// Read SymLink
-			if(entry.IsSymLink())
+			if(node.IsSymLink())
 			{
-				BSymLink link(&entry);
+				BSymLink link(&ref);
 				entry_ref new_ref;
-				char buf[B_PATH_NAME_LENGTH+1];
-				ssize_t len = link.ReadLink(buf,B_PATH_NAME_LENGTH);
-				buf[len] = '\0';
-				path.SetTo(buf);
-				if(path.InitCheck() != B_OK)
-					continue;
-				::get_ref_for_path(path.Path(),&new_ref);
+				char pathBuf[B_PATH_NAME_LENGTH+1];
+				ssize_t len = link.ReadLink(pathBuf,B_PATH_NAME_LENGTH);
+				pathBuf[len] = '\0';
+			
+				::get_ref_for_path(pathBuf,&new_ref);
 				if(node.SetTo(&new_ref) != B_OK)
 					continue;
-			}	
-			if( node.ReadAttrString("BEOS:TYPE",&type) != B_OK)
-				continue;
-			if(type.Compare("application/x-vnd.Be-query") != 0)
+			}
+			
+			node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH);
+			if(::strcmp(type,"application/x-vnd.Be-query") != 0)
 				continue;
 			
 			query = new HQueryItem(ref,list);
@@ -413,28 +429,46 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 {
 	BDirectory dir(&inEntry);
 	BEntry entry;
-	status_t err = B_OK;
 	entry_ref ref;
 	HFolderItem *item(NULL);
+
+	char buf[4096];
+	dirent *dent;
+	int32 count;
+	int32 offset;
 	
-	while(err == B_OK)
+	while((count = dir.GetNextDirents((dirent *)buf, 4096)) > 0)
 	{
-		err = dir.GetNextEntry(&entry,false);
-		if(err != B_OK)
-			continue;
-		if(entry.IsDirectory())
+		offset = 0;
+		/* Now we step through the dirents. */ 
+		while (count-- > 0)
 		{
-			entry.GetRef(&ref);
+			dent = (dirent *)buf + offset; 
+			offset +=  dent->d_reclen;
+			/* Skip . and .. directory */
+			if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
+				continue;
+			ref.device = dent->d_pdev;
+			ref.directory = dent->d_pino;
+			ref.set_name(dent->d_name);
 			
-			outList.AddPointer("item",(item = new HFolderItem(ref,list)));
-			outList.AddPointer("parent",parentItem);
-			if(!parentItem->IsSuperItem())
-				parentItem->SetSuperItem(true);
-			GetChildFolders(entry,item,list,outList);
-		}else // if the subfolder contains files, 
-			  // 	break loop to improve speed
-			break;
-	}
+			if(entry.SetTo(&ref) != B_OK)
+				continue;
+			if(entry.IsDirectory())
+			{
+				entry.GetRef(&ref);
+				PRINT(("%s\n",dent->d_name));
+				outList.AddPointer("item",(item = new HFolderItem(ref,list)));
+				outList.AddPointer("parent",parentItem);
+				if(!parentItem->IsSuperItem())
+					parentItem->SetSuperItem(true);
+				GetChildFolders(entry,item,list,outList);
+			}else
+				 // if the subfolder contains files, 
+			 	 // 	break loop to improve speed
+				return;
+		} 
+	} 
 }
 
 /***********************************************************
