@@ -34,7 +34,7 @@ HAccountView::HAccountView(BRect rect)
 }
 
 /***********************************************************
- *
+ * Destructor
  ***********************************************************/
 HAccountView::~HAccountView()
 {
@@ -454,8 +454,7 @@ HAccountView::SaveAccount(int32 index)
 	BRadioButton *radio;
 	
 	radio = cast_as(FindView("leave"),BRadioButton);
-	//msg.RemoveData("leave");
-	//msg.AddBool("leave",radio->Value());
+
 	msg.RemoveData("retrieve");
 	if(radio->Value())
 		msg.AddInt16("retrieve",0);
