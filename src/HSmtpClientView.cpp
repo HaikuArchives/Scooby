@@ -67,6 +67,9 @@ HSmtpClientView::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
+	case M_SMTP_ABORT:
+		Cancel();
+		break;
 	// Send mails
 	case M_SEND_MAIL:
 	{
@@ -263,4 +266,8 @@ void
 HSmtpClientView::Cancel()
 {
 	fSmtpLooper->ForceQuit();
+	fSmtpLooper=NULL;
+	
+	StopBarberPole();
+	StopProgress();
 }
