@@ -600,23 +600,14 @@ PopClient::SendCommand(const char* cmd)
 	{
 		len = ReceiveLine(fLog);
 		PRINT(("S:%s\n",fLog.String() ));
-		if(len <= 0|fLog.Compare("+OK",3) == 0)
+		if(len <= 0|fLog.ICompare("+OK",3) == 0)
 			break;
-		else if(fLog.Compare("-ERR",4) == 0)
+		else if(fLog.ICompare("-ERR",4) == 0)
 		{
 			err = B_ERROR;
 			break;
 		}
 	}
-/*	len = ReceiveLine(fLog);
-	
-	if(len <= 0)
-		return B_ERROR;
-	if(strncmp(fLog.String(),"+OK",3) != 0)
-	{
-		PRINT(("ERR:%s recv len :%d\n",fLog.String(),len));
-		return B_ERROR;
-	}*/
 	return err;
 }
 
