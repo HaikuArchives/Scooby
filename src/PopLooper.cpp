@@ -343,10 +343,10 @@ PopLooper::ForceQuit()
 	if(!fPopClient)
 		return;
 	int sd = fPopClient->Socket();
-#ifndef BONE
-	::closesocket(sd);
-#else
+#if B_BEOS_BONE
 	::close(sd);
+#else
+	::closesocket(sd);
 #endif
 }
 
