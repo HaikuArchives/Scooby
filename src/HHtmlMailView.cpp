@@ -11,6 +11,7 @@
 #include "TrackerUtils.h"
 #include "HPrefs.h"
 #include "Utilities.h"
+#include "base64.h"
 
 #include <TabView.h>
 #include <Debug.h>
@@ -216,7 +217,7 @@ HHtmlMailView::OpenAttachment(int32 sel )
 		bool is_text = false;
 		if(::strncmp(item->ContentType(),"text",4) == 0)
 			is_text = true;
-		data_len = decode_base64(data, data, data_len, is_text);
+		data_len = decode64(data, data, data_len);
 	}else if(encoding && ::strcasecmp(encoding,"quoted-printable") == 0){
 		data_len = Encoding().decode_quoted_printable(data,data,data_len,false);
 	}else{
@@ -294,7 +295,7 @@ HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name,bool rena
 		bool is_text = false;
 		if(::strncmp(item->ContentType(),"text",4) == 0)
 			is_text = true;
-		data_len = decode_base64(data, data, data_len, is_text);
+		data_len = decode64(data, data, data_len);
 	}else if(encoding && ::strcasecmp(encoding,"base64") == 0){
 		data_len = Encoding().decode_quoted_printable(data,data,data_len,false);
 	}else{

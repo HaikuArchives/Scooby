@@ -4,6 +4,7 @@
 #include "Encoding.h"
 #include "HMailList.h"
 #include "HWindow.h"
+#include "base64.h"
 
 #include <Menu.h>
 #include <Font.h>
@@ -905,7 +906,7 @@ status_t HMailView::Save(BMessage *msg)
 				if ((enclosure->encoding) && (cistrstr(enclosure->encoding, "base64"))) {
 					is_text = ((cistrstr(enclosure->content_type, "text")) &&
 							  (!cistrstr(enclosure->content_type, B_MAIL_TYPE)));
-					size = decode_base64(data, data, size, is_text);
+					size = decode64(data, data, size);
 					PRINT(("MIME-B\n"));
 				}else if ((enclosure->encoding) && (cistrstr(enclosure->encoding, "quoted-printable"))) {
 					PRINT(("MIME-Q\n"));
@@ -998,7 +999,7 @@ void HMailView::SaveBeFile(BFile *file, char *data, ssize_t size)
 		}
 		len = offset - start;
 
-		len = decode_base64(start, start, len, FALSE);
+		len = decode64(start, start, len);
 		if (cistrstr(type, "x-be_attribute")) {
 			index = 0;
 			while (index < len) {
@@ -1208,7 +1209,7 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 				if ((encoding) && (cistrstr(encoding, "base64")))
 				{
 					saved_len = len;
-					len = ::decode_base64(offset, offset, len, true);
+					len = ::decode64(offset, offset, len);
 				}else if ((encoding) && (cistrstr(encoding, "quoted-printable")))
 				{// Decode quoted-printable
 					saved_len = len;
