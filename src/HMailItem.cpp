@@ -381,10 +381,9 @@ HMailItem::RefreshEnclosureAttr()
 		
 		if(fEnclosure == 1)
 		{
-			icon = ResourceUtils().GetBitmapResource('BBMP',"Enclosure");
+			icon = ((HApp*)be_app)->GetIcon("Enclosure");
 			if(icon)
-				SetColumnContent(6,icon,2.0,true,false);
-			delete icon;
+				SetColumnContent(6,icon,2.0,false,false);
 		}else
 			SetColumnContent(6,NULL,2.0,true,false);
 		delete[] header;	
