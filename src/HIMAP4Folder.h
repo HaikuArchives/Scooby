@@ -23,13 +23,13 @@ public:
 	const char*			Login() const {return fLogin.String();}
 			int			Port()const {return fPort;}
 	const char*			Password() const{return fPassword.String();}
-	const char*			FolderName() const{return fFolderName.String();}
+	const char*			RemoteFolderName() const{return fRemoteFolderName.String();}
 	
 			void		SetServer(const char* addr) {fServer = addr;}
 			void		SetLogin(const char* login) {fLogin = login;}
 			void		SetPort(int port) {fPort = port;}
 			void		SetPassword(const char* pass){fPassword = pass;}
-			void		SetFolderName(const char* folder) {fFolderName = folder;}
+			void		SetFolderName(const char* folder) {fRemoteFolderName = folder;}
 protected:
 			void		IMAPGetList();
 		status_t		IMAPConnect();
@@ -43,6 +43,6 @@ private:
 		int				fPort;
 		BString			fLogin;
 		BString			fPassword;
-		BString			fFolderName;
+		BString			fRemoteFolderName;
 };
 #endif

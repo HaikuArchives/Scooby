@@ -31,7 +31,7 @@ HIMAP4Folder::HIMAP4Folder(const char* name,
 	,fPort(port)
 	,fLogin(login)
 	,fPassword(password)
-	,fFolderName(folder_name)
+	,fRemoteFolderName(folder_name)
 {
 }
 
@@ -69,7 +69,7 @@ HIMAP4Folder::StoreSettings()
 	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
 	
 	BMessage msg(B_SIMPLE_DATA);
-	msg.AddString("folder",fFolderName.String() );
+	msg.AddString("folder",fRemoteFolderName.String() );
 	msg.AddString("server",fServer.String() );
 	msg.AddInt16("port",fPort);
 	msg.AddString("login",fLogin.String() );
@@ -143,9 +143,9 @@ HIMAP4Folder::IMAPGetList()
 		}
 	}
 	
-	PRINT(("FolderName:%s\n",fFolderName.String()));
+	PRINT(("FolderName:%s\n",fRemoteFolderName.String()));
 	int32 mail_count = 0;
-	if( (mail_count = fClient->Select(fFolderName.String())) < 0)
+	if( (mail_count = fClient->Select(fRemoteFolderName.String())) < 0)
 	{
 		(new BAlert("",_("Could not select remote folder"),_("OK")
 						,NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();

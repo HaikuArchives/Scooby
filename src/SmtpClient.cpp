@@ -13,7 +13,8 @@
 #include <Beep.h>
 #include <Alert.h>
 
-#define CRLF "\r\n";
+#define CRLF "\r\n"
+#define xEOF    236
 
 /***********************************************************
  * Constructor
@@ -101,18 +102,18 @@ SmtpClient::ReceiveLine(BString &line)
 {
 	bigtime_t timeout = 1000000*180; //timeout 180 secs
 	int32 len = 0,rcv;
-	char c = 0;
+	int c = 0;
 	line = "";
 	
 	if(fEndpoint->IsDataPending(timeout))
 	{
-		while(c != '\n')
+		while(c != '\n'&& c != EOF && c != xEOF)
 		{
 			rcv = fEndpoint->Receive(&c,1);
 			if(rcv <=0)
 				break;
 			len += rcv;
-			line += c;
+			line += (char)c;
 		}		
 	}else{
 		(new BAlert("",_("SMTP socket timeout."),_("OK")))->Go();

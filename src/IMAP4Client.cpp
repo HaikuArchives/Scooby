@@ -5,6 +5,8 @@
 #include <Debug.h>
 #define CRLF "\r\n";
 
+#define xEOF    236
+
 const bigtime_t kIMAP4ClientTimeout = 1000000*60; // 60 sec
 
 /***********************************************************
@@ -80,12 +82,23 @@ IMAP4Client::Login(const char* login,const char* password)
 
 	if( SendCommand(cmd.String()) != B_OK)
 		return B_ERROR;
-	if( ReceiveLine(out) > 6)
+		
+	int32 cmdNumber = fCommandCount;
+	int32 state,r;
+	while( 1 )
 	{
-		if( out[4] == 'O' && out[5] == 'K')
+		r = ReceiveLine(out);
+		if(r <= 0)
+			break;
+		PRINT(("%s\n",out.String() ));
+		state = CheckSessionEnd(out.String(),cmdNumber);		
+		switch(state)
+		{
+		case IMAP_SESSION_OK:
 			return B_OK;
-		if( out[4] == 'B' && out[5] == 'A' && out[5] == 'D')
+		case IMAP_SESSION_BAD:
 			return B_ERROR;
+		}
 	}	
 	return B_ERROR;
 }
@@ -124,23 +137,28 @@ IMAP4Client::Select(const char* folder_name)
 	cmd << "\"" << folder_name << "\"";
 	
 	BString out;
+	int32 state;
 	if( SendCommand(cmd.String()) == B_OK)
 	{
+		int32 cmdNumber = fCommandCount;
 		while(1)
 		{
 			r = ReceiveLine(out);
 			if(r <=0)
 				break;
-			if( out[4] == 'O' && out[5] == 'K')
-				break;
-			if( out[4] == 'B' && out[5] == 'A' && out[6] == 'D')
-				break;
-			if(out.FindFirst("EXISTS")!= B_ERROR)
+			PRINT(("%s\n",out.String()));
+			// get mail count
+			if(mail_count <0 && out.FindFirst("EXISTS") != B_NO_ERROR)
+				mail_count = atol(&out[2]);
+			// check session end
+			state = CheckSessionEnd(out.String(),cmdNumber);		
+			switch(state)
 			{
-				const char* p = out.String();
-				p += 2;
-				//PRINT(("%s\n",p));
-				mail_count = atoi(p);
+			case IMAP_SESSION_OK:
+				PRINT(("Mail count:%d\n",mail_count));
+				return mail_count;
+			case IMAP_SESSION_BAD:
+				return -1;
 			}
 		}
 	}
@@ -505,17 +523,17 @@ IMAP4Client::SendCommand(const char* command)
 int32
 IMAP4Client::ReceiveLine(BString &out)
 {
-	char c = 0;
+	int c = 0;
 	int32 len = 0,r;
 	out = "";
 	if(IsDataPending(kIMAP4ClientTimeout))
 	{
-		while(c != '\n')
+		while(c != '\n' && c != EOF && c != xEOF)
 		{
 			r = Receive(&c,1);
 			if(r <= 0)
 				break;
-			out += c;
+			out += (char)c;
 			len += r;
 		}
 	}else{
@@ -539,6 +557,8 @@ IMAP4Client::CheckSessionEnd(const char* str,int32 session)
 		if( str[4] == 'O' && str[5] == 'K')
 			return IMAP_SESSION_OK;
 		if( str[4] == 'B' && str[5] == 'A' && str[6] == 'D')
+			return IMAP_SESSION_BAD;
+		if( str[4] == 'N' && str[5] == 'O')
 			return IMAP_SESSION_BAD;
 	}	
 	return IMAP_SESSION_CONTINUED;
