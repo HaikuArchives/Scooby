@@ -310,15 +310,14 @@ Encoding::p_MimeDecode(BString &str,bool quoted_printable)
         	a4 = p_Charconv(old[i+3]);
         	//printf("%c %c %c %c\n",old[i],old[i+1],old[i+2],old[i+3]);
         	//printf("%c %c %c %c\n",a1,a2,a2,a3);
-        	old[iR] = (a1 << 2) + (a2 >>4);
-        	if(a3 != '=')
-        	{
-        		old[iR + 1] = (a2 << 4) + (a3 >>2);
-        		old[iR + 2] = (a3 << 6) + a4;
-        	}
+        	old[iR] = (a1 << 2) | (a2 >>4);
+        	
+        	old[iR + 1] = (a2 << 4) | (a3 >>2);
+        	old[iR + 2] = (a3 << 6) | a4;
+        	
+        	iR += 3;    	
         	i += 4;
-        	iR += 3;
-    	}
+        }
     	old[iR] = '\0';
     	str.UnlockBuffer();
     }
