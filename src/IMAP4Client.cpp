@@ -529,13 +529,18 @@ IMAP4Client::SendCommand(const char* command)
 {
 	BString out("");
 	status_t err = B_ERROR;
-	char *cmd = new char[strlen(command) + 7];
+	char *cmd = new char[strlen(command) + 15];
 	if(!cmd)
 	{
 		(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		return B_ERROR;
 	}
-	::sprintf(cmd,"%.3ld %s\r\n",++fCommandCount,command);
+	// If command number field is over 7 field,
+	// reset command number.
+	if(fCommandCount > 9999999)
+		fCommandCount = 0;
+
+	::sprintf(cmd,"%.7ld %s\r\n",++fCommandCount,command);
 	int32 cmd_len = strlen(cmd);
 	if(!strstr(cmd,"LOGIN"))
 		PRINT(("C:%s",cmd));
@@ -580,16 +585,16 @@ IMAP4Client::ReceiveLine(BString &out)
 int32
 IMAP4Client::CheckSessionEnd(const char* str,int32 session)
 {
-	char session_end[5];
-	::sprintf(session_end,"%.3ld ",session);
+	char session_end[9];
+	::sprintf(session_end,"%.7ld ",session);
 	
-	if( ::strncmp(session_end,str,4) == 0)
+	if( ::strncmp(session_end,str,8) == 0)
 	{
-		if( str[4] == 'O' && str[5] == 'K')
+		if( str[8] == 'O' && str[9] == 'K')
 			return IMAP_SESSION_OK;
-		if( str[4] == 'B' && str[5] == 'A' && str[6] == 'D')
+		if( str[8] == 'B' && str[9] == 'A' && str[10] == 'D')
 			return IMAP_SESSION_BAD;
-		if( str[4] == 'N' && str[5] == 'O')
+		if( str[8] == 'N' && str[9] == 'O')
 			return IMAP_SESSION_BAD;
 	}	
 	return IMAP_SESSION_CONTINUED;
