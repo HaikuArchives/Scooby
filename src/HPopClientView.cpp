@@ -95,7 +95,9 @@ HPopClientView::MessageReceived(BMessage *message)
 	{
 		PRINT(("POP ERROR\n"));
 		BString err_str(_("POP3 ERROR"));
-		err_str << "\n" << message->FindString("log");
+		err_str += "\n";
+		if(message->FindString("log"))
+			err_str += message->FindString("log");
 		beep();
 		(new BAlert("",err_str.String(),"OK",NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
 		fPopClient->PostMessage(B_QUIT_REQUESTED);
