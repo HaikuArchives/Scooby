@@ -54,8 +54,8 @@ HMailView::HMailView(BRect frame, bool incoming, BFile *file)
 	m_font.SetSize(10);
 	fMenu = new BPopUpMenu("Enclosure", FALSE, FALSE);
 	fMenu->SetFont(&m_font);
-	fMenu->AddItem(new BMenuItem("Save"B_UTF8_ELLIPSIS, new BMessage(M_SAVE)));
-	fMenu->AddItem(new BMenuItem("Open", new BMessage(M_ADD)));
+	fMenu->AddItem(new BMenuItem("Save Enclosure"B_UTF8_ELLIPSIS, new BMessage(M_SAVE)));
+	fMenu->AddItem(new BMenuItem("Open Enclosure", new BMessage(M_ADD)));
 	
 	ResetFont();
 }
@@ -497,6 +497,29 @@ void HMailView::MouseDown(BPoint where)
 		theMenu->AddItem((item = new BMenuItem("Print",msg,'P',0)));
 		item->SetEnabled( (TextLength() > 0)?true:false);
 		
+		start = OffsetAt(where);
+		items = fEnclosures->CountItems();
+		theMenu->AddSeparatorItem();
+		BMenuItem *saveItem,*openItem;
+		theMenu->AddItem( saveItem = new BMenuItem("Save Enclosure"B_UTF8_ELLIPSIS, new BMessage(M_SAVE)));
+		theMenu->AddItem( openItem = new BMenuItem("Open Enclosure", new BMessage(M_ADD)));
+		openItem->SetEnabled(false);
+		saveItem->SetEnabled(false);
+		enclosure = NULL;
+		for (loop = 0; loop < items; loop++)
+		{
+			enclosure = (hyper_text *)fEnclosures->ItemAt(loop);
+			if ((start >= enclosure->text_start) && (start < enclosure->text_end))
+			{
+				if ((enclosure->type == TYPE_ENCLOSURE) ||
+						(enclosure->type == TYPE_BE_ENCLOSURE))
+				{
+					saveItem->SetEnabled(true);
+					openItem->SetEnabled(true);
+				}
+			}
+		}
+		
 		BRect r;
         ConvertToScreen(&where);
         r.top = where.y - 5;
@@ -508,8 +531,18 @@ void HMailView::MouseDown(BPoint where)
     	if(theItem)
     	{
     	 	BMessage*	aMessage = theItem->Message();
-			if(aMessage)
-				Window()->PostMessage(aMessage);
+			if(aMessage->what == M_SAVE )
+			{
+				if (fPanel)
+					fPanel->SetEnclosure(enclosure);
+				else{
+					fPanel = new TSavePanel(enclosure, this);
+					fPanel->Window()->Show();
+				}
+			}else if(aMessage->what == M_ADD){
+				Open(enclosure);
+			}else
+	 			Window()->PostMessage(aMessage);
 	 	} 
 	 	delete theMenu;	
 	}else
