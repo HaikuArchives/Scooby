@@ -518,7 +518,7 @@ HWindow::MessageReceived(BMessage *message)
 		else if(item && item->FolderType() == IMAP4_TYPE)
 		{
 			HIMAP4Folder *imap = cast_as(item,HIMAP4Folder);
-			if(!imap)
+			if(!imap || imap->IsChildFolder())
 				break;
 			RectUtils utils;
 			BRect rect = utils.CenterRect(230,200);

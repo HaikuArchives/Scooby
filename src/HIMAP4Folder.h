@@ -30,6 +30,10 @@ public:
 			void		SetPort(int port) {fPort = port;}
 			void		SetPassword(const char* pass){fPassword = pass;}
 			void		SetFolderName(const char* folder) {fRemoteFolderName = folder;}
+
+			void		SetFolderGathered(bool gathered) {fFolderGathered = gathered;}
+			void		SetChildFolder(bool child) {fChildItem = child;}
+			bool		IsChildFolder() const {return fChildItem;}
 protected:
 			void		IMAPGetList();
 		status_t		IMAPConnect();
@@ -37,6 +41,8 @@ protected:
 	static	int32		GetListThread(void* data);
 			void		GatherChildFolders();
 			void		StoreSettings();
+			
+			int32		FindParent(const char* name,const char* path,BList *list);
 private:
 	IMAP4Client			*fClient;
 		BString			fServer;
@@ -46,5 +52,6 @@ private:
 		BString			fRemoteFolderName;
 		BString			fDisplayedFolderName;
 		bool			fFolderGathered;
+		bool			fChildItem;
 };
 #endif
