@@ -9,6 +9,7 @@
 #include <Roster.h>
 #include <Application.h>
 #include <string.h>
+#include <Alert.h>
 
 #define STARTUP_PAGE "netpositive:Startup.html"
 
@@ -48,10 +49,13 @@ HHtmlView::HHtmlView(BRect rect,
 
     BShelf* shelf = new BShelf(this,false,"NetShelf"); 
     shelf->SetDisplaysZombies(true);
-    shelf->AddReplicant(&message_replicant,BPoint(0,0));
-    
-    fNetPositiveView = FindView("NetPositive");
-    fNetPositiveView->SetResizingMode(B_FOLLOW_ALL);
+    if(shelf->AddReplicant(&message_replicant,BPoint(0,0)) == B_OK)
+    {
+   		fNetPositiveView = FindView("NetPositive");
+   		fNetPositiveView->SetResizingMode(B_FOLLOW_ALL);
+	}else{
+		(new BAlert("","Could not create NetPositive replicant","OK"))->Go();
+	}
 }
 
 
