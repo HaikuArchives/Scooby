@@ -15,6 +15,7 @@ HRulerView::HRulerView(BRect rect,const char* name,HWrapTextView *view)
 	,fCaretPosition(4.0F)
 	,fDragging(false)
 {
+	SetLowColor(tint_color(ui_color(B_PANEL_BACKGROUND_COLOR),B_LIGHTEN_2_TINT));
 	SetViewColor(tint_color(ui_color(B_PANEL_BACKGROUND_COLOR),B_LIGHTEN_2_TINT));
 
 	BFont font;
@@ -22,6 +23,7 @@ HRulerView::HRulerView(BRect rect,const char* name,HWrapTextView *view)
 	font.SetSize(9);
 	SetFont(&font);
 	FontReseted();
+	fOldCaretRect.Set(3.0F,Bounds().top,5.0F,Bounds().bottom);
 }
 
 /***********************************************************
@@ -59,14 +61,14 @@ HRulerView::DrawRuler()
 {
 	rgb_color black = {0,0,0,255};
 	BRect bounds(Bounds());
-	float width = bounds.Width()-8.0F;
+	float width = bounds.Width()-4.0F;
 	int32 count = (int32)floor(width/fFontWidth);
 	
 	BeginLineArray(count);
 	
 	float start = 4.0;
 	BPoint pos;
-	char buf[100];
+	char buf[10];
 	pos.y = bounds.top + 7;
 	for(int32 i = 0;i < count;i++)
 	{
@@ -74,8 +76,11 @@ HRulerView::DrawRuler()
 		if(!(i%10))
 		{
 			pos.x = start-3;
-			
+#ifdef __INTEL__			
+			::snprintf(buf,9,"%ld",i);
+#else
 			::sprintf(buf,"%ld",i);
+#endif
 			DrawString(buf,pos);
 		}
 		start += fFontWidth;
@@ -161,7 +166,12 @@ HRulerView::Pulse()
 	if(pos != fCaretPosition)
 	{
 		fCaretPosition = pos;
-		Invalidate();
+		//Invalidate old caret rect.
+		Invalidate(fOldCaretRect);
+		//Invalidate new caret rect. 
+		fOldCaretRect.left = fCaretPosition-1;
+		fOldCaretRect.right = fCaretPosition+1;
+		Invalidate(fOldCaretRect);
 	}
 	delete[] buf;
 }
