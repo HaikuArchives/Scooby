@@ -372,11 +372,7 @@ HFolderItem::Gather()
 		if(node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH) <0)
 			continue;
 		if(::strcmp(type,B_MAIL_TYPE) == 0)
-		{
 			AddMail(item = new HMailItem(ref));
-			if(item&&!item->IsRead())
-				fUnread++;
-		}
 	}
 	// free all dirents
 	for(i = 0;i < count;i++)
