@@ -27,7 +27,15 @@ public:
 			void	InitGUI();
 			//!Add folder item to Move menu.
 			void	AddFolderItem(BMessage *msg);
-			
+			//! Create new filter and add it to list.
+			void	New(bool select = false);	
+			//! Add criteria to the criteria list.
+			void	AddCriteria(int32 attr = -1 //!<Mail attribute index to be used filtering.
+							,int32 operation = 0 //!<Criteria operator index such as "and, or, contains".
+							,const char* attr_value = NULL //<! Criteria value.
+							,int32 operation2 = 0 //<! Operator for next criteria.
+							);
+
 protected:
 	//@{
 	//!Override function.
@@ -35,8 +43,6 @@ protected:
 			void	Pulse();
 			void	AttachedToWindow();	
 	//@}
-	//! Create new filter and add it to list.
-			void	New();
 	//! Enable or disable all controls.
 			void	SetEnableControls(bool enable);
 	//! Save filter setting.
@@ -45,12 +51,6 @@ protected:
 							);
 	//! Open filter setting.
 		status_t	OpenItem(const char* name /*!<Filter name.*/);
-	//! Add criteria to the criteria list.
-			void	AddCriteria(int32 attr = -1 //!<Mail attribute index to be used filtering.
-							,int32 operation = 0 //!<Criteria operator index such as "and, or, contains".
-							,const char* attr_value = NULL //<! Criteria value.
-							,int32 operation2 = 0 //<! Operator for next criteria.
-							);
 	//! Remove selected criteria from criteria list.
 			void	RemoveCriteria();
 	//! Remove all criteria.

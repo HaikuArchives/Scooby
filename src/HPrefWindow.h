@@ -19,6 +19,13 @@ class HPrefWindow :public BWindow {
 public:
 			//!Constructor.
 					HPrefWindow(BRect rect);
+
+			//! Create filter 
+			void	CreateFilter(const char* subject=NULL,
+								const char* from=NULL,
+								const char* to=NULL,
+								const char* cc=NULL,
+								const char* account=NULL);
 protected:
 			//!Destructor.
 					~HPrefWindow();
@@ -27,6 +34,7 @@ protected:
 			void	MessageReceived(BMessage *message);
 			bool	QuitRequested();
 	//@}
+								
 private:
 	HFilterView*	fFilterView;
 	HAccountView*	fAccountView;

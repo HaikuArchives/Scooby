@@ -185,7 +185,11 @@ HWindow::InitMenu()
 	utils.AddMenuItem(aMenu,_("Move to Trash"),M_DELETE_MSG,this,this,'T',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();
+    utils.AddMenuItem(aMenu,_("Save as People" B_UTF8_ELLIPSIS),M_ADD_TO_PEOPLE,this,this,0,0,
+    						app->GetIcon("Person"),false);
     utils.AddMenuItem(aMenu,_("Filter"),M_FILTER_MAIL,this,this,0,0);
+    utils.AddMenuItem(aMenu,_("Create Filter"),M_CREATE_FILTER,this,0,0);
+    aMenu->AddSeparatorItem();
     utils.AddMenuItem(aMenu,_("Add To BlackList"),M_ADD_TO_BLACK_LIST,this,this,0,0,
     						rsrc_utils.GetBitmapResource('BBMP',"BlackList"));
     aMenu->AddSeparatorItem();
@@ -393,6 +397,38 @@ HWindow::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
+	// Create filter with selected mail
+	case M_CREATE_FILTER:
+	{
+		int32 sel = fMailList->CurrentSelection();
+	
+		if(sel < 0)
+			break;
+		HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
+		if(!item)
+			break;
+		HPrefWindow *win = new HPrefWindow(RectUtils().CenterRect(600,380));
+		BMessage msg(M_ADD_FOLDERS);
+		fFolderList->GenarateFolderPathes(msg);
+		win->PostMessage(&msg);
+		win->CreateFilter(item->fSubject.String(),
+							item->fFrom.String(),
+							item->fTo.String(),
+							item->fCC.String(),
+							item->fAccount.String());
+		win->Show();
+		break;
+	}
+	// Show Preference Window
+	case M_PREF_MSG:
+	{
+		HPrefWindow *win = new HPrefWindow(RectUtils().CenterRect(600,380));
+		BMessage msg(M_ADD_FOLDERS);
+		fFolderList->GenarateFolderPathes(msg);
+		win->PostMessage(&msg);
+		win->Show();
+		break;
+	}
 	// Change mail status
 	case M_CHANGE_MAIL_STATUS:
 		be_app->PostMessage(message);	
@@ -602,15 +638,6 @@ HWindow::MessageReceived(BMessage *message)
 		else
 			fDetailView->SetInfo("","","","","");
 		ChangeDeskbarIcon(DESKBAR_NORMAL_ICON);
-		break;
-	}
-	case M_PREF_MSG:
-	{
-		HPrefWindow *win = new HPrefWindow(RectUtils().CenterRect(600,380));
-		BMessage msg(M_ADD_FOLDERS);
-		fFolderList->GenarateFolderPathes(msg);
-		win->PostMessage(&msg);
-		win->Show();
 		break;
 	}
 	case M_ATTR_MSG:
@@ -967,6 +994,8 @@ HWindow::MenusBeginning()
 	EnableMenuItem(KeyMenuBar()->FindItem(M_FILTER_MAIL),mailSelected);
 	EnableMenuItem(KeyMenuBar()->FindItem(M_PRINT_MESSAGE),mailSelected);
 	EnableMenuItem(KeyMenuBar()->FindItem(M_ADD_TO_BLACK_LIST),mailSelected);
+	EnableMenuItem(KeyMenuBar()->FindItem(M_CREATE_FILTER),mailSelected);
+	EnableMenuItem(KeyMenuBar()->FindItem(M_ADD_TO_PEOPLE),mailSelected);
 	// Copy	
 	int32 start,end;
 	BTextControl *ctrl(NULL);

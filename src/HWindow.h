@@ -55,7 +55,8 @@ enum{
 	M_IMPORT_MBOX = 'mMBX',
 	M_CONVERT_MBOX_TO_MAILS = 'mCMm',
 	M_ADD_TO_BLACK_LIST = 'mAtB',
-	M_CHANGE_MAIL_STATUS = 'mChM'
+	M_CHANGE_MAIL_STATUS = 'mChM',
+	M_CREATE_FILTER = 'mCFt'
 };
 
 //! Main window.

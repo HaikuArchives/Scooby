@@ -12,6 +12,7 @@
 #include <Rect.h>
 #include <Button.h>
 #include <Application.h>
+#include <ClassInfo.h>
 
 /***********************************************************
  * Constructor
@@ -92,6 +93,33 @@ HPrefWindow::MessageReceived(BMessage *message)
 	}
 }
 
+/***********************************************************
+ * CreateFilter
+ ***********************************************************/
+void
+HPrefWindow::CreateFilter(const char* subject,
+						const char* from,
+						const char* to,
+						const char* cc,
+						const char* account)
+{
+	// Select filter tab
+	BTabView *tabview = cast_as(FindView("tabview"),BTabView);
+	tabview->Select(2);
+	// Create new filter
+	fFilterView->New(true);
+	// Set criteria
+	if(subject&& strlen(subject) > 0)
+		fFilterView->AddCriteria(0,1,subject,0);
+	if(from && strlen(from) > 0)
+		fFilterView->AddCriteria(1,1,from,0);
+	if(to && strlen(to) > 0)
+		fFilterView->AddCriteria(2,1,to,0);
+	if(cc && strlen(cc) > 0)
+		fFilterView->AddCriteria(3,1,cc,0);
+	if(account && strlen(account)>0)
+		fFilterView->AddCriteria(4,1,account,0);
+}
 
 /***********************************************************
  * QuitRequested

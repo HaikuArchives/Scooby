@@ -163,7 +163,7 @@ HFilterView::InitGUI()
 	
 	rect.bottom = Bounds().bottom-65;
 	rect.top = rect.bottom - 25;
-	rect.OffsetBy(30,0);
+	rect.OffsetBy(60,0);
 	fNameControl = new BTextControl(rect,"name",_("Name:"),"",NULL);
 	fNameControl->SetDivider(StringWidth("Name:")+5);
 	// Disallow charactors that could not use filename
@@ -296,7 +296,7 @@ HFilterView::Pulse()
  * New
  ***********************************************************/
 void
-HFilterView::New()
+HFilterView::New(bool select)
 {
 	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
@@ -309,7 +309,17 @@ HFilterView::New()
 	entry_ref ref;
 	TrackerUtils().SmartCreateFile(&file,&dir,_("Untitled"),"",B_READ_WRITE,&ref);
 	path.SetTo(&ref);
-	fListView->AddItem(new BStringItem(path.Leaf()));
+	
+	BStringItem *item;
+	fListView->AddItem(item = new BStringItem(path.Leaf()));
+	if(select)
+	{
+		fListView->SetSelectionMessage(NULL);
+		fListView->Select(fListView->IndexOf(item));
+		fListView->SetSelectionMessage(new BMessage(M_FILTER_CHG));
+		SetEnableControls(true);
+		fNameControl->SetText(item->Text());
+	}
 }
 
 /***********************************************************
@@ -430,7 +440,7 @@ HFilterView::OpenItem(const char* name)
 	::create_directory(path.Path(),0777);
 	path.Append("Filters");
 	path.Append(name);
-	
+
 	BFile file(path.Path(),B_READ_ONLY);
 	if(file.InitCheck() != B_OK)
 		return B_ERROR;
@@ -475,6 +485,7 @@ HFilterView::OpenItem(const char* name)
 		if(item)
 			item->SetMarked(true);
 	}
+	
 	return B_OK;
 }
 

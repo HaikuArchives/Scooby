@@ -487,6 +487,15 @@ HMailList::MouseDown(BPoint pos)
     	 						app->GetIcon("Person"),false);
     	item->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(item);
+    	item = new IconMenuItem(_("Filter"),new BMessage(M_FILTER_MAIL),0,0);
+    	item->SetEnabled( (sel >= 0)?true:false);
+    	theMenu->AddItem(item);
+    	
+    	item = new IconMenuItem(_("Create Filter"),new BMessage(M_CREATE_FILTER),0,0);
+    	item->SetEnabled( (sel >= 0)?true:false);
+    	theMenu->AddItem(item);
+    	
+    	theMenu->AddSeparatorItem();
     	item = new IconMenuItem(_("Add to BlackList"),new BMessage(M_ADD_TO_BLACK_LIST),0,0,
     							utils.GetBitmapResource('BBMP',"BlackList"));
     	item->SetEnabled( (sel >= 0)?true:false);
