@@ -135,6 +135,8 @@ HWrapTextView::GetHardWrapedText(BString &out)
 {
 	MakeEditable(false);
 	
+	char *backup = ::strdup(Text());
+	
 	BFont font;
 	uint32 propa;
 	GetFontAndColor(&font,&propa);
@@ -155,7 +157,7 @@ HWrapTextView::GetHardWrapedText(BString &out)
 			continue;
 		}
 		line += c;
-		if(font.StringWidth(line.String())>view_width)
+		if(font.StringWidth(line.String())>=view_width)
 		{
 			// Back 1 charactor.
 			i--;
@@ -180,7 +182,8 @@ HWrapTextView::GetHardWrapedText(BString &out)
 		}
 	}
 	out = Text();
-	//PRINT(("%s\n",out.String()));
+	SetText(backup);
+	free(backup);
 	MakeEditable(true);
 }
 
