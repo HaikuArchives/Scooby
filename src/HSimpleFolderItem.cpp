@@ -13,3 +13,10 @@ HSimpleFolderItem::HSimpleFolderItem(const char* name,BListView *list)
 	SetExpanded(true);
 	SetEnabled(false);
 }
+
+/***********************************************************
+ * Destructor
+ ***********************************************************/
+HSimpleFolderItem::~HSimpleFolderItem()
+{
+}

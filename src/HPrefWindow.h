@@ -14,19 +14,13 @@ enum{
 	M_ADD_FOLDERS = 'mADF'
 };
 
-//!Preference window.
 class HPrefWindow :public BWindow {
 public:
-			//!Constructor.
 					HPrefWindow(BRect rect);
 protected:
-			//!Destructor.
-					~HPrefWindow();
-	//@{
-	//!Override function.
-			void	MessageReceived(BMessage *message);
-			bool	QuitRequested();
-	//@}
+	virtual			~HPrefWindow();
+	virtual	void	MessageReceived(BMessage *message);
+	virtual bool	QuitRequested();
 private:
 	HFilterView*	fFilterView;
 	HAccountView*	fAccountView;

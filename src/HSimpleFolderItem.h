@@ -7,6 +7,7 @@ class HSimpleFolderItem :public HFolderItem{
 public:
 						HSimpleFolderItem(const char* name,
 										BListView *list);
+	virtual				~HSimpleFolderItem();
 			bool		IsAdded() const{return fAdded;};
 			void		Added(bool added) {fAdded = added;}
 private:

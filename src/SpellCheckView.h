@@ -1,13 +1,19 @@
 #ifndef __SPELLCHECKVIEW_H__
 
-#include "HWrapTextView.h"
+#include "CTextView.h"
 #include <String.h>
 #include <List.h>
 
-//! Spell checking view.
-class SpellCheckView :public HWrapTextView {
+class SpellCheckView;
+
+typedef struct {
+	int32 start;
+	int32 end;
+	SpellCheckView *view;
+} CheckThreadData;
+
+class SpellCheckView :public CTextView {
 public:
-		//!Constructor.
 						SpellCheckView(BRect	frame,
 								 	 const char	*name,
 								 	 //BRect		textRect,
@@ -21,42 +27,31 @@ public:
 								  uint32			resizeMask, 
 								  uint32			flags);
 						*/
-		//!Destructor.
 	virtual 			~SpellCheckView();
-		//!Set enable spell checking.
-			void		SetEnableSpellChecking(bool enable);
-		//!Start spell checking from start to end.
-			void		StartChecking(int32 start //!<Start position offset.
-									,int32 end //!<End position offset.
-									);	
-		//!Set text color.
-			void		SetColor(int32 start //!<Start position offset.
-									,int32 end //!<End position offset.
-									,rgb_color *col //!<Text color.
-									);
 			
-			thread_id	fCheckThreadID; //!<Check thread ID.
+			void		SetEnableSpellChecking(bool enable);
+			void		StartChecking(int32 start,int32 end);	
+			void		SetColor(int32 start,int32 end,rgb_color *col);
+			
+			thread_id	fCheckThreadID;
 protected:	
-	//@{
-	//!Override functions.
 	virtual	void		InsertText(const char				*inText, 
 								   int32					inLength, 
 								   int32					inOffset,
 								   const text_run_array		*inRuns);
 	virtual	void		DeleteText(int32 fromOffset, int32 toOffset);
 	virtual void		MessageReceived(BMessage *message);
-	//@}
-			//! Returns true if input word's spelling is correct.
+	
 			bool		CheckWord(const char* word);
-			//! Initialize word dictionaries.
+			
 			void		InitDictionaries();
 private:
-	static	int32		CheckThread(void *data);	//!<Spell check thread entry.
-	bool				fEnabled;					//!<Flag that enable or disable spell checking.
-	BList				fWordList;					//!<Word list.
-	bool				fIsIM;						//!<Flag that avoid input from InputMethod.
-	bool				fDicInited;					//!<Flag that whether all dictionaries have been loaded.
+	static	int32		CheckThread(void *data);
+	bool				fEnabled;
+	BList				fWordList;
+	bool				fIsIM;
+	bool				fDicInited;
 	
-	typedef	HWrapTextView	_inherited;
+	typedef	CTextView	_inherited;
 };
 #endif

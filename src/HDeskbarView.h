@@ -9,34 +9,25 @@ enum{
 	M_CHECK_SCOOBY_STATE = 'McSS'
 };
 
-//!Deskbar replicant view.
 class _EXPORT HDeskbarView :public BView {
 public:
-			//!Constructor.
 						HDeskbarView(BRect frame);
-			//!Constructor for archiving.
 						HDeskbarView(BMessage *data);
-			//!Destructor.
-						~HDeskbarView();
+		virtual			~HDeskbarView();
 	
 protected:	
-		//@{
-		//! Override function.
-			 void	Draw(BRect updateRect);
-			 void	Pulse();
-			 void 	MouseDown(BPoint);
-			 void	MessageReceived(BMessage *message);
-		//@}
-		//@{
-		//! Archiving override.
+		virtual void	Draw(BRect updateRect);
+		// archiving overrides
 		static 	HDeskbarView *Instantiate(BMessage *data);
-				status_t Archive(BMessage *data, bool deep = true) const;
-		//@}
-		//!Change the icon to be displayed in desktray.
-		void	ChangeIcon(int32 icon);
+		virtual	status_t Archive(BMessage *data, bool deep = true) const;
+		virtual void 	MouseDown(BPoint);
+		virtual void	MessageReceived(BMessage *message);
+				void	ChangeIcon(int32 icon);
+		virtual void	Pulse();
 private:
-		BBitmap 		*fIcon;//!< Current icon bitmap.
-		int32			fCurrentIconState; //!<Current icon state
-		char*			fLabels[3];//!<Menu item labels.
+		BBitmap 		*fIcon;
+		int32			fCurrentIconState;
+		char*			fLabels[3];
 };
 #endif
+

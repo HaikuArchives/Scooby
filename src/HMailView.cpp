@@ -4,7 +4,6 @@
 #include "Encoding.h"
 #include "HMailList.h"
 #include "HWindow.h"
-#include "base64.h"
 
 #include <Menu.h>
 #include <Font.h>
@@ -421,30 +420,6 @@ void HMailView::MessageReceived(BMessage *msg)
 				Find(text);
 			break;
 		}
-		// DND reply message from Tracker.
-		case B_COPY_TARGET:
-		{
-			entry_ref dirRef;
-			const char* name;
-			BMessage dataMsg;
-			if(msg->FindString("name",&name) == B_OK &&
-				msg->FindMessage("be:originator-data",&dataMsg) == B_OK &&
-				msg->FindRef("directory",&dirRef) == B_OK)
-			{
-				BPath path(&dirRef);
-				PRINT(("%s\n",path.Path()));
-				path.Append(name);
-				BFile file(path.Path(),B_WRITE_ONLY);
-				if(file.InitCheck() != B_OK)
-					break;
-				const char* data;
-				ssize_t size;
-				dataMsg.FindData("data",B_ANY_TYPE,(const void**)&data,&size);
-				file.Write(data,size);
-				file.SetSize(size);
-			}
-			break;
-		}
 		default:
 			_inherited::MessageReceived(msg);
 	}
@@ -474,7 +449,7 @@ void HMailView::MouseDown(BPoint where)
 	int32			loop;
 	int32			start;
 	uint32			buttons;
-	BMenuItem		*item;
+	BMenuItem		*item = NULL;
 	BPoint			point;
 	bigtime_t		click;
 	hyper_text		*enclosure;
@@ -526,8 +501,6 @@ void HMailView::MouseDown(BPoint where)
 				else if ((abs( (int)(point.x - where.x) ) < 4) &&
 						 (abs((int)(point.y - where.y)) < 4))
 					Open(enclosure);
-				else
-					_inherited::MouseDown(where);
 				return;
 			}
 		}
@@ -932,7 +905,7 @@ status_t HMailView::Save(BMessage *msg)
 				if ((enclosure->encoding) && (cistrstr(enclosure->encoding, "base64"))) {
 					is_text = ((cistrstr(enclosure->content_type, "text")) &&
 							  (!cistrstr(enclosure->content_type, B_MAIL_TYPE)));
-					size = decode64(data, data, size);
+					size = decode_base64(data, data, size, is_text);
 					PRINT(("MIME-B\n"));
 				}else if ((enclosure->encoding) && (cistrstr(enclosure->encoding, "quoted-printable"))) {
 					PRINT(("MIME-Q\n"));
@@ -1025,7 +998,7 @@ void HMailView::SaveBeFile(BFile *file, char *data, ssize_t size)
 		}
 		len = offset - start;
 
-		len = decode64(start, start, len);
+		len = decode_base64(start, start, len, FALSE);
 		if (cistrstr(type, "x-be_attribute")) {
 			index = 0;
 			while (index < len) {
@@ -1235,7 +1208,7 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 				if ((encoding) && (cistrstr(encoding, "base64")))
 				{
 					saved_len = len;
-					len = ::decode64(offset, offset, len);
+					len = ::decode_base64(offset, offset, len, true);
 				}else if ((encoding) && (cistrstr(encoding, "quoted-printable")))
 				{// Decode quoted-printable
 					saved_len = len;
@@ -1587,6 +1560,84 @@ HMailView::linelen(char *str, int32 len, bool header)
 	return len;
 }
 
+/***********************************************************
+ * HardWrap
+ ***********************************************************/
+void
+HMailView::GetHardWrapedText(BString &out)
+{
+	const char* text = Text();
+	out = "";
+	
+	float lineWidth = 0;
+	BString c;
+	int32 length = TextLength();
+	float view_width = TextRect().Width();
+	int32 linefeedCount = CountLines();
+	int32 nextbytes = 0;
+	int32 k = 0;
+	int32 *insertPos = new int32[linefeedCount];
+	
+	// Check positions to insert linefeeds
+	for(int32 i = 0;i < length;i++)
+	{
+		c.SetTo(text[i], 1);
+		nextbytes = ByteLength(c[0])-1;
+		
+		for(int32 j = 1;j <= nextbytes;j++)
+			c += text[i+j];
+		i += nextbytes;
+		lineWidth += fFont.StringWidth(c.String());
+		if(view_width <= lineWidth || c[0] == '\n')
+		{
+			lineWidth = 0;
+			if(c[0] != '\n')
+			{
+				lineWidth = fFont.StringWidth(c.String());
+				int32 oldLen = i - c.Length();
+				for(int32 n = 0;n <oldLen;n++)
+				{
+					if(CanEndLine(oldLen-n))
+					{
+						int32 skip = ByteLength(text[oldLen-n])-1;
+						insertPos[k++] = oldLen-n+1+skip;
+						int32 charLen = n - skip;
+						char *tmp = new char[charLen+1];
+						::strncpy(tmp,&text[oldLen-n+1+skip],charLen);
+						tmp[charLen] = '\0';
+						c.Insert(tmp,0);
+						lineWidth = fFont.StringWidth(c.String());
+						delete[] tmp;
+						break;
+					}
+				}
+			}
+		}
+	}
+	
+	// Insert linefeeds
+	out = text;
+	for(int32 i = 0;i < k;i++)
+	{
+		out.Insert('\n',1,insertPos[i]+i);
+	}
+	delete[] insertPos;
+	//PRINT(("%s\n",out.String()));
+}
+
+/***********************************************************
+ * ByteLength: Calculate UTF-8 charactor byte length
+ ***********************************************************/
+int32
+HMailView::ByteLength(char c)
+{
+	if( !(c & 0x80) )
+		return 1;
+	if((c & 0x20)&&(c & 0x40))
+		return 3;
+	return 2;
+}
+
 //--------------------------------------------------------------------
 // get named parameter from string
 //
@@ -1689,54 +1740,6 @@ HMailView::Find(const char* inText)
 			break;
 		}
 	}
-}
-
-/***********************************************************
- * GetDragParameter
- ***********************************************************/
-void
-HMailView::GetDragParameters(BMessage *drag
-						,BBitmap **bitmap
-						,BPoint *point
-						,BHandler **handler)
-{
-	
-	int32 start,end;
-	GetSelection(&start,&end);
-	
-	hyper_text		*enclosure;
-	
-	int32 items = fEnclosures->CountItems();
-	for (int32 loop = 0; loop < items; loop++) {
-		enclosure = (hyper_text *)fEnclosures->ItemAt(loop);
-		if ((start >= enclosure->text_start) && (start < enclosure->text_end)) {
-			PRINT(("enclosure\n"));
-			drag->MakeEmpty();
-			
-			BString decodedName(enclosure->name);
-			Encoding().Mime2UTF8(decodedName);
-			
-			off_t size = enclosure->file_length;
-			fFile->Seek(enclosure->file_offset,SEEK_SET);
-			char *data = new char[size+1];
-			fFile->Read(data,size);
-			data[size] = '\0';
-			size= ::decode64(data, data, size);
-			drag->what = B_SIMPLE_DATA;
-			drag->AddInt32("be:actions",B_COPY_TARGET);
-			drag->AddString("be:types",B_FILE_MIME_TYPE);
-			drag->AddString("be:filetypes",enclosure->content_type);
-			drag->AddString("be:clip_name",decodedName.String());
-			BMessage dataMsg(B_SIMPLE_DATA);
-			dataMsg.AddData("data",B_ANY_TYPE,data,size);
-			drag->AddMessage("be:originator-data",&dataMsg);
-			drag->PrintToStream();
-			
-			delete[] data;
-			return;
-		}
-	}
-	_inherited::GetDragParameters(drag,bitmap,point,handler);	
 }
 
 //====================================================================

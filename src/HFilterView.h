@@ -14,47 +14,32 @@ enum{
 	M_DEL_CRITERIA_MSG = 'MDCR'
 };
 
-//!Incoming mail filter setting view.
+class BTextControl;
+
 class HFilterView :public BView{
 public:
-			//!Constructor.
 					HFilterView(BRect rect);
-			//!Destructor.
-					~HFilterView();
-			//!Initialize all GUI.
+	virtual			~HFilterView();
 			void	InitGUI();
-			//!Add folder item to Move menu.
 			void	AddFolderItem(BMessage *msg);
 			
 protected:
-	//@{
-	//!Override function.
-			void	MessageReceived(BMessage *message);
-			void	Pulse();
-			void	AttachedToWindow();	
-	//@}
-	//! Create new filter and add it to list.
+	virtual	void	MessageReceived(BMessage *message);
+	virtual	void	Pulse();
 			void	New();
-	//! Enable or disable all controls.
-			void	SetEnableControls(bool enable);
-	//! Save filter setting.
-			void	SaveItem(int32 index //!<List index.
-							,bool rename=true //!<Rename filename or not.
-							);
-	//! Open filter setting.
-		status_t	OpenItem(const char* name /*!<Filter name.*/);
-	//! Add criteria to the criteria list.
-			void	AddCriteria(int32 attr = -1 //!<Mail attribute index to be used filtering.
-							,int32 operation = 0 //!<Criteria operator index such as "and, or, contains".
-							,const char* attr_value = NULL //<! Criteria value.
-							,int32 operation2 = 0 //<! Operator for next criteria.
-							);
-	//! Remove selected criteria from criteria list.
+			void	SetEnableControls(bool enalbe);
+			void	SaveItem(int32 index,bool rename=true);
+		status_t	OpenItem(const char* name);
+		
+			
+			void	AddCriteria(int32 attr = -1,
+							int32 operation = 0,
+							const char* attr_value = NULL,
+							int32 operation2 = 0);
 			void	RemoveCriteria();
-	//! Remove all criteria.
 			void	RemoveAllCriteria();
-	//! Refresh criteria scrollview.
 			void	RefreshCriteriaScroll();
+	virtual	void	AttachedToWindow();	
 private:
 	BListView		*fListView;
 	BMenuField		*fActionMenu;
@@ -62,3 +47,4 @@ private:
 	BTextControl	*fNameControl;
 };
 #endif
+

@@ -4,15 +4,14 @@
 #include <String.h>
 #include <DataIO.h>
 
+class BList;
+class BFile;
 class HFolderItem;
 
-//!Mails cache class.
 class HMailCache {
 public:
-				//!Constructor.
 							HMailCache(const char* path);
-				//!Destructor.
-							~HMailCache();
+	virtual					~HMailCache();
 
 			status_t		Open(HFolderItem *item);	
 			status_t		Save(BList &list);

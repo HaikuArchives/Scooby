@@ -220,3 +220,4 @@ HEnclosureView::GetEncoding()
 		return -1;
 	return item->Message()->what;
 }
+

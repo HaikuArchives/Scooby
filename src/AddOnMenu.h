@@ -4,29 +4,22 @@
 #include <Menu.h>
 #include <Path.h>
 
-//!Add-ons menu.
 class AddOnMenu :public BMenu{
 public:
-			//! Constructor.
-					AddOnMenu(const char *title,		//!< Menu title.
-							const char* directory_name, /*!< Addon direcotry name or relative path
-														! ~/config/add-ons/(name).*/
-							int32	what,				/*!< BMessage's what to be posted to target.
-															It contains add-on's entry_ref.
-														 */ 
-							bool		use_icon=false  /*!< Use menu icons. Default value is false. */);
-			//! Build menu items.
-			void	Build();	
-			//! Remove all menu items and re-build them.
+					AddOnMenu(const char *title,
+							const char* directory_name, // addon direcotry name or relative path
+														// ~/config/add-ons/(name)
+							int32	what,
+							bool		use_icon=false);
+	virtual			~AddOnMenu();
+			void	Build();
 			void	Rebuild();
 protected:
-			//! Get add-on's file icon. If it failed to get an icon,return NULL.
-	BBitmap*			GetIcon(entry_ref &ref /*!< The file ref to be loaded an icon.*/);
+	BBitmap*			GetIcon(entry_ref &ref);
 private:
-			//! Callback func for BList to sort add-ons items by filename.
 	static	int			SortItems(const void* data1,const void* data2);
-	BPath				fPath;		//!< Add-ons directory path.
-	int32				fWhat;  	//!< Add-ons message's what.
-	bool				fUseIcon;	//!< Flags for whether use menu icons or not.
+	BPath				fPath;	// Addon directory path
+	int32				fWhat;  // Addon message's what
+	bool					fUseIcon;
 };
 #endif

@@ -22,13 +22,11 @@ class HTabView : public BView
 		float GetTabsWidth();
 		void AddViews(BView** tabbedViews);
 		~HTabView();
-		//@{
-		//!Override function.
-				void Draw(BRect updateRect);
-				void MouseDown(BPoint point);
-				void FrameResized(float width, float height);
-				void SelectTab(int32 index);
-		//@}
+		virtual void Draw(BRect updateRect);
+		virtual void MouseDown(BPoint point);
+		virtual void FrameResized(float width, float height);
+		virtual void SelectTab(int32 index);
+		
 				void SetTabLabel(int32 index,const char* label);
 			int32	 Selection() {return fCurrentlyShowing;}
 			

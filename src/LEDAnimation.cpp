@@ -10,6 +10,7 @@
 LEDAnimation::LEDAnimation()
 	:fThread(-1)
 	,fRunning(false)
+	,fOrigModifiers(::modifiers())
 {
 }
 
@@ -27,6 +28,7 @@ LEDAnimation::~LEDAnimation()
 void
 LEDAnimation::Start()
 {
+	fOrigModifiers = ::modifiers();
 	if(fThread>=0)
 		return;
 	fThread = ::spawn_thread(AnimationThread,"LED thread",B_NORMAL_PRIORITY,this);
@@ -43,7 +45,7 @@ LEDAnimation::Stop()
 	status_t err;
 	::wait_for_thread(fThread,&err);
 
-	::set_keyboard_locks(0);		
+	::set_keyboard_locks(fOrigModifiers);
 }
 
 /***********************************************************
@@ -57,18 +59,10 @@ LEDAnimation::AnimationThread(void* data)
 	
 	while(anim->fRunning)
 	{
-		LED(B_NUM_LOCK,true);	
-		LED(B_NUM_LOCK,false);
-		
-		LED(B_CAPS_LOCK,true);	
-		LED(B_CAPS_LOCK,false);
-		
-		LED(B_SCROLL_LOCK,true);	
-		LED(B_SCROLL_LOCK,false);
-		
-		LED(B_CAPS_LOCK,true);	
-		LED(B_CAPS_LOCK,false);				
+		LED(B_SCROLL_LOCK);	
+		LED(0);	
 	}
+
 	anim->fThread = -1;
 	return 0;
 }
@@ -77,14 +71,8 @@ LEDAnimation::AnimationThread(void* data)
  * LED
  ***********************************************************/
 void
-LEDAnimation::LED(uint32 mod,bool on)
+LEDAnimation::LED(uint32 mod)
 {
-	uint32 current_modifiers = ::modifiers();
-	if(on)
-		current_modifiers |= mod;
-	else
-		current_modifiers &= ~mod;
-	::set_keyboard_locks(current_modifiers);
-	if(on)
-		::snooze(SNOOZE_TIME);
+	::set_keyboard_locks(mod);
+	::snooze(SNOOZE_TIME);
 }

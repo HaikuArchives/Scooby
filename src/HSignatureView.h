@@ -16,17 +16,14 @@ enum{
 class HSignatureView :public BView {
 public:
 					HSignatureView(BRect rect);
-					~HSignatureView();	
+	virtual			~HSignatureView();	
 			void	InitGUI();
 protected:
-	//@{
-	//!Override function.
-			void	MessageReceived(BMessage *message);
-			void	AttachedToWindow();
-	//@}
+	virtual void	MessageReceived(BMessage *message);
 			void	SetEnableControls(bool enalbe);
 			void	SaveItem(int32 sel);
 			void	OpenItem(int32 sel);
+	virtual	void	AttachedToWindow();
 private:
 	CTextView*		fTextView;
 	BListView*		fListView;
