@@ -57,7 +57,8 @@ HPrefs::MakeDefault()
 	fDefaultMessage->AddRect("read_win_rect",BRect(40,40,400,400));
 	fDefaultMessage->AddBool("use_html",true);
 	fDefaultMessage->AddBool("check_inbox",false);
-	fDefaultMessage->AddBool("tree_mode",true);
-	
+	fDefaultMessage->AddBool("tree_mode",false);
+	fDefaultMessage->AddBool("open_link_as_new_window",false);
+	fDefaultMessage->AddString("time_format","%a, %d %b %Y %r");
 	HSetting::MakeDefault();
 }

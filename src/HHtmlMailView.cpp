@@ -8,6 +8,7 @@
 #include "Encoding.h"
 #include "HMailList.h"
 #include "HApp.h"
+#include "HPrefs.h"
 
 #include <TabView.h>
 #include <Debug.h>
@@ -328,6 +329,10 @@ HHtmlMailView::LoadMessage(BFile *file)
 	ResetAttachmentList();
 	ResetScrollBar();
 	fHeaderView->SetText(NULL);
+	bool html = false;
+	bool openNewWindow;
+	((HApp*)be_app)->Prefs()->GetData("open_link_as_new_window",&openNewWindow);
+
 	// Get content and header size
 	Encoding encode;
 	bool multipart = false;
@@ -388,7 +393,6 @@ HHtmlMailView::LoadMessage(BFile *file)
 	if(multipart)
 	{
 		int32 part_index = fAttachmentList->FindPart("text/html");
-		bool html;
 		if(part_index < 0)
 		{
 			part_index = fAttachmentList->FindPart("text/plain");
@@ -442,8 +446,8 @@ HHtmlMailView::LoadMessage(BFile *file)
 				tabview->SetTabEnabled(2,true);
 			}
 			// Convert link target to blank window
-			//if(html)
-			//	ConvertLinkToBlankWindow(content);
+			if(html && openNewWindow)
+				ConvertLinkToBlankWindow(content);
 		}
 	}else{
 		if(content_type.Compare("text/html") != 0)
@@ -454,8 +458,8 @@ HHtmlMailView::LoadMessage(BFile *file)
 			parameter = NULL;
 		}else{
 			// Convert link target to blank window
-			//if(html)
-			//	ConvertLinkToBlankWindow(content);
+			if(html && openNewWindow)
+				ConvertLinkToBlankWindow(content);
 		}
 	}
 	encode.ConvertReturnsToLF(content);
@@ -492,7 +496,7 @@ HHtmlMailView::ConvertLinkToBlankWindow(BString &str)
 	
 	for(int32 i = 0;i < len;i++)
 	{
-		if(strncasecmp(&text[i],"<a ",3) == 0)
+		if(strncasecmp(&text[i],"href ",4) == 0)
 		{
 			while(text[i] && text[i] != '>')
 				out += text[i++];
@@ -516,6 +520,8 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 	const char* kQuote1 = "#009600";
 	const char* kQuote2 = "#969600";
 	const char* kQuote3 = "#009696";
+	bool openNewWindow;
+	((HApp*)be_app)->Prefs()->GetData("open_link_as_new_window",&openNewWindow);
 	
 	char buf[20];
 	Encoding encode;
@@ -610,7 +616,8 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 				tmp += "<a href=\"";
 				tmp += uri;
 				tmp += "\"";
-				//tmp += " target=\"_blank\"";
+				if(openNewWindow)
+					tmp += " target=\"_blank\"";
 				tmp += ">";
 				tmp += uri;
 				tmp += "</a>";

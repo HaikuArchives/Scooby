@@ -1,6 +1,8 @@
 #include "HMailItem.h"
 #include "ResourceUtils.h"
 #include "ExtraMailAttr.h"
+#include "HApp.h"
+#include "HPrefs.h"
 
 #include <String.h>
 #include <Entry.h>
@@ -82,10 +84,9 @@ HMailItem::HMailItem(const entry_ref &ref,
 		fNodeRef.node = node;
 		fNodeRef.device = ref.device;
 	}
-	struct tm* time = localtime(&fWhen);
-	char *tmp = fDate.LockBuffer(24);
-	::strftime(tmp, 64,TIME_FORMAT, time);
-	fDate.UnlockBuffer();
+
+	MakeTime(fDate);
+
 	SetColumnContent(1,fSubject.String());
 	SetColumnContent(2,fFrom.String());
 	SetColumnContent(3,fTo.String());
@@ -125,10 +126,7 @@ HMailItem::HMailItem(const char* status,
 	,fDeleteMe(false)
 	,fInitThread(-1)
 {
-	struct tm* time = localtime(&fWhen);
-	char *tmp = fDate.LockBuffer(24);
-	::strftime(tmp, 64,TIME_FORMAT, time);
-	fDate.UnlockBuffer();
+	MakeTime(fDate);
 	SetColumnContent(1,fSubject.String());
 	SetColumnContent(2,fFrom.String());
 	SetColumnContent(3,fTo.String());
@@ -278,11 +276,7 @@ HMailItem::InitItem()
 		if(node.GetAttrInfo(B_MAIL_ATTR_WHEN,&attr) == B_OK)
 		{	
 			node.ReadAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&fWhen,sizeof(time_t));
-			//fDate = ctime(&fWhen);
-			struct tm* time = localtime(&fWhen);
-			char *tmp = fDate.LockBuffer(30);
-			::strftime(tmp, 64,TIME_FORMAT, time);
-			fDate.UnlockBuffer();
+			MakeTime(fDate);
 		}
 		if(node.GetAttrInfo(B_MAIL_ATTR_PRIORITY,&attr) == B_OK)
 			node.ReadAttrString(B_MAIL_ATTR_PRIORITY,&fPriority);
@@ -416,4 +410,19 @@ HMailItem::DrawItemColumn(BView* owner,
 	
 	owner->StrokeLine(start,end);
 	owner->SetHighColor(old_col);
+}
+
+/***********************************************************
+ * MakeTime
+ ***********************************************************/
+void
+HMailItem::MakeTime(BString &out)
+{
+	struct tm* time = localtime(&fWhen);
+	char *tmp = out.LockBuffer(64);
+
+	const char* kTimeFormat;
+	((HApp*)be_app)->Prefs()->GetData("time_format",&kTimeFormat);
+	::strftime(tmp, 64,kTimeFormat, time);
+	out.UnlockBuffer();
 }
