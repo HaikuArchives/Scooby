@@ -11,6 +11,7 @@
 #include <PrintJob.h>
 #include <TextView.h>
 #include <Beep.h>
+#include <Roster.h>
 
 /***********************************************************
  * Constructor
@@ -52,7 +53,6 @@ HApp::MessageReceived(BMessage *message)
 	{
 	case M_POP_CONNECT:
 	case M_NEW_MSG:
-	case M_DESKBAR_INSTALLED:
 		fWindow->PostMessage(message);
 		break;
 	case M_PAGE_SETUP_MESSAGE:
@@ -67,6 +67,17 @@ HApp::MessageReceived(BMessage *message)
 			message->FindString("job_name",&job_name);
 			Print(view,job_name);
 		}
+		break;
+	}
+	// Check whether new mails have received from Deskbar replicant
+	case M_CHECK_SCOOBY_STATE:
+	{
+		int32 icon;
+		if(message->FindInt32("icon",&icon) != B_OK)
+			break;
+		BMessage msg(M_CHECK_SCOOBY_STATE);
+		msg.AddInt32("icon",fWindow->CurrentDeskbarIcon());
+		message->SendReply(&msg);
 		break;
 	}
 	default:

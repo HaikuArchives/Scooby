@@ -61,7 +61,8 @@ public:
 				void	MakeReadWindow(entry_ref ref,BMessenger *messenger = NULL);
 				void	RefsReceived(BMessage *message);
 				
-				void	ChangeDeskbarIcon(int32 icon);
+				int32	CurrentDeskbarIcon()const {return fCurrentDeskbarIcon;}
+				void	ChangeDeskbarIcon(int32 icon) {fCurrentDeskbarIcon = icon;}
 protected:		
 		virtual			~HWindow();
 
@@ -105,7 +106,7 @@ private:
 		HPopClientView*	fPopClientView;
 		time_t			fCheckIdleTime;
 		HSmtpClientView* fSmtpClientView;
-		BWindow*		fDeskbarWindow;
+		int32			fCurrentDeskbarIcon;
 };
 #endif		
 				

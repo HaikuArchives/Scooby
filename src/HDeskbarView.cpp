@@ -31,7 +31,7 @@ extern "C" _EXPORT BView* instantiate_deskbar_item();
  * Constructor.
  ***********************************************************/
 HDeskbarView::HDeskbarView(BRect frame)
-		:BView(frame,APP_NAME,B_FOLLOW_NONE,B_WILL_DRAW)
+		:BView(frame,APP_NAME,B_FOLLOW_NONE,B_WILL_DRAW|B_PULSE_NEEDED)
 		,fCurrentIconState(DESKBAR_NEW_ICON)
 {
 	fIcon = NULL;
@@ -42,7 +42,7 @@ HDeskbarView::HDeskbarView(BRect frame)
  ***********************************************************/
 BView* instantiate_deskbar_item(void)
 {
-	return new HDeskbarView(BRect(0, 0, 15, 15));	
+	return new HDeskbarView(BRect(0, 0, 15, 15));
 }
 
 /***********************************************************
@@ -64,7 +64,6 @@ HDeskbarView::~HDeskbarView()
 	delete fIcon;
 }
 
-
 /***********************************************************
  * Instantiate
  ***********************************************************/
@@ -72,18 +71,8 @@ HDeskbarView*
 HDeskbarView::Instantiate(BMessage *data)
 {
 	if (!validate_instantiation(data, "HDeskbarView"))
-		return NULL;	
-	HDeskbarView *view = new HDeskbarView(data);
-	
-	// Send this pointer to Scooby
-	BMessenger scooby(APP_SIG);
-	if(scooby.IsValid())
-	{
-		BMessage msg(M_DESKBAR_INSTALLED);
-		msg.AddPointer("deskbar_view",view);
-		scooby.SendMessage(&msg);
-	}
-	return view;
+		return NULL;
+	return new HDeskbarView(data);
 }
 
 /***********************************************************
@@ -126,13 +115,6 @@ HDeskbarView::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
-	case M_CHANGE_DESKBAR_ICON:
-	{
-		int32 icon;
-		if(message->FindInt32("icon",&icon) == B_OK)
-			ChangeIcon(icon);	
-		break;
-	}
 	default:
 		BView::MessageReceived(message);
 	}
@@ -189,6 +171,31 @@ HDeskbarView::ChangeIcon(int32 icon)
 	fCurrentIconState = icon;
 	delete fIcon;
 	fIcon = new_icon;
+}
+
+/***********************************************************
+ * Pulse
+ ***********************************************************/
+void
+HDeskbarView::Pulse()
+{
+	BMessenger scooby(APP_SIG);
+	if(scooby.IsValid())
+	{
+		BMessage reply;
+		BMessage msg(M_CHECK_SCOOBY_STATE);
+		msg.AddInt32("icon",fCurrentIconState);
+		scooby.SendMessage(&msg,&reply);
+		if(reply.what == M_CHECK_SCOOBY_STATE)
+		{
+			int32 icon;
+			if(reply.FindInt32("icon",&icon) != B_OK)
+				return;
+			if(icon == fCurrentIconState)
+				return;
+			ChangeIcon(fCurrentIconState);
+		}
+	}
 }
 
 /***********************************************************
