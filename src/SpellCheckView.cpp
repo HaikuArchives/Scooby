@@ -81,6 +81,22 @@ SpellCheckView::MessageReceived(BMessage *message)
 			switch(opcode)
 			{
 			case B_INPUT_METHOD_STARTED:
+				if(fEnabled && !fIsIM)
+				{
+					int32 start=0,end=0;
+					GetSelection(&start,&end);
+					int32 offset = end-1;
+					FindWord(offset,&start,&end);
+					PRINT(("Start:%d End:%d\n",start,end));
+					if(start < end)
+					{
+						CheckThreadData *data = new CheckThreadData;
+						data->start = start;
+						data->end = end;
+						data->view = this;
+						CheckThread(data);
+					}
+				}
 				fIsIM = true;
 				break;
 			case B_INPUT_METHOD_STOPPED:
@@ -113,10 +129,11 @@ SpellCheckView::InsertText(const char				*inText,
 	// reset colors
 	text_run_array array;
 	array.count = 1;
-	array.runs[0].color = kNormalColor;
-	array.runs[0].offset = inOffset;
+	array.runs[0].color= kNormalColor;
+	array.runs[0].offset = 0;
 	BFont font;
-	GetFontAndColor(0,&font);
+	uint32 propa;
+	GetFontAndColor(&font,&propa);
 	array.runs[0].font = font;
 	//
 	_inherited::InsertText(inText,inLength,inOffset,&array);
@@ -158,7 +175,7 @@ void
 SpellCheckView::DeleteText(int32 fromOffset, int32 toOffset)
 {
 	_inherited::DeleteText(fromOffset,toOffset);
-	if(!fEnabled)
+	if(!fEnabled || fIsIM)
 		return;
 	int32 start=0,end=0;
 	FindWord((fromOffset >0)?fromOffset-1:fromOffset,&start,&end);
@@ -223,6 +240,12 @@ SpellCheckView::SetEnableSpellChecking(bool enable)
 {
 	fEnabled = enable;
 	InitDictionaries();
+	
+	BFont font;
+	uint32 propa;
+	GetFontAndColor(&font,&propa);
+	
+	SetFontAndColor(&font,B_FONT_ALL,&kNormalColor);
 }
 
 /***********************************************************
