@@ -109,15 +109,15 @@ HPrefWindow::CreateFilter(const char* subject,
 	// Create new filter
 	fFilterView->New(true);
 	// Set criteria
-	if(subject&& strlen(subject) > 0)
+	if(strlen(subject) > 0)
 		fFilterView->AddCriteria(0,1,subject,0);
-	if(from && strlen(from) > 0)
+	if(strlen(from) > 0)
 		fFilterView->AddCriteria(1,1,from,0);
-	if(to && strlen(to) > 0)
+	if(strlen(to) > 0)
 		fFilterView->AddCriteria(2,1,to,0);
-	if(cc && strlen(cc) > 0)
+	if(strlen(cc) > 0)
 		fFilterView->AddCriteria(3,1,cc,0);
-	if(account && strlen(account)>0)
+	if(strlen(account)>0)
 		fFilterView->AddCriteria(4,1,account,0);
 }
 
