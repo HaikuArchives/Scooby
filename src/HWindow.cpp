@@ -1661,7 +1661,6 @@ HWindow::RemoveFromDeskbar()
 void
 HWindow::EmptyTrash()
 {
-	TrackerUtils utils;
 	int32 count = fFolderList->CountItems();
 	HFolderItem *trash(NULL);
 		
@@ -1748,7 +1747,7 @@ HWindow::AddCheckFromItems()
 			entry.GetName(name);
 			entry_ref ref;
 			entry.GetRef(&ref);
-			if(fFolderList->IsIMAP4Account(ref))
+			if(!fFolderList->IsIMAP4Account(ref))
 			{
 				BMessage *msg = new BMessage(M_CHECK_FROM);
 				msg->AddRef("refs",&ref);
