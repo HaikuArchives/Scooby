@@ -129,7 +129,7 @@ HMailCache::Open(HFolderItem *folder)
 		if(!item->IsRead())
 			unread++;
 	}
-	folder->SetUnreadCount(unread);
+	//folder->SetUnreadCount(unread);
 	delete[] buf;
 	return B_OK;
 }

@@ -151,8 +151,7 @@ HFolderItem::AddMail(HMailItem *item)
 	::watch_node(&item->fNodeRef,B_WATCH_ATTR,this);
 	
 	if(!item->IsRead())
-		fUnread++;
-	SetUnreadCount(fUnread);
+		SetUnreadCount(fUnread+1);
 }
 
 /***********************************************************
@@ -312,12 +311,10 @@ HFolderItem::ThreadFunc(void*data)
 void
 HFolderItem::Gather()
 {
-	// reset the unread mail count
-	SetUnreadCount(0);
-
 	if(ReadFromCache() == B_OK)
 		return;
-
+	// reset the unread mail count
+	SetUnreadCount(0);
 	BDirectory dir( &fFolderRef );
    	//load all email
 	HMailItem *item(NULL);
@@ -543,6 +540,7 @@ HFolderItem::ReadFromCache()
 #ifdef __CALC__
 		PRINT(("Done: %9.4lf sec\n",stopWatch.Lap()/1000000.0));
 #endif
+		PRINT(("Unread:%d\n",fUnread));
 		return B_OK;
 	}else{
 		PRINT(("Open ERROR\n"));
