@@ -1410,7 +1410,7 @@ HWriteWindow::TimeZoneOffset(time_t *now)
  * OpenTemplate
  ***********************************************************/
 void
-HWriteWindow::OpenTemplate(entry_ref ref)
+HWriteWindow::OpenTemplate(entry_ref& ref)
 {
 	BFile file(&ref,B_READ_ONLY);
 	if(file.InitCheck() != B_OK)
@@ -1472,7 +1472,7 @@ HWriteWindow::SaveAsTemplate()
  * OpenDraft
  ***********************************************************/
 void
-HWriteWindow::OpenDraft(entry_ref ref)
+HWriteWindow::OpenDraft(entry_ref& ref)
 {	
 	BFile *file = new BFile(&ref,B_READ_ONLY);
 	if(file->InitCheck() != B_OK)

@@ -64,10 +64,10 @@ protected:
 			
 			void	WriteReplyStatus();
 			
-			void	OpenTemplate(entry_ref ref);
+			void	OpenTemplate(entry_ref &ref);
 			void	SaveAsTemplate();
 			
-			void	OpenDraft(entry_ref ref);
+			void	OpenDraft(entry_ref &ref);
 			void	SaveAsDraft();
 			void	RemoveDraft();
 			
