@@ -377,7 +377,11 @@ SmtpClient::ForceQuit()
 	if(!fEndpoint)
 		return;
 	int sd = fEndpoint->Socket();
+#ifndef BONE
 	::closesocket(sd);
+#else
+	::close(sd);
+#endif
 }
 
 /***********************************************************
