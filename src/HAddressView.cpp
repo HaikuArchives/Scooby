@@ -411,6 +411,8 @@ HAddressView::SetFrom(const char* in_address)
 	BDirectory dir(path.Path());
 	status_t err = B_OK;
 	BEntry entry;
+	bool changed = false;
+	
 	while(err == B_OK)
 	{
 		if( (err = dir.GetNextEntry(&entry)) != B_OK  )
@@ -421,7 +423,7 @@ HAddressView::SetFrom(const char* in_address)
 			BMessage msg;
 			msg.Unflatten(&file);
 			BString myAddress;
-		
+			PRINT(("%s\n",in_address));
 			if(msg.FindString("address",&myAddress) != B_OK)
 				myAddress = "";
 			// Change account
@@ -435,8 +437,21 @@ HAddressView::SetFrom(const char* in_address)
 				BMenuItem *item = menu->FindItem(name);
 				if(item)
 					item->SetMarked(true);
+				changed=true;
 				break;
 			}
+		}
+	}
+	
+	if(!changed && cast_as(Window()->FindView("HMailView"),BTextView))
+	{
+		BMenuField *field = cast_as(FindView("FromMenu"),BMenuField);
+		BMenuItem *item(NULL);
+		item = field->Menu()->FindMarked();
+		if(item)
+		{
+			ChangeAccount(item->Label());
+			item->SetMarked(true);	
 		}
 	}
 }
@@ -475,6 +490,22 @@ HAddressView::ChangeAccount(const char* name)
 		if(name.Length() > 0)
 			from << ">";
 		fFrom->SetText(from.String());
+		// Insert signature.
+		BTextView *view = cast_as(Window()->FindView("HMailView"),BTextView);
+		if(view)
+		{	
+			const char* sig_path;
+			if(msg.FindString("signature",&sig_path) == B_OK)
+			{
+				BFile sigfile(sig_path,B_READ_ONLY);
+				if(sigfile.InitCheck() == B_OK)
+				{
+					BString str;
+					str << "\n" << sigfile;
+					view->Insert(view->TextLength(),str.String(),str.Length());
+				}
+			}
+		}
 	}
 }
 
