@@ -70,9 +70,10 @@ protected:
 								BRect item_column_rect, 
 								int32 column_index, 
 								bool complete);
+			void	MakeTime(BString &out);
 private:
 	static int32	RefreshStatusWithThread(void* data);
-	
+			
 	typedef	CLVEasyItem	_inherited;
 };
 #endif

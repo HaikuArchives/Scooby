@@ -17,6 +17,15 @@
 #include <StringView.h>
 #include <stdlib.h>
 
+const char *kTimeFormat[] = {"%a, %d %b %Y %r",
+							"%a, %d %b %y %T",
+							"%d/%m/%y %r",
+							"%d/%m/%y %T"};
+const char* kFormatedTime[] = {"Mon, 05 Feb 2001 04:33:10 PM",
+								"Mon, 05 Feb 01 16:33:10",
+								"05/02/2001 04:33:10 PM",
+								"05/02/01 16:33:10"};
+
 /***********************************************************
  * Constructor
  ***********************************************************/
@@ -172,47 +181,82 @@ HGeneralSettingView::InitGUI()
 	frame2.OffsetBy(frame2.Width()+5,0);
 	BStringView *stringView = new BStringView(frame2,"",_("minutes"));
 	
-	frame.OffsetBy(0,20);
+	const float x_offset = 300;
+	
+	frame.OffsetBy(x_offset,0);
 	frame.right = box->Bounds().right-10;
 	checkbox = new BCheckBox(frame,"cache",_("Use folder cache"),NULL);
 	prefs->GetData("use_folder_cache",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
-	frame.OffsetBy(0,22);
+	frame.OffsetBy(-x_offset,22);
 	checkbox = new BCheckBox(frame,"list_start",
 				_("Create all mail lists on start up"),NULL);
 	prefs->GetData("load_list_on_start_up",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
-	frame.OffsetBy(0,22);
+	frame.OffsetBy(x_offset,0);
 	checkbox = new BCheckBox(frame,"check_inbox",
 				_("Open inbox when Scooby started up"),NULL);
 	prefs->GetData("check_inbox",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
-	frame.OffsetBy(0,22);
+	frame.OffsetBy(-x_offset,22);
 	checkbox = new BCheckBox(frame,"tree_mode",
 				_("Use folder tree support"),NULL);
 	prefs->GetData("tree_mode",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
-	frame.OffsetBy(0,22);
+	frame.OffsetBy(x_offset,0);
 	checkbox = new BCheckBox(frame,"desktray",
 				_("Use deskbar replicant"),NULL);
 	prefs->GetData("use_desktray",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
-	frame.OffsetBy(0,22);
+	frame.OffsetBy(-x_offset,22);
 	checkbox = new BCheckBox(frame,"html",
 				_("Use HTML view"),NULL);
 	prefs->GetData("use_html",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
+	
+	frame.OffsetBy(x_offset,0);
+	checkbox = new BCheckBox(frame,"open_new_window",
+				_("Always open like with new window(HTML view)"),NULL);
+	prefs->GetData("open_link_as_new_window",&bValue);
+	checkbox->SetValue(bValue);
+	box->AddChild(checkbox);
+	
+	int32 count = sizeof(kTimeFormat)/sizeof(kTimeFormat[0]);
+	menu = new BMenu("time_format");
+	for(int32 i = 0;i < count;i++)
+		menu->AddItem(new BMenuItem(kFormatedTime[i],NULL));
+	menu->SetRadioMode(true);
+	menu->SetLabelFromMarked(true);
+	const char* timeformat;
+	int32 index = 0;
+	prefs->GetData("time_format",&timeformat);
+	
+	for(int32 i = 0;i < count;i++)
+	{
+		if(strcmp(timeformat,kTimeFormat[i]) == 0)
+			index = i;
+	}
+	item = menu->FindItem(kFormatedTime[index]);
+	if(item)
+		item->SetMarked(true);
+	frame.OffsetBy(-x_offset,22);
+	field = new BMenuField(frame,"time_format",
+				_("Time format:"),menu);
+	field->SetDivider(StringWidth(_("Time format:"))+3);
+	
+	box->AddChild(field);
+	
 	
 	frame.OffsetBy(0,22);
 	menu = new BMenu("toolbar_mode");
@@ -289,12 +333,22 @@ HGeneralSettingView::Save()
 	prefs->SetData("check_inbox",(bool)checkBox->Value());
 	checkBox = cast_as(FindView("tree_mode"),BCheckBox);
 	prefs->SetData("tree_mode",(bool)checkBox->Value());
+	checkBox = cast_as(FindView("open_new_window"),BCheckBox);
+	prefs->SetData("open_link_as_new_window",(bool)checkBox->Value());
 	
 	menufield = cast_as(FindView("toolbar"),BMenuField);
 	menu = menufield->Menu();
 	item = menu->FindMarked();
 	if(item)
 		prefs->SetData("toolbar_mode",(int16)menu->IndexOf(item));
+
+	menufield = cast_as(FindView("time_format"),BMenuField);
+	menu = menufield->Menu();
+	item = menu->FindMarked();
+	if(item)
+		prefs->SetData("time_format",kTimeFormat[menu->IndexOf(item)]);
+	
+	
 	prefs->StorePrefs();
 	((HApp*)be_app)->MainWindow()->PostMessage(M_PREFS_CHANGED);
 }
