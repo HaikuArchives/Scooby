@@ -25,6 +25,10 @@
 #include <FindDirectory.h>
 #include <SupportDefs.h>
 
+typedef struct PersonData{
+	char* group;
+	char* email;
+};
 
 /***********************************************************
  * Constructor

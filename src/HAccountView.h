@@ -11,18 +11,29 @@ enum{
 	M_ACCOUNT_SAVE_CHANGED = 'MSAC'
 };
 
+//!Account view for preference panel.
 class HAccountView :public BView{
 public:
+		//!	Constructor
 						HAccountView(BRect rect);
+		//! Destructor
 	virtual				~HAccountView();
+		//! Initialize all GUI.
 			void		InitGUI();
 protected:
+		//@{
+		//! Override function.
 	virtual void		MessageReceived(BMessage *message);	
-			void		SaveAccount(int32 index);
-			void		OpenAccount(int32 index);
-			void		New();
-			void		SetEnableControls(bool enable);
 	virtual	void		AttachedToWindow();
+		//@}
+		//!	Save account file.
+			void		SaveAccount(int32 index/*!< List index.*/);
+		//! Open account file.
+			void		OpenAccount(int32 index/*!< List index.*/);
+		//! Create new account file.
+			void		New();
+		//! Enable or disable all controls.
+			void		SetEnableControls(bool enable);
 private:
 	BListView			*fListView;
 };
