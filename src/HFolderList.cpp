@@ -355,7 +355,7 @@ HFolderList::DeleteAll()
 {
 	int32 count = fPointerList.CountItems();
 	MakeEmpty();
-	PRINT(("%d\n",count));
+	
 	while(count>0)
 	{
 		HFolderItem *item = static_cast<HFolderItem*>(fPointerList.RemoveItem(--count));
