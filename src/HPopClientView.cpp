@@ -423,6 +423,8 @@ int32
 HPopClientView::GetHeaderParam(BString &out,const char* content,int32 offset)
 {
 	int32 i = offset;
+	if(content[i] == ' ')
+		i++;
 	while(1)
 	{
 		if(content[i] =='\n')
