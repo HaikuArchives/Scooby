@@ -20,6 +20,8 @@
 #define MIME_MULTIPART		"multipart/"
 #define QUOTE				">"
 
+class BPopUpMenu;
+
 class HMailView;
 class TSavePanel;
 
