@@ -727,7 +727,7 @@ status_t HMailView::Reader(reader *info)
 			goto done;
 	}
 	
-	if ((info->raw) || (!info->mime)) {
+	if ((info->raw) /*|| (!info->mime)*/) {
 		if (!strip_it(msg + len, size - len, info))
 			goto done;
 	}

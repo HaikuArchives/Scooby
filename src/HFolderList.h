@@ -3,6 +3,8 @@
 
 #include "ColumnListView.h"
 #include "HFolderItem.h"
+#include "HSimpleFolderItem.h"
+
 #include <Entry.h>
 
 enum{
@@ -16,7 +18,8 @@ M_REFRESH_CACHE = 'mREc',
 M_MOVE_MAIL = 'MMOV',
 M_REMOVE_FROM_NODEMONITOR = 'MREI',
 M_ADD_FROM_NODEMONITOR = 'ADIT',
-M_OPEN_FOLDER = 'OpFD'
+M_OPEN_FOLDER = 'OpFD',
+M_ADD_IMAP4_FOLDER = 'aIM4'
 };
 
 class HFolderList	:public	 ColumnListView {
@@ -61,5 +64,9 @@ private:
 		BList		fPointerList;
 		bool		fWatching;
 		bool		fSkipGathering;
+	// Parent items	
+	HSimpleFolderItem	*fLocalFolders;
+	HSimpleFolderItem	*fIMAP4Folders;
+	HSimpleFolderItem	*fQueryFolders; 
 };
 #endif

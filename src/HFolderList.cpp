@@ -6,6 +6,9 @@
 #include "HMailList.h"
 #include "HApp.h"
 #include "HPrefs.h"
+#include "HIMAP4Folder.h"
+#include "HIMAP4Window.h"
+#include "RectUtils.h"
 
 #include <Window.h>
 #include <StorageKit.h>
@@ -37,15 +40,25 @@ HFolderList::HFolderList(BRect frame,
 {
 	CLVColumn *expander_col;
 	this->AddColumn( expander_col = new CLVColumn(NULL,0.0,CLV_EXPANDER|CLV_LOCK_AT_BEGINNING|CLV_NOT_MOVABLE));
-	expander_col->SetShown(false);
+	//expander_col->SetShown(false);
 	this->AddColumn(new CLVColumn(NULL,20,CLV_LOCK_AT_BEGINNING|CLV_NOT_MOVABLE|
 		CLV_NOT_RESIZABLE|CLV_PUSH_PASS|CLV_MERGE_WITH_RIGHT));
 	this->AddColumn(new CLVColumn(_("Folders"),1024,CLV_SORT_KEYABLE|CLV_NOT_MOVABLE|CLV_PUSH_PASS));
 	SetViewColor(tint_color( ui_color(B_PANEL_BACKGROUND_COLOR),B_LIGHTEN_2_TINT));
 	SetInvocationMessage(new BMessage(M_OPEN_FOLDER));
 	SetSortFunction(HFolderItem::CompareItems);
-
+	
 	SetSortKey(2);
+	
+	fLocalFolders = new HSimpleFolderItem("Local Folders",this);
+	fPointerList.AddItem(fLocalFolders);
+	fIMAP4Folders = new HSimpleFolderItem("IMAP4 Folders",this);
+	fPointerList.AddItem(fIMAP4Folders);
+	fQueryFolders = new HSimpleFolderItem("Queries",this);
+	fPointerList.AddItem(fQueryFolders);
+	
+	AddItem(fLocalFolders);
+	fLocalFolders->Added(true);
 }
 
 /***********************************************************
@@ -92,6 +105,14 @@ HFolderList::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
+	case M_ADD_IMAP4_FOLDER:
+	{
+		RectUtils utils;
+		BRect rect = utils.CenterRect(230,200);
+		HIMAP4Window *window = new HIMAP4Window(rect,this);
+		window->Show();
+		break;
+	}
 	case M_GET_VOLUMES:
 	{
 		fThread = ::spawn_thread(GetFolders,"GetVolume",B_NORMAL_PRIORITY,this);
@@ -118,7 +139,7 @@ HFolderList::MessageReceived(BMessage *message)
 			message->FindPointer("parent",i,(void**)&parent);
 			AddUnder(item,parent);
 			fPointerList.AddItem(item);
-			if(gather && !item->IsQuery())
+			if(gather && item->FolderType() == FOLDER_TYPE)
 					item->StartGathering();
 		}
 		break;
@@ -131,18 +152,44 @@ HFolderList::MessageReceived(BMessage *message)
 		HFolderItem *item;
 		BList list;
 		bool gather;
+		int32 item_type;
 		((HApp*)be_app)->Prefs()->GetData("load_list_on_start_up",&gather);
-	
+		
 		for(int32 i = 0;i < count;i++)
 		{
 			if(message->FindPointer("item",i,(void**)&item) ==B_OK)
 			{
-				list.AddItem(item);	
-				if(gather && !item->IsQuery())
+				item_type = item->FolderType();
+				switch(item_type)
+				{
+				case FOLDER_TYPE:
+					AddUnder(item,fLocalFolders);
+					break;
+				case IMAP4_TYPE:
+					if(!fIMAP4Folders->IsAdded())
+					{
+						AddItem(fIMAP4Folders);
+						fIMAP4Folders->Added(true);
+					}
+					AddUnder(item,fIMAP4Folders);
+					break;
+				case QUERY_TYPE:
+					if(!fQueryFolders->IsAdded())
+					{
+						AddItem(fQueryFolders);
+						fQueryFolders->Added(true);
+					}
+					AddUnder(item,fQueryFolders);
+					break;
+				default:
+					AddUnder(item,fLocalFolders);
+				}
+				fPointerList.AddItem(item);
+				if(gather && item->FolderType() == FOLDER_TYPE)
 					item->StartGathering();
 			}
 		}
-		AddList(&list);
+		//AddList(&list);
 		SortItems();
 		fPointerList.AddList(&list);
 		break;
@@ -154,9 +201,6 @@ HFolderList::MessageReceived(BMessage *message)
 		if(message->FindInt32("index",&i) == B_OK)
 		{
 			InvalidateItem(i);
-			
-			//if(CurrentSelection()==i)
-			//	SelectionChanged();
 		}
 		break;
 	}	
@@ -183,7 +227,7 @@ HFolderList::FindFolder(entry_ref ref)
 	for(int32 i = 0;i < count;i++)
 	{
 		HFolderItem *item = cast_as(ItemAt(i),HFolderItem);
-		if(item && !item->IsQuery())
+		if(item && item->FolderType() == FOLDER_TYPE)
 		{
 			if(item->Ref() == ref)
 				return i;
@@ -202,7 +246,7 @@ HFolderList::FindQuery(const char* name)
 	for(int32 i = 0;i < count;i++)
 	{
 		HFolderItem *item = cast_as(ItemAt(i),HFolderItem);
-		if(item && item->IsQuery())
+		if(item && item->FolderType() == QUERY_TYPE)
 		{
 			if(strcmp(item->Name() , name) == 0)
 				return i;
@@ -226,6 +270,7 @@ HFolderList::GetFolders(void* data)
 	BEntry entry(path.Path());
 	entry_ref ref;
 	HFolderItem *item;
+	char name[B_FILE_NAME_LENGTH];
 	//
    	entry.GetRef(&ref);
 
@@ -256,8 +301,8 @@ HFolderList::GetFolders(void* data)
 			}
 		}
 	}
-	err = B_OK;
 	/********* QUERY ***********/
+	err = B_OK;
 	find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append( APP_NAME );
 	path.Append( QUERY_FOLDER );
@@ -302,6 +347,49 @@ HFolderList::GetFolders(void* data)
 			msg.AddPointer("item",query);
 		}
 	}
+	// Gather IMAP4 folders
+	err = B_OK;
+	find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append( APP_NAME );
+	path.Append("Accounts");
+	path.Append("IMAP4");
+	if(dir.SetTo(path.Path()) != B_OK)
+		dir.CreateDirectory(path.Path(),&dir);
+	
+	BMessage setting;
+	BFile file;
+	const char* folder;
+	const char* addr;
+	const char* login;
+	const char* pass;
+	int16 port;
+		
+	while( err == B_OK && !list->fCancel )
+	{
+		err = dir.GetNextEntry(&entry,false);	
+		if( entry.InitCheck() != B_NO_ERROR )
+			break;
+		if( entry.GetPath(&path) != B_NO_ERROR )
+			break;
+		else{
+			BFile file(path.Path(),B_READ_ONLY);
+			if(file.InitCheck() != B_OK)
+				continue;
+			entry.GetName(name);
+			setting.Unflatten(&file);
+			setting.FindString("server",&addr);
+			setting.FindString("login",&login);
+			setting.FindString("password",&pass);
+			BString password;
+			int32 len = strlen(pass);
+			for(int32 i =0;i < len;i++)
+				password += (char)255-pass[i];
+			setting.FindString("folder",&folder);
+			setting.FindInt16("port",&port);
+			msg.AddPointer("item",new HIMAP4Folder(name,folder,addr,port,login,password.String(),list));
+		}
+	}	
+	
 	// Send add list items message
 	if(!msg.IsEmpty())
 		list->Window()->PostMessage(&msg,list);
@@ -441,7 +529,7 @@ HFolderList::SelectionChanged()
 		msg.AddPointer("pointer",list);
 		entry_ref ref = theItem->Ref();
 		msg.AddRef("refs",&ref);
-		msg.AddBool("query",theItem->IsQuery());
+		msg.AddInt32("folder_type",theItem->FolderType());
 		Window()->PostMessage(&msg);
 	}
 }
@@ -483,7 +571,10 @@ void
 HFolderList::SelectWithoutGathering(int32 index)
 {
 	fSkipGathering = true;
-	Select(index);
+	HFolderItem *item = cast_as(ItemAt(index),HFolderItem);
+	int32 type = item->FolderType();
+	if(type == FOLDER_TYPE)
+		Select(index);
 	fSkipGathering = false;
 }
 
@@ -508,7 +599,7 @@ HFolderList::SelectItem(const BPoint point)
 		if( rect.Contains(point) )
 		{
 			HFolderItem *item = cast_as( ItemAt(i), HFolderItem);
-			if(item->IsQuery())
+			if(item->FolderType() == QUERY_TYPE)
 				return B_ERROR;
 			if(item)
 			{
@@ -534,15 +625,9 @@ HFolderList::MouseDown(BPoint pos)
     Window()->CurrentMessage()->FindInt32("buttons", &buttons); 
     this->MakeFocus(true);
 	
-    // 右クリックのハンドリング 
+    // Right click
     if(buttons == B_SECONDARY_MOUSE_BUTTON)
     {
-    	 /*int32 sel = IndexOf(pos);
-    	 if(sel >= 0)
-    	 	Select(sel);
-    	 else
-    	 	DeselectAll();
-    	 */
     	 int32 sel = CurrentSelection();
     	 BPopUpMenu *theMenu = new BPopUpMenu("RIGHT_CLICK",false,false);
     	 BFont font(be_plain_font);
@@ -551,17 +636,25 @@ HFolderList::MouseDown(BPoint pos)
     	 
     	
     	 BMenuItem *item = new BMenuItem(_("Recreate Cache"),new BMessage(M_REFRESH_CACHE),0,0);
+    	 
     	 if(sel < 0)
     	 	item->SetEnabled(false);
     	 else{
     	 	HFolderItem *folder= cast_as(ItemAt(sel),HFolderItem);
     	 	if(folder)
-    	 		item->SetEnabled((folder->IsDone())?true:false);
-    	 	else
+    	 	{
+    	 		if(folder->FolderType() != SIMPLE_TYPE)
+    	 			item->SetEnabled((folder->IsDone())?true:false);
+    	 		else
+    	 			item->SetEnabled(false);
+    	 	}else
     	 		item->SetEnabled(false);
     	 }
     	 theMenu->AddItem(item);
-    	 
+    	 theMenu->AddSeparatorItem();
+    	 item = new BMenuItem(_("Add IMAP4 Folders"),new BMessage(M_ADD_IMAP4_FOLDER),0,0);
+    	 item->SetEnabled((sel<0)?true:false);
+    	 theMenu->AddItem(item);
     	 
     	 BRect r;
          ConvertToScreen(&pos);
@@ -575,7 +668,12 @@ HFolderList::MouseDown(BPoint pos)
     	{
     	 	BMessage*	aMessage = theItem->Message();
 			if(aMessage)
-				this->Window()->PostMessage(aMessage);
+			{
+				if(aMessage->what == M_ADD_IMAP4_FOLDER)
+					Window()->PostMessage(aMessage,this);
+				else
+					Window()->PostMessage(aMessage);
+	 		}
 	 	} 
 	 	delete theMenu;
 	 }else

@@ -9,6 +9,13 @@ enum{
 	M_INVALIDATE = 'mINV'
 };
 
+enum{
+	FOLDER_TYPE = 0,
+	QUERY_TYPE,
+	IMAP4_TYPE,
+	SIMPLE_TYPE
+};
+
 
 class HMailItem;
 
@@ -16,6 +23,7 @@ class HFolderItem : public CLVEasyItem
 {
 public:
 					HFolderItem(const entry_ref &ref,BListView *owner);
+					HFolderItem(const char* name,int32 type,BListView *owner);
 	virtual			~HFolderItem();
 			
 	virtual	void	StartGathering();
@@ -42,7 +50,7 @@ public:
 		HMailItem*	RemoveMail(entry_ref ref);
 		HMailItem*	RemoveMail(node_ref nref);
 			
-			bool	IsQuery() const{return fIsQuery;}
+			int32	FolderType() const{return fFolderType;}
 			void	EmptyMailList();	
 			void	Launch();
 			void	Gather();
@@ -76,7 +84,7 @@ private:
 		thread_id	fCacheThread;
 		bool		fCacheCancel;
 		thread_id	fRefreshThread;
-		bool		fIsQuery;
+		int32		fFolderType;
 		bool		fUseCache;
 };
 #endif

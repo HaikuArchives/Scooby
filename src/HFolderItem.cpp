@@ -38,7 +38,7 @@ HFolderItem::HFolderItem(const entry_ref &ref,BListView *target)
 	,fCacheThread(-1)
 	,fCacheCancel(false)
 	,fRefreshThread(-1)
-	,fIsQuery(false)
+	,fFolderType(FOLDER_TYPE)
 {	
 	if(BPath(&ref).InitCheck() == B_OK)
 		fName = BPath(&ref).Leaf();
@@ -51,16 +51,43 @@ HFolderItem::HFolderItem(const entry_ref &ref,BListView *target)
 	if(!entry.IsDirectory())
 	{
 		icon = ResourceUtils().GetBitmapResource('BBMP',"CloseQuery");
-		fIsQuery = true;
+		fFolderType = QUERY_TYPE;
 	}else
 		icon = ResourceUtils().GetBitmapResource('BBMP',"CloseFolder");
 
 	SetColumnContent(ICON_COLUMN,icon,2.0,true,false);
-	SetColumnContent(LABEL_COLUMN,BPath(&ref).Leaf());
-	//if(!fIsQuery)
-	//	StartGathering();
+	SetColumnContent(LABEL_COLUMN,fName.String());
+
 	((HApp*)be_app)->Prefs()->GetData("use_folder_cache",&fUseCache);
 	delete icon;
+}
+
+/***********************************************************
+ * Constructor
+ ***********************************************************/
+HFolderItem::HFolderItem(const char* name,int32 type,BListView *target)
+	: CLVEasyItem(0, false, false, 20.0)
+	,fDone(false)
+	,fUnread(0)
+	,fThread(-1)
+	,fCancel(false)
+	,fName(name)
+	,fOwner(target)
+	,fCacheThread(-1)
+	,fCacheCancel(false)
+	,fRefreshThread(-1)
+	,fFolderType(IMAP4_TYPE)
+{	
+	fName = name;
+	fMailList.MakeEmpty();
+	BBitmap *icon(NULL);
+	if(type == IMAP4_TYPE)
+		icon = ResourceUtils().GetBitmapResource('BBMP',"CloseIMAP");
+	else
+		icon = ResourceUtils().GetBitmapResource('BBMP',"OpenFolder");
+	SetColumnContent(ICON_COLUMN,icon,2.0,true,false);
+	SetColumnContent(LABEL_COLUMN,name);
+	delete icon;	
 }
 
 /***********************************************************
@@ -89,9 +116,9 @@ HFolderItem::~HFolderItem()
 		::wait_for_thread(fRefreshThread,&err);
 	}
 	
-	if(IsDone() && !IsQuery() && fUseCache)
+	if(IsDone() && FolderType() == FOLDER_TYPE && fUseCache)
 		CreateCache();
-	else if(!IsDone() && !IsQuery()&& fUseCache)
+	else if(!IsDone() && FolderType() == FOLDER_TYPE&& fUseCache)
 		AddMailsToCacheFile();
 	EmptyMailList();
 }
@@ -661,8 +688,8 @@ int HFolderItem::CompareItems(const CLVListItem *a_Item1,
 	const HFolderItem* Item1 = cast_as(a_Item1,const HFolderItem);
 	const HFolderItem* Item2 = cast_as(a_Item2,const HFolderItem);
 	
-	if(Item1->IsQuery() != Item2->IsQuery())
-		return (Item1->IsQuery())?1:-1;	
+	if(Item1->FolderType() != Item2->FolderType())
+		return (Item1->FolderType() == QUERY_TYPE)?1:-1;	
 	
 	if(Item1 == NULL || Item2 == NULL || Item1->m_column_types.CountItems() <= KeyColumn ||
 		Item2->m_column_types.CountItems() <= KeyColumn)
@@ -692,6 +719,8 @@ int HFolderItem::CompareItems(const CLVListItem *a_Item1,
 	// display in and out folder first.
 	if(strcmp(text1,"in") == 0) return -1;
 	if(strcmp(text2,"in") == 0) return  1;
+	if(strcmp(text1,"Local Folders") == 0) return -1;
+	if(strcmp(text2,"Local Folders") == 0) return  1;
 	
 	if(strcmp(text1,"out") == 0 && strcmp(text2,"in") != 0) return -1;
 	if(strcmp(text2,"out") == 0 && strcmp(text1,"in") != 0) return  1;

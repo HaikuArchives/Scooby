@@ -18,18 +18,27 @@ public:
 								  time_t 	  when,
 								  const char* priority,
 								  int8	enclosure);
+						
+						HMailItem(const char* status,
+								  const char* subject,
+								  const char* from,
+								  const char* to,
+								  time_t	  when,
+								  const char* priority,
+								  int8	enclosure);
+								  
 	virtual				~HMailItem();
 			void		InitItem();
 	static 	int 		CompareItems(const CLVListItem *a_Item1, 
 									const CLVListItem *a_Item2, 
 									int32 KeyColumn);
 			bool		IsRead()const;
-			void		SetRead();
-			void		ResetIcon();
-			void		RefreshStatus();
+	virtual	void		SetRead();
+	virtual	void		ResetIcon();
+	virtual	void		RefreshStatus();
 			void		RefreshTextColor();
-			void		RefreshEnclosureAttr();
-			entry_ref			Ref() {return fRef;}
+	virtual	void		RefreshEnclosureAttr();
+	virtual	entry_ref			Ref() {return fRef;}
 //private:
 		entry_ref 	fRef;
 		BString		fStatus;
