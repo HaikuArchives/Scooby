@@ -26,7 +26,7 @@ public:
 			bool	IsShowingRawMessage() {return false;}
 protected:
 	virtual void	MessageReceived(BMessage *message);
-			void	Plain2Html(BString &content,const char* encoding);
+			void	Plain2Html(BString &content,const char* encoding,const char* transfer_encoding);
 			void	ClearList();
 			void	ParseAllParts(const char* content,const char* boundary,int32 header_len);
 			void	AddPart(const char* part,int32 file_offset);

@@ -353,6 +353,16 @@ HHtmlMailView::LoadMessage(BFile *file)
 	content_type = parameter;
 	delete[] parameter;
 	parameter = NULL;
+	// Find Transfer encoding
+	char* transfer_encoding;
+	if(GetParameter(header,"Content-Transfer-Encoding:",&parameter))
+	{
+		if(::strncmp(parameter,"multipart/",10) == 0)
+			multipart = true;
+	}
+	transfer_encoding = ::strdup(parameter);
+	delete[] parameter;
+	parameter = NULL;
 	// Find boudary
 	BString boundary;
 	if(multipart)
@@ -380,7 +390,7 @@ HHtmlMailView::LoadMessage(BFile *file)
 		if(!item)
 		{
 			GetParameter(header,"charset=",&parameter);
-			Plain2Html(content,parameter);
+			Plain2Html(content,parameter,transfer_encoding);
 			delete[] parameter;
 			parameter = NULL;
 		}else{
@@ -409,7 +419,7 @@ HHtmlMailView::LoadMessage(BFile *file)
 			charset = ::strdup(item->Charset());
 			if(!html && charset)
 			{
-				Plain2Html(part,charset);
+				Plain2Html(part,charset,transfer_encoding);
 			}
 			content = part;
 			// Set attachment tab label
@@ -431,7 +441,7 @@ HHtmlMailView::LoadMessage(BFile *file)
 		if(content_type.Compare("text/html") != 0)
 		{
 			GetParameter(header,"charset=",&parameter);
-			Plain2Html(content,parameter);
+			Plain2Html(content,parameter,transfer_encoding);
 			delete[] parameter;
 			parameter = NULL;
 		}else{
@@ -458,6 +468,7 @@ HHtmlMailView::LoadMessage(BFile *file)
 	delete[] tmpPath;
 	delete[] header;
 	free( charset );
+	free(transfer_encoding);
 	fFile = file;
 }
 
@@ -492,7 +503,7 @@ HHtmlMailView::ConvertLinkToBlankWindow(BString &str)
  * Plain2Html
  ***********************************************************/
 void
-HHtmlMailView::Plain2Html(BString &content,const char* encoding)
+HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* transfer_encoding)
 {
 	const char* kQuote1 = "#009600";
 	const char* kQuote2 = "#969600";
@@ -512,6 +523,16 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding)
 	else{
 		default_encoding = encode.DefaultEncoding();
 		encode.ConvertToUTF8(content,default_encoding);
+	}
+	
+	if(transfer_encoding && ::strcmp(transfer_encoding,"quoted-printable") == 0)
+	{
+		char *buf = ::strdup(content.String());
+		
+		encode.decode_quoted_printable(buf,buf,::strlen(buf),false);
+		
+		content = buf;
+		free( buf );
 	}
 	
 	if(encoding)
