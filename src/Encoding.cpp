@@ -1,7 +1,4 @@
 #include "Encoding.h"
-#include "HApp.h"
-#include "HPrefs.h"
-#include "base64.h"
 
 #include <ctype.h>
 #include <Debug.h>
@@ -60,12 +57,13 @@ const int32 kEncodings[] = {B_ISO1_CONVERSION,
 
 const char kMimeBase[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+#define _(String) (String)
+
 /***********************************************************
  * Constructor
  ***********************************************************/
 Encoding::Encoding()
 {
-	((HApp*)be_app)->Prefs()->GetData("encoding",&fDefaultEncoding);
 }
 
 /***********************************************************
@@ -129,6 +127,7 @@ Encoding::p_IsMultiByte(char c)
 void
 Encoding::ToMime(BString &inString, int32 encoding) 
 { 
+	int i = 0; 
 	BString outString("");
 #ifndef USE_ICONV	
 	const char kJis_End[4] = {0x1b,0x28,0x42,'\0'};
@@ -146,7 +145,27 @@ Encoding::ToMime(BString &inString, int32 encoding)
 	const char *in = inString.String();
 	char *out = outString.LockBuffer(inlen *3);
  	
- 	::encode64(out,(char*)in,inlen);
+ 	for (; inlen >= 3; inlen -= 3)
+    {
+    	out[i++] = kMimeBase[in[0] >> 2];
+		out[i++] = kMimeBase[((in[0] << 4) & 0x30) | (in[1] >> 4)];
+		out[i++] = kMimeBase[((in[1] << 2) & 0x3c) | (in[2] >> 6)];
+		out[i++] = kMimeBase[in[2] & 0x3f];
+		in += 3;
+    }
+    if (inlen > 0)
+    {
+		char f;
+    
+		out[i++] = kMimeBase[in[0] >> 2];
+		f = (in[0] << 4) & 0x30;
+		if (inlen > 1)
+		    f |= in[1] >> 4;
+		out[i++] = kMimeBase[f];
+		out[i++] = (inlen < 2) ? '=' : kMimeBase[(in[1] << 2) & 0x3c];
+		out[i++] = '=';
+    }
+    out[i] = '\0';
     
     outString.UnlockBuffer();
     outString += "?=";
@@ -289,19 +308,18 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
 #ifndef USE_BASE64DECODER
 		len = decode_base64(buf, buf, len,true); 
 #else
-		int i, iR; 
-        char a1, a2, a3, a4; 
-        i = 0; 
-        iR = 0; 
-        while (1)
-        { 
+		int i, iR;
+		char a1, a2, a3, a4;
+		i = 0; 
+        iR = 0;
+        while (1) { 
                 if (i >= len) 
-                    break; 
-                if(buf[i] == '\r'|| buf[i] == '\n') 
-                { 
-                        i++; 
-                        continue; 
-                } 
+                    break;
+                if(buf[i] == '\r'|| buf[i] == '\n')
+                {
+                	i++;
+                	continue;
+                }
                 a1 = p_Charconv(buf[i]); 
                 a2 = p_Charconv(buf[i+1]); 
                 a3 = p_Charconv(buf[i+2]); 
@@ -313,7 +331,7 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
                 iR += 3;        
                 i += 4; 
         } 
-        len = iR; 
+        len = iR;
 #endif
     }
     buf[len] = '\0'; 
