@@ -34,6 +34,8 @@ public:
 				void	DeleteAll();
 				void	SetWatching(bool watch) {fWatching = watch;}
 				int32	FindFolder(entry_ref ref);
+				int32	FindFolder(node_ref ref);
+				
 				int32 	FindQuery(const char* name);
 				
 			status_t	AddQuery(entry_ref ref);

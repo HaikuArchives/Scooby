@@ -7,6 +7,7 @@
 #include "HWindow.h"
 #include "HMailCache.h"
 #include "Utilities.h"
+#include "ColumnListView.h"
 
 #include <Path.h>
 #include <Node.h>
@@ -288,7 +289,7 @@ HFolderItem::ThreadFunc(void*data)
 	BListView *list = item->fOwner;
 	item->SetName(item->fUnread);
 	BAutolock lock(list->Window());
-	list->InvalidateItem(list->IndexOf(item));
+	list->InvalidateItem(((ColumnListView*)list)->FullListIndexOf(item));
 	return 0;
 }
 
@@ -437,7 +438,7 @@ void
 HFolderItem::InvalidateMe()
 {
 	BMessage msg(M_INVALIDATE);
-	msg.AddInt32("index",fOwner->IndexOf(this));
+	msg.AddInt32("index",((ColumnListView*)fOwner)->FullListIndexOf(this));
 	fOwner->Window()->PostMessage(&msg,fOwner);
 }
 
@@ -787,15 +788,10 @@ HFolderItem::NodeMonitor(BMessage *message)
 				delete item;	
 			InvalidateMe();
 		}else if(dir.IsDirectory()){
-			BEntry entry;
-			
-			if(dir.GetEntry(&entry) == B_OK)
-			{
-				entry.GetRef(&ref);
-				BMessage msg(M_REMOVE_FOLDER);
-				msg.AddRef("refs",&ref);
-				fOwner->Window()->PostMessage(&msg,fOwner);
-			}
+			BMessage msg(M_REMOVE_FOLDER);
+			msg.AddInt64("node",nref.node);
+			msg.AddInt32("device",nref.device);
+			fOwner->Window()->PostMessage(&msg,fOwner);
 		}
 		PRINT(("REMOVE\n"));
 		break;
@@ -853,7 +849,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 			old_nref.device =from_nref.device;
 			message->FindInt64("node", &old_nref.node);
 			BDirectory dir(&old_nref);
-		
+			
 			if(dir.IsFile())
 			{
 				HMailItem *item = RemoveMail(old_nref);
@@ -865,15 +861,10 @@ HFolderItem::NodeMonitor(BMessage *message)
 					delete item;
 				InvalidateMe();
 			}else if(dir.IsDirectory()){
-				BEntry entry;
-			
-				if(dir.GetEntry(&entry) == B_OK)
-				{
-					entry.GetRef(&ref);
-					BMessage msg(M_REMOVE_FOLDER);
-					msg.AddRef("refs",&ref);
-					fOwner->Window()->PostMessage(&msg,fOwner);
-				}
+				BMessage msg(M_REMOVE_FOLDER);
+				msg.AddInt64("node",old_nref.node);
+				msg.AddInt32("device",old_nref.device);
+				fOwner->Window()->PostMessage(&msg,fOwner);
 			}
 		}
 		break;
@@ -931,7 +922,7 @@ bool
 HFolderItem::IsSelected()
 {
 	int32 sel =  fOwner->CurrentSelection();
-	if(sel < 0 || sel != fOwner->IndexOf(this))
+	if(sel < 0 || sel != ((ColumnListView*)fOwner)->FullListIndexOf(this))
 		return false;
 	return true;
 }

@@ -146,7 +146,7 @@ HFolderList::MessageReceived(BMessage *message)
 		((HApp*)be_app)->Prefs()->GetData("tree_mode",&tree_mode);
 		if(!tree_mode)
 			break;
-			
+		
 		CLVColumn *expander_col = ColumnAt(0);
 		if(!expander_col->IsShown())
 			expander_col->SetShown(true);
@@ -171,9 +171,9 @@ HFolderList::MessageReceived(BMessage *message)
 			{
 				parent->SetSuperItem(true);
 				parent->SetExpanded(expand);
+				InvalidateItem(FullListIndexOf(parent));
 			}
 			AddUnder(item,parent);
-			
 			fPointerList.AddItem(item);
 		}
 		break;
@@ -235,27 +235,35 @@ HFolderList::MessageReceived(BMessage *message)
 	{
 		int32 count,index;
 		type_code type;
-		entry_ref ref;
-		message->GetInfo("refs",&type,&count);
+		message->GetInfo("node",&type,&count);
 		HFolderItem *item,*parent;
+		node_ref nref;
 		
 		for(int32 i = 0;i < count;i++)
 		{
-			if(message->FindRef("refs",i,&ref) != B_OK)
+			if(message->FindInt64("node",i,&nref.node) != B_OK ||
+				message->FindInt32("device",i,&nref.device) != B_OK)
 				continue;
-				
-			index = FindFolder(ref);
+			index = FindFolder(nref);
+			
 			if(index < 0)
 				continue;
-			item = cast_as(ItemAt(index),HFolderItem);
+				
+			item = (HFolderItem*)FullListItemAt(index);
 			if(!item)
 				continue;
+			
 			parent = cast_as(Superitem(item),HFolderItem);
+			RemoveItem(item);
+
 			if(parent)
 			{
 				int32 child_count = FullListNumberOfSubitems(parent);
 				if(child_count == 0)
+				{
 					parent->SetSuperItem(false);
+					InvalidateItem(FullListIndexOf(parent));
+				}
 			}
 			fPointerList.RemoveItem(item);
 			delete item;
@@ -290,15 +298,36 @@ HFolderList::MessageReceived(BMessage *message)
 int32
 HFolderList::FindFolder(entry_ref ref)
 {
-	int32 count = CountItems();
-	HFolderItem **items = (HFolderItem**)Items();
+	int32 count = fPointerList.CountItems();
+	HFolderItem **items = (HFolderItem**)fPointerList.Items();
 	for(int32 i = 0;i < count;i++)
 	{
 		HFolderItem *item = cast_as(items[i],HFolderItem);
 		if(item && item->FolderType() == FOLDER_TYPE)
 		{
 			if( item->Ref() == ref)
-				return i;
+				return FullListIndexOf(item);
+		}
+	}
+	return -1;
+}
+
+/***********************************************************
+ * FindFolder
+ ***********************************************************/
+int32
+HFolderList::FindFolder(node_ref nref)
+{
+	int32 count = fPointerList.CountItems();
+	HFolderItem **items = (HFolderItem**)fPointerList.Items();
+	
+	for(int32 i = 0;i < count;i++)
+	{
+		HFolderItem *item = cast_as(items[i],HFolderItem);
+		if(item && item->FolderType() == FOLDER_TYPE)
+		{
+			if( item->NodeRef() == nref)
+				return FullListIndexOf(item);
 		}
 	}
 	return -1;
@@ -637,7 +666,7 @@ HFolderList::Pulse()
 	int32 sel = this->CurrentSelection();
 	if(sel >=0)
 	{
-		HFolderItem *theItem = (HFolderItem*)this->ItemAt(sel);
+		HFolderItem *theItem = (HFolderItem*)this->FullListItemAt(sel);
 		if(theItem->IsDone()) // Check wait for the end of gathering
 			this->SelectionChanged();
 	}
@@ -655,8 +684,8 @@ HFolderList::WhenDropped(BMessage *message)
 	int32 from;
 	message->FindInt32("sel",&from);
 	
-	HFolderItem *fromFolder = cast_as(ItemAt(from),HFolderItem);
-	HFolderItem *toFolder = cast_as(ItemAt(CurrentSelection()),HFolderItem);
+	HFolderItem *fromFolder = cast_as(FullListItemAt(from),HFolderItem);
+	HFolderItem *toFolder = cast_as(FullListItemAt(CurrentSelection()),HFolderItem);
 	if(fromFolder == toFolder)
 		return;
 	
@@ -692,7 +721,7 @@ HFolderList::SelectionChanged()
 		if(fSkipGathering)
 			return;
 		Window()->PostMessage(M_START_MAIL_BARBER_POLE);
-		HFolderItem *theItem = (HFolderItem*)this->ItemAt(sel);
+		HFolderItem *theItem = (HFolderItem*)this->FullListItemAt(sel);
 		if(!theItem->IsDone()) // if it has not gathered , assign it to check target
 		{
 			theItem->StartGathering();
@@ -752,7 +781,7 @@ void
 HFolderList::SelectWithoutGathering(int32 index)
 {
 	fSkipGathering = true;
-	HFolderItem *item = cast_as(ItemAt(index),HFolderItem);
+	HFolderItem *item = cast_as(FullListItemAt(index),HFolderItem);
 	int32 type = item->FolderType();
 	if(type == FOLDER_TYPE)
 		Select(index);
@@ -779,7 +808,7 @@ HFolderList::SelectItem(const BPoint point)
 		//Bounds().PrintToStream();
 		if( rect.Contains(point) )
 		{
-			HFolderItem *item = cast_as( ItemAt(i), HFolderItem);
+			HFolderItem *item = cast_as( FullListItemAt(i), HFolderItem);
 			if(item->FolderType() == QUERY_TYPE)
 				return B_ERROR;
 			if(item)
@@ -821,7 +850,7 @@ HFolderList::MouseDown(BPoint pos)
     	 if(sel < 0)
     	 	item->SetEnabled(false);
     	 else{
-    	 	HFolderItem *folder= cast_as(ItemAt(sel),HFolderItem);
+    	 	HFolderItem *folder= cast_as(FullListItemAt(sel),HFolderItem);
     	 	if(folder)
     	 	{
     	 		if(folder->FolderType() != SIMPLE_TYPE)
@@ -841,7 +870,7 @@ HFolderList::MouseDown(BPoint pos)
     	 {
     	 	item->SetEnabled(false);
     	 }else{
-    	 	HFolderItem *folder = cast_as(ItemAt(sel),HFolderItem);
+    	 	HFolderItem *folder = cast_as(FullListItemAt(sel),HFolderItem);
     	 	item->SetEnabled((folder->FolderType() == IMAP4_TYPE)?true:false);
     	 }
     	 theMenu->AddItem(item);
@@ -1112,7 +1141,7 @@ HFolderList::ProcessMails(BMessage *message)
 					folder_index = FindFolder(dir_ref);
 					if(folder_index <0)
 						break;
-					folder = cast_as(ItemAt(folder_index),HFolderItem);
+					folder = (HFolderItem*)FullListItemAt(folder_index);
 					if(folder)
 					{
 						::get_ref_for_path(file_path.Path(),&ref);
@@ -1136,7 +1165,7 @@ HFolderList::ProcessMails(BMessage *message)
 					folder_index = FindFolder(ref);
 					if(folder_index <0)
 						break;
-					folder = cast_as(ItemAt(folder_index),HFolderItem);
+					folder = (HFolderItem*)FullListItemAt(folder_index);
 					if(folder)
 					{
 						entry_ref old_ref(from_nref.device,from_nref.node,name);
@@ -1177,7 +1206,7 @@ HFolderList::ProcessMails(BMessage *message)
 				folder_index = FindFolder(dir_ref);
 				if(folder_index <0)
 					break;
-				folder = cast_as(ItemAt(folder_index),HFolderItem);
+				folder = (HFolderItem*)FullListItemAt(folder_index);
 				if(folder)
 				{
 					HMailItem *item;
@@ -1204,7 +1233,7 @@ HFolderList::ProcessMails(BMessage *message)
 			folder_index = FindFolder(dir_ref);
 			if(folder_index <0)
 				break;
-			folder = cast_as(ItemAt(folder_index),HFolderItem);
+			folder = (HFolderItem*)FullListItemAt(folder_index);
 			if(folder)
 			{
 				HMailItem *item = folder->RemoveMail(nref);
