@@ -1722,6 +1722,19 @@ HWindow::EmptyTrash()
 	BEntry entry;
 	BPath path(&ref);
 	
+	BMessage msg(M_MOVE_FILE);
+	
+	BPath desktopTrash;
+	::find_directory(B_USER_DIRECTORY,&desktopTrash);
+	desktopTrash.Append("Desktop");
+	desktopTrash.Append("Trash");
+	
+	if(!desktopTrash.Path())
+	{
+		(new BAlert("",_("Could not find Trash folder."),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		return;
+	}
+	
 	while( err == B_OK )
 	{
 		if( (err = dir.GetNextRef( &ref )) == B_OK)
@@ -1729,14 +1742,15 @@ HWindow::EmptyTrash()
 			if(entry.SetTo(&ref) != B_OK)
 				continue;
 			if(entry.Exists())
-				utils.MoveToTrash(ref);
+			{
+				msg.AddRef("refs",&ref);
+				msg.AddString("path",desktopTrash.Path());
+			}
 		}
 	}
-	if(fFolderList->CurrentSelection() == fFolderList->IndexOf(trash))
-		fMailList->MakeEmpty();
 	
-	trash->EmptyMailList();
-	fFolderList->InvalidateItem(fFolderList->IndexOf(trash));	
+	if(!msg.IsEmpty())
+		be_app->PostMessage(&msg);
 }
 
 /***********************************************************
