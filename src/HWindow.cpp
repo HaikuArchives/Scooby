@@ -29,6 +29,7 @@
 #include "HTabView.h"
 #include "HAttachmentList.h"
 #include "HMailItem.h"
+#include "HCreateFolderDialog.h"
 
 #include <Box.h>
 #include <Beep.h>
@@ -98,6 +99,9 @@ HWindow::InitMenu()
 	BString label;
 //// ------------------------ File Menu ----------------------    
 	aMenu = new BMenu(_("File"));
+	utils.AddMenuItem(aMenu,_("New Folder"),M_CREATE_FOLDER_DIALOG,this,this,0,0,
+						rsrc_utils.GetBitmapResource('BBMP',"OpenFolder"));
+	
 	utils.AddMenuItem(aMenu,_("Open Query Folder"),M_OPEN_QUERY,this,this,0,0,
 							rsrc_utils.GetBitmapResource('BBMP',"OpenQuery"));
 	utils.AddMenuItem(aMenu,_("Empty Trash"),M_EMPTY_TRASH,this,this,'T',B_SHIFT_KEY,
@@ -799,6 +803,31 @@ HWindow::MessageReceived(BMessage *message)
 		{
 			cast_as(fMailView,HMailView)->ResetFont();
 		}
+		break;
+	}
+	// Show create folder dialog
+	case M_CREATE_FOLDER_DIALOG:
+	{
+		BRect rect;
+		rect = RectUtils().CenterRect(250,70);
+		int32 index = fFolderList->CurrentSelection();
+		char buf[B_PATH_NAME_LENGTH];
+		if(index < 0)
+		{
+			BPath mail_folder;
+			::find_directory(B_USER_DIRECTORY,&mail_folder);
+			mail_folder.Append("mail");
+			::strcpy(buf,mail_folder.Path());
+		}else{
+			HFolderItem *item = cast_as(fFolderList->FullListItemAt(index),HFolderItem);
+			if(!item)
+				break;
+			entry_ref ref = item->Ref();
+			BPath mail_folder(&ref);
+			::strcpy(buf,mail_folder.Path());
+		}
+		HCreateFolderDialog *dialog = new HCreateFolderDialog(rect,_("New Folder"),buf);
+		dialog->Show();
 		break;
 	}
 	// Select sibling mails

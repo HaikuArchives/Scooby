@@ -47,7 +47,8 @@ enum{
 	M_STOP_MAIL_BARBER_POLE = 'mSoB',
 	M_FILTER_MAIL = 'mFiM',
 	M_INVALIDATE_MAIL = 'mIVm',
-	M_DELETE_FOLDER = 'mDEF'
+	M_DELETE_FOLDER = 'mDEF',
+	M_CREATE_FOLDER_DIALOG = 'mCED'
 };
 
 class HWindow: public BWindow {
