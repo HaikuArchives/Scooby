@@ -5,6 +5,8 @@
 #include <FilePanel.h>
 #include <File.h>
 
+class BMenu;
+
 class HAddressView;
 class HEnclosureView;
 class HMailView;
