@@ -6,6 +6,7 @@
 #include <StorageDefs.h>
 #include "scandir.h"
 #include <errno.h>
+#include <stdio.h>
 
 /* Initial guess at directory size. */ 
 #define INITIAL_SIZE    4096
@@ -83,7 +84,6 @@ alphasort(const void *d1, const void *d2)
 int
 folderselector(struct dirent *dent)
 {
-	int result = 0;
 	struct stat st;
 	char name[B_FILE_NAME_LENGTH];
 	
@@ -92,7 +92,9 @@ folderselector(struct dirent *dent)
 	sprintf(name,"%s/%s",gName,dent->d_name);
 	stat(name,&st);
 	
+	if(S_ISLNK(st.st_mode))
+		return 0;
 	if(S_ISDIR(st.st_mode))
-		result = 1;
-	return result;
+		return 1;
+	return 0;
 }
