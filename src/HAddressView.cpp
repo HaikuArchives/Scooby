@@ -150,11 +150,8 @@ HAddressView::InitGUI()
 	BVolume volume;
 	BVolumeRoster().GetBootVolume(&volume);
 	query.SetVolume(&volume);
-	
-	query.PushAttr("META:email");
-	query.PushString("*");
-	query.PushOp(B_EQ);
-	
+	query.SetPredicate("((META:email=*)&&(BEOS:TYPE=application/x-person))");
+
 	if(!fReadOnly && query.Fetch() == B_OK)
 	{
 		BString addr[4],name,group,nick;

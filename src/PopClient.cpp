@@ -1,42 +1,24 @@
 #include "PopClient.h"
-#include "Encoding.h"
 #include "md5.h"
-#include "HApp.h"
 #include "HFile.h"
-#include "HPopClientView.h"
 #include "TrackerString.h"
 
 #include <Debug.h>
 #include <String.h>
 #include <stdlib.h>
-#include <E-mail.h>
-#include <File.h>
-#include <Path.h>
-#include <NodeInfo.h>
-#include <Message.h>
-#include <Autolock.h>
-#include <Alert.h>
-#include <FindDirectory.h>
-
 
 #define xEOF    236
 #define CRLF "\r\n"
 #define MAX_RECIEVE_BUF_SIZE 1024000
-
-
-const bigtime_t kTimeout = 1000000*180; //timeout 180 secs
 	
+const bigtime_t kTimeout = 1000000*180; //timeout 180 secs
+
 /***********************************************************
  * Constructor
  ***********************************************************/
-PopClient::PopClient(BHandler *handler,BLooper *looper)
-	:BLooper("PopClient")
-	,fEndpoint(NULL)
-	,fHandler(handler)
-	,fLooper(looper)
+PopClient::PopClient()
+	:BNetEndpoint()
 {
-	Run();
-	fBlackList.MakeEmpty();
 }
 
 /***********************************************************
@@ -44,177 +26,8 @@ PopClient::PopClient(BHandler *handler,BLooper *looper)
  ***********************************************************/
 PopClient::~PopClient()
 {
-	delete fEndpoint;
-	// Free Blacklist
-	int32 count = fBlackList.CountItems();
-	while(count > 0)
-		free( (char*)fBlackList.RemoveItem(--count) );
 }
 
-/***********************************************************
- * MessageReceived
- ***********************************************************/
-void
-PopClient::MessageReceived(BMessage *message)
-{
-	switch(message->what)
-	{
-	// Stat
-	case H_STAT_MESSAGE:
-		{
-			int32 mails,bytes;
-			if(Stat(&mails,&bytes) != B_OK)
-				PostError();
-			else{
-				message->AddInt32("mails",mails);
-				message->AddInt32("bytes",bytes);
-				fLooper->PostMessage(message,fHandler);	
-			}
-			break;
-		}
-	// LIST
-	case H_LIST_MESSAGE:
-		{
-			BString list;
-			int32 index;
-			if(message->FindInt32("index",&index) != B_OK)
-				index = 0;
-			if(List(index,list) != B_OK)
-				PostError();
-			else{
-				message->AddString("list",list);
-				fLooper->PostMessage(message,fHandler);	
-			}
-			break;
-		}
-	// Retr
-	case H_RETR_MESSAGE:
-		{
-			int32 count;
-			type_code type;
-			message->GetInfo("index",&type,&count);
-		
-			int32 index;
-			BString content;
-			for(int32 i = 0;i < count;i++)
-			{
-				if(message->FindInt32("index",i,&index) != B_OK)
-					continue;
-				if( Retr(index,content) != B_OK)
-				{
-					PostError();
-					break;	
-				}else{
-					BMessage msg(H_RETR_MESSAGE);
-					msg.AddString("content",content);
-					msg.AddInt32("index",index);
-					msg.AddBool("end",(i == count-1)?true:false);
-					fLooper->PostMessage(&msg,fHandler);
-				}
-				
-			}
-			break;
-		}
-	// Del
-	case H_DELETE_MESSAGE:
-		{
-			int32 count;
-			type_code type;
-			message->GetInfo("index",&type,&count);
-			int32 index;
-			
-			while(count>0)
-			{
-				if(message->FindInt32("index",--count,&index) == B_OK)
-				{
-					if( Delete(index) != B_OK)
-						PostError();
-					else{
-						BMessage msg(H_DELETE_MESSAGE);
-						msg.AddInt32("index",index);
-						msg.AddBool("end",(count == 0)?true:false);
-						fLooper->PostMessage(&msg,fHandler);
-					}
-				}
-			}
-			break;
-		}	
-	// Last
-	case H_LAST_MESSAGE:
-		{
-			int32 index;
-			
-			if( Last(&index) != B_OK)
-					PostError();
-			else{
-				message->AddInt32("index",index);
-				fLooper->PostMessage(message,fHandler);
-			}
-			break;
-		}
-	// login
-	case H_LOGIN_MESSAGE:
-		{
-			const char* login;
-			const char* password;
-			bool apop;
-			if(message->FindString("login",&login) == B_OK &&
-				message->FindString("password",&password) == B_OK &&
-				message->FindBool("apop",&apop) == B_OK)
-			{
-				if(Login(login,password,apop) != B_OK)
-				{
-					PostError();
-				}else
-					fLooper->PostMessage(message,fHandler);
-			}
-			break;
-		}
-	// connect
-	case H_CONNECT_MESSAGE:
-		{
-			const char *addr;
-			int16 port;
-			if(message->FindString("address",&addr) == B_OK &&
-				message->FindInt16("port",&port) == B_OK)
-			{
-				if(Connect(addr,port) != B_OK)
-				{
-					PostError();
-				}else
-					fLooper->PostMessage(message,fHandler);
-			}
-			break;
-		}
-	// reset
-	case H_RESET_MESSAGE:
-	{
-		if( Rset() != B_OK)
-			PostError();
-		else
-			fLooper->PostMessage(message,fHandler);
-		break;
-	}
-	// uidl
-	case H_UIDL_MESSAGE:
-	{
-		BString list;
-		int32 index;
-		if(message->FindInt32("index",&index) != B_OK)
-			index = 0;
-		if(Uidl(index,list) != B_OK)
-		{
-			fLooper->PostMessage(message,fHandler);
-		}else{
-			message->AddString("list",list);
-			fLooper->PostMessage(message,fHandler);	
-		}
-		break;
-	}
-	default:
-		BLooper::MessageReceived(message);
-	}
-}
 /***********************************************************
  * Connect
  ***********************************************************/
@@ -226,13 +39,9 @@ PopClient::Connect(const char* address,
 	fPort=port;
 	
 	
-	if(fEndpoint)
-		PopQuit();
 	fLog = "";
-	fEndpoint = new BNetEndpoint();
-	fEndpoint->SetTimeout(kTimeout);
 	status_t err;
-	err = fEndpoint->Connect(fHost.String(),fPort);
+	err = _inherited::Connect(fHost.String(),fPort);
 	if(err != B_OK)
 		return err;
 		
@@ -245,17 +54,6 @@ PopClient::Connect(const char* address,
 	//PRINT(("%s\n",line.String()));
 	fLog = line;
 	return B_OK;
-}
-
-/***********************************************************
- * PostError
- ***********************************************************/
-void
-PopClient::PostError()
-{
-	BMessage msg(H_ERROR_MESSAGE);
-	msg.AddString("log",fLog);
-	fLooper->PostMessage(&msg,fHandler);
 }
 
 /***********************************************************
@@ -427,22 +225,6 @@ PopClient::Retr(int32 index,BString &content)
 	BString size_list;
 	
 	content = "";
-	PRINT(("BLACKLIST COUNT:%d\n",fBlackListCount));
-	// Spam filter
-	if(index != 0 && fBlackListCount > 0)
-	{
-		BString topOutput;
-		if(Top(index,0,topOutput) != B_OK)
-			PRINT(("%s\n",fLog.String() ));	
-		else{
-			if( IsSpam(topOutput.String()) )
-			{
-				if(((HPopClientView*)fHandler)->RetrieveType() > 0)
-					Delete(index);
-				return B_OK;
-			}
-		}
-	}
 	// Get mail content size 
 	if(index != 0)
 	{	
@@ -467,27 +249,20 @@ PopClient::Retr(int32 index,BString &content)
 	// Get mail content
 	int32 r;
 	
-	size += 3;
-	BMessage msg(H_SET_MAX_SIZE);
-	msg.AddInt32("max_size",size);
-	fLooper->PostMessage(&msg,fHandler);
-	msg.what = H_RECEIVING_MESSAGE;
-	msg.AddInt32("index",index);
-	msg.AddInt32("size",0);
-	
+	size += 3;	
 	char *buf = new char[MAX_RECIEVE_BUF_SIZE+1];
 	if(!buf)
 	{
-		(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		fLog = "Memory was exhausted";
 		return B_ERROR;
 	}
 	int32 content_len = 0;
 	//PRINT(("buf_size:%d\n",buf_size));
 	while(1)
 	{
-		if(fEndpoint->IsDataPending(kTimeout))
+		if(IsDataPending(kTimeout))
 		{
-			r = fEndpoint->Receive(buf,MAX_RECIEVE_BUF_SIZE);
+			r = Receive(buf,MAX_RECIEVE_BUF_SIZE);
 			if(r <= 0)
 			{
 				PRINT(("Receive Err:%d %d %s\n",r,size,buf));
@@ -497,8 +272,6 @@ PopClient::Retr(int32 index,BString &content)
 			content_len += r;
 			buf[r] = '\0';
 			content += buf;
-			msg.ReplaceInt32("size",r);
-			fLooper->PostMessage(&msg,fHandler);
 			
 			if(content_len > 5 &&
 			        content[content_len-1] == '\n' && 
@@ -620,18 +393,11 @@ PopClient::Rset()
 status_t
 PopClient::PopQuit()
 {
-	if(!fEndpoint)
-		return B_OK;
 	BString cmd = "QUIT";
 	cmd += CRLF;
 	
 	if( SendCommand(cmd.String()) != B_OK)
 		return B_ERROR;
-	
-	fEndpoint->Close();
-	delete fEndpoint;
-	fEndpoint = NULL;
-	
 	return B_OK;	
 }
 
@@ -642,11 +408,10 @@ status_t
 PopClient::SendCommand(const char* cmd)
 {
 	int32 len;
-	if(!fEndpoint)
-		return B_ERROR;
+
 	if(strncmp(cmd,"PASS",4) != 0)
 		PRINT(("C:%s",cmd));
-	if( fEndpoint->Send(cmd, ::strlen(cmd)) == B_ERROR)
+	if( Send(cmd, ::strlen(cmd)) == B_ERROR)
 		return B_ERROR;
 	fLog = "";
 	// Receive
@@ -674,24 +439,22 @@ PopClient::SendCommand(const char* cmd)
 int32
 PopClient::ReceiveLine(BString &line)
 {
-	if(!fEndpoint)
-		return B_ERROR;
 	int32 len = 0,rcv;
 	int c = 0;
 	line = "";
 	
-	if(fEndpoint->IsDataPending(kTimeout))
+	if(IsDataPending(kTimeout))
 	{	
 		while(c != '\n'&& c != EOF && c != xEOF)
 		{
-			rcv = fEndpoint->Receive(&c,1);
+			rcv = Receive(&c,1);
 			if(rcv <=0)
 				break;
 			len += rcv;
 			line += (char)c;
 		}
 	}else{
-		(new BAlert("",_("POP3 socket timeout."),_("OK")))->Go();
+		fLog = "POP3 socket timeout.";
 	}
 	return len;
 }
@@ -782,120 +545,5 @@ PopClient::MD5Digest (unsigned char *s)
   	for (i = 0;  i < 16;  i++) 
     	sprintf(ascii_digest+2*i, "%02x", digest[i]);
  
-	return strdup(ascii_digest);
-}
-
-/***********************************************************
- * IsSpam
- ***********************************************************/
-bool
-PopClient::IsSpam(const char* header)
-{
-	using namespace BPrivate;
-	
-	TrackerString from("");
-	// Find from field
-	char *p;
-	
-	if((p = ::strstr(header,"\nFrom:")) )
-	{
-		p+=6;
-		if(*p == ' ')
-			p++;
-		while(1)
-		{
-			if(*p == '<')
-			{
-				p++;
-				if(*p != ' ')
-				{
-					from = "";
-					from += *p;
-				}
-			}else{
-				if(*p != ' ')
-					from += *p;
-			}
-			p++;
-			if(*p == '\r' || *p == '\n' || *p == '>')
-				break;
-			if(*p == ' ' && from.FindFirst("@") != B_ERROR)
-				break;
-		}
-	}else
-		return false;
-	PRINT(("From:%s\n",from.String()));
-	// Compare to blacklist	
-	for(int32 i = 0;i < fBlackListCount;i++)
-	{
-		if(from.Matches((const char*)fBlackList.ItemAt(i),false))
-		{
-			PRINT(("SPAM:%s\n",(char*)fBlackList.ItemAt(i)));
-			return true;
-		}
-	}
-	return false;
-}
-
-/***********************************************************
- * InitBlackList
- ***********************************************************/
-void
-PopClient::InitBlackList()
-{
-	int32 count = fBlackList.CountItems();
-	// Free old list
-	while(count > 0)
-		free( (char*)fBlackList.RemoveItem(--count) );
-	// Load list
-	BPath path;
-	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
-	path.Append( APP_NAME );
-	path.Append("BlackList");
-	
-	
-	HFile file(path.Path(),B_READ_ONLY);
-	if(file.InitCheck() != B_OK)
-		return;
-	BString line;
-	
-	while(file.GetLine(&line) >= 0)
-	{
-		// Strip line feed
-		line.RemoveAll("\n");
-			
-		if(line.Length() > 0)
-		{
-			// Add address to list
-			fBlackList.AddItem(::strdup(line.String()));
-		}
-	}
-	fBlackListCount = fBlackList.CountItems();
-}
-
-/***********************************************************
- * ForceQuit
- ***********************************************************/
-void
-PopClient::ForceQuit()
-{
-	if(!fEndpoint)
-		return;
-	int sd = fEndpoint->Socket();
-#ifndef BONE
-	::closesocket(sd);
-#else
-	::close(sd);
-#endif
-}
-
-/***********************************************************
- * Quit
- ***********************************************************/
-bool
-PopClient::QuitRequested()
-{
-	PopQuit();
-	fLooper->PostMessage(M_QUIT_FINISHED,fHandler);
-	return BLooper::QuitRequested();
+	return ::strdup(ascii_digest);
 }

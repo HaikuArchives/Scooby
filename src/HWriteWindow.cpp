@@ -7,7 +7,7 @@
 #include "HPrefs.h"
 #include "Encoding.h"
 #include "HSmtpClientView.h"
-#include "SmtpClient.h"
+#include "SmtpLooper.h"
 #include "HEnclosureView.h"
 #include "ArrowButton.h"
 #include "HEnclosureItem.h"
@@ -20,6 +20,7 @@
 #include "Utilities.h"
 #include "StatusBar.h"
 #include "AddOnMenu.h"
+#include "ExtraMailAttr.h"
 
 #include <MenuBar.h>
 #include <ClassInfo.h>

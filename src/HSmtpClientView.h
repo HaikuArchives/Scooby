@@ -4,7 +4,7 @@
 #include <View.h>
 
 class HMailItem;
-class SmtpClient;
+class SmtpLooper;
 
 enum{
 	M_SEND_MAIL = 'SENM'
@@ -48,6 +48,6 @@ private:
 	float			fMaxValue;
 	float			fCurrentValue;
 	bool			fIsRunning;
-	SmtpClient		*fSmtpClient;
+	SmtpLooper		*fSmtpLooper;
 };
 #endif

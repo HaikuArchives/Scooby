@@ -6,7 +6,7 @@
 #include <StringView.h>
 #include <Message.h>
 
-class PopClient;
+class PopLooper;
 
 class HPopClientView :public BView {
 public:
@@ -73,7 +73,7 @@ private:
 	BBitmap			*fBarberPoleBits;
 	float			fMaxValue;
 	float			fCurrentValue;
-	PopClient		*fPopClient;
+	PopLooper		*fPopLooper;
 	BString			fLogin;
 	BString			fPassword;
 	int32			fStartPos;

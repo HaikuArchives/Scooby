@@ -1,7 +1,7 @@
 #include "HSmtpClientView.h"
 #include "ResourceUtils.h"
 #include "HMailItem.h"
-#include "SmtpClient.h"
+#include "SmtpLooper.h"
 #include "HApp.h"
 
 #include <Font.h>
@@ -33,7 +33,7 @@ HSmtpClientView::HSmtpClientView(BRect frame,const char* name)
 	,fMaxValue(0)
 	,fCurrentValue(0)
 	,fIsRunning(false)
-	,fSmtpClient(NULL)
+	,fSmtpLooper(NULL)
 {
 	BFont font(be_fixed_font);
 	font.SetSize(10);
@@ -54,8 +54,8 @@ HSmtpClientView::HSmtpClientView(BRect frame,const char* name)
 HSmtpClientView::~HSmtpClientView()
 {
 	delete fBarberPoleBits;
-	if(fSmtpClient)
-		fSmtpClient->PostMessage(B_QUIT_REQUESTED);
+	if(fSmtpLooper)
+		fSmtpLooper->PostMessage(B_QUIT_REQUESTED);
 }
 
 
@@ -70,14 +70,14 @@ HSmtpClientView::MessageReceived(BMessage *message)
 	// Send mails
 	case M_SEND_MAIL:
 	{
-		if(!fSmtpClient)
-			fSmtpClient = new SmtpClient(this,Window());
+		if(!fSmtpLooper)
+			fSmtpLooper = new SmtpLooper(this,Window());
 		fIsRunning = true;
 		//int32 count;
 		//type_code type;
 		//message->GetInfo("pointer",&type,&count);
 		message->what = M_SMTP_CONNECT;
-		fSmtpClient->PostMessage(message);
+		fSmtpLooper->PostMessage(message);
 		StopProgress();
 		StartBarberPole();
 		fStringView->SetText(_("Sending Mails…"));
@@ -90,9 +90,9 @@ HSmtpClientView::MessageReceived(BMessage *message)
 		StopBarberPole();
 		StopProgress();
 		fStringView->SetText("");
-		if(fSmtpClient)
-			fSmtpClient->PostMessage(B_QUIT_REQUESTED);
-		fSmtpClient = NULL;
+		if(fSmtpLooper)
+			fSmtpLooper->PostMessage(B_QUIT_REQUESTED);
+		fSmtpLooper = NULL;
 		PRINT(("SMTP END\n"));
 		break;
 	}
@@ -262,5 +262,5 @@ HSmtpClientView::SetValue(float value)
 void
 HSmtpClientView::Cancel()
 {
-	fSmtpClient->ForceQuit();
+	fSmtpLooper->ForceQuit();
 }
