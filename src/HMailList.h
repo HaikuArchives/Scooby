@@ -54,6 +54,8 @@ public:
 			void	AddMail(HMailItem *item);
 			int32	SelectionCount();
 			void	MarkOldSelectionAsRead();
+			
+			void	SetOldSelection(HMailItem *item){fOldSelection = item;}
 protected:
 	virtual void 	MessageReceived(BMessage *message);	
 	virtual	bool	InitiateDrag(BPoint point, 
