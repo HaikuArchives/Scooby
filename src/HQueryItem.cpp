@@ -45,8 +45,8 @@ HQueryItem::StartRefreshCache()
 		return;
 	fDone = false;
 	// Set icon to open folder
-	BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"CloseFolder");
-	SetColumnContent(0,icon,2.0,true,false);
+	BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"CloseQuery");
+	SetColumnContent(1,icon,2.0,true,false);
 	delete icon;
 	StartGathering();
 }
@@ -100,7 +100,7 @@ HQueryItem::Fetching()
 		
 		// Set icon to open folder
 		BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"OpenQuery");
-		SetColumnContent(0,icon,2.0,true,false);
+		SetColumnContent(1,icon,2.0,true,false);
 		delete icon;
 		InvalidateMe();
 	}DEBUG_ONLY(
