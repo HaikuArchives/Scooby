@@ -16,6 +16,7 @@ class HDetailView;
 class HPopClientView;
 class HSmtpClientView;
 class HDeskbarView;
+class HHtmlMailView;
 
 enum{
 	DESKBAR_NORMAL_ICON = 0,
@@ -108,7 +109,7 @@ private:
 		HMailList*		fMailList;
 		HMailCaption*	fMailCaption;
 		HFolderList*    fFolderList;
-		HMailView*		fMailView;
+		BView*			fMailView;
 		SplitPane*		fHSplitter;
 		SplitPane*      fVSplitter;
 		HStatusView*	fStatusView;

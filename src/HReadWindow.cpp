@@ -7,6 +7,8 @@
 #include "HApp.h"
 #include "HPrefs.h"
 #include "HWindow.h"
+#include "HHtmlMailView.h"
+#include "HMailList.h"
 
 #include <Menu.h>
 #include <MenuItem.h>
@@ -17,6 +19,7 @@
 #include <Beep.h>
 #include <Messenger.h>
 #include <ClassInfo.h>
+#include <TabView.h>
 
 
 /***********************************************************
@@ -69,20 +72,31 @@ HReadWindow::InitGUI()
 	fDetailView = new HDetailView(rect,true);
 	AddChild(fDetailView);
 	
-	rect.top = rect.bottom+1;
+	rect.top = rect.bottom;
 	rect.bottom = Bounds().bottom;
-	rect.right -= B_V_SCROLL_BAR_WIDTH;
-	fMailView = new HMailView(rect,true,NULL);
-	fMailView->MakeEditable(false);
-	BScrollView *scroll = new BScrollView("scroller",fMailView,B_FOLLOW_ALL,0,false,true);
-	AddChild(scroll);
+	bool html;
+	((HApp*)be_app)->Prefs()->GetData("use_html",&html);
+	if(!html)
+	{
+		rect.right -= B_V_SCROLL_BAR_WIDTH;
+		HMailView *mailView = new HMailView(rect,true,NULL);
+		mailView->MakeEditable(false);
+		BScrollView *scroll = new BScrollView("scroller",mailView,B_FOLLOW_ALL,0,false,true);
+		AddChild(scroll);
+		fMailView = cast_as(mailView,BView);
+	}else{	
+		rect.top -= 1;
+		HHtmlMailView *htmlMailView = new HHtmlMailView(rect,"scroller",false,B_FOLLOW_ALL);
+		AddChild(htmlMailView);
+		fMailView = cast_as(htmlMailView,BView);
+	}
 	/*
 	KeyMenuBar()->FindItem(B_CUT)->SetTarget(fMailView,this);
 	KeyMenuBar()->FindItem(B_COPY)->SetTarget(fMailView,this);
 	KeyMenuBar()->FindItem(B_PASTE)->SetTarget(fMailView,this);
 	KeyMenuBar()->FindItem(B_SELECT_ALL)->SetTarget(fMailView,this);
-	*/
 	KeyMenuBar()->FindItem(B_UNDO)->SetTarget(fMailView,this);
+	*/
 	/********** Toolbar ***********/
 	BRect toolrect = Bounds();
 	toolrect.top += (KeyMenuBar()->Bounds()).Height();
@@ -199,13 +213,21 @@ HReadWindow::MessageReceived(BMessage *message)
 		break;
 	// Show header 
 	case M_HEADER:
-		message->AddBool("header",!fMailView->IsShowingHeader());
-		PostMessage(message,fMailView);
-		break;
+		if(is_kind_of(fMailView,HMailView))
+		{
+			HMailView *view = cast_as(fMailView,HMailView);
+			message->AddBool("header",!view->IsShowingHeader());
+			PostMessage(message,fMailView);
+			break;
+		}
 	case M_RAW:
-		message->AddBool("raw",!fMailView->IsShowingRawMessage());
-		PostMessage(message,fMailView);
-		break;
+		if(is_kind_of(fMailView,HMailView))
+		{
+			HMailView *view = cast_as(fMailView,HMailView);
+			message->AddBool("raw",!view->IsShowingRawMessage());
+			PostMessage(message,fMailView);
+			break;
+		}
 	case M_PRINT_MESSAGE:
 	{
 		BMessage msg(*message);
@@ -246,7 +268,7 @@ HReadWindow::LoadMessage(entry_ref ref)
 	if(file->InitCheck() != B_OK)
 	{
 		delete file;
-		fMailView->SetContent(NULL);
+		PostMessage(M_SET_CONTENT,fMailView);
 		return;
 	}
 	BString from,subject,cc,to;
@@ -263,7 +285,9 @@ HReadWindow::LoadMessage(entry_ref ref)
 	 ::strftime(buf, 64,kTimeFormat, time);
 	fDetailView->SetInfo(subject.String(),from.String(),buf,cc.String(),to.String());
 	delete[] buf;
-	fMailView->SetContent(file);
+	BMessage msg(M_SET_CONTENT);
+	msg.AddPointer("pointer",file);
+	PostMessage(&msg,fMailView);
 	SetTitle(subject.String());
 }
 
@@ -274,22 +298,37 @@ void
 HReadWindow::MenusBeginning()
 {
 	BMenuItem *item;
-	item = KeyMenuBar()->FindItem(M_HEADER);
-	item->SetMarked(fMailView->IsShowingHeader());
-	item = KeyMenuBar()->FindItem(M_RAW);
-	item->SetMarked(fMailView->IsShowingRawMessage());
-	
+	if(is_kind_of(fMailView,HMailView))
+	{
+		HMailView *view = cast_as(fMailView,HMailView);
+		item = KeyMenuBar()->FindItem(M_HEADER);
+		item->SetMarked(view->IsShowingHeader());
+		item = KeyMenuBar()->FindItem(M_RAW);
+		item->SetMarked(view->IsShowingRawMessage());
+	}else{
+		item = KeyMenuBar()->FindItem(M_HEADER);
+		item->SetMarked(false);
+		item = KeyMenuBar()->FindItem(M_RAW);
+		item->SetMarked(false);
+	}
 	BTextControl *ctrl(NULL);
 	int32 start,end;
 	// Copy
-	if(CurrentFocus() == fMailView)
+	if(CurrentFocus() == fMailView )
 	{	
-		fMailView->GetSelection(&start,&end);
-	
-		if(start != end)
-			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+		BTextView *view;
+		if(is_kind_of(fMailView,HMailView))
+			view = cast_as(fMailView,BTextView);
 		else
-			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+			view = cast_as(fMailView->FindView("NetPositive"),BTextView);
+		if(view)
+		{
+			view->GetSelection(&start,&end);
+			if(start != end)
+				KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+			else
+				KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+		}
 	}else if((ctrl = fDetailView->FocusedView())){
 		BTextView *textview = ctrl->TextView();
 		textview->GetSelection(&start,&end);
@@ -400,11 +439,36 @@ HReadWindow::DispatchMessage(BMessage *message,BHandler *handler)
 		message->FindInt32("modifiers",&modifiers);
 		message->FindString("bytes",&bytes);
 		char c = (modifiers & B_SHIFT_KEY)?B_PAGE_UP:B_PAGE_DOWN;
-		if(bytes[0] == B_SPACE)
+		
+		if(is_kind_of(fMailView,HMailView))
 		{
-			char b[1];
-			b[0] = c;
-			fMailView->KeyDown(b,1);
+			if(bytes[0] == B_SPACE)
+			{
+				char b[1];
+				b[0] = c;
+				fMailView->KeyDown(b,1);
+			}
+		}else{
+			BScrollBar *bar(NULL);
+			BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
+			if(tabview->Selection() == 0)
+			{
+				BTab *tab = tabview->TabAt(0);
+				BView *view = tab->View();
+				view = view->FindView("NetPositive");
+				if(view && (view = view->ChildAt(0)))
+				{
+					view = view->ChildAt(1);
+					bar = cast_as(view,BScrollBar);
+				}
+				if(bar)
+				{
+					char b[1];
+					b[0] = c;
+					view = bar->Target();
+					view->KeyDown(b,1);
+				}	
+			}
 		}
 	}
 	BWindow::DispatchMessage(message,handler);

@@ -53,7 +53,12 @@ SRCS= ./src/HFolderItem.cpp\
 		./src/IMAP4Client.cpp\
 		./src/HIMAP4Window.cpp\
 		./src/HSimpleFolderItem.cpp\
-		./src/HMailCache.cpp
+		./src/HMailCache.cpp\
+		./src/HAttachmentList.cpp\
+		./src/HAttachmentItem.cpp\
+		./src/HTabView.cpp\
+		./src/HHtmlView.cpp\
+		./src/HHtmlMailView.cpp
 #--------------------------------------------------------
 #	determine wheather running on x86 or ppc
 MACHINE=$(shell uname -m)

@@ -37,7 +37,7 @@ protected:
 			void		SetRead();
 		
 private:
-	HMailView*			fMailView;
+	BView*				fMailView;
 	HDetailView*		fDetailView;
 	BMessenger*			fMessenger;
 		entry_ref		fRef;

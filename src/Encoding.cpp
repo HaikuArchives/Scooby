@@ -225,7 +225,7 @@ Encoding::ISO2UTF8(BString &str,int32 &encoding)
 		}else if(is_mime && ::strncmp(buf+i,"?=",2) == 0){//if(buf[i] == '?'||buf[i] == '='){
 			is_mime = false;
 			buf+=1;
-			p_MimeDecode(mime,quoted_printable);
+			MimeDecode(mime,quoted_printable);
 			result << mime;
 			mime = "";
 		}else{
@@ -278,10 +278,10 @@ Encoding::Mime2UTF8(BString &str)
 
 
 /***********************************************************
- * p_MimeDecode
+ * MimeDecode
  ***********************************************************/
 void
-Encoding::p_MimeDecode(BString &str,bool quoted_printable)
+Encoding::MimeDecode(BString &str,bool quoted_printable)
 {
    int len, i, iR;
    char a1, a2, a3, a4;

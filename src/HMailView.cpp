@@ -2,6 +2,7 @@
 #include "HApp.h"
 #include "HPrefs.h"
 #include "Encoding.h"
+#include "HMailList.h"
 #include "HWindow.h"
 
 #include <Menu.h>
@@ -295,7 +296,7 @@ void HMailView::KeyDown(const char *key, int32 count)
 				ScrollToSelection();
 			}
 			break;
-
+		
 		default:
 			_inherited::KeyDown(key, count);
 	}
@@ -404,7 +405,13 @@ void HMailView::MessageReceived(BMessage *msg)
 		case M_SAVE:
 			Save(msg);
 			break;
-		
+		case M_SET_CONTENT:
+		{
+			BFile *file;
+			if(msg->FindPointer("pointer",(void**)&file) == B_OK)
+				SetContent(file);
+			break;
+		}	
 		default:
 			_inherited::MessageReceived(msg);
 	}

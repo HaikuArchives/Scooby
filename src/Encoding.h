@@ -50,8 +50,10 @@ public:
 	const char*		Charset(int32 index) const;
 			int32	Conversion(int32 index) const;
 			int32	CountCharset() const;
+
+			void	MimeDecode(BString &str,bool quoted_printable);
+
 protected:
-			void	p_MimeDecode(BString &str,bool quoted_printable);
 			char	p_Charconv(char c);
 			bool	p_IsMultiByte(char c);
 			int32 	p_Encoding(const char *charset);
