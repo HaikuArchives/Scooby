@@ -519,7 +519,7 @@ HAccountView::SaveAccount(int32 index)
 	}
 	NumberControl *num_ctrl = cast_as(FindView("day"),NumberControl);
 	msg.RemoveData("delete_day");
-	msg.AddBool("delete_day",num_ctrl->Value());
+	msg.AddInt32("delete_day",num_ctrl->Value());
 	
 	BMenuField *field = cast_as(FindView("protocol"),BMenuField);
 	
