@@ -771,6 +771,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 			msg.AddPointer("item",folder);
 			fOwner->Window()->PostMessage(&msg,fOwner);
 		}
+		PRINT(("Create\n"));
 		break;
 	case B_ENTRY_REMOVED:
 	{
@@ -843,7 +844,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 			}	
 		}
 		// Remove mails
-		else if(::strncmp(from_path.Path(),myPath.Path(),my_path_len) == 0)
+		if(::strncmp(from_path.Path(),myPath.Path(),my_path_len) == 0)
 		{
 			node_ref old_nref;
 			old_nref.device =from_nref.device;
