@@ -49,4 +49,5 @@ SRCS= ./src/HFolderItem.cpp\
 	./src/SpellCheckView.cpp\
 	./src/StatusBar.cpp\
 	./src/StatusItem.cpp\
-	./src/LEDAnimation.cpp
+	./src/LEDAnimation.cpp\
+	./src/AddOnMenu.cpp

@@ -25,7 +25,8 @@ enum{
 	M_EDIT_DRAFTS = 'mEDF',
 	M_EDIT_TEMPLATES = 'mETM',
 	M_QUOTE_SELECTION = 'mQsL',
-	M_ENABLE_SPELLCHECKING = 'mSPE'
+	M_ENABLE_SPELLCHECKING = 'mSPE',
+	M_EDITOR_ADDON = 'mEDA'
 };
 
 
@@ -78,6 +79,8 @@ protected:
 			
 			void	AddNewChildItem(entry_ref &ref);
 			void	RemoveChildItem(node_ref &nref);
+			
+		status_t	ProcessAddOn(BMessage *message);
 private:
 	HAddressView	*fTopView;
 	HMailView		*fTextView;

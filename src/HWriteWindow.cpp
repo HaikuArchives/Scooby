@@ -19,6 +19,7 @@
 #include "HString.h"
 #include "Utilities.h"
 #include "StatusBar.h"
+#include "AddOnMenu.h"
 
 #include <MenuBar.h>
 #include <ClassInfo.h>
@@ -310,7 +311,9 @@ HWriteWindow::InitMenu()
 
 	AddChildItem(aMenu,path.Path(),M_ADD_SIGNATURE,true);
 	menubar->AddItem( aMenu );
-	
+	AddOnMenu *menu = new AddOnMenu(_("Add-Ons"),"Scooby/EditorAddOns",M_EDITOR_ADDON);
+	menu->Build();
+	menubar->AddItem(menu);
     AddChild(menubar);
 }
 
@@ -411,6 +414,10 @@ HWriteWindow::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
+	// Editor add-ons message
+	case M_EDITOR_ADDON:
+		ProcessAddOn(message);
+		break;
 	// Enable spell checking
 	case M_ENABLE_SPELLCHECKING:
 	{
@@ -1719,4 +1726,47 @@ HWriteWindow::GetTemplatesPath(BPath &path)
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append("Templates");
+}
+
+/***********************************************************
+ * ProcessAddOn
+ ***********************************************************/
+status_t
+HWriteWindow::ProcessAddOn(BMessage *message)
+{
+	entry_ref addonRef;
+	if(message->FindRef("refs",&addonRef) != B_OK)
+		return B_ERROR;
+	BEntry entry(&addonRef);
+	BPath path;
+	status_t result = entry.InitCheck();
+	if (result == B_OK)
+		result = entry.GetPath(&path);
+
+	if (result == B_OK) {
+		image_id addonImage = load_add_on(path.Path());
+		if (addonImage >= 0) {
+			void (*addonFunc)(BTextView *);
+			result = get_image_symbol(addonImage, "process_message", 2, (void **)&addonFunc);
+
+			if (result >= 0)
+			{
+				// call add-on code
+				(*addonFunc)(fTextView);	
+				unload_add_on(addonImage);
+				return B_OK;
+			} else 
+				PRINT(("couldn't find process_message\n"));
+			unload_add_on(addonImage);
+		}
+	}
+
+	char buffer[1024];
+	sprintf(buffer, "Error %s loading Add-On %s.", strerror(result), addonRef.name);
+
+	BAlert *alert = new BAlert("", buffer, _("OK"), 0, 0,
+		B_WIDTH_AS_USUAL, B_WARNING_ALERT);
+	alert->SetShortcut(0, B_ESCAPE);
+	alert->Go();	
+	return result;
 }
