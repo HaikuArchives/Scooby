@@ -125,7 +125,7 @@ SmtpClient::ReceiveResponse(BString &out)
 	{	
 		while(1)
 		{
-			len = fEndpoint->Receive(buf,SMTP_RESPONSE_SIZE-1);
+			len += fEndpoint->Receive(buf,SMTP_RESPONSE_SIZE-1);
 			if(strstr(buf,"\r\n"))
 				break;
 		}
