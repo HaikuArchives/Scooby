@@ -34,14 +34,14 @@ HPrefWindow::HPrefWindow(BRect win_rect)
 	
 //*********** Account Setting ******************/
 	tabview->AddTab(fAccountView = new HAccountView(frame));
-	tabview->TabAt(1)->SetLabel(_("Account"));
+	tabview->TabAt(1)->SetLabel(_("Accounts"));
 
 //*********** Filter Setting ******************/
 	tabview->AddTab(fFilterView = new HFilterView(frame));
 	tabview->TabAt(2)->SetLabel(_("Filters"));
 //*********** Signature Setting ******************/
 	tabview->AddTab(fSignatureView = new HSignatureView(frame));
-	tabview->TabAt(3)->SetLabel(_("Signature"));
+	tabview->TabAt(3)->SetLabel(_("Signatures"));
 	
 	AddChild(tabview);
 	
