@@ -54,7 +54,7 @@ $(OBJ_DIR)/HWindow.o : ./src/HWindow.cpp src/HWindow.h libs/Utils/MenuUtils.h \
  libs/Toolbar/HToolbar.h libs/Utils/ResourceUtils.h \
  src/HPopClientView.h src/HWriteWindow.h src/HDetailView.h \
  src/HPrefWindow.h libs/Utils/RectUtils.h libs/Utils/TrackerUtils.h \
- src/HSmtpClientView.h src/SmtpClient.h src/ExtraMailAttr.h \
+ src/HSmtpClientView.h src/SmtpLooper.h src/ExtraMailAttr.h \
  libs/Toolbar/HToolbarButton.h libs/Toolbar/HToolTipsWindow.h \
  libs/Utils/OpenWithMenu.h src/HReadWindow.h src/HDeskbarView.h \
  src/HIMAP4Item.h src/HIMAP4Window.h src/HIMAP4Folder.h \
@@ -81,7 +81,7 @@ $(OBJ_DIR)/HStatusView.o : ./src/HStatusView.cpp src/HStatusView.h \
 $(OBJ_DIR)/HWriteWindow.o : ./src/HWriteWindow.cpp src/HWriteWindow.h \
  src/HAddressView.h libs/Utils/MenuUtils.h libs/Utils/ResourceUtils.h \
  libs/Toolbar/HToolbar.h src/HApp.h src/HPrefs.h libs/Utils/HSetting.h \
- src/Encoding.h src/HSmtpClientView.h src/SmtpClient.h \
+ src/Encoding.h src/HSmtpClientView.h src/SmtpLooper.h \
  src/ExtraMailAttr.h src/HEnclosureView.h libs/Utils/ArrowButton.h \
  src/HEnclosureItem.h src/HMailItem.h libs/Santa/CLVEasyItem.h \
  libs/Santa/CLVListItem.h src/HMailView.h src/SpellCheckView.h \
@@ -99,16 +99,12 @@ $(OBJ_DIR)/HQueryItem.o : ./src/HQueryItem.cpp src/HQueryItem.h src/HFolderItem.
  libs/Santa/ScrollViewCorner.h src/HSimpleFolderItem.h \
  src/HCoolListView.h src/Utilities.h
 $(OBJ_DIR)/HPopClientView.o : ./src/HPopClientView.cpp src/HPopClientView.h \
- libs/Utils/ResourceUtils.h src/PopClient.h src/HApp.h src/Encoding.h \
+ libs/Utils/ResourceUtils.h src/PopLooper.h src/HApp.h src/Encoding.h \
  src/HWindow.h src/ExtraMailAttr.h libs/Utils/TrackerUtils.h \
  src/TrackerString.h src/RegExp.h
-$(OBJ_DIR)/PopClient.o : ./src/PopClient.cpp src/PopClient.h src/Encoding.h \
- src/md5.h src/md5global.h src/HApp.h libs/Utils/HFile.h \
- src/HPopClientView.h src/TrackerString.h src/RegExp.h
-$(OBJ_DIR)/SmtpClient.o : ./src/SmtpClient.cpp src/SmtpClient.h \
- src/ExtraMailAttr.h src/HApp.h src/HMailItem.h \
- libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h src/Encoding.h \
- src/Utilities.h
+$(OBJ_DIR)/PopClient.o : ./src/PopClient.cpp src/PopClient.h src/md5.h \
+ src/md5global.h libs/Utils/HFile.h src/TrackerString.h src/RegExp.h
+$(OBJ_DIR)/SmtpClient.o : ./src/SmtpClient.cpp src/SmtpClient.h
 $(OBJ_DIR)/HPrefWindow.o : ./src/HPrefWindow.cpp src/HPrefWindow.h \
  src/HFilterView.h src/HAccountView.h src/HGeneralSettingView.h \
  src/HSignatureView.h libs/Utils/CTextView.h src/HApp.h src/HPrefs.h \
@@ -126,7 +122,7 @@ $(OBJ_DIR)/HAccountView.o : ./src/HAccountView.cpp src/HAccountView.h src/HApp.h
  libs/Utils/TrackerUtils.h libs/Utils/NumberControl.h src/Utilities.h
 $(OBJ_DIR)/HSmtpClientView.o : ./src/HSmtpClientView.cpp src/HSmtpClientView.h \
  libs/Utils/ResourceUtils.h src/HMailItem.h libs/Santa/CLVEasyItem.h \
- libs/Santa/CLVListItem.h src/SmtpClient.h src/ExtraMailAttr.h \
+ libs/Santa/CLVListItem.h src/SmtpLooper.h src/ExtraMailAttr.h \
  src/HApp.h
 $(OBJ_DIR)/Encoding.o : ./src/Encoding.cpp src/Encoding.h src/HApp.h src/HPrefs.h \
  libs/Utils/HSetting.h
@@ -223,3 +219,11 @@ $(OBJ_DIR)/StatusItem.o : ./src/StatusItem.cpp src/StatusItem.h src/StatusBar.h
 $(OBJ_DIR)/LEDAnimation.o : ./src/LEDAnimation.cpp src/LEDAnimation.h
 $(OBJ_DIR)/AddOnMenu.o : ./src/AddOnMenu.cpp src/AddOnMenu.h \
  libs/Utils/IconMenuItem.h
+$(OBJ_DIR)/SmtpLooper.o : ./src/SmtpLooper.cpp src/SmtpLooper.h \
+ src/ExtraMailAttr.h src/HApp.h src/HMailItem.h \
+ libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h src/Encoding.h \
+ src/Utilities.h src/SmtpClient.h
+$(OBJ_DIR)/PopLooper.o : ./src/PopLooper.cpp src/PopLooper.h src/PopClient.h \
+ src/Encoding.h src/md5.h src/md5global.h src/HApp.h \
+ libs/Utils/HFile.h src/HPopClientView.h src/TrackerString.h \
+ src/RegExp.h
