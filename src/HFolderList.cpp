@@ -675,12 +675,11 @@ HFolderList::WhenDropped(BMessage *message)
 			toIMAP->SetDone(false);
 		}// move between different account folders.
 		else{
-			
+			Alert(B_INFO_ALERT,_("Moving mails 	between different accounts have not been supported yet..."),_("OK"));
 		}
 	}//Local->Remote
 	else if(toFolder->FolderType() == FOLDER_TYPE&&fromFolder->FolderType() == IMAP4_TYPE){
-	
-	
+		Alert(B_INFO_ALERT,_("Moving local mails to IMAP4 folders have not been supported yet..."),_("OK"));
 	}// Local->Local or Remote->Local
 	else if(toFolder->FolderType() == FOLDER_TYPE)
 	{
