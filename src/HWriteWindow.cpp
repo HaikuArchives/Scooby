@@ -153,23 +153,25 @@ HWriteWindow::HWriteWindow(BRect rect
 		}
 		fTextView->LoadMessage(fReplyFile,reply,false,NULL);
 		// Insert date and nick
-		char replyLabel[1024];
+//		char replyLabel[1024];
 		BString from;
 		time_t t;
 		ReadNodeAttrString(fReplyFile,B_MAIL_ATTR_FROM,&from);
 		fReplyFile->ReadAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&t,sizeof(time_t));
-		
-		const char* kTimeFormat;
+		from += _(" wrote:\n");
+/*		const char* kTimeFormat;
 		char date[64];
 		((HApp*)be_app)->Prefs()->GetData("time_format",&kTimeFormat);
 		::strftime(date, 64,kTimeFormat, localtime(&t));
+
 #ifdef __INTEL__
-		::snprintf(replyLabel,1024,_("On %s, %s wrote:\n"),date,from.String());
+		::snprintf(replyLabel,1024,_("%s wrote:\n"),from.String());
 #else
-		::sprintf(replyLabel,_("On %s, %s wrote:\n"),date,from.String());
+		::sprintf(replyLabel,_("%s wrote:\n"),from.String());
 #endif
+*/
 		fTextView->Select(0,0);
-		fTextView->Insert(replyLabel);
+		fTextView->Insert(from.String());
 	}else{
 		int32 encoding;
 		((HApp*)be_app)->Prefs()->GetData("encoding",&encoding);
