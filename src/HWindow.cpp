@@ -185,7 +185,11 @@ HWindow::InitMenu()
 	utils.AddMenuItem(aMenu,_("Move To Trash"),M_DELETE_MSG,this,this,'T',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();
-	// Status menu
+    utils.AddMenuItem(aMenu,_("Filter"),M_FILTER_MAIL,this,this,0,0);
+    utils.AddMenuItem(aMenu,_("Add To BlackList"),M_ADD_TO_BLACK_LIST,this,this,0,0,
+    						rsrc_utils.GetBitmapResource('BBMP',"BlackList"));
+    aMenu->AddSeparatorItem();
+    // Status menu
     BMenu *statusMenu = new BMenu(_("Status"));
     const char* status[] = {"New","Read","Replied","Forwarded"};
     
@@ -197,10 +201,6 @@ HWindow::InitMenu()
     }
     aMenu->AddItem(statusMenu);
 	aMenu->AddSeparatorItem();
-    utils.AddMenuItem(aMenu,_("Filter"),M_FILTER_MAIL,this,this,0,0);
-    utils.AddMenuItem(aMenu,_("Add To BlackList"),M_ADD_TO_BLACK_LIST,this,this,0,0,
-    						rsrc_utils.GetBitmapResource('BBMP',"BlackList"));
-    aMenu->AddSeparatorItem();
     utils.AddMenuItem(aMenu,_("Show Headers"),M_HEADER,this,this,'H',0);
     utils.AddMenuItem(aMenu,_("Show Raw Message"),M_RAW,this,this,0,0);
     menubar->AddItem( aMenu );
