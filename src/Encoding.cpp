@@ -299,6 +299,7 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
 #ifndef USE_BASE64DECODER
  		len = decode_base64(buf, old, len); 
 #else
+	{
 		int i, iR;
 		char a1, a2, a3, a4;
 		i = 0; 
@@ -320,6 +321,7 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
                 i += 4; 
         } 
         len = iR;
+    }
 #endif   
 	buf[len] = '\0'; 
    	::strcpy(old,buf);
