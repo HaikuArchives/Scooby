@@ -39,8 +39,12 @@ public:
 		status_t	Rset();
 		status_t	Uidl(int32 index,BString &outlist);
 		status_t	Last(int32 *index);
+		status_t	Top(int32 index,int32 lines,BString &out);
 			int32	ReceiveLine(BString &buf);
 			void	ForceQuit();
+			
+			bool	IsSpam(const char* header);
+			void	InitBlackList();
 protected:
 		status_t	SendCommand(const char* cmd);	
 			void	PostError();
@@ -56,5 +60,7 @@ private:
 		BString		fLog;
 	BHandler		*fHandler;
 	BLooper			*fLooper;
+	BList			fBlackList;
+	int32			fBlackListCount;
 };
 #endif
