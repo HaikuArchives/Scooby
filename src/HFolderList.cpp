@@ -819,7 +819,7 @@ HFolderList::MouseDown(BPoint pos)
     	 theMenu->AddItem(item);
     	 theMenu->AddSeparatorItem();
     	 
-    	 item = new BMenuItem(_("New Folder"),new BMessage(M_CREATE_FOLDER_DIALOG),0,0);
+    	 item = new BMenuItem(_("New Folder" B_UTF8_ELLIPSIS),new BMessage(M_CREATE_FOLDER_DIALOG),0,0);
     	 if(sel < 0)
     	 	item->SetEnabled(true);
     	 else if(folder->FolderType() == FOLDER_TYPE)
