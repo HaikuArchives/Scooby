@@ -914,8 +914,8 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 		content = part;
 	}
 		
-	encode.ConvertReturnCode(header,M_CRLF);
-	encode.ConvertReturnCode(content,M_CRLF);
+	encode.ConvertReturnsToCRLF(header);
+	encode.ConvertReturnsToCRLF(content);
 	
 	BString all_content = header;
 	all_content << content;

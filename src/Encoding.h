@@ -38,13 +38,15 @@ public:
 			void	ConvertToUTF8(char** text,int32 encoding );
 			void	ConvertFromUTF8(char** text,int32 encoding);
 
-			void	ConvertReturnCode(char** text, int32 retcode);
-			void	ConvertReturnCode(BString &text, int32 retcode);
-			
 			void	ConvertReturnsToLF(char* text);
 			void	ConvertReturnsToLF(BString &text);
+			
 			void	ConvertReturnsToCR(char* text);
 			void	ConvertReturnsToCR(BString &text);
+			
+			void	ConvertReturnsToCRLF(char* text); // You have to prepare enough buffer
+			void	ConvertReturnsToCRLF(char** text);
+			void	ConvertReturnsToCRLF(BString &text);
 			
 	const char*		FindCharset(int32 conversion);
 	const char*		Charset(int32 index) const;

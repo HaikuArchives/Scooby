@@ -477,15 +477,19 @@ Encoding::ConvertToUTF8(char** text,int32 encoding)
 	int32	destLen = 4 * sourceLen;
 	
 	char*	buf = new char[destLen+1];
+	
+	if(!buf)
+	{
+		(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		return;
+	}
+
 	status_t	err = B_OK;
 	int32		state = 0;
-	
 	err = convert_to_utf8(encoding, *text, &sourceLen, buf, &destLen, &state);
-	
+
 	for(register int32 i = 0; i < destLen; i++)
-	{
 		if(*(buf + i) == '\0'){ *(buf + i) = ' '; } 
-	}
 	
 	buf[destLen] = '\0';
 	if(!err){
@@ -505,12 +509,17 @@ Encoding::ConvertFromUTF8(char** text,int32 encoding)
 	int32	destLen = 4 * sourceLen;
 	
 	char*	buf = new char[destLen+1];
+	if(!buf)
+	{
+		(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		return;
+	}
 	status_t	err = B_OK;
 	int32		state = 0;
 
 	err = convert_from_utf8(encoding, *text, &sourceLen, buf, &destLen, &state);
 	buf[destLen] = '\0';
-	
+
 	if(!err){
 		delete[] *text;
 		*text = buf;
@@ -527,11 +536,17 @@ Encoding::ConvertToUTF8(BString& text,int32 encoding)
 	int32	sourceLen = text.Length();
 	int32	destLen = 4 * sourceLen;
 	
-	char*	inBuf = text.LockBuffer(destLen+1);
 	status_t	err = B_OK;
 	int32		state = 0;
 	
 	char *buf = new char[destLen+1];
+	
+	if(!buf)
+	{
+		(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		return;
+	}
+	char*	inBuf = text.LockBuffer(destLen+1);
 	
 	err = convert_to_utf8(encoding, inBuf, &sourceLen, buf, &destLen, &state);
 
@@ -545,7 +560,7 @@ Encoding::ConvertToUTF8(BString& text,int32 encoding)
 	{
 		if(*(buf + i) == '\0'){ *(buf + i) = ' '; } 
 	}
-	
+
 	buf[destLen] = '\0';
 	::strncpy(inBuf,buf,destLen);
 	text.UnlockBuffer(destLen);
@@ -561,11 +576,17 @@ Encoding::ConvertFromUTF8(BString& text,int32 encoding)
 	int32	sourceLen = text.Length();
 	int32	destLen = sourceLen;
 	
-	char*	inBuf = text.LockBuffer(destLen+1);
 	status_t	err = B_OK;
 	int32		state = 0;
 	
 	char *buf = new char[destLen+1];
+	if(!buf)
+	{
+		(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		return;
+	}	
+	
+	char*	inBuf = text.LockBuffer(destLen+1);
 	
 	err = convert_from_utf8(encoding, inBuf, &sourceLen, buf, &destLen, &state);
 
@@ -580,73 +601,9 @@ Encoding::ConvertFromUTF8(BString& text,int32 encoding)
 		if(*(buf + i) == '\0'){ *(buf + i) = ' '; } 
 	
 	buf[destLen] = '\0';
-
 	::strncpy(inBuf,buf,destLen);
 	text.UnlockBuffer(destLen);
 	delete[] buf;
-}
-
-/***********************************************************
- * ConvertReturnCode
- ***********************************************************/
-void
-Encoding::ConvertReturnCode(char** text, int32 retcode)
-{
-	char* str = *text;
-	const int32	len = strlen(str);
-	
-	if(retcode == M_CR){
-		ConvertReturnsToCR(str);
-	}else if(retcode == M_CRLF){
-		int32	LFNum = 0;
-		for(int32 i = 0; *(str + i) != '\0'; i++){
-			if(*(str + i) == LF)
-				LFNum++;
-		}
-		
-		//printf("LFNum = %d\n", LFNum);
-		
-		char*	buf = new char[len + LFNum + 1];
-		
-		for(int32 i = 0, j = 0;; i++, j++){
-			if(*(str + j) == LF){
-				*(buf + i) = CR;
-				*(buf + (++i)) = LF;
-			}else{
-				*(buf + i) = *(str + j);
-			}
-			
-			if(*(str + j) == '\0')
-				break;
-		}
-		
-		delete[] *text;
-		*text = buf;
-	}else if(retcode == M_LF) {
-		ConvertReturnsToLF(str);
-	}
-}
-
-/***********************************************************
- * ConvertReturnCode
- ***********************************************************/
-void
-Encoding::ConvertReturnCode(BString &text, int32 retcode)
-{
-	char* str = new char[text.Length()+1];
-	::strcpy(str,text.String());
-	const int32	len = text.Length();
-	str[len] = '\0';
-	
-	if(retcode == M_CR){
-		ConvertReturnsToCR(text);
-	}else if(retcode == M_CRLF){
-		ConvertReturnsToLF(text);
-		text.ReplaceAll("\n","\r\n");
-	}else if(retcode == M_LF) {
-		ConvertReturnsToLF(text);
-	}
-	delete[] str;
 }
 
 /***********************************************************
@@ -688,16 +645,21 @@ Encoding::ConvertReturnsToCR(char* text)
 }
 
 /***********************************************************
- * ConvertReturnsToLF
+ * ConvertReturnsToCRLF
+ *	NOTE: you need to prepare enough buffer
  ***********************************************************/
 void
-Encoding::ConvertReturnsToLF(BString &str)
+Encoding::ConvertReturnsToCRLF(char* text)
 {	
-	char *text = new char[str.Length()+1];
-	::strcpy(text,str.String());
 	for(int32 i = 0, j = 0; true; i++, j++){
-		if(*(text + i) == CR){
-			*(text + j) = LF;
+		if(*(text + i) == LF){
+			*(text + j) = CR;
+			*(text + j + 1) = LF;
+			j++;
+		}else if(*(text+i) == CR) {
+			*(text + j) = CR;
+			*(text + j + 1) = LF;
+			j++;
 			if(*(text + i + 1) == LF)
 				i++;
 		}else{
@@ -706,8 +668,43 @@ Encoding::ConvertReturnsToLF(BString &str)
 				break;
 		}
 	}
-	str = text;
-	delete[] text;
+}
+
+/***********************************************************
+ * ConvertReturnsToCRLF
+ ***********************************************************/
+void
+Encoding::ConvertReturnsToCRLF(char** intext)
+{	
+	char *text = new char[::strlen(*intext)*2];
+	::strcpy(text,*intext);
+	ConvertReturnsToCRLF(text);
+	delete[] *intext;
+	*intext = text;
+}
+
+/***********************************************************
+ * ConvertReturnsToCRLF
+ ***********************************************************/
+void
+Encoding::ConvertReturnsToCRLF(BString &str)
+{	
+	int32 len = str.Length();
+	char *text = str.LockBuffer(len*2);
+	ConvertReturnsToCRLF(text);
+	str.UnlockBuffer();	
+}
+
+/***********************************************************
+ * ConvertReturnsToLF
+ ***********************************************************/
+void
+Encoding::ConvertReturnsToLF(BString &str)
+{	
+	int32 len = str.Length();
+	char *text = str.LockBuffer(len+1);
+	ConvertReturnsToLF(text);
+	str.UnlockBuffer();	
 }
 
 
@@ -717,21 +714,10 @@ Encoding::ConvertReturnsToLF(BString &str)
 void
 Encoding::ConvertReturnsToCR(BString &str)
 {	
-	char *text = new char[str.Length()+1];
-	::strcpy(text,str.String());
-	for(int32 i = 0, j = 0; true; i++, j++){
-		if(*(text + i) == LF){
-			*(text + j) = CR;
-			if(*(text + i + 1) == CR)
-				i++;
-		}else{
-			*(text + j) = *(text + i);
-			if(*(text + j) == '\0')
-				break;
-		}
-	}
-	str = text;
-	delete[] text;
+	int32 len = str.Length();
+	char *text = str.LockBuffer(len+1);
+	ConvertReturnsToCR(text);
+	str.UnlockBuffer();	
 }
 
 /***********************************************************
