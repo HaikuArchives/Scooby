@@ -77,6 +77,8 @@ public:
 					~HMailView(void);
 			
 			void	ResetFont();
+			void	ResetTextRunArray();
+			
 			bool	IsShowingHeader()const {return fHeader;}
 			bool	IsShowingRawMessage()const {return fRaw;}
 			

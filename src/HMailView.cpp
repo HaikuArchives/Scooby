@@ -383,6 +383,7 @@ void HMailView::MessageReceived(BMessage *msg)
 			StopLoad();
 			Window()->Lock();
 			msg->FindBool("header", &fHeader);
+			ResetTextRunArray();
 			SetText(NULL);
 			LoadMessage(fFile, FALSE, FALSE, NULL);
 			break;
@@ -392,6 +393,7 @@ void HMailView::MessageReceived(BMessage *msg)
 			StopLoad();
 			Window()->Lock();
 			msg->FindBool("raw", &fRaw);
+			ResetTextRunArray();
 			SetText(NULL);
 			LoadMessage(fFile, FALSE, FALSE, NULL);
 			break;
@@ -408,6 +410,22 @@ void HMailView::MessageReceived(BMessage *msg)
 		default:
 			_inherited::MessageReceived(msg);
 	}
+}
+
+/***********************************************************
+ * ResetTextRunArray
+ ***********************************************************/
+void HMailView::ResetTextRunArray()
+{
+	text_run_array array;
+	BFont		font;
+	uint32		propa;
+	
+	GetFontAndColor(&font,&propa);
+	array.runs[0].offset = 0;
+	array.runs[0].color = kBlack;
+	array.runs[0].font = font;
+	SetRunArray(0,TextLength(),&array);
 }
 
 //--------------------------------------------------------------------
