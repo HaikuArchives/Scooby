@@ -440,7 +440,7 @@ PopClient::Retr(int32 index,BString &content)
 		}
 	}
 	delete buf;
-
+	content.Truncate(content.Length()-3);
 	content.ReplaceAll("\n..","\n.");
 	return B_OK;
 }
