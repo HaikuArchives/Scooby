@@ -65,6 +65,8 @@ public:
 					//!Constructor.
 						HWindow(BRect rect,
 								const char* name);
+				
+				void Show();
 
 					//!Returns folder selection index.
 				int32	FolderSelection();

@@ -6,6 +6,7 @@
 #include "HPrefWindow.h"
 #include "Encoding.h"
 
+#include <stdlib.h>
 #include <ClassInfo.h>
 #include <MenuField.h>
 #include <Menu.h>
@@ -15,7 +16,7 @@
 #include <Debug.h>
 #include <CheckBox.h>
 #include <StringView.h>
-#include <stdlib.h>
+#include <InterfaceDefs.h>
 
 const char *kTimeFormat[] = {"%a, %d %b %Y %r",
 							"%a, %d %b %y %T",
@@ -224,21 +225,38 @@ HGeneralSettingView::InitGUI()
 	frame.right = box->Bounds().right-10;
 	
 	int32 count = sizeof(kLabels)/sizeof(kLabels[0]);
-	for(int32 i = 0;i < count;i++)
+	int32 i;
+	for(i=0 ; i<count ; i++)
 	{
 		checkbox = new BCheckBox(frame,kNames[i],_(kLabels[i]),NULL);
 		prefs->GetData(kNames[i],&bValue);
 		checkbox->SetValue(bValue);
 		box->AddChild(checkbox);
-		if(i%2 != 0)
-			frame.OffsetBy(x_offset,0);
-		else
-			frame.OffsetBy(-x_offset,22);
-		
-		if(i == count-1 && i%2 != 0)
-				frame.OffsetBy(-x_offset,22);
+		if(i%2 != 0)	frame.OffsetBy(x_offset,0);
+		else			frame.OffsetBy(-x_offset,22);
 	}
-	
+
+	frame.right = frame.left + StringWidth(_("Start in workspace")) + 20;
+	checkbox = new BCheckBox(frame,"check_workspace",_("Start in workspace"),NULL);
+	prefs->GetData("check_workspace",&bValue);
+	checkbox->SetValue(bValue);
+	box->AddChild(checkbox);
+	frame2 = frame;
+	frame2.OffsetBy(frame2.Width(),0);
+	frame2.right = frame2.left + 25;
+	int32 ws;
+	prefs->GetData("workspace",&ws);
+	if (ws < 1)							ws = 1;
+	else if (ws > count_workspaces())	ws = count_workspaces();
+	numberCtrl = new NumberControl(frame2,"workspace","",ws,NULL);
+	numberCtrl->SetDivider(0);
+	numberCtrl->SetAlignment(B_ALIGN_LEFT,B_ALIGN_RIGHT);
+	box->AddChild(numberCtrl);
+	i++;
+
+	if (i%2) {
+		frame.OffsetBy(-x_offset,22);
+	}
 	count = sizeof(kTimeFormat)/sizeof(kTimeFormat[0]);
 	menu = new BMenu("time_format");
 	for(int32 i = 0;i < count;i++)
@@ -345,8 +363,16 @@ HGeneralSettingView::Save()
 	item = menu->FindMarked();
 	if(item)
 		prefs->SetData("time_format",kTimeFormat[menu->IndexOf(item)]);
-	
-	
+
+	// workspace
+	checkBox = static_cast<BCheckBox *>(FindView("check_workspace"));
+	prefs->SetData("check_workspace",(bool)checkBox->Value());
+	numCtrl = static_cast<NumberControl *>(FindView("workspace"));
+	int32 ws = numCtrl->Value();
+	if (ws < 1)							ws = 1;
+	else if (ws > count_workspaces())	ws = count_workspaces();
+	prefs->SetData("workspace",ws);
+
 	prefs->StorePrefs();
 	((HApp*)be_app)->MainWindow()->PostMessage(M_PREFS_CHANGED);
 }

@@ -52,11 +52,12 @@
  ***********************************************************/
 HWindow::HWindow(BRect rect,
 				const char* name)
-	:BWindow(rect,name,B_DOCUMENT_WINDOW,B_ASYNCHRONOUS_CONTROLS)
+	:BWindow(rect,name,B_DOCUMENT_WINDOW,B_ASYNCHRONOUS_CONTROLS|B_NO_WORKSPACE_ACTIVATION)
 	,fCheckIdleTime(time(NULL))
 	,fCurrentDeskbarIcon(DESKBAR_NORMAL_ICON)
 	,fOpenPanel(NULL)
 {
+	HPrefs *prefs = ((HApp*)be_app)->Prefs();
 	SetPulseRate(100000);
 	AddShortcut('/',0,new BMessage(B_ZOOM));
 	
@@ -73,9 +74,21 @@ HWindow::HWindow(BRect rect,
 	
 	// Deskbar
 	bool use;
-	((HApp*)be_app)->Prefs()->GetData("use_desktray",&use);
-	if(use)
+	prefs->GetData("use_desktray",&use);
+	if (use)
 		InstallToDeskbar();
+
+	// workspace	
+	bool bws;
+	prefs->GetData("check_workspace",&bws);
+	if (bws) {
+		int32 ws;
+		prefs->GetData("workspace",&ws);
+		if (ws < 1)							ws = 1;
+		else if (ws > count_workspaces())	ws = count_workspaces();
+		SetWorkspaces(1<<(ws-1));
+	}
+
 	fLEDAnimation = new LEDAnimation();
 }
 
@@ -86,6 +99,12 @@ HWindow::~HWindow()
 {
 	delete fOpenPanel;
 	delete fLEDAnimation;
+}
+
+void HWindow::Show()
+{
+	BWindow::Show();
+	SetFlags(Flags() & ~B_NO_WORKSPACE_ACTIVATION);
 }
 
 /***********************************************************

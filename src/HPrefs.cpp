@@ -58,5 +58,7 @@ HPrefs::MakeDefault()
 	fDefaultMessage->AddBool("led_blink",true);
 	fDefaultMessage->AddFloat("wrapping_limit",424);
 	fDefaultMessage->AddBool("use_ruler",true);
+	fDefaultMessage->AddBool("check_workspace",false);
+	fDefaultMessage->AddInt32("workspace",1);
 	HSetting::MakeDefault();
 }
