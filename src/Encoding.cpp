@@ -13,6 +13,10 @@ enum {
 	SS2 = 142
 };
 
+#ifdef USE_ICONV
+#include "iconv.h"
+#endif
+
 const char *kCharsets[] ={"ISO-8859-1",
 								"ISO-8859-2",
 								"ISO-8859-3",
@@ -22,13 +26,9 @@ const char *kCharsets[] ={"ISO-8859-1",
 								"ISO-8859-7",
 								"ISO-8859-8",
 								"ISO-8859-9",
-								"ISO-8859-10",
 								"ISO-2022-JP",
 								"koi8-r",
-								"euc-kr",
-								"ISO-8859-13",
-								"ISO-8859-14",
-								"ISO-8859-15"};
+								"euc-kr"};
 	
 const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_ISO2_CONVERSION,
@@ -39,13 +39,9 @@ const int32 kEncodings[] = {B_ISO1_CONVERSION,
 								B_ISO7_CONVERSION,
 								B_ISO8_CONVERSION,
 								B_ISO9_CONVERSION,
-								B_ISO10_CONVERSION,
 								B_JIS_CONVERSION,
 								B_KOI8R_CONVERSION,
-								B_EUC_KR_CONVERSION,
-								B_ISO13_CONVERSION,
-								B_ISO14_CONVERSION,
-								B_ISO15_CONVERSION};
+								B_EUC_KR_CONVERSION};
 
 const int32 kNumCharset = 12;
 
@@ -334,7 +330,7 @@ Encoding::p_Encoding(const char* charset)
 	
 	for(i = 0;i < kNumCharset;i++)
 	{
-		if(::strcasecmp(charset,kCharsets[i]) == 0)
+		if(::strncasecmp(charset,kCharsets[i],strlen(kCharsets[i])) == 0)
 		{
 			encoding = kEncodings[i];
 			break;
@@ -362,11 +358,34 @@ Encoding::ConvertFromUTF8(BString &text,const char* charset)
 void
 Encoding::ConvertToUTF8(char** text,const char* charset)
 {
+#ifdef USE_ICONV
+	size_t inlen = ::strlen(*text) + 1;
+	
+	iconv_t cd;
+	cd = iconv_open("UTF-8",charset);
+	if(cd == (iconv_t)(-1))
+		return;
+	size_t outlen = inlen*2;
+	char *outbuf = new char[outlen];
+	const char* inbuf = *text;
+	::memset(outbuf,0,outlen);
+	char *outbufp = outbuf;
+	size_t r = iconv(cd,&inbuf,&inlen,&outbufp,&outlen);
+	if(r < 0)
+	{
+		delete[] outbuf;
+		return;
+	}
+	delete[] *text;
+	*text = outbuf;
+	iconv_close(cd);
+#else
 	int32 encoding = p_Encoding(charset);
 	
 	if(encoding < 0)
 		return;
 	ConvertToUTF8(text,encoding);
+#endif
 }
 
 
@@ -389,11 +408,29 @@ Encoding::ConvertFromUTF8(char** text,const char* charset)
 void
 Encoding::ConvertToUTF8(BString &text,const char* charset)
 {
+#ifdef USE_ICONV
+	size_t inlen = text.Length();
+	char *outbuf = new char[text.Length()*3];
+	size_t outlen = text.Length()*3;
+	iconv_t handle;
+	const char *inbuf = text.String();
+
+	handle = iconv_open("UTF-8",charset);
+	if(handle )
+	{
+		iconv(handle,&inbuf,&inlen,&outbuf,&outlen);
+	
+		text = outbuf;
+		delete[] outbuf;
+	}
+	iconv_close(handle);
+#else
 	int32 encoding = p_Encoding(charset);
 
 	if(encoding < 0)
 		return;
 	ConvertToUTF8(text,encoding);
+#endif
 }
 
 /***********************************************************
