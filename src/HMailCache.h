@@ -14,6 +14,7 @@ public:
 			status_t		Open(BList &out,HFolderItem *item);	
 			status_t		Save(BList &list);
 			
+				int32		CountItems();
 			status_t		Append(BList &list);
 protected:
 					void	ReadString(BMemoryIO &buf,char** out);

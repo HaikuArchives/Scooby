@@ -234,3 +234,17 @@ HMailCache::SaveToFile(BMallocIO &buf,BFile &file)
 	file.SetSize(len);
 	return B_OK;
 }
+
+/***********************************************************
+ * CountItems
+ ***********************************************************/
+int32
+HMailCache::CountItems()
+{
+	BFile file(fPath,B_READ_ONLY);
+	if(file.InitCheck() != B_OK)
+		return -1;
+	HEADER header;
+	file.Read(&header,HEADER_SIZE);
+	return header.count;
+}
