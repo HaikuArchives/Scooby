@@ -203,5 +203,6 @@ HHtmlView::GetDefaultEncoding(int32 &outEncoding)
 		
 	}
 	PRINT(("Encoding:%d -> %d\n",encoding,result));
+	outEncoding = result;
 	return encoding;
 }
