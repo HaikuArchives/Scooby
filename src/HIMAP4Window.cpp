@@ -30,8 +30,8 @@ HIMAP4Window::HIMAP4Window(BRect rect,
 		SetText("address",item->Server());
 		SetText("login",item->Login());
 		SetText("password",item->Password());
-		SetText("folder",item->FolderName());
-		SetText("name",item->Name() );
+		SetText("folder",item->RemoteFolderName());
+		SetText("name",item->FolderName() );
 		BString port;
 		port << (int32)item->Port();
 		SetText("port",port.String());

@@ -14,6 +14,8 @@
 #include <Autolock.h>
 #include <Alert.h>
 
+
+#define xEOF    236
 #define CRLF "\r\n"
 #define MAX_RECIEVE_BUF_SIZE 1024000
 
@@ -595,18 +597,18 @@ PopClient::ReceiveLine(BString &line)
 	if(!fEndpoint)
 		return B_ERROR;
 	int32 len = 0,rcv;
-	char c = 0;
+	int c = 0;
 	line = "";
 	
 	if(fEndpoint->IsDataPending(kTimeout))
 	{	
-		while(c != '\n')
+		while(c != '\n'&& c != EOF && c != xEOF)
 		{
 			rcv = fEndpoint->Receive(&c,1);
 			if(rcv <=0)
 				break;
 			len += rcv;
-			line += c;
+			line += (char)c;
 		}
 	}else{
 		(new BAlert("",_("POP3 socket timeout."),_("OK")))->Go();
