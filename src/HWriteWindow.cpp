@@ -513,17 +513,17 @@ HWriteWindow::InitGUI()
 	if(kToolbarHeight == 50)
 		toolbox->UseLabel(true);
 	toolbox->AddButton("Send",utils.GetBitmapResource('BBMP',"Send"),
-					new BMessage(M_SEND_NOW),"Send Message");
+					new BMessage(M_SEND_NOW),_("Send Message"));
 	toolbox->AddButton("Later",utils.GetBitmapResource('BBMP',"Send Later"),
-					new BMessage(M_SEND_LATER),"Send Later");
+					new BMessage(M_SEND_LATER),_("Send Later"));
 	toolbox->AddButton("Draft",utils.GetBitmapResource('BBMP',"Draft"),
-					new BMessage(M_SAVE_DRAFT),"Save Message As Draft");
+					new BMessage(M_SAVE_DRAFT),_("Save Message As Draft"));
 	toolbox->AddSpace();
 	toolbox->AddButton("Print",utils.GetBitmapResource('BBMP',"Printer"),new BMessage(M_PRINT_MESSAGE),_("Print Message"));
 	
 	toolbox->AddSpace();
 	toolbox->AddButton("Attach",utils.GetBitmapResource('BBMP',"Enclosure"),
-					new BMessage(M_ADD_ENCLOSURE),"Add Attachment");
+					new BMessage(M_ADD_ENCLOSURE),_("Add Attachment"));
 	
 	
 	AddChild(toolbox);
