@@ -7,8 +7,6 @@
 
 #define CRLF "\r\n";
 
-#define xEOF    236
-
 const bigtime_t kIMAP4ClientTimeout = 1000000*60; // 60 sec
 
 
@@ -610,7 +608,7 @@ IMAP4Client::ReceiveLine(BString &out)
 	out = "";
 	if(IsDataPending(kIMAP4ClientTimeout))
 	{
-		while(c != '\n' && c != EOF && c != xEOF)
+		while(c != '\n' && c != EOF)
 		{
 			r = Receive(&c,1);
 			if(r <= 0)

@@ -1,5 +1,6 @@
 #include "SmtpClient.h"
 #include "md5.h"
+#include "base64.h"
 
 #include <stdlib.h>
 #include <Debug.h>
@@ -87,24 +88,24 @@ SmtpClient::Connect(const char* address,int16 port,bool esmtp)
  * Login
  ***********************************************************/
 status_t
-SmtpClient::Login(const char* login,const char* password)
+SmtpClient::Login(const char* _login,const char* password)
 {
 	if(fAuthType==0)
 		return B_ERROR;
-		
+	const char* login = _login;		
 	char hex_digest[33];
 	BString out;
 	if(fAuthType&CRAM_MD5)
 	{
+		//******* CRAM-MD5 Authentication ( not tested yet.)
 		SendCommand("AUTH CRAM-MD5\r\n");
 		const char* res = fLog.String();
 		
 		if(strncmp(res,"334",3)!=0)
 			return B_ERROR;
 		char *base = new char[::strlen(&res[4])+1];
-		::strcpy(base,res+4);
 		int32 baselen = ::strlen(base);
-		baselen = ::decode_base64(base,base,baselen);
+		baselen = ::decode64(base,base,baselen);
 		base[baselen] = '\0';
 		
 		int32 passlen = strlen(password);
@@ -119,7 +120,7 @@ SmtpClient::Login(const char* login,const char* password)
 		char *resp = new char[(strlen(hex_digest)+strlen(login))*2+3];
 		
 		::sprintf(resp,"%s %s",login,hex_digest);
-		baselen = ::encode_base64(resp,resp,strlen(resp));
+		baselen = ::encode64(resp,resp,strlen(resp));
 		resp[baselen]='\0';
 		::strcat(resp,"\r\n");
 		SendCommand(resp);
@@ -133,17 +134,15 @@ SmtpClient::Login(const char* login,const char* password)
 	}else if(fAuthType&DIGEST_MD5){
 	
 	}else if(fAuthType&LOGIN){
+	//******* LOGIN Authentication ( tested. work fine)
 		SendCommand("AUTH LOGIN\r\n");
 		const char* res = fLog.String();
 		
 		if(strncmp(res,"334",3)!=0)
 			return B_ERROR;
 		// Send login name as base64
-		int32 len;
-		char* login64 = new char[::strlen(login)*2+3];
-		::strcpy(login64,login);
-		len = ::encode_base64(login64,login64,strlen(login));
-		login64[len]='\0';
+		char* login64 = new char[::strlen(login)*3+3];
+		::encode64(login64,(char*)login,strlen(login));
 		::strcat(login64,"\r\n");
 		SendCommand(login64);
 		delete [] login64;
@@ -152,18 +151,15 @@ SmtpClient::Login(const char* login,const char* password)
 		if(strncmp(res,"334",3)!=0)
 			return B_ERROR;
 		// Send password as base64
-		login64 = new char[::strlen(password)*2+3];
-		::strcpy(login64,password);
-		len = ::encode_base64(login64,login64,strlen(password));
-		login64[len]='\0';
+		login64 = new char[::strlen(password)*3+3];
+		::encode64(login64,(char*)password,strlen(password));
 		::strcat(login64,"\r\n");
 		SendCommand(login64);
 		delete[] login64;
 		res = fLog.String();
-		//if(atol(res)<500)
-		//	return B_OK;
-	}else if(fAuthType&PLAIN){
-	
+		if(atol(res)<500)
+			return B_OK;
+	}else if(fAuthType&PLAIN){	
 	}	
 	return B_ERROR;
 }

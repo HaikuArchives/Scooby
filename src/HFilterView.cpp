@@ -143,7 +143,7 @@ HFilterView::InitGUI()
 	fActionMenu->SetDivider(0);
 	box->AddChild(fActionMenu);
 	AddChild(box);
-	menu  = new BMenu("folder");
+	menu  = new BMenu(_("folder"));
 /*	
 	::find_directory(B_USER_DIRECTORY,&path);
 	path.Append("mail");
@@ -156,7 +156,7 @@ HFilterView::InitGUI()
 	if(item)
 		item->SetMarked(true);
 	menu->SetLabelFromMarked(true);
-	rect.OffsetBy(100,0);
+	rect.OffsetBy(StringWidth(_("Move to")) + 30,0);
 	fFolderMenu = new BMenuField(rect,"folder","",menu);
 	fFolderMenu->SetDivider(0);
 	box->AddChild(fFolderMenu);

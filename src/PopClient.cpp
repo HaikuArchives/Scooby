@@ -7,7 +7,6 @@
 #include <String.h>
 #include <stdlib.h>
 
-#define xEOF    236
 #define CRLF "\r\n"
 #define MAX_RECIEVE_BUF_SIZE 1024000
 	
@@ -457,7 +456,7 @@ PopClient::ReceiveLine(BString &line)
 	
 	if(IsDataPending(kTimeout))
 	{	
-		while(c != '\n'&& c != EOF && c != xEOF)
+		while(c != '\n'&& c != EOF )
 		{
 			rcv = Receive(&c,1);
 			if(rcv <=0)

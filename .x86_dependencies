@@ -104,7 +104,8 @@ $(OBJ_DIR)/HPopClientView.o : ./src/HPopClientView.cpp src/HPopClientView.h \
  src/TrackerString.h src/RegExp.h
 $(OBJ_DIR)/PopClient.o : ./src/PopClient.cpp src/PopClient.h src/md5.h \
  src/md5global.h libs/Utils/HFile.h src/TrackerString.h src/RegExp.h
-$(OBJ_DIR)/SmtpClient.o : ./src/SmtpClient.cpp src/SmtpClient.h
+$(OBJ_DIR)/SmtpClient.o : ./src/SmtpClient.cpp src/SmtpClient.h src/md5.h \
+ src/md5global.h src/base64.h
 $(OBJ_DIR)/HPrefWindow.o : ./src/HPrefWindow.cpp src/HPrefWindow.h \
  src/HFilterView.h src/HAccountView.h src/HGeneralSettingView.h \
  src/HSignatureView.h libs/Utils/CTextView.h src/HApp.h src/HPrefs.h \
@@ -119,13 +120,13 @@ $(OBJ_DIR)/HAddressView.o : ./src/HAddressView.cpp src/HAddressView.h \
 $(OBJ_DIR)/HCriteriaView.o : ./src/HCriteriaView.cpp src/HCriteriaView.h \
  src/HApp.h
 $(OBJ_DIR)/HAccountView.o : ./src/HAccountView.cpp src/HAccountView.h src/HApp.h \
- libs/Utils/TrackerUtils.h libs/Utils/NumberControl.h src/Utilities.h
+ libs/Utils/TrackerUtils.h src/Utilities.h libs/Utils/NumberControl.h
 $(OBJ_DIR)/HSmtpClientView.o : ./src/HSmtpClientView.cpp src/HSmtpClientView.h \
  libs/Utils/ResourceUtils.h src/HMailItem.h libs/Santa/CLVEasyItem.h \
  libs/Santa/CLVListItem.h src/SmtpLooper.h src/ExtraMailAttr.h \
  src/HApp.h
 $(OBJ_DIR)/Encoding.o : ./src/Encoding.cpp src/Encoding.h src/HApp.h src/HPrefs.h \
- libs/Utils/HSetting.h
+ libs/Utils/HSetting.h src/base64.h
 $(OBJ_DIR)/HSignatureView.o : ./src/HSignatureView.cpp src/HSignatureView.h \
  libs/Utils/CTextView.h src/HApp.h libs/Utils/TrackerUtils.h \
  src/HPrefs.h libs/Utils/HSetting.h
@@ -153,7 +154,8 @@ $(OBJ_DIR)/HReadWindow.o : ./src/HReadWindow.cpp src/HReadWindow.h \
  src/HAttachmentList.h libs/Utils/TrackerUtils.h src/HTabView.h \
  src/Utilities.h src/StatusBar.h src/StatusItem.h
 $(OBJ_DIR)/HIMAP4Item.o : ./src/HIMAP4Item.cpp src/HIMAP4Item.h src/HMailItem.h \
- libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h src/IMAP4Client.h
+ libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h src/IMAP4Client.h \
+ src/HIMAP4Folder.h src/HFolderItem.h
 $(OBJ_DIR)/HIMAP4Folder.o : ./src/HIMAP4Folder.cpp src/HIMAP4Folder.h \
  src/HFolderItem.h libs/Santa/CLVEasyItem.h libs/Santa/CLVListItem.h \
  src/IMAP4Client.h src/HApp.h src/HIMAP4Item.h src/HMailItem.h \
@@ -161,7 +163,8 @@ $(OBJ_DIR)/HIMAP4Folder.o : ./src/HIMAP4Folder.cpp src/HIMAP4Folder.h \
  libs/Santa/ColumnListView.h libs/Santa/Colors.h \
  libs/Santa/CLVColumn.h libs/Santa/PrefilledBitmap.h \
  libs/Santa/BetterScrollView.h libs/Santa/ScrollViewCorner.h \
- src/HSimpleFolderItem.h src/HCoolListView.h
+ src/HSimpleFolderItem.h src/HCoolListView.h libs/Utils/HString.h \
+ src/Utilities.h
 $(OBJ_DIR)/IMAP4Client.o : ./src/IMAP4Client.cpp src/IMAP4Client.h src/HApp.h
 $(OBJ_DIR)/HIMAP4Window.o : ./src/HIMAP4Window.cpp src/HIMAP4Window.h src/HApp.h \
  libs/Utils/NumberControl.h src/HIMAP4Folder.h src/HFolderItem.h \
@@ -227,3 +230,4 @@ $(OBJ_DIR)/PopLooper.o : ./src/PopLooper.cpp src/PopLooper.h src/PopClient.h \
  src/Encoding.h src/md5.h src/md5global.h src/HApp.h \
  libs/Utils/HFile.h src/HPopClientView.h src/TrackerString.h \
  src/RegExp.h
+$(OBJ_DIR)/base64.o : ./src/base64.c

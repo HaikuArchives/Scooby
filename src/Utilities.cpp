@@ -120,7 +120,8 @@ void LineUpdate(StatusItem *item)
 	view->GetSelection(&start,&end);
 			
 	BString label;
-	label << _("Row") << ": " << current+1 <<"  Col: " << start-lineoffset;
+	label << _("Row") << ": " << current + 1 
+			<< "  " << _("Col") << ": " << start - lineoffset;
 	item->SetLabel( label.String() );
 	item->ResizeToPreferred();
 }
