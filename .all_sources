@@ -55,4 +55,5 @@ SRCS= ./src/HFolderItem.cpp\
 	./src/base64.c\
 	./src/utf7.c\
 	./src/HWrapTextView.cpp\
-	./src/HRulerView.cpp
+	./src/HRulerView.cpp\
+	./src/HProgressBarView.cpp

@@ -1,9 +1,8 @@
 #ifndef __HCLIENTVIEW_H__
 #define __HCLIENTVIEW_H__
 
-#include <View.h>
+#include "HProgressBarView.h"
 #include <String.h>
-#include <StringView.h>
 #include <Message.h>
 
 class PopLooper;
@@ -12,7 +11,7 @@ enum{
 	M_POP_ABORT = 'mPaB'
 };
 
-class HPopClientView :public BView {
+class HPopClientView :public HProgressBarView {
 public:
 					HPopClientView(BRect rect
 								,const char* name);
@@ -20,18 +19,6 @@ public:
 			void	PopConnect(const char* name,
 							const char* addr,int16 port,
 							const char* login,const char* pass);
-			
-			void	StartBarberPole();
-			void	StopBarberPole();
-			
-			void	StartProgress() {fShowingProgress = true;}
-			void	StopProgress() {fShowingProgress = false;}
-			
-			
-			void	Update(float delta);
-			void	SetValue(float value);
-			void	SetMaxValue(float max) { fMaxValue = max;}
-			
 			bool	IsRunning() const {return fIsRunning;}
 			
 			void	Cancel();
@@ -52,15 +39,11 @@ protected:
 	//@{
 	//!Override function.
 			void	MessageReceived(BMessage *message);
-			void	Draw(BRect updateRect);
-			void	Pulse();
+			void	MouseDown(BPoint point);
 	//@}
-			BRect	BarberPoleInnerRect() const;	
-			BRect	BarberPoleOuterRect() const;
 			bool	Filter(const char* key,
 							int32 operation,
 							const char* value);
-			time_t	MakeTime_t(const char* date);
 			
 			void	SetNextRecvPos(const char* uidl);
 			
@@ -70,13 +53,6 @@ protected:
 									const char* content,
 									int32 offset);
 private:
-	BStringView		*fStringView;
-	int32			fLastBarberPoleOffset;
-	bool 			fShowingBarberPole;
-	bool			fShowingProgress;
-	BBitmap			*fBarberPoleBits;
-	float			fMaxValue;
-	float			fCurrentValue;
 	PopLooper		*fPopLooper;
 	BString			fLogin;
 	BString			fPassword;
@@ -96,5 +72,7 @@ private:
 	bool			fGotMails;
 	int32			fMailCurrentIndex;
 	int32			fMailMaxIndex;
+	
+	typedef		HProgressBarView	_inherited;
 };
 #endif
