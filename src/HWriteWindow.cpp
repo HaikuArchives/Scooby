@@ -204,8 +204,9 @@ HWriteWindow::InitMenu()
  	msg->AddPointer("targetwindow",this);
    	utils.AddMenuItem(aMenu,_("Find Next"),msg,be_app,be_app,'G',0);
    	aMenu->AddSeparatorItem();
+   	utils.AddMenuItem(aMenu,_("Check Spelling"),M_ENABLE_SPELLCHECKING,this,this,';',0);
    	utils.AddMenuItem(aMenu,_("Quote Selection"),M_QUOTE_SELECTION,this,this);
-
+	
    	// Mail
 	aMenu = new BMenu(_("Mail"));
 	utils.AddMenuItem(aMenu,_("Send Now"),M_SEND_NOW,this,this,'M',0,
@@ -338,6 +339,21 @@ HWriteWindow::MessageReceived(BMessage *message)
 {
 	switch(message->what)
 	{
+	// Enable spell checking
+	case M_ENABLE_SPELLCHECKING:
+	{
+		BMenuItem *item = KeyMenuBar()->FindItem(M_ENABLE_SPELLCHECKING);
+		item->SetMarked(!item->IsMarked());
+		
+		fTextView->SetEnableSpellChecking(item->IsMarked());
+		if(item->IsMarked())
+			fTextView->StartChecking(0,fTextView->TextLength());
+		else{
+			rgb_color black = {0,0,0,255};
+			fTextView->SetColor(0,fTextView->TextLength(),&black);
+		}
+		break;
+	}
 	// Send Now
 	case M_SEND_NOW:
 	{

@@ -4,7 +4,7 @@
 #include <TextView.h>
 #include <FilePanel.h>
 #include <Entry.h>
-#include "CTextView.h"
+#include "SpellCheckView.h"
 
 #define MESSAGE_TEXT		"Message:"
 #define MESSAGE_TEXT_H		 16
@@ -70,7 +70,7 @@ enum	MENUS	{/* app 	{M_NEW = SUBJECT_FIELD + 64, M_EDIT_SIGNATURE,
 								M_SIGNATURE,
 				/* encls*/ 	 M_ADD, M_REMOVE};
 
-class HMailView : public CTextView {
+class HMailView : public SpellCheckView {
 public:
 
 					HMailView(BRect, bool, BFile*);
@@ -129,7 +129,7 @@ private:
 	bool			fHeader;
 	bool			fReady;
 	
-	typedef CTextView _inherited;
+	typedef SpellCheckView _inherited;
 };
 
 
