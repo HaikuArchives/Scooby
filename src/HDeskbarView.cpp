@@ -39,13 +39,9 @@ HDeskbarView::HDeskbarView(BRect frame)
 		,fIcon(NULL)
 		,fCurrentIconState(DESKBAR_NEW_ICON)
 {
-//	const char* kLabels[] = {"New Message","Check Now","Quit"};
-//	for(int32 i = 0;i < 3;i++)
-//		fLabels[i] = strdup( kLabels[i] );
-	LocaleUtils utils(APP_SIG);
 	const char* kLabels[] = {"New Message","Check Now","Quit"};
 	for(int32 i = 0;i < 3;i++)
-		fLabels[i] = strdup( utils.GetText(kLabels[i]));
+		fLabels[i] = strdup( kLabels[i] );
 }
 
 /***********************************************************
