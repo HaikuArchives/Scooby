@@ -133,16 +133,24 @@ SmtpClient::SendCommand(const char* cmd)
 		return B_ERROR;
 	fLog = "";
 	// Receive
-	len = ReceiveLine(fLog);
+	while(1)
+	{
+		len = ReceiveLine(fLog);
 	
-	if(len <= 0)
-		return B_ERROR;
-	PRINT(("%s\n",fLog.String()));
-	char top = fLog[0];
-	int32 num = top - '0';
-	//PRINT(("ReplyNumber: %d\n",num));
-	if(num >= 5)
-		return B_ERROR;
+		if(len <= 0)
+			return B_ERROR;
+		PRINT(("%s\n",fLog.String()));
+		if(fLog.Length() > 4 && fLog[3] == ' ')
+		{
+			const char* top = fLog.String();
+			int32 num = atol( top );
+			PRINT(("ReplyNumber: %d\n",num));
+			if(num >= 500)
+				return B_ERROR;
+			else
+				break;
+		}
+	}
 	return B_OK;
 }
 
@@ -315,7 +323,6 @@ SmtpClient::SendMail(const char* from,
 		PRINT(("Err:Send content\n"));
 		return B_ERROR;
 	}
-	PRINT(("OUT\n"));
 	return B_OK;
 }
 

@@ -224,9 +224,16 @@ HPopClientView::MessageReceived(BMessage *message)
 					//PRINT(("%d\n",index));
 					fUidl = "";
 					if(fCanUseUIDL)
-						fUidl << index << " " << uidl;
-					else
-						fUidl << index << " " << size << "\r\n";
+					{
+						fUidl << index; 
+						fUidl += " ";
+						fUidl += uidl;
+					}else{
+						fUidl << index;
+						fUidl += " ";
+						fUidl << size;
+						fUidl += "\r\n";
+					}
 					count++;
 				}
 				p = strtok('\0',"\n");

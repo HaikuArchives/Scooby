@@ -1047,7 +1047,7 @@ HWindow::AddPopServer(entry_ref ref,BMessage &sendMsg)
 	if(retrieve == 2)
 		msg.FindInt32("delete_day",&iValue);
 	
-	BString uidl;
+	BString uidl("");
 	if(msg.FindString("uidl",&uidl) != B_OK)	
 		uidl= "";
 		
