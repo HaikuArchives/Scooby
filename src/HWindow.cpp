@@ -216,7 +216,7 @@ HWindow::InitGUI()
 	localrect.right = 200;
 	BetterScrollView *sview;
 	fFolderList = new HFolderList(localrect,&sview,"locallist");
-/********** Captionの追加 ***********/
+/********** Caption ***********/
 	BRect captionframe = eview->Bounds();
 	captionframe.bottom++; 
 	captionframe.top = captionframe.bottom - B_H_SCROLL_BAR_HEIGHT-1;
@@ -311,6 +311,9 @@ HWindow::InitGUI()
 	msg->AddBool("reply_all",true);
 	toolbox->AddButton("All",utils.GetBitmapResource('BBMP',"Reply To All"),msg,_("Reply To All"));
 	toolbox->AddButton("Fwd",utils.GetBitmapResource('BBMP',"Forward"),new BMessage(M_FORWARD_MESSAGE),_("Forward Message"));
+	toolbox->AddSpace();
+	toolbox->AddButton("Print",utils.GetBitmapResource('BBMP',"Printer"),new BMessage(M_PRINT_MESSAGE),_("Print"));
+	
 	toolbox->AddSpace();
 	toolbox->AddButton("Trash",utils.GetBitmapResource('BBMP',"Trash"),new BMessage(M_DELETE_MSG),_("Move To Trash"));
 	
