@@ -34,7 +34,7 @@ protected:
 			char*	cistrstr(char *cs, char *ct);
 			
 			void	OpenAttachment(int32 i);
-			void	SaveAttachment(int32 i,entry_ref dir,const char* name);
+			void	SaveAttachment(int32 i,entry_ref dir,const char* name,bool rename = true);
 			bool	IsURI(char c);
 			
 			void	ResetScrollBar();

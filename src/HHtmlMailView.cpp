@@ -8,6 +8,7 @@
 #include "Encoding.h"
 #include "HMailList.h"
 #include "HApp.h"
+#include "TrackerUtils.h"
 #include "HPrefs.h"
 
 #include <TabView.h>
@@ -127,7 +128,7 @@ HHtmlMailView::MessageReceived(BMessage *message)
 				(message->FindString("name",&name) == B_OK))
 			{
 				PRINT(("%s\n",name));
-				SaveAttachment(sel,ref,name);	
+				SaveAttachment(sel,ref,name,false);	
 			}else if(message->FindRef("directory",&ref) == B_OK){
 				
 				HAttachmentItem* item = cast_as(fAttachmentList->ItemAt(sel),HAttachmentItem);
@@ -248,7 +249,7 @@ HHtmlMailView::SetContent(BFile *file)
  * SaveAttachment
  ***********************************************************/
 void
-HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name)
+HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name,bool rename)
 {
 	HAttachmentItem *item = cast_as(fAttachmentList->ItemAt(sel),HAttachmentItem);
 	if(!item)
@@ -256,6 +257,7 @@ HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name)
 		beep();
 		return;
 	}
+	BDirectory destDir(&ref);
 	BPath path(&ref);
 	path.Append(name);
 	
@@ -272,16 +274,21 @@ HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name)
 	::memcpy(data,&buf[file_offset],data_len);
 	data[data_len] = '\0';
 	
-	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
-	
+	BFile file;
+	if(rename)
+		TrackerUtils().SmartCreateFile(&file,&destDir,path.Leaf(),"_");
+	else{
+		if(file.SetTo(path.Path(),B_WRITE_ONLY|B_CREATE_FILE) != B_OK)
+			return;
+	}	
 	const char* encoding = item->Encoding();
-	if(::strcasecmp(encoding,"base64") == 0)
+	if(encoding && ::strcasecmp(encoding,"base64") == 0)
 	{
 		bool is_text = false;
 		if(::strncmp(item->ContentType(),"text",4) == 0)
 			is_text = true;
 		data_len = decode_base64(data, data, data_len, is_text);
-	}else if(::strcasecmp(encoding,"base64") == 0){
+	}else if(encoding && ::strcasecmp(encoding,"base64") == 0){
 		data_len = Encoding().decode_quoted_printable(data,data,data_len,false);
 	}
 	file.Write(data,data_len);
