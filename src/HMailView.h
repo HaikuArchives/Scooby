@@ -104,6 +104,10 @@ protected:
 			void	MessageReceived(BMessage*);
 			void	MouseDown(BPoint);
 			void	MouseMoved(BPoint, uint32, const BMessage*);
+			void GetDragParameters(BMessage *drag
+								,BBitmap **bitmap
+								,BPoint *point
+								,BHandler **handler);
 	//@}
 	static	bool	get_semaphore(BWindow*, sem_id*);
 	static	bool	insert(reader*, char*, int32, bool);
