@@ -519,6 +519,12 @@ HAccountView::SetEnableControls(bool enable)
 	field->SetEnabled(enable);
 	if(!enable)
 		field->Menu()->ItemAt(0)->SetMarked(true);
+		
+	BStringView *stringView = cast_as(FindView("days"),BStringView);
+	stringView->SetHighColor((enable)?
+						tint_color(ui_color(B_PANEL_BACKGROUND_COLOR),B_DARKEN_MAX_TINT)
+						:tint_color(ui_color(B_PANEL_BACKGROUND_COLOR),B_DARKEN_3_TINT));
+	stringView->Invalidate();
 }
 
 /***********************************************************
