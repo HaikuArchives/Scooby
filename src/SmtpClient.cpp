@@ -53,15 +53,10 @@ SmtpClient::Connect(const char* address,int16 port,bool esmtp)
 	
 	char *cmd = new char[::strlen(address)+6];
 	if(!esmtp)
-		::strcpy(cmd,"HELO ");
+		::sprintf(cmd,"HELO %s",(address)?address:"beos");
 	else
-		::strcpy(cmd,"EHLO ");
-		
-	if(address)
-		::strcat(cmd,address);
-	else
-		::strcat(cmd,"beos");
-		
+		::sprintf(cmd,"EHLO %s",(address)?address:"beos");
+				
 	if( SendCommand(cmd) != B_OK)
 	{
 		PRINT(("Err:%s\n",fLog.String()));
@@ -181,8 +176,7 @@ SmtpClient::Login(const char* _login,const char* password)
 		::encode64(login64,login64,((loginlen+1)*2+passlen));
 		
 		char *cmd = new char[strlen(login64)+12];
-		::strcpy(cmd,"AUTH PLAIN ");
-		::strcat(cmd, login64);
+		::sprintf(cmd,"AUTH PLAIN %s",login64);
 		delete[] login64;
 		
 		SendCommand(cmd);
