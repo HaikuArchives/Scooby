@@ -102,6 +102,7 @@ HPrefWindow::MessageReceived(BMessage *message)
 		PostMessage(message,fSignatureView);
 		break;
 	case M_FONT_CHANGED:
+	case 'FSel':
 		PostMessage(message,fGeneralView);
 		break;
 	default:
