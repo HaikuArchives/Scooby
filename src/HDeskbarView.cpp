@@ -171,6 +171,7 @@ HDeskbarView::ChangeIcon(int32 icon)
 	fCurrentIconState = icon;
 	delete fIcon;
 	fIcon = new_icon;
+	Invalidate();
 }
 
 /***********************************************************
