@@ -209,7 +209,7 @@ HHtmlMailView::OpenAttachment(int32 sel )
 	::get_ref_for_path(path.Path(),&ref);
 	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
 	
-	const char* encoding = item->Encoding();
+	const char* encoding = item->ContentEncoding();
 	if(encoding && ::strcasecmp(encoding,"base64") == 0)
 	{
 		bool is_text = false;
@@ -281,7 +281,7 @@ HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name,bool rena
 		if(file.SetTo(path.Path(),B_WRITE_ONLY|B_CREATE_FILE) != B_OK)
 			return;
 	}	
-	const char* encoding = item->Encoding();
+	const char* encoding = item->ContentEncoding();
 	if(encoding && ::strcasecmp(encoding,"base64") == 0)
 	{
 		bool is_text = false;
@@ -455,7 +455,7 @@ HHtmlMailView::LoadMessage(BFile *file)
 			BString part;
 			content.CopyInto(part,offset-header_len,data_len);
 			// Extract
-			const char* encoding = item->Encoding();
+			const char* encoding = item->ContentEncoding();
 					
 			if(encoding)
 			{

@@ -54,7 +54,8 @@ SpellCheckView::~SpellCheckView()
 	for(int32 i = 0;i < 27;i++)
 	{
 		BList *list = (BList*)fWordList.RemoveItem(26-i);
-		
+		if(!list)
+			continue;
 		int32 count = list->CountItems();
 		if(count <=0)
 			continue;
@@ -143,7 +144,7 @@ SpellCheckView::InsertText(const char				*inText,
 		end = inOffset+inLength;
 	else
 		check = true;
-	PRINT(("%d %d %d\n",start,end,inOffset));
+	
 	if(check && end-start > 1)
 		StartChecking(start,end);
 }
@@ -168,7 +169,6 @@ SpellCheckView::DeleteText(int32 fromOffset, int32 toOffset)
 bool
 SpellCheckView::CheckWord(const char* word)
 {
-	PRINT(("TEXT:%s\n",word ));
 	if(isalpha(word[0]))
 	{
 		int32 index = tolower(word[0]) - 'a';
