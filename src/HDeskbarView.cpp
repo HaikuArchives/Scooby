@@ -130,44 +130,42 @@ HDeskbarView::ChangeIcon(int32 icon)
 		return;
 		
 	BBitmap *new_icon(NULL);
+	char icon_name[10];
 	
 	switch(icon)
 	{
 	case DESKBAR_NORMAL_ICON:
 	{
-		entry_ref ref;
-		if(be_roster->FindApp(APP_SIG,&ref) == B_OK)
-		{
-			new_icon = new BBitmap(BRect(0.0,0.0,15.0,15.0),B_COLOR_8_BIT,true);
-			BNodeInfo::GetTrackerIcon(&ref,new_icon,B_MINI_ICON);
-		}
+		strcpy(icon_name ,"Read");
 		break;
 	}
 	case DESKBAR_NEW_ICON:
 	{
-		entry_ref ref;
-		if(be_roster->FindApp(APP_SIG,&ref) == B_OK)
-		{
-			// Load icon from Scooby's resource
-			BFile file(&ref,B_READ_ONLY);
-			if(file.InitCheck() != B_OK)
-				break;
-			BResources rsrc(&file);
-			size_t len;
-			const void *data = rsrc.LoadResource('BBMP',"Got mails", &len);
-			if(len == 0)
-				break;
-			BMemoryIO stream(data, len);
-			stream.Seek(0, SEEK_SET);
-			BMessage archive;
-			if (archive.Unflatten(&stream) != B_OK)
-				break;
-			new_icon = new BBitmap(&archive);
-		}
+		strcpy(icon_name , "New");
 		break;
 	}
 	}
 	
+	entry_ref ref;
+	if(be_roster->FindApp(APP_SIG,&ref) == B_OK)
+	{
+		// Load icon from Scooby's resource
+		BFile file(&ref,B_READ_ONLY);
+		if(file.InitCheck() != B_OK)
+			goto err;
+		BResources rsrc(&file);
+		size_t len;
+		const void *data = rsrc.LoadResource('BBMP',icon_name, &len);
+		if(len == 0)
+			goto err;
+		BMemoryIO stream(data, len);
+		stream.Seek(0, SEEK_SET);
+		BMessage archive;
+		if (archive.Unflatten(&stream) != B_OK)
+			goto err;
+		new_icon = new BBitmap(&archive);
+	}
+err:
 	fCurrentIconState = icon;
 	delete fIcon;
 	fIcon = new_icon;
