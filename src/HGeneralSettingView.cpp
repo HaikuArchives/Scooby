@@ -143,7 +143,7 @@ HGeneralSettingView::InitGUI()
 	
 	// Option
 	rect.OffsetBy(0,rect.Height()+5);
-	rect.bottom = rect.top + 130;
+	rect.bottom = rect.top + 150;
 	
 	box = new BBox(rect,"optionbox");
 	box->SetLabel(_("Options"));
@@ -190,6 +190,13 @@ HGeneralSettingView::InitGUI()
 	checkbox = new BCheckBox(frame,"desktray",
 				_("Use deskbar replicant"),NULL);
 	prefs->GetData("use_desktray",&bValue);
+	checkbox->SetValue(bValue);
+	box->AddChild(checkbox);
+	
+	frame.OffsetBy(0,22);
+	checkbox = new BCheckBox(frame,"html",
+				_("Use HTML view"),NULL);
+	prefs->GetData("use_html",&bValue);
 	checkbox->SetValue(bValue);
 	box->AddChild(checkbox);
 	
@@ -262,6 +269,8 @@ HGeneralSettingView::Save()
 	prefs->SetData("use_folder_cache",(bool)checkBox->Value());
 	checkBox = cast_as(FindView("desktray"),BCheckBox);
 	prefs->SetData("use_desktray",(bool)checkBox->Value());
+	checkBox = cast_as(FindView("html"),BCheckBox);
+	prefs->SetData("use_html",(bool)checkBox->Value());
 	
 	menufield = cast_as(FindView("toolbar"),BMenuField);
 	menu = menufield->Menu();

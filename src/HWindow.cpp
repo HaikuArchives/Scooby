@@ -25,6 +25,7 @@
 #include "HIMAP4Item.h"
 #include "HIMAP4Window.h"
 #include "HIMAP4Folder.h"
+#include "HHtmlMailView.h"
 
 #include <Box.h>
 #include <Beep.h>
@@ -51,6 +52,7 @@ HWindow::HWindow(BRect rect,
 	,fCurrentDeskbarIcon(DESKBAR_NORMAL_ICON)
 {
 	SetPulseRate(100000);
+	AddShortcut('/',0,new BMessage(B_ZOOM));
 	
 	if(mail_addr)
 		MakeWriteWindow(NULL,mail_addr);
@@ -236,13 +238,25 @@ HWindow::InitGUI()
 	entryrect.bottom = entryrect.top + DETAIL_VIEW_HEIGHT;
 	fDetailView = new HDetailView(entryrect,true);
 	subview->AddChild(fDetailView);
-	entryrect.top = entryrect.bottom+1;
+	entryrect.top = entryrect.bottom;
 	entryrect.bottom = subview->Bounds().bottom;
-	entryrect.right -= B_V_SCROLL_BAR_WIDTH;
-	fMailView = new HMailView(entryrect,true,NULL);
-	fMailView->MakeEditable(false);
-	BScrollView *scroll = new BScrollView("scroller",fMailView,B_FOLLOW_ALL,0,false,true);
-	subview->AddChild(scroll);
+	bool use_html;
+	((HApp*)be_app)->Prefs()->GetData("use_html",&use_html);
+	if(!use_html)
+	{
+		entryrect.right -= B_V_SCROLL_BAR_WIDTH;
+		HMailView* mailView = new HMailView(entryrect,true,NULL);
+		mailView->MakeEditable(false);
+		BScrollView *scroll = new BScrollView("scroller",mailView,B_FOLLOW_ALL,0,false,true);
+		subview->AddChild(scroll);
+		fMailView = cast_as(mailView,BView);
+	}else{
+		entryrect.top --;
+		HHtmlMailView *htmlMailView = new HHtmlMailView(entryrect,"scroller",false,B_FOLLOW_ALL);
+		subview->AddChild(htmlMailView);
+		fMailView = cast_as(htmlMailView,BView);
+	}
+	
 /********** Horizontal SplitPane **********/
 	BRect rightrect = bg->Bounds();
 	rightrect.top++;
@@ -325,14 +339,8 @@ HWindow::InitGUI()
 	
 	fFolderList->WatchQueryFolder();
 	fMailList->MakeFocus(true);	
-	/*
-	KeyMenuBar()->FindItem(B_CUT)->SetTarget(fMailView,this);
-	KeyMenuBar()->FindItem(B_COPY)->SetTarget(fMailView,this);
-	KeyMenuBar()->FindItem(B_PASTE)->SetTarget(fMailView,this);
-	KeyMenuBar()->FindItem(B_SELECT_ALL)->SetTarget(this);
-	*/
-	
-	KeyMenuBar()->FindItem(B_UNDO)->SetTarget(fMailView,this);
+	if(fMailView)
+		KeyMenuBar()->FindItem(B_UNDO)->SetTarget(fMailView,this);
 }
 
 /***********************************************************
@@ -461,7 +469,30 @@ HWindow::MessageReceived(BMessage *message)
 			break;
 		HMailItem *item = cast_as(fMailList->ItemAt(sel),HMailItem);
 		BMessage msg(*message);
-		msg.AddPointer("view",fMailView);
+		
+		if(is_kind_of(fMailView,HMailView))
+		{
+			// Normal mode
+			msg.AddPointer("view",fMailView);
+		}else{
+			// HTML mode
+			(new BAlert("","Not implemented yet\n","OK"))->Go();
+			break;
+			BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
+			int32 sel = tabview->Selection();
+			if(sel == 2|| sel < 0)
+				break;
+			BTab *tab = tabview->TabAt(0);
+			BView *view= tab->View();
+			view = view->FindView("NetPositive");
+			
+			if(!(view = view->ChildAt(0)) || !(view = view->ChildAt(1)))
+				break;
+			BScrollBar *bar = cast_as(view,BScrollBar);
+			//PRINT(("%s\n",bar->Target()->Name()));
+			//PRINT(("%d\n",is_kind_of(view,BTextView)));
+			msg.AddPointer("view",bar->Target());	
+		}
 		msg.AddPointer("detail",fDetailView);
 		msg.AddString("job_name",item->fSubject.String());
 		be_app->PostMessage(&msg);
@@ -530,9 +561,10 @@ HWindow::MessageReceived(BMessage *message)
 	case M_SET_CONTENT:
 	{
 		entry_ref ref;
+		
 		if(message->FindRef("refs",&ref) != B_OK)
 		{
-			fMailView->SetContent(NULL);
+			PostMessage(M_SET_CONTENT,fMailView);
 			fDetailView->SetInfo("","","","","");
 			break;
 		}
@@ -541,10 +573,12 @@ HWindow::MessageReceived(BMessage *message)
 		if(file->InitCheck() != B_OK)
 		{
 			delete file;
-			fMailView->SetContent(NULL);
+			PostMessage(M_SET_CONTENT,fMailView);
 			break;
 		}
-		fMailView->SetContent(file);
+		BMessage msg(M_SET_CONTENT);
+		msg.AddPointer("pointer",file);
+		PostMessage(&msg,fMailView);
 		// set header view
 		const char* kSubject,*kFrom,*kDate,*kCc,*kTo;
 	
@@ -580,7 +614,7 @@ HWindow::MessageReceived(BMessage *message)
 	}
 	case M_PREF_MSG:
 	{
-		HPrefWindow *win = new HPrefWindow(RectUtils().CenterRect(600,340));
+		HPrefWindow *win = new HPrefWindow(RectUtils().CenterRect(600,360));
 		win->Show();
 		break;
 	}
@@ -718,13 +752,22 @@ HWindow::MessageReceived(BMessage *message)
 	}
 	// Show header 
 	case M_HEADER:
-		message->AddBool("header",!fMailView->IsShowingHeader());
-		PostMessage(message,fMailView);
-		break;
+		if(is_kind_of(fMailView,HMailView))
+		{
+			HMailView *view = cast_as(fMailView,HMailView);
+			message->AddBool("header",!view->IsShowingHeader());
+			PostMessage(message,view);
+			break;
+		}
 	case M_RAW:
-		message->AddBool("raw",!fMailView->IsShowingRawMessage());
-		PostMessage(message,fMailView);
-		break;
+		if(is_kind_of(fMailView,HMailView))
+		{
+			HMailView *view = cast_as(fMailView,HMailView);
+		
+			message->AddBool("raw",!view->IsShowingRawMessage());
+			PostMessage(message,view);
+			break;
+		}
 	// Refresh Folder Cache
 	case M_REFRESH_CACHE:
 	{
@@ -769,7 +812,10 @@ HWindow::MessageReceived(BMessage *message)
 	// Update preferences
 	case M_PREFS_CHANGED:
 	{
-		fMailView->ResetFont();
+		if(is_kind_of(fMailView,HMailView))
+		{
+			cast_as(fMailView,HMailView)->ResetFont();
+		}
 		break;
 	}
 	// Select sibling mails
@@ -839,12 +885,23 @@ HWindow::MenusBeginning()
 	
 	bool mailSelected = (fMailList->CurrentSelection() <0)?false:true;
 	
-	item = KeyMenuBar()->FindItem(M_HEADER);
-	item->SetMarked(fMailView->IsShowingHeader());
-	item->SetEnabled(mailSelected);
-	item = KeyMenuBar()->FindItem(M_RAW);
-	item->SetMarked(fMailView->IsShowingRawMessage());
-	item->SetEnabled(mailSelected);
+	if(is_kind_of(fMailView,HMailView))
+	{
+		HMailView *view = cast_as(fMailView,HMailView);
+		item = KeyMenuBar()->FindItem(M_HEADER);
+		item->SetMarked(view->IsShowingHeader());
+		item->SetEnabled(mailSelected);
+		item = KeyMenuBar()->FindItem(M_RAW);
+		item->SetMarked(view->IsShowingRawMessage());
+		item->SetEnabled(mailSelected);
+	}else{
+		item = KeyMenuBar()->FindItem(M_HEADER);
+		item->SetMarked(false);
+		item->SetEnabled(false);
+		item = KeyMenuBar()->FindItem(M_RAW);
+		item->SetMarked(false);
+		item->SetEnabled(false);
+	}
 	item = KeyMenuBar()->FindItem(M_FILTER_MAIL);
 	item->SetEnabled(mailSelected);
 	item = KeyMenuBar()->FindItem(M_PRINT_MESSAGE);
@@ -853,14 +910,22 @@ HWindow::MenusBeginning()
 	// Copy	
 	int32 start,end;
 	BTextControl *ctrl(NULL);
-	if(CurrentFocus() == fMailView)
+	if(CurrentFocus() == fMailView )
 	{	
-		fMailView->GetSelection(&start,&end);
-	
-		if(start != end)
-			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+		BTextView *view;
+		if(is_kind_of(fMailView,HMailView))
+			view = cast_as(fMailView,BTextView);
 		else
-			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+			view = cast_as(fMailView->FindView("NetPositive"),BTextView);
+		if(view)
+		{
+			view->GetSelection(&start,&end);
+	
+			if(start != end)
+				KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+			else
+				KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+		}
 	}else if((ctrl = fDetailView->FocusedView())){
 		BTextView *textview = ctrl->TextView();
 		textview->GetSelection(&start,&end);
@@ -1427,21 +1492,52 @@ HWindow::DispatchMessage(BMessage *message,BHandler *handler)
 	{
 		const char* bytes;
 		int32 modifiers;
+		bool html = false;
 		
 		message->FindInt32("modifiers",&modifiers);
 		message->FindString("bytes",&bytes);
 		if(bytes[0] != B_SPACE)
 			return BWindow::DispatchMessage(message,handler);
-		BScrollBar *bar = fMailView->ScrollBar(B_VERTICAL);
+		BScrollBar *bar(NULL);
+		if(is_kind_of(fMailView,HMailView))
+			bar = fMailView->ScrollBar(B_VERTICAL);
+		else{
+			BTabView *tabview = cast_as(fMailView->FindView("tabview"),BTabView);
+			html = true;
+			if(tabview->Selection() == 0)
+			{
+				BTab *tab = tabview->TabAt(0);
+				BView *view = tab->View();
+				view = view->FindView("NetPositive");
+				if(view && (view = view->ChildAt(0)))
+				{
+					view = view->ChildAt(1);
+					bar = cast_as(view,BScrollBar);
+				}
+			}
+		}
+		if(!bar)
+		{
+			BWindow::DispatchMessage(message,handler);
+			return;
+		}
 		float min,max,cur;
 		bar->GetRange(&min,&max);
 		cur = bar->Value();
 		if(cur != max)
 		{
-			// Scroll down with space key
-			char b[1];
-			b[0] = (modifiers && B_SHIFT_KEY)?B_PAGE_UP:B_PAGE_DOWN;
-			fMailView->KeyDown(b,1);
+			if(!html)
+			{
+				// Scroll down with space key
+				char b[1];
+				b[0] = (modifiers & B_SHIFT_KEY)?B_PAGE_UP:B_PAGE_DOWN;
+				fMailView->KeyDown(b,1);
+			}else{
+				char b[1];
+				b[0] = (modifiers & B_SHIFT_KEY)?B_PAGE_UP:B_PAGE_DOWN;
+				BView *view = bar->Target();
+				view->KeyDown(b,1);
+			}
 		}else{
 			if(modifiers&B_SHIFT_KEY)
 				PostMessage(M_SELECT_PREV_MAIL,fMailList);
@@ -1702,9 +1798,13 @@ HWindow::QuitRequested()
 			return false;
 	}
 	Hide();
-	Unlock();
-	fMailView->StopLoad();
-	Lock();
+	if(is_kind_of(fMailView,HMailView))
+	{
+		HMailView *view = cast_as(fMailView,HMailView);
+		Unlock();
+		view->StopLoad();
+		Lock();
+	}
 	fMailList->MarkOldSelectionAsRead();
 	RemoveFromDeskbar();
 	// Save Window Rect

@@ -55,6 +55,6 @@ HPrefs::MakeDefault()
 	fDefaultMessage->AddInt16("toolbar_mode",0);
 	fDefaultMessage->AddBool("use_desktray",true);
 	fDefaultMessage->AddRect("read_win_rect",BRect(40,40,400,400));
-	
+	fDefaultMessage->AddBool("use_html",true);
 	HSetting::MakeDefault();
 }
