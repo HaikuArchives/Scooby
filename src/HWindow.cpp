@@ -1955,6 +1955,7 @@ HWindow::MBox2BeMail(const char* path)
 					if(size == file.Position() )
 						break;	
 				}
+				UpdateIfNeeded();
 				fPopClientView->SaveMail(msgStr.String(),&folder_ref,&file_ref,&del);
 			}
 		}
