@@ -14,6 +14,7 @@
 #include <ClassInfo.h>
 #include <fs_attr.h>
 #include <Node.h>
+#include <stdlib.h>
 
 void
 DisallowFilenameKeys(BTextView *textView)
@@ -278,3 +279,71 @@ void Alert(alert_type type,const char* fmt, ...)
 #endif
 	va_end(args);
 }
+
+/***********************************************************
+ * MakeTime_t
+ ***********************************************************/
+time_t MakeTime_t(const char* date)
+{
+	const char* mons[] = {"Jan","Feb","Mar","Apr","May"
+						,"Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+	const char* wdays[] = {"Sun","Mon","Tue","Wed","Thu"
+						,"Fri","Sat"};
+	
+	char swday[5];
+	int wday;
+	int day;
+	char smon[4];
+	int mon;
+	char stime[9];
+	int year;
+	int hour;
+	int min;
+	int sec;
+	int gmt_off = 0;
+	char offset[5];
+	::sscanf(date,"%s%d%s%d%s%s",swday,&day,smon,&year,stime,offset);
+	
+	// parse time
+	hour = atoi(stime);
+	min = atoi(stime+3);
+	sec = atoi(stime+6);
+	//PRINT(("TIME:%s\n",stime));
+	//PRINT(("H:%d M:%d S:%d\n",hour,min,sec ));
+	// month
+	for(mon = 0;mon < 12;mon++)
+	{
+		if(strncmp(mons[mon],smon,3) == 0)
+			break;
+	}
+	//PRINT(("MONTH:%s\n",smon));
+	//PRINT(("M:%d\n",mon));
+	// week of day
+	for(wday = 0;wday < 12;wday++)
+	{
+		if(strncmp(wdays[wday],swday,3) == 0)
+			break;
+	}
+	//PRINT(("WEEK:%s\n",swday));
+	//PRINT(("W:%d\n",wday));
+	// offset 
+	char op = offset[0];
+	int off = atoi(offset+1);
+	if(op == '+')
+		gmt_off  = (off/100)*60*60;
+	if(op == '-')
+		gmt_off  = -(off/100)*60*60;
+	//PRINT(("GMT_OFF:%s\n",offset));
+	//PRINT(("G:%d\n",gmt_off));
+	struct tm btime;
+	btime.tm_sec = sec;
+	btime.tm_min = min;
+	btime.tm_hour = hour;
+	btime.tm_mday = day;
+	btime.tm_mon = mon;
+	btime.tm_year = year-1900;
+	btime.tm_wday = wday;
+	btime.tm_gmtoff = gmt_off;
+	return mktime(&btime);	
+}
+ 

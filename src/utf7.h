@@ -13,4 +13,4 @@ void UTF8IMAP4UTF7(char *dst, char *src);
 #ifdef __cplusplus
 };
 #endif
-#endif /* __BASE64_H__ */
+#endif /* __UTF7_H__ */
