@@ -1,6 +1,5 @@
 #include "HFolderItem.h"
 #include "HApp.h"
-#include "ResourceUtils.h"
 #include "HMailItem.h"
 #include "HPrefs.h"
 #include "HFolderList.h"
@@ -63,18 +62,18 @@ HFolderItem::HFolderItem(const entry_ref &ref,BListView *target)
 	fMailList.MakeEmpty();
 	
 	BBitmap *icon(NULL);
+	HApp* app = (HApp*)be_app;
 	if(!entry.IsDirectory())
 	{
-		icon = ResourceUtils().GetBitmapResource('BBMP',"CloseQuery");
+		icon = app->GetIcon("CloseQuery");
 		fFolderType = QUERY_TYPE;
 	}else
-		icon = ResourceUtils().GetBitmapResource('BBMP',"CloseFolder");
+		icon = app->GetIcon("CloseFolder");
 
-	SetColumnContent(ICON_COLUMN,icon,2.0,true,false);
+	SetColumnContent(ICON_COLUMN,icon,2.0,false,false);
 	SetColumnContent(LABEL_COLUMN,fName.String());
 
 	((HApp*)be_app)->Prefs()->GetData("use_folder_cache",&fUseCache);
-	delete icon;
 }
 
 /***********************************************************
@@ -96,13 +95,13 @@ HFolderItem::HFolderItem(const char* name,int32 type,BListView *target)
 {	
 	fMailList.MakeEmpty();
 	BBitmap *icon(NULL);
+	HApp* app = (HApp*)be_app;
 	if(type == IMAP4_TYPE)
-		icon = ResourceUtils().GetBitmapResource('BBMP',"CloseIMAP");
+		icon = app->GetIcon("CloseIMAP");
 	else
-		icon = ResourceUtils().GetBitmapResource('BBMP',"OpenFolder");
-	SetColumnContent(ICON_COLUMN,icon,2.0,true,false);
+		icon = app->GetIcon("OpenFolder");
+	SetColumnContent(ICON_COLUMN,icon,2.0,false,false);
 	SetColumnContent(LABEL_COLUMN,name);
-	delete icon;	
 }
 
 /***********************************************************
@@ -376,9 +375,8 @@ HFolderItem::Gather()
 	//fMailList.SortItems(HFolderItem::CompareFunc);
 	fDone = true;
 	// Set icon to open folder
-	BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"OpenFolder");
-	SetColumnContent(ICON_COLUMN,icon,2.0,true,false);
-	delete icon;
+	BBitmap *icon = ((HApp*)be_app)->GetIcon("OpenFolder");
+	SetColumnContent(ICON_COLUMN,icon,2.0,false,false);
 	
 	SetName(fUnread);
 	
@@ -420,9 +418,9 @@ HFolderItem::RefreshCache()
 	fDone = false;
 	fCancel = false;
 	// Set icon to open folder
-	BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"CloseFolder");
-	SetColumnContent(ICON_COLUMN,icon,2.0,true,false);
-	delete icon;
+	BBitmap *icon = ((HApp*)be_app)->GetIcon("CloseFolder");
+	SetColumnContent(ICON_COLUMN,icon,2.0,false,false);
+	
 	InvalidateMe();
 	((HApp*)be_app)->MainWindow()->PostMessage(M_START_MAIL_BARBER_POLE);
 	fUseCache = false;
@@ -516,9 +514,8 @@ HFolderItem::ReadFromCache()
 	{
 		fDone = true;
 		// Set icon to open folder
-		BBitmap *icon = ResourceUtils().GetBitmapResource('BBMP',"OpenFolder");
-		SetColumnContent(ICON_COLUMN,icon,2.0,true,false);
-		delete icon;
+		BBitmap *icon = ((HApp*)be_app)->GetIcon("OpenFolder");
+		SetColumnContent(ICON_COLUMN,icon,2.0,false,false);
 #ifdef __CALC__
 		PRINT(("Done: %9.4lf sec\n",stopWatch.Lap()/1000000.0));
 #endif

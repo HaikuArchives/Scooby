@@ -337,15 +337,33 @@ HHtmlMailView::LoadMessage(BFile *file)
 	char *parameter = NULL;
 	char *charset = NULL;
 	int32 header_len,content_len;
-	if(file->ReadAttr(B_MAIL_ATTR_HEADER,B_INT32_TYPE,0,&header_len,sizeof(int32)) < 0 || header_len < 0)
+	ssize_t attrsize;
+	off_t filesize;
+	file->GetSize(&filesize);
+	attrsize = file->ReadAttr(B_MAIL_ATTR_HEADER,B_INT32_TYPE,0,&header_len,sizeof(int32));
+	if(attrsize == B_ENTRY_NOT_FOUND || header_len< 0)
 	{
-		(new BAlert("",_("Could not read mail attributes"),_("OK")))->Go();
-		return;
+		// if could not get header length from attr, get fron mail content.
+		PRINT(("ATTRSIZE:%d  HEADER:%d\n",attrsize,header_len));
+		char *filecontent = new char[filesize+1];
+		filesize = file->Read(filecontent,filesize);
+		filecontent[filesize] = '\0';
+		header_len = 0;
+		for(int32 i = 0;i < filesize;i++)
+		{
+			if(strncmp(&filecontent[i],"\r\n\r\n",4)==0)
+			{
+				header_len = i;
+				break;
+			}
+		}
+		delete[] filecontent;
 	}
-	if(file->ReadAttr(B_MAIL_ATTR_CONTENT,B_INT32_TYPE,0,&content_len,sizeof(int32)) < 0|| content_len < 0)
+	attrsize = file->ReadAttr(B_MAIL_ATTR_CONTENT,B_INT32_TYPE,0,&content_len,sizeof(int32));
+	if( attrsize == B_ENTRY_NOT_FOUND || content_len < 0)
 	{
-		(new BAlert("",_("Could not read mail attributes"),_("OK")))->Go();
-		return;
+		PRINT(("ATTRSIZE:%d  HEADER:%d\n",attrsize,content_len));
+		content_len = filesize-header_len;
 	}
 	// Load message from file
 	off_t size;

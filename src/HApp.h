@@ -23,7 +23,7 @@ public:
 		virtual				~HApp();
 		HPrefs*				Prefs() {return fPref;}
 		BWindow*			MainWindow() {return (BWindow*)fWindow;}
-		
+		BBitmap*			GetIcon(const char* icon_name);
 protected:
 		virtual void		MessageReceived(BMessage *msg);
 		virtual bool		QuitRequested();
@@ -42,6 +42,7 @@ protected:
 				bool		IsNetPositiveRunning();
 				
 				void		ShowFindWindow();
+				void		InitIcons();
 
 #ifdef CHECK_NETPOSITIVE				
 			BMessageFilter	*fMessageFilter;
@@ -55,6 +56,25 @@ private:
 		HPrefs				*fPref;
 		bool				fWatchNetPositive;
 		HFindWindow*		fFindWindow;
+		// mail icons
+		BBitmap*			fReadMailIcon;
+		BBitmap*			fNewMailIcon;
+		BBitmap*			fEnclosureIcon;
+		BBitmap*			fForwardedMailIcon;
+		BBitmap*			fSentMailIcon;
+		BBitmap*			fRepliedMailIcon;
+		BBitmap*			fPriority1;
+		BBitmap*			fPriority2;
+		BBitmap*			fPriority4;
+		BBitmap*			fPriority5;
+		// folder icons
+		BBitmap*			fOpenFolderIcon;
+		BBitmap*			fCloseFolderIcon;
+		BBitmap*			fOpenQueryIcon;
+		BBitmap*			fCloseQueryIcon;
+		BBitmap*			fOpenIMAPIcon;
+		BBitmap*			fCloseIMAPIcon;
+		//
 		typedef	LocaleApp	_inherited;
 };
 #endif
