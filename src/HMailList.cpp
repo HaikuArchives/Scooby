@@ -452,6 +452,10 @@ HMailList::MouseDown(BPoint pos)
     	 						utils.GetBitmapResource('BBMP',"Person"));
     	item->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(item);
+    	item = new IconMenuItem(_("Add To BlackList"),new BMessage(M_ADD_TO_BLACK_LIST),0,0,
+    							utils.GetBitmapResource('BBMP',"BlackList"));
+    	item->SetEnabled( (sel >= 0)?true:false);
+    	theMenu->AddItem(item);
     	theMenu->AddSeparatorItem();
     	// Open with menu
     	 OpenWithMenu *submenu = new OpenWithMenu(_("Open With…"),"text/x-email");

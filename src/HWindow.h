@@ -53,7 +53,8 @@ enum{
 	M_IMPORT_PLAIN_TEXT_MAIL = 'mPTM',
 	M_CONVERT_PLAIN_TO_MAIL = 'mCVP',
 	M_IMPORT_MBOX = 'mMBX',
-	M_CONVERT_MBOX_TO_MAILS = 'mCMm'
+	M_CONVERT_MBOX_TO_MAILS = 'mCMm',
+	M_ADD_TO_BLACK_LIST = 'mAtB'
 };
 
 class HWindow: public BWindow {
@@ -117,6 +118,8 @@ protected:
 				
 				void	Plain2BeMail(const char* path);
 				void	MBox2BeMail(const char* path);
+				
+				void	AddToBlackList(int32 sel);
 				
 private:
 		HMailList*		fMailList;

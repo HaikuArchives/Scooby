@@ -5,6 +5,7 @@
 #include "HSignatureView.h"
 #include "HApp.h"
 #include "HPrefs.h"
+#include "HSpamFilterView.h"
 
 #include <Message.h>
 #include <TabView.h>
@@ -42,6 +43,9 @@ HPrefWindow::HPrefWindow(BRect win_rect)
 //*********** Signature Setting ******************/
 	tabview->AddTab(fSignatureView = new HSignatureView(frame));
 	tabview->TabAt(3)->SetLabel(_("Signatures"));
+//*********** SpamFilter Setting ******************/
+	tabview->AddTab(fSpamFilterView = new HSpamFilterView(frame));
+	tabview->TabAt(4)->SetLabel(_("Spam Filters"));
 	
 	AddChild(tabview);
 	
@@ -102,6 +106,12 @@ HPrefWindow::MessageReceived(BMessage *message)
 		break;
 	case M_ADD_FOLDERS:
 		fFilterView->AddFolderItem(message);
+		break;
+	case M_SPAM_ADDRESS_MODIFIED:
+	case M_SPAM_OK:
+	case M_SPAM_DEL:
+	case M_SPAM_SELECTION_CHANGED:
+		PostMessage(message,fSpamFilterView);
 		break;
 	default:
 		BWindow::MessageReceived(message);

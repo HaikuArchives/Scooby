@@ -7,6 +7,7 @@ class HFilterView;
 class HAccountView;
 class HSignatureView;
 class HGeneralSettingView;
+class HSpamFilterView;
 
 enum{
 	M_PREFS_CHANGED = 'MPCD',
@@ -24,6 +25,7 @@ private:
 	HFilterView*	fFilterView;
 	HAccountView*	fAccountView;
 	HSignatureView*	fSignatureView;
+	HSpamFilterView*	fSpamFilterView;
 	HGeneralSettingView*		fGeneralView;
 };
 #endif

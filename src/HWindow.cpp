@@ -184,6 +184,8 @@ HWindow::InitMenu()
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();
     utils.AddMenuItem(aMenu,_("Filter"),M_FILTER_MAIL,this,this,0,0);
+    utils.AddMenuItem(aMenu,_("Add To BlackList"),M_ADD_TO_BLACK_LIST,this,this,0,0,
+    						rsrc_utils.GetBitmapResource('BBMP',"BlackList"));
     aMenu->AddSeparatorItem();
     utils.AddMenuItem(aMenu,_("Show Headers"),M_HEADER,this,this,'H',0);
     utils.AddMenuItem(aMenu,_("Show Raw Message"),M_RAW,this,this,0,0);
@@ -886,6 +888,15 @@ HWindow::MessageReceived(BMessage *message)
 		dialog->Show();
 		break;
 	}
+	// Add to blacklist
+	case M_ADD_TO_BLACK_LIST:
+	{
+		int32 index=0;
+		int32 sel;
+		while((sel = fMailList->CurrentSelection(index++)) >= 0)
+			AddToBlackList(sel);
+		break;
+	}
 	// Select sibling mails
 	case M_SELECT_NEXT_MAIL:
 	case M_SELECT_PREV_MAIL:
@@ -977,6 +988,8 @@ HWindow::MenusBeginning()
 	item = KeyMenuBar()->FindItem(M_FILTER_MAIL);
 	item->SetEnabled(mailSelected);
 	item = KeyMenuBar()->FindItem(M_PRINT_MESSAGE);
+	item->SetEnabled(mailSelected);
+	item = KeyMenuBar()->FindItem(M_ADD_TO_BLACK_LIST);
 	item->SetEnabled(mailSelected);
 	
 	// Copy	
@@ -1977,6 +1990,48 @@ HWindow::ShowOpenPanel(int32 what)
 	fOpenPanel->SetMessage(&msg);
 	
 	fOpenPanel->Show();
+}
+
+/***********************************************************
+ * AddToBlackList
+ ***********************************************************/
+void
+HWindow::AddToBlackList(int32 index)
+{
+	HMailItem *item = cast_as(fMailList->ItemAt(index),HMailItem);
+	if(!item)
+		return;
+	BString from;
+	const char* p = item->fFrom.String();
+	int32 len = ::strlen(p);
+	
+	for(int32 i = 0;i < len;i++)
+	{
+		if(*p == '<')
+		{
+			p++;
+			from = *p++;
+		}else
+			from += *p++;
+		if(*p == '>')
+			break;
+		if(*p == ' ' && from.FindFirst("@") != B_ERROR)
+				break;
+	}
+	if(from.FindFirst("@") == B_ERROR)
+		return;
+	// Load list
+	BPath path;
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append( APP_NAME );
+	path.Append("BlackList");
+	
+	
+	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE|B_OPEN_AT_END);
+	if(file.InitCheck() != B_OK)
+		return;
+	file.Write("\n",1);
+	file.Write(from.String(),from.Length());
 }
 
 /***********************************************************

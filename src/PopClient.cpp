@@ -3,6 +3,7 @@
 #include "md5.h"
 #include "HApp.h"
 #include "HFile.h"
+#include "HPopClientView.h"
 
 #include <Debug.h>
 #include <String.h>
@@ -436,7 +437,8 @@ PopClient::Retr(int32 index,BString &content)
 		else{
 			if( IsSpam(topOutput.String()) )
 			{
-				Delete(index);
+				if(((HPopClientView*)fHandler)->RetrieveType() > 0)
+					Delete(index);
 				return B_OK;
 			}
 		}
@@ -792,6 +794,7 @@ PopClient::IsSpam(const char* header)
 	BString from("");
 	// Find from field
 	char *p;
+	
 	if((p = ::strstr(header,"\nFrom:")) )
 	{
 		p+=6;
@@ -802,10 +805,12 @@ PopClient::IsSpam(const char* header)
 			if(*p == '<')
 			{
 				p++;
-				from += *p++;
+				from = *p++;
 			}else
 				from += *p++;
-			if(*p == ' '||*p == '\r' || *p == '\n' || *p == '>')
+			if(*p == '\r' || *p == '\n' || *p == '>')
+				break;
+			if(*p == ' ' && from.FindFirst("@") != B_ERROR)
 				break;
 		}
 	}else
@@ -847,10 +852,11 @@ PopClient::InitBlackList()
 	
 	while(file.GetLine(&line) >= 0)
 	{
+		// Strip line feed
+		line.RemoveAll("\n");
+			
 		if(line.Length() > 0)
 		{
-			// Strip line feed
-			line.RemoveAll("\n");
 			// Add address to list
 			fBlackList.AddItem(::strdup(line.String()));
 		}
