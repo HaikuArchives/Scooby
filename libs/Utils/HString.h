@@ -5,13 +5,6 @@
 
 class HString :public BString {
 public:
-						HString();
-						HString(const char *);
-						HString(const BString &);
-						HString(const char *, int32 maxLength);
-					
-	virtual				~HString();
-	
 	int32				GetLine(int32 pos,BString* out);
 	HString&			Format(const char* format, ...);
 };
