@@ -123,7 +123,12 @@ SmtpClient::ReceiveResponse(BString &out)
 	
 	if(fEndpoint->IsDataPending(timeout))
 	{	
-		len = fEndpoint->Receive(buf,SMTP_RESPONSE_SIZE-1);
+		while(1)
+		{
+			len = fEndpoint->Receive(buf,SMTP_RESPONSE_SIZE-1);
+			if(strstr(buf,"\r\n"))
+				break;
+		}
 	}else{
 		(new BAlert("",_("SMTP socket timeout."),_("OK")))->Go();
 	}
