@@ -313,6 +313,14 @@ int HMailItem::CompareItems(const CLVListItem *a_Item1,
 	const HMailItem* Item1 = cast_as(a_Item1,const HMailItem);
 	const HMailItem* Item2 = cast_as(a_Item2,const HMailItem);
 	
+	if(!Item1 && Item2)
+		return -1;
+	if(Item1 && !Item2)
+		return 1;
+	if(!Item1 && !Item2)
+		return 0;
+	
+	
 	if(KeyColumn == 4)
 	{
 		if(Item1->fWhen > Item2 ->fWhen)
