@@ -548,9 +548,6 @@ HHtmlMailView::ConvertLinkToBlankWindow(BString &str)
 void
 HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* transfer_encoding)
 {
-	const char* kQuote1 = "#009600";
-	const char* kQuote2 = "#969600";
-	const char* kQuote3 = "#009696";
 	bool openNewWindow;
 	((HApp*)be_app)->Prefs()->GetData("open_link_as_new_window",&openNewWindow);
 	
@@ -559,7 +556,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 	bool translate_space = false;
 	BString out("");
 	out += "<html>\n";
-	out += "<body bgcolor=\"#ffffff\">\n";
+	out += "<body bgcolor=white>\n";
 	// Convert to UTF8 
 	// We need to convert to UTF8 for multibyte charactor support
 	if(transfer_encoding && ::strcasecmp(transfer_encoding,"quoted-printable") == 0)
@@ -594,22 +591,63 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 		{
 			if(text[i-1] == '\n' || i == 0)
 			{
-				tmp += "<font color=\"";
-				
-				if(text[i+1] == '>' && text[i+2] != '>')
-					tmp += kQuote2;
-				else if(text[i+1] == '>' && text[i+2] == '>')
-					tmp += kQuote3;
+				BString bullet, bulletb, blank;
+				bullet  += "<td width=4 bgcolor=silver></td>";
+				bulletb += "<td width=8 bgcolor=white></td>";
+				blank   += "<td width=4 bgcolor=white></td>";
+				tmp += "<table cellspacing=0 cellpadding=0><tr>";
+				if((text[i+1] == ' ')
+				&& (text[i+2] == '>'))
+				{
+					char* textw = const_cast<char *>(text);
+					textw[i]   = ' ';
+					textw[i+2] = ' ';
+					tmp << bullet << bulletb << bullet << blank;
+				}
+				else if((text[i+1] == '>')
+				     && (text[i+2] != '>'))
+				{
+					char* textw = const_cast<char *>(text);
+				    textw[i]   = ' ';
+				    textw[i+1] = ' ';
+					tmp << bullet << bulletb << bullet << blank;
+				}
+				else if((text[i+1] == '>')
+				     && (text[i+2] == '>')
+				     && (text[i+3] == '>'))
+				{
+					char* textw = const_cast<char *>(text);
+					textw[i]   = ' ';
+					textw[i+1] = ' ';
+					textw[i+2] = ' ';
+					textw[i+3] = ' ';
+					tmp << bullet << bulletb << bullet << bulletb;
+					tmp << bullet << bulletb << bullet << blank;				
+				}
+				else if((text[i+1] == '>')
+				     && (text[i+2] == '>'))
+				{
+					char* textw = const_cast<char *>(text);
+					textw[i]   = ' ';
+					textw[i+1] = ' ';
+					textw[i+2] = ' ';
+					tmp << bullet << bulletb << bullet << bulletb;
+					tmp << bullet << blank;
+				}
 				else
-					tmp += kQuote1;
-				tmp += "\"><i>";
+				{
+					char* textw = const_cast<char *>(text);
+					textw[i] = ' ';
+					tmp << bullet << blank;
+				}
+				tmp += "<td><i>";
 				while(text[i] != '\0' && text[i] != '\n')
 				{
 					// Normal charactors
 					ConvertToHtmlCharactor(text[i++],buf,&translate_space);
 					tmp += buf;
 				}
-				tmp += "</i></font>";
+				tmp += "</i></td></tr></table>";
 				ConvertToHtmlCharactor(text[i],buf,&translate_space);
 				tmp += buf;
 			}else{
@@ -630,7 +668,6 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 				BString uri("");
 				while(text[i] != '\0'&& IsURI(text[i]))
 					uri += text[i++];
-				tmp += "<i>";
 				tmp += "<a href=\"";
 				tmp += uri;
 				tmp += "\"";
@@ -639,7 +676,6 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 				tmp += ">";
 				tmp += uri;
 				tmp += "</a>";
-				tmp += "</i>";
 				ConvertToHtmlCharactor(text[i],buf,&translate_space);
 				tmp += buf;
 			}else{
