@@ -23,6 +23,7 @@
 #include <Alert.h>
 #include <Beep.h>
 #include <ClassInfo.h>
+#include <ctype.h>
 
 #define DIVIDER 120
 //#define MAIL_FOLDER "Mail"
@@ -411,6 +412,28 @@ HPopClientView::PopConnect(const char* name,
 
 
 /***********************************************************
+ * GetHeaderParam
+ ***********************************************************/
+int32
+HPopClientView::GetHeaderParam(BString &out,const char* content,int32 offset)
+{
+	int32 i = offset;
+	while(1)
+	{
+		if(content[i] =='\n')
+		{
+			if(isalpha(content[i+1])|| content[i+1] == '\r'|| content[i+1] == '\n' )
+				break; 
+		}
+		if(content[i] != '\r' && content[i] != '\n' )
+		 	out += content[i++];
+		else
+			i++;
+	}
+	return i;
+}
+
+/***********************************************************
  * SaveMail
  ***********************************************************/
 void
@@ -425,81 +448,38 @@ HPopClientView::SaveMail(const char* all_content,
 			,priority(""),reply(""),mime("");
 	Encoding encode;
 	
-	const char* kToken = "\n";
-	int32 org_len = strlen(all_content);
-	char *tmp = new char[org_len+1];
-	::strcpy(tmp,all_content);
-	tmp[org_len] = '\0';
-	
-	encode.ConvertReturnsToLF(tmp);
 	bool is_multipart = false;
-	
-	tmp[BString(tmp).FindFirst("\n\n")] = '\0';
-	char *p = ::strtok(tmp,kToken);
-	int mode = 0;
-	while( p )
+	int32 org_len = strlen(all_content);
+	int32 header_len = 0;
+	for(int32 i = 0;i < org_len;i++)
 	{
-		if(strlen(p) == 0)
+		if(strncasecmp(&all_content[i],"Subject: ",9) == 0)
+			i = GetHeaderParam(subject,all_content,i+9);
+		else if(strncasecmp(&all_content[i],"Date: ",6) == 0)
+			i = GetHeaderParam(date,all_content,i+6);
+		else if(strncasecmp(&all_content[i],"Cc: ",4) == 0)
+			i = GetHeaderParam(cc,all_content,i+4);
+		else if(strncasecmp(&all_content[i],"To: ",4) == 0)
+			i = GetHeaderParam(to,all_content,i+4);
+		else if(strncasecmp(&all_content[i],"From: ",6) == 0)
+			i = GetHeaderParam(from,all_content,i+6);
+		else if(strncasecmp(&all_content[i],"X-Priority: ",12) == 0)
+			i = GetHeaderParam(priority,all_content,i+12);
+		else if(strncasecmp(&all_content[i],"Mime-Version: ",14) == 0)
+			i = GetHeaderParam(mime,all_content,i+14);
+		else if(strncasecmp(&all_content[i],"Reply-To: ",10) == 0)
+			i = GetHeaderParam(reply,all_content,i+10);
+		else if(all_content[i] == '\r'||all_content[i] == '\n')
 		{
-			break;
-		}else if(strncasecmp(p,"Subject: ",9) == 0){
-			subject = &p[9]; 
-			mode = 1;
-		}else if(strncasecmp(p,"Date: ",6) == 0){
-			date = &p[6];
-			mode = 2;
-		}else if(strncasecmp(p,"Cc: ",4) == 0){
-			cc = &p[4];
-			mode = 3; 
-		}else if(strncasecmp(p,"To: ",4) == 0){
-			to = &p[4];
-			mode = 4;
-		}else if(strncasecmp(p,"From: ",6) == 0){
-			from = &p[6];
-			mode = 5;  
-		}else if(strncasecmp(p,"X-Priority: ",12) == 0){
-			priority = &p[12];
-			mode = 6;  
-		}else if(strncasecmp(p,"Mime-Version: ",14) == 0){
-			mime = &p[14];
-			mode = 7;
-		}else if(strncasecmp(p,"Reply-To: ",10) == 0){
-			reply = &p[10];
-			mode = 8;
-		}else if(p[0] == '\t' || p[0] == ' '){
-			switch(mode)
+			if(all_content[i-2] == '\r'||all_content[i-1] == '\n')
 			{
-			case 1:
-				subject  += p+1;
-				break;
-			case 2:
-				date += p+1;
-				break;
-			case 3:
-				cc += p+1;
-				break;
-			case 4:
-				to += p+1;
-				break;
-			case 5:
-				from += p+1;
-				break;
-			case 6:
-				priority += p+1;
-				break;
-			case 7:
-				mime += p+1;
-				break;
-			case 8:
-				reply += p+1;
+				header_len = i+3;
 				break;
 			}
-		}else
-			mode = 0;
-		header += p;
-		p = ::strtok('\0',kToken);
+		}
 	}
-	delete[] tmp;
+	
+	header.Append(all_content,header_len);
 	
 	if(subject.Length() == 0)
 		subject = "Untitled";
@@ -548,7 +528,6 @@ HPopClientView::SaveMail(const char* all_content,
 	file.WriteAttrString(B_MAIL_ATTR_REPLY,&reply);
 	file.WriteAttrString(B_MAIL_ATTR_MIME,&mime);
 	file.WriteAttr(B_MAIL_ATTR_ATTACHMENT,B_BOOL_TYPE,0,&is_multipart,sizeof(bool));
-	int32 header_len = BString(all_content).FindFirst("\r\n\r\n") + 4;
 	int32 content_len = strlen(all_content)-header_len;
 	//PRINT(("header:%d, content%d\n",header_len,content_len));
 	file.WriteAttr(B_MAIL_ATTR_HEADER,B_INT32_TYPE,0,&header_len,sizeof(int32));

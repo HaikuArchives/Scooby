@@ -56,6 +56,10 @@ protected:
 			void	SetNextRecvPos(const char* uidl);
 			
 			void	PlayNotifySound();
+
+			int32 	GetHeaderParam(BString &out,
+									const char* content,
+									int32 offset);
 private:
 	BStringView		*fStringView;
 	int32			fLastBarberPoleOffset;
