@@ -405,6 +405,9 @@ PopClient::Uidl(int32 index,BString &outlist)
 status_t
 PopClient::Retr(int32 index,BString &content)
 {
+	int32 size = 0;
+	BString size_list;
+	
 	BString cmd = "RETR ";
 	cmd << index << CRLF;
 	
@@ -415,7 +418,19 @@ PopClient::Retr(int32 index,BString &content)
 		return B_ERROR;
 	}
 	const char* log = fLog.String();
-	int32 size = atol(&log[4]);
+	size = atol(&log[4]);
+	// Get mail content size when Retr command doesn't contain it
+	if(index != 0 && size <=0)
+	{	
+		if(List(index,size_list) != B_OK) {
+			cout << fLog.String() << endl;
+			return B_ERROR;
+		}else{
+			int32 i = size_list.FindLast(" ");
+			size = atol(&size_list[++i]);
+		}
+	}
+	//
 	int32 r;
 	
 	size += 3;
