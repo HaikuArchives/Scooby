@@ -544,7 +544,7 @@ HFolderItem::CreateCache()
 	folder_path.GetParent(&folder_path);
 	
 	
-	name << ".cache";
+	name += ".cache";
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append("FolderCache");
@@ -733,7 +733,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 	HMailItem *item;
 	BPath path;
 	BPath myPath(&fFolderRef);
-	int32 my_path_len = strlen(myPath.Path() );
+	
 	BNode node;
 	char mime_type[B_MIME_TYPE_LENGTH];
 	BNodeInfo ninfo;
@@ -780,19 +780,19 @@ HFolderItem::NodeMonitor(BMessage *message)
 		message->FindInt64("node", &nref.node);
 		BDirectory dir(&nref);
 		
-		if(dir.IsFile())
+		if(dir.IsDirectory())
 		{
+			BMessage msg(M_REMOVE_FOLDER);
+			msg.AddInt64("node",nref.node);
+			msg.AddInt32("device",nref.device);
+			fOwner->Window()->PostMessage(&msg,fOwner);
+		}else{
 			HMailItem *item = RemoveMail(nref);
 			if(IsSelected())
 				((HFolderList*)fOwner)->RemoveFromMailList(item,true);
 			else
 				delete item;	
 			InvalidateMe();
-		}else if(dir.IsDirectory()){
-			BMessage msg(M_REMOVE_FOLDER);
-			msg.AddInt64("node",nref.node);
-			msg.AddInt32("device",nref.device);
-			fOwner->Window()->PostMessage(&msg,fOwner);
 		}
 		PRINT(("REMOVE\n"));
 		break;
@@ -817,7 +817,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 			
 		message->FindString("name", &name);
 		// Add mail
-		if(::strncmp(to_path.Path(),myPath.Path(),my_path_len) == 0)
+		if(to_path == myPath)
 		{
 			BPath file_path(to_path);
 			file_path.Append(name);
@@ -844,15 +844,20 @@ HFolderItem::NodeMonitor(BMessage *message)
 			}	
 		}
 		// Remove mails
-		if(::strncmp(from_path.Path(),myPath.Path(),my_path_len) == 0)
+		if(from_path == myPath)
 		{
 			node_ref old_nref;
 			old_nref.device =from_nref.device;
 			message->FindInt64("node", &old_nref.node);
 			BDirectory dir(&old_nref);
 			
-			if(dir.IsFile())
+			if(dir.IsDirectory())
 			{
+				BMessage msg(M_REMOVE_FOLDER);
+				msg.AddInt64("node",old_nref.node);
+				msg.AddInt32("device",old_nref.device);
+				fOwner->Window()->PostMessage(&msg,fOwner);
+			}else{
 				HMailItem *item = RemoveMail(old_nref);
 				if(!item)
 					break;
@@ -861,11 +866,6 @@ HFolderItem::NodeMonitor(BMessage *message)
 				else
 					delete item;
 				InvalidateMe();
-			}else if(dir.IsDirectory()){
-				BMessage msg(M_REMOVE_FOLDER);
-				msg.AddInt64("node",old_nref.node);
-				msg.AddInt32("device",old_nref.device);
-				fOwner->Window()->PostMessage(&msg,fOwner);
 			}
 		}
 		break;
@@ -926,6 +926,15 @@ HFolderItem::IsSelected()
 	if(sel < 0 || sel != ((ColumnListView*)fOwner)->FullListIndexOf(this))
 		return false;
 	return true;
+}
+
+/***********************************************************
+ * RemoveSettings
+ ***********************************************************/
+void
+HFolderItem::RemoveSettings()
+{
+	
 }
 
 /***********************************************************
