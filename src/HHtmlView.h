@@ -39,11 +39,14 @@ public:
 			void	Stop();
 			void	Reload();
 			
+			int32	fDefaultEncoding;
+			
 			int32	GetDefaultEncoding();			
 protected:
 	
 private:
 	BView*			fNetPositiveView;
 	BShelf*			fShelf;
+	
 };
 #endif

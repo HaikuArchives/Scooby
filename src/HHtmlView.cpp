@@ -10,6 +10,7 @@
 #include <Application.h>
 #include <string.h>
 #include <Alert.h>
+#include <UTF8.h>
 
 #define STARTUP_PAGE "netpositive:Startup.html"
 
@@ -39,7 +40,9 @@ HHtmlView::HHtmlView(BRect rect,
    	message_replicant.AddString("url",buf);
    	delete[] buf; 
     message_replicant.AddBool("openAsText",false); 
-    message_replicant.AddInt32("encoding",GetDefaultEncoding()); 
+    fDefaultEncoding = GetDefaultEncoding();
+    PRINT(("%d\n",fDefaultEncoding));
+    message_replicant.AddInt32("encoding",fDefaultEncoding); 
     message_replicant.AddString("class","NPBaseView"); 
     message_replicant.AddString("_name","NetPositive"); 
     message_replicant.AddRect("_frame",rect); 
@@ -65,6 +68,7 @@ HHtmlView::HHtmlView(BRect rect,
  ***********************************************************/
 HHtmlView::~HHtmlView()
 {
+	SetEncoding((EncodingMessages)fDefaultEncoding);
 	delete fShelf;
 }
 
@@ -145,6 +149,7 @@ int32
 HHtmlView::GetDefaultEncoding()
 {
 	int32 encoding = 0;
+	int32 result = 0;
 	// Load NetPositive setting file
 	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
@@ -155,5 +160,50 @@ HHtmlView::GetDefaultEncoding()
 	if(node.InitCheck() != B_OK)
 		return 0;
 	node.ReadAttr("DefaultEncoding",B_INT32_TYPE,0,&encoding,sizeof(int32));
-	return encoding;
+	
+	switch(encoding)
+	{
+	case B_ISO1_CONVERSION:
+		result = NETPOSITIVE_ISO1;
+		break;
+	case B_ISO2_CONVERSION:
+		result = NETPOSITIVE_ISO2;
+		break;
+	case B_ISO5_CONVERSION:
+		result = NETPOSITIVE_ISO5;
+		break;
+	case B_ISO7_CONVERSION:
+		result = NETPOSITIVE_ISO7;
+		break;
+	case B_SJIS_CONVERSION:
+		result = NETPOSITIVE_SJIS;
+		break;
+	case B_EUC_CONVERSION:
+		result = NETPOSITIVE_EUC;
+		break;
+	case B_UNICODE_CONVERSION:
+		result = NETPOSITIVE_UNICODE;
+		break;
+	case 256:
+		result = NETPOSITIVE_JAPANESE_AUTO;
+		break;
+	case 258:
+		result = NETPOSITIVE_UTF8;
+		break;
+	case B_MAC_ROMAN_CONVERSION:
+		result = NETPOSITIVE_MACROMAN;
+		break;
+	case B_KOI8R_CONVERSION:
+		result = NETPOSITIVE_KOI8R;
+		break;
+	case B_MS_WINDOWS_1251_CONVERSION:
+		result = NETPOSITIVE_WINDOWS_1251;
+		break;
+	case B_MS_DOS_866_CONVERSION:
+		result = NETPOSITIVE_MSDOS_886;
+		break;
+		
+	}
+	PRINT(("Encoding:%d -> %d\n",encoding,result));
+	return result;
 }
