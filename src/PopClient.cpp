@@ -1,6 +1,7 @@
 #include "PopClient.h"
 #include "Encoding.h"
 #include "md5.h"
+#include "HApp.h"
 
 #include <Debug.h>
 #include <String.h>
@@ -411,27 +412,28 @@ PopClient::Retr(int32 index,BString &content)
 	BString cmd = "RETR ";
 	cmd << index << CRLF;
 	
+	// Get mail content size 
+	if(index != 0)
+	{	
+		PRINT(("Retr answer doesn't contain mail size\n"));
+		if(List(index,size_list) != B_OK) {
+			PRINT(("%s\n",fLog.String() ));
+			size = 1;
+		}else{
+			int32 i = size_list.FindLast(" ");
+			size = atol(&size_list[++i]);
+		}
+	}
+	PRINT(("Size:%d\n",size));
+	// Send Retr command
 	if( SendCommand(cmd.String()) != B_OK)
 	{
 		PRINT(("%s\n",cmd.String() ));
 		PRINT(("Retr error:%s %d\n",__FILE__,__LINE__));
 		return B_ERROR;
 	}
-	const char* log = fLog.String();
-	size = atol(&log[4]);
-	// Get mail content size when Retr command doesn't contain it
-	if(index != 0 && size <=0)
-	{	
-		PRINT(("Retr answer doesn't contain mail size\n"));
-		if(List(index,size_list) != B_OK) {
-			cout << fLog.String() << endl;
-			return B_ERROR;
-		}else{
-			int32 i = size_list.FindLast(" ");
-			size = atol(&size_list[++i]);
-		}
-	}
-	//
+	
+	// Get mail content
 	int32 r;
 	
 	size += 3;
@@ -445,6 +447,11 @@ PopClient::Retr(int32 index,BString &content)
 	
 	int32 buf_size = (size>MAX_RECIEVE_BUF_SIZE)?MAX_RECIEVE_BUF_SIZE:size;
 	char *buf = new char[buf_size+1];
+	if(!buf)
+	{
+		(new BAlert("",_("Memory was exhausted"),_("OK"),NULL,NULL,B_WIDTH_AS_USUAL,B_STOP_ALERT))->Go();
+		return B_ERROR;
+	}
 	int32 content_len = 0;
 	//PRINT(("buf_size:%d\n",buf_size));
 	while(1)
