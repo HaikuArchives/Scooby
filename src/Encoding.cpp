@@ -302,7 +302,7 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
    // MIME-B
 #ifndef USE_BASE64DECODER
 		// Check whether it's jis charactor.
-		if(strcmp(&old[len-4],kMimeJisEnd) == 0)
+		if(old && len > 5 && strcmp(&old[len-4],kMimeJisEnd) == 0)
 			check_jis = true;
  		//
  		len = decode_base64(buf, old, len,true); 
@@ -338,7 +338,7 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
  	// If it's jis charactor, check it contain jis end.
  	if(check_jis)
  	{
- 		if(strcmp(&buf[len-3],kJisEnd) != 0)
+ 		if(buf && len > 4 && strcmp(&buf[len-3],kJisEnd) != 0)
  			str += kJisEnd;
  	}
  	//
