@@ -609,6 +609,7 @@ HFolderItem::AddMailsToCacheFile()
 			cache.AddString("reply",item->fReply);
 			cache.AddInt64("when",(int64)item->fWhen);
 			cache.AddString("priority",item->fPriority);
+			cache.AddInt8("enclosure",item->fEnclosure);
 		}
 		
 		if(file.InitCheck() == B_OK)
