@@ -1,5 +1,6 @@
 #include "HEnclosureView.h"
 #include "HEnclosureItem.h"
+#include "HApp.h"
 
 #include <StringView.h>
 #include <ClassInfo.h>
@@ -47,11 +48,11 @@ HEnclosureView::InitGUI()
 	
 	BStringView *stringView = new BStringView(rect,
 											"StringView",
-											"Enclosure",
+											_("Enclosure"),
 											B_FOLLOW_TOP|B_FOLLOW_LEFT_RIGHT);
 	AddChild(stringView);
-	
-	const float kDivider = StringWidth("Subject:") +5;
+
+	const float kDivider = StringWidth(_("Subject:")) +5;
 	rect.OffsetBy(0,rect.Height()+7);
 	rect.bottom = rect.top + 50;
 	rect.right -= B_V_SCROLL_BAR_WIDTH;
@@ -106,10 +107,15 @@ HEnclosureView::WhenDropped(BMessage *message)
 {
 	//message->PrintToStream();
 	entry_ref ref;
+	int32 count;
+	type_code type;
+	message->GetInfo("refs",&type,&count);
 	
-	if(message->FindRef("refs",&ref) == B_OK)
-		AddEnclosure(ref);
-	
+	for(int32 i = 0;i < count;i++)
+	{
+		if(message->FindRef("refs",i,&ref) == B_OK)
+			AddEnclosure(ref);
+	}
 }
 
 /***********************************************************
