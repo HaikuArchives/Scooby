@@ -69,12 +69,12 @@ HAccountView::InitGUI()
 	AddChild(scroll);
 	frame= rect;
 	frame.top = frame.bottom + 5;
-	frame.right= frame.left + 50;
+	frame.right= frame.left + 55;
 	BButton *button;
 	button = new BButton(frame,"del",_("Delete"),new BMessage(M_DEL_ACCOUNT));
 	button->SetEnabled(false);
 	AddChild(button);
-	frame.OffsetBy(55,0);
+	frame.OffsetBy(60,0);
 	button = new BButton(frame,"add",_("Add"),new BMessage(M_ADD_ACCOUNT));
 	AddChild(button);
 	

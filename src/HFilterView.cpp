@@ -73,12 +73,12 @@ HFilterView::InitGUI()
 	AddChild(scroll);
 	frame= rect;
 	frame.top = frame.bottom + 5;
-	frame.right= frame.left + 50;
+	frame.right= frame.left + 55;
 	BButton *button;
 	button = new BButton(frame,"del",_("Delete"),new BMessage(M_DEL_FILTER_MSG));
 	button->SetEnabled(false);
 	AddChild(button);
-	frame.OffsetBy(55,0);
+	frame.OffsetBy(60,0);
 	button = new BButton(frame,"add",_("Add"),new BMessage(M_ADD_FILTER_MSG));
 	AddChild(button);
 	
@@ -109,10 +109,16 @@ HFilterView::InitGUI()
 	frame.OffsetBy(B_V_SCROLL_BAR_WIDTH,frame.Height()+2);
 	frame.bottom = frame.top + 25;
 	frame.left = frame.right - 40;
+	float width = frame.Width();
 	button = new BButton(frame,"criteria_del",_("Delete"),new BMessage(M_DEL_CRITERIA_MSG));
+	button->ResizeToPreferred();
 	box->AddChild(button);
-	frame.OffsetBy(-frame.Width()-5,0);
+	if(width < button->Bounds().Width() )
+		button->MoveBy(width-button->Bounds().Width(),0 );
+	frame = button->Frame();
+	frame.OffsetBy(-button->Bounds().Width()-5,0);
 	button = new BButton(frame,"criteria_add",_("Add"),new BMessage(M_ADD_CRITERIA_MSG));
+	button->ResizeToPreferred();
 	box->AddChild(button);
 	button->SetEnabled(false);
 
@@ -171,7 +177,7 @@ HFilterView::InitGUI()
 	rect.left = rect.right - 80;
 	rect.top = rect.bottom - 30;
 	
-	float width = rect.Width();
+	width = rect.Width();
 	button = new BButton(rect,"apply",_("Apply Changes"),new BMessage(M_FILTER_SAVE_CHANGED));
 	button->ResizeToPreferred();
 	if(width < button->Bounds().Width() )
