@@ -1538,7 +1538,7 @@ HWindow::EmptyTrash()
 	for(int32 i = 0;i < count;i++)
 	{
 		HFolderItem *item = cast_as(fFolderList->ItemAt(i),HFolderItem);
-		if(::strcmp(item->Name(), TRASH_FOLDER ) == 0)
+		if(item && ::strcmp(item->FolderName(), TRASH_FOLDER ) == 0)
 			trash = item;
 	}
 	if(!trash)
@@ -1567,7 +1567,6 @@ HWindow::EmptyTrash()
 		fMailList->MakeEmpty();
 	
 	trash->EmptyMailList();
-	trash->Gather();
 	fFolderList->InvalidateItem(fFolderList->IndexOf(trash));	
 }
 
