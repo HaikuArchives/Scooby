@@ -205,7 +205,7 @@ HMailItem::ResetIcon()
 {
 	ResourceUtils utils;
 	BBitmap *icon = utils.GetBitmapResource('BBMP',fStatus.String());
-	//RefreshTextColor();
+	RefreshTextColor();
 	
 	if(icon)
 		SetColumnContent(0,icon,2.0,true,false);
@@ -249,7 +249,6 @@ HMailItem::RefreshStatus()
 	if(node.InitCheck() == B_OK)
 	{
 		node.ReadAttrString(B_MAIL_ATTR_STATUS,&fStatus);
-		RefreshTextColor();
 		ResetIcon();
 	}
 }
