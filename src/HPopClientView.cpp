@@ -138,6 +138,11 @@ HPopClientView::MessageReceived(BMessage *message)
 			fGotMails = false;
 			fPopServers = new BMessage(*message);
 			fServerIndex = 0;
+			if(fPopClient->Lock())
+			{
+				fPopClient->InitBlackList();
+				fPopClient->Unlock();
+			}
 		}
 		
 		const char* address,*login,*password,*name;
@@ -450,6 +455,13 @@ HPopClientView::SaveMail(const char* all_content,
 	
 	bool is_multipart = false;
 	int32 org_len = strlen(all_content);
+	// Probably deleted with Spam filter
+	if(org_len == 0)
+	{
+		*is_delete = false;
+		return;
+	}
+	//
 	int32 header_len = 0;
 	for(int32 i = 0;i < org_len;i++)
 	{

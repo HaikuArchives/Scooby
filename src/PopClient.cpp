@@ -2,6 +2,7 @@
 #include "Encoding.h"
 #include "md5.h"
 #include "HApp.h"
+#include "HFile.h"
 
 #include <Debug.h>
 #include <String.h>
@@ -13,6 +14,7 @@
 #include <Message.h>
 #include <Autolock.h>
 #include <Alert.h>
+#include <FindDirectory.h>
 
 
 #define xEOF    236
@@ -33,6 +35,7 @@ PopClient::PopClient(BHandler *handler,BLooper *looper)
 	,fLooper(looper)
 {
 	Run();
+	fBlackList.MakeEmpty();
 }
 
 /***********************************************************
@@ -41,6 +44,10 @@ PopClient::PopClient(BHandler *handler,BLooper *looper)
 PopClient::~PopClient()
 {
 	delete fEndpoint;
+	// Free Blacklist
+	int32 count = fBlackList.CountItems();
+	while(count > 0)
+		free( (char*)fBlackList.RemoveItem(--count) );
 }
 
 /***********************************************************
@@ -418,9 +425,22 @@ PopClient::Retr(int32 index,BString &content)
 	int32 size = 0;
 	BString size_list;
 	
-	BString cmd = "RETR ";
-	cmd << index << CRLF;
+	content = "";
 	
+	// Spam filter
+	if(index != 0 && fBlackListCount > 0)
+	{
+		BString topOutput;
+		if(Top(index,0,topOutput) != B_OK)
+			PRINT(("%s\n",fLog.String() ));	
+		else{
+			if( IsSpam(topOutput.String()) )
+			{
+				Delete(index);
+				return B_OK;
+			}
+		}
+	}
 	// Get mail content size 
 	if(index != 0)
 	{	
@@ -433,6 +453,8 @@ PopClient::Retr(int32 index,BString &content)
 		}
 	}
 	// Send Retr command
+	BString cmd = "RETR ";
+	cmd << index << CRLF;
 	if( SendCommand(cmd.String()) != B_OK)
 	{
 		PRINT(("%s\n",cmd.String() ));
@@ -450,7 +472,6 @@ PopClient::Retr(int32 index,BString &content)
 	msg.what = H_RECEIVING_MESSAGE;
 	msg.AddInt32("index",index);
 	msg.AddInt32("size",0);
-	content = "";
 	
 	char *buf = new char[MAX_RECIEVE_BUF_SIZE+1];
 	if(!buf)
@@ -541,6 +562,39 @@ PopClient::Last(int32 *index)
 	
 	const char* log = fLog.String();
 	*index = atol(&log[4]);
+	return B_OK;
+}
+
+/***********************************************************
+ * Top
+ ***********************************************************/
+status_t
+PopClient::Top(int32 index,int32 lines,BString &out)
+{
+	BString cmd = "TOP ";
+	cmd << index << " " << lines << CRLF;
+	if( SendCommand(cmd.String()) != B_OK)
+	{
+		PRINT(("TOP error:%s %d\n",__FILE__,__LINE__));
+		return B_ERROR;
+	}
+	
+	out = "";
+	int32 r = 0;
+	r = ReceiveLine(cmd);
+	if(r <=0 || cmd[0] == '-')
+		return B_ERROR;
+	while(1)
+	{
+		r = ReceiveLine(cmd);
+		if( r <= 0)
+			break;
+		int32 len = cmd.Length();
+		const char* log = cmd.String();
+		if(len >2 && ::strcmp(&log[len-3],".\r\n") == 0)
+				break;
+		out += cmd;	
+	}
 	return B_OK;
 }
 
@@ -727,6 +781,81 @@ PopClient::MD5Digest (unsigned char *s)
     	sprintf(ascii_digest+2*i, "%02x", digest[i]);
  
 	return strdup(ascii_digest);
+}
+
+/***********************************************************
+ * IsSpam
+ ***********************************************************/
+bool
+PopClient::IsSpam(const char* header)
+{
+	BString from("");
+	// Find from field
+	char *p;
+	if((p = ::strstr(header,"\nFrom:")) )
+	{
+		p+=6;
+		if(*p == ' ')
+			p++;
+		while(1)
+		{
+			if(*p == '<')
+			{
+				p++;
+				from += *p++;
+			}else
+				from += *p++;
+			if(*p == ' '||*p == '\r' || *p == '\n' || *p == '>')
+				break;
+		}
+	}else
+		return false;
+	PRINT(("From:%s\n",from.String()));
+	// Compare to blacklist	
+	for(int32 i = 0;i < fBlackListCount;i++)
+	{
+		if(from.Compare((const char*)fBlackList.ItemAt(i)) == 0)
+		{
+			PRINT(("SPAM:%s\n",(char*)fBlackList.ItemAt(i)));
+			return true;
+		}
+	}
+	return false;
+}
+
+/***********************************************************
+ * InitBlackList
+ ***********************************************************/
+void
+PopClient::InitBlackList()
+{
+	int32 count = fBlackList.CountItems();
+	// Free old list
+	while(count > 0)
+		free( (char*)fBlackList.RemoveItem(--count) );
+	// Load list
+	BPath path;
+	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
+	path.Append( APP_NAME );
+	path.Append("BlackList");
+	
+	
+	HFile file(path.Path(),B_READ_ONLY);
+	if(file.InitCheck() != B_OK)
+		return;
+	BString line;
+	
+	while(file.GetLine(&line) >= 0)
+	{
+		if(line.Length() > 0)
+		{
+			// Strip line feed
+			line.RemoveAll("\n");
+			// Add address to list
+			fBlackList.AddItem(::strdup(line.String()));
+		}
+	}
+	fBlackListCount = fBlackList.CountItems();
 }
 
 /***********************************************************
