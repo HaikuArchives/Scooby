@@ -290,23 +290,18 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
    char *old = str.LockBuffer(0);
    if(len == 0)
    		return;
+   	char *buf = new char[len+1];
    // MIME-Q
    if(quoted_printable)
-   {
-   		char *buf = new char[len+1];
    		len = decode_quoted_printable(buf,old,len,false);	
-   		buf[len] = '\0'; 
-   		::strcpy(old,buf);
-   		delete[] buf;
-   }else{	
+   else	
    // MIME-B
-  	 	char *buf = new char[len+1];
  		len = decode_base64(buf, old, len); 
-   		buf[len] = '\0';
-   		::strcpy(old,buf);
-   		delete[] buf;
-    }
+    buf[len] = '\0'; 
+   	::strcpy(old,buf);
     str.UnlockBuffer();
+ 	//str = buf;
+ 	delete[] buf;
 }
 
 /***********************************************************
