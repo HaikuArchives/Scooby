@@ -284,6 +284,7 @@ Encoding::Mime2UTF8(BString &str)
 /***********************************************************
  * MimeDecode
  ***********************************************************/
+#define USE_BASE64DECODER
 void
 Encoding::MimeDecode(BString &str,bool quoted_printable)
 {
@@ -316,7 +317,12 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
         buf[len] = '\0'; 
         while (1) { 
                 if (i >= len) 
-                    break; 
+                    break;
+                if(buf[i] == '\r'|| buf[i] == '\n')
+                {
+                	i++;
+                	continue;
+                }
                 a1 = p_Charconv(buf[i]); 
                 a2 = p_Charconv(buf[i+1]); 
                 a3 = p_Charconv(buf[i+2]); 
@@ -364,7 +370,7 @@ Encoding::p_Charconv(char c)
         return 0x3f;
     if (c == '=')
         return '\0';
-    PRINT(("Invalid character[%c]", c));
+    PRINT(("Invalid character[%c:%d]\n", c,c));
     return '\0';
 }
 
