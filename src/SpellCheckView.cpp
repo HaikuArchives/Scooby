@@ -5,6 +5,7 @@
 #include <Directory.h>
 #include <File.h>
 #include <Entry.h>
+#include <Input.h>
 
 const rgb_color kSpellErrorColor = {250,0,0,255};
 const rgb_color kNormalColor = {0,0,0,255};
@@ -62,6 +63,40 @@ SpellCheckView::~SpellCheckView()
 }
 
 /***********************************************************
+ * MessageReceived
+ ***********************************************************/
+void
+SpellCheckView::MessageReceived(BMessage *message)
+{
+	switch(message->what)
+	{
+	case B_INPUT_METHOD_EVENT:
+	{
+		int32 opcode;
+		if(message->FindInt32("be:opcode",&opcode) == B_OK)
+		{
+			switch(opcode)
+			{
+			case B_INPUT_METHOD_STARTED:
+				fIsIM = true;
+				break;
+			case B_INPUT_METHOD_STOPPED:
+				fIsIM = false;
+				break;
+			case B_INPUT_METHOD_CHANGED:
+				//message->FindString("be:string",&fIMString);
+				break;
+			}
+		}
+		_inherited::MessageReceived(message);
+		break;
+	}
+	default:
+		_inherited::MessageReceived(message);
+	}
+}
+
+/***********************************************************
  * InsertText
  ***********************************************************/
 void
@@ -75,9 +110,16 @@ SpellCheckView::InsertText(const char				*inText,
 	array.count = 1;
 	array.runs[0].color = kNormalColor;
 	array.runs[0].offset = inOffset;
+	BFont font;
+	GetFontAndColor(0,&font);
+	array.runs[0].font = font;
 	//
 	_inherited::InsertText(inText,inLength,inOffset,&array);
 	
+	// Skip spell checking when input method is running
+	if(fIsIM)
+		return;
+		
 	bool check = false;
 	// Normal input action
 	if(inLength == 1)
@@ -95,7 +137,7 @@ SpellCheckView::InsertText(const char				*inText,
 	int32 start=0,end=0;
 	FindWord(inOffset,&start,&end);
 	
-	if(end < inLength+inOffset)
+	if(end <= inLength+inOffset)
 		end = inOffset+inLength;
 	else
 		check = true;

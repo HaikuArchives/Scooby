@@ -40,6 +40,7 @@ protected:
 								   int32					inOffset,
 								   const text_run_array		*inRuns);
 	virtual	void		DeleteText(int32 fromOffset, int32 toOffset);
+	virtual void		MessageReceived(BMessage *message);
 	
 			bool		CheckWord(const char* word);
 			bool		IsSameColor(rgb_color c1 ,rgb_color c2);
@@ -49,6 +50,8 @@ private:
 	static	int32		CheckThread(void *data);
 	bool				fEnabled;
 	BList				fWordList;
+	bool				fIsIM;
+	
 	typedef	CTextView	_inherited;
 };
 #endif
