@@ -41,6 +41,7 @@ HFilterView::~HFilterView()
 		BStringItem *item = cast_as(fListView->RemoveItem(--count),BStringItem);
 		delete item;
 	}
+	RemoveAllCriteria();
 }
 
 /***********************************************************
