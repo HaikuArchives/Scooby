@@ -292,6 +292,9 @@ HFolderList::GetFolders(void* data)
 	
 	BMessage msg(M_ADD_FOLDER);
 	msg.MakeEmpty();
+	BMessage childMsg(M_ADD_UNDER_ITEM);
+	childMsg.MakeEmpty();
+	
 	bool tree_mode;
 	((HApp*)be_app)->Prefs()->GetData("tree_mode",&tree_mode);
 	
@@ -322,6 +325,8 @@ HFolderList::GetFolders(void* data)
 				item = new HFolderItem(ref,list);
 				msg.AddPointer("item",item);
 				folderList.AddItem(item);
+				if(tree_mode)
+					GetChildFolders(entry,item,list,childMsg);
 			}
 		}
 	}
@@ -420,20 +425,10 @@ HFolderList::GetFolders(void* data)
 	// Send add list items message
 	if(!msg.IsEmpty())
 		list->Window()->PostMessage(&msg,list);
-	if(tree_mode)
-	{
-		// Gather child folders
-		int32 folder_count = folderList.CountItems();
-		for(int32 i = 0;i < folder_count;i++)
-		{
-			HFolderItem *item = (HFolderItem*)folderList.ItemAt(i);
-			entry_ref ref = item->Ref();
-			if(entry.SetTo(&ref) == B_OK)
-				GetChildFolders(entry,item,list);
-			if(list->fCancel)
-				break;
-		}
-	}
+
+	if(!childMsg.IsEmpty())
+		list->Window()->PostMessage(&childMsg,list);
+	
 	list->fThread =  -1;
 	
 	return 0;
@@ -445,7 +440,8 @@ HFolderList::GetFolders(void* data)
 void
 HFolderList::GetChildFolders(const BEntry &inEntry,
 							HFolderItem *parentItem,
-							HFolderList *list)
+							HFolderList *list,
+							BMessage &childMsg)
 {
 	BDirectory dir(&inEntry);
 	BEntry entry;
@@ -477,22 +473,13 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 			if(entry.IsDirectory())
 			{
 				entry.GetRef(&ref);
-				BMessage childMsg(M_ADD_UNDER_ITEM);
 				childMsg.AddPointer("item",(item = new HFolderItem(ref,list)));
 				childMsg.AddPointer("parent",parentItem);
 				if(!parentItem->IsSuperItem())
 				{
 					parentItem->SetSuperItem(true);
-					
-					if(list->Window()->Lock())
-					{
-						list->InvalidateItem(list->IndexOf(parentItem));
-						list->Window()->Unlock();
-					}
 				}
-				list->Window()->PostMessage(&childMsg,list);
-	
-				GetChildFolders(entry,item,list);			
+				GetChildFolders(entry,item,list,childMsg);			
 			}
 		} 
 	} 

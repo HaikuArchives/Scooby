@@ -49,7 +49,8 @@ protected:
 		static	int32 	GetFolders(void *data);
 		static	void	GetChildFolders(const BEntry &entry,
 										HFolderItem *parentItem,
-										HFolderList *list);
+										HFolderList *list,
+										BMessage &out);
 		virtual void	SelectionChanged();
 		virtual void	Pulse();
 		virtual void	MouseDown(BPoint pos);
