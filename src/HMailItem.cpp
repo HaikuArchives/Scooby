@@ -22,7 +22,7 @@
 /***********************************************************
  * Constructor
  ***********************************************************/
-HMailItem::HMailItem(const entry_ref ref)
+HMailItem::HMailItem(const entry_ref &ref)
 : CLVEasyItem(0, false, false, 18.0)
 	,fRef(ref)
 	,fStatus("")
@@ -42,7 +42,7 @@ HMailItem::HMailItem(const entry_ref ref)
 /***********************************************************
  * Constructor for cache data
  ***********************************************************/
-HMailItem::HMailItem(const entry_ref ref,
+HMailItem::HMailItem(const entry_ref &ref,
 					  const char* status,
 					  const char* subject,
 					  const char* from,
