@@ -463,33 +463,33 @@ HPopClientView::SaveMail(const char* all_content,
 			switch(mode)
 			{
 			case 1:
-				subject <<p+1;
+				subject  += p+1;
 				break;
 			case 2:
-				date << p+1;
+				date += p+1;
 				break;
 			case 3:
-				cc << p+1;
+				cc += p+1;
 				break;
 			case 4:
-				to << p+1;
+				to += p+1;
 				break;
 			case 5:
-				from << p+1;
+				from += p+1;
 				break;
 			case 6:
-				priority << p+1;
+				priority += p+1;
 				break;
 			case 7:
-				mime << p+1;
+				mime += p+1;
 				break;
 			case 8:
-				reply << p+1;
+				reply += p+1;
 				break;
 			}
 		}else
 			mode = 0;
-		header << p;
+		header += p;
 		p = ::strtok('\0',kToken);
 	}
 	delete[] tmp;

@@ -820,10 +820,9 @@ HFolderItem::NodeMonitor(BMessage *message)
 		if(::strcmp(mime_type,B_MAIL_TYPE) != 0)
 			break;
 		AddMail((item = new HMailItem(ref)));
-		if( fOwner->CurrentSelection() == fOwner->IndexOf(this) )
-		{
+		if( IsSelected() )
 			((HFolderList*)fOwner)->AddToMailList(item);
-		}
+		
 		InvalidateMe();
 		break;
 	case B_ENTRY_REMOVED:
@@ -833,7 +832,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 		message->FindInt64("node", &nref.node);
 		
 		HMailItem *item = RemoveMail(nref);
-		if(fOwner->IndexOf(this) == fOwner->CurrentSelection())
+		if(IsSelected())
 			((HFolderList*)fOwner)->RemoveFromMailList(item,true);
 		else
 			delete item;	
@@ -875,7 +874,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 			::get_ref_for_path(file_path.Path(),&ref);
 			HMailItem* item;
 			AddMail((item = new HMailItem(ref)));
-			if(fOwner->IndexOf(this) == fOwner->CurrentSelection())
+			if(IsSelected())
 				((HFolderList*)fOwner)->AddToMailList(item);
 			InvalidateMe();	
 		}
@@ -888,7 +887,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 			HMailItem *item = RemoveMail(old_nref);
 			if(!item)
 				break;
-			if(fOwner->IndexOf(this) == fOwner->CurrentSelection())
+			if(IsSelected())
 				((HFolderList*)fOwner)->RemoveFromMailList(item,true);
 			else
 				delete item;
@@ -940,6 +939,18 @@ HFolderItem::CompareFunc(const void *data1,const void* data2)
 	else
 		return 0;
 	return 0;	
+}
+
+/***********************************************************
+ * IsSelected
+ ***********************************************************/
+bool
+HFolderItem::IsSelected()
+{
+	int32 sel =  fOwner->CurrentSelection();
+	if(sel < 0 && sel == fOwner->IndexOf(this))
+		return false;
+	return true;
 }
 
 /***********************************************************
