@@ -425,6 +425,7 @@ HPopClientView::GetHeaderParam(BString &out,const char* content,int32 offset)
 	int32 i = offset;
 	if(content[i] == ' ')
 		i++;
+	out = "";
 	while(1)
 	{
 		if(content[i] =='\n')
@@ -456,7 +457,7 @@ HPopClientView::SaveMail(const char* all_content,
 	Encoding encode;
 	
 	bool is_multipart = false;
-	int32 org_len = strlen(all_content);
+	int32 org_len = ::strlen(all_content);
 	// Probably deleted with Spam filter
 	if(org_len == 0)
 	{
@@ -524,7 +525,7 @@ HPopClientView::SaveMail(const char* all_content,
 	::create_directory(path.Path(),0777);
 	BDirectory destDir(path.Path());
 	path.Append(subject.String());
-	//PRINT(("path:%s\n",path.Path() ));
+	PRINT(("path:%s\n",path.Path() ));
 	// create the e-mail file
 	BFile file;
 
