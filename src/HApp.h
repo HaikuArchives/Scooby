@@ -5,7 +5,7 @@
 
 #define APP_NAME		"Scooby"
 #define QUERY_FOLDER	"Queries"
-#define APP_SIG			"application/x-vnd.takamatsu-hotmail"
+#define APP_SIG			"application/x-vnd.takamatsu-scooby"
 
 class HWindow;
 class HPrefs;
