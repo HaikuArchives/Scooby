@@ -43,6 +43,7 @@ HMailItem::HMailItem(const entry_ref &ref)
 	,fEnclosure(-1)
 	,fDeleteMe(false)
 	,fInitThread(-1)
+	,fOwner(NULL)
 {
 	BEntry entry(&ref);
 	entry.GetNodeRef(&fNodeRef);
@@ -308,7 +309,6 @@ HMailItem::RefreshStatus()
 void
 HMailItem::InitItem()
 {
-	BEntry entry(&fRef);
 	attr_info attr;
 	BNode node(&fRef);
 	

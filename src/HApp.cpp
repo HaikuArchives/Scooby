@@ -102,9 +102,7 @@ HApp::MessageReceived(BMessage *message)
 	{
 	case M_TRASH_FILE:
 	{
-		entry_ref ref;
-//		const char* path;
-		
+		entry_ref ref;		
 		int32 count;
 		type_code type;
 		message->GetInfo("refs",&type,&count);
@@ -113,6 +111,7 @@ HApp::MessageReceived(BMessage *message)
 		{
 			if(message->FindRef("refs",i,&ref) == B_OK)
 			{
+printf("%d\n",i);
 				PRINT(("DELETE\n"));
 				TrackerUtils().MoveToTrash(ref);
 			}

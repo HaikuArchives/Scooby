@@ -72,8 +72,11 @@ int32 GetAllDirents(const char* path,struct dirent ***outdirent,bool folder_only
 	register struct dirent **dirent;
 	
 	count = scandir(path,&dirent,(folder_only)?folderselector:NULL,NULL);
-	
-	*outdirent = dirent;
+	if (count > 0) {
+		*outdirent = dirent;
+	} else {
+		*outdirent = NULL;
+	}
 	return count;
 }
 

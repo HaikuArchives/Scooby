@@ -1055,10 +1055,6 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 		(new BAlert("",label.String(),_("OK")))->Go();
 		return B_ERROR;
 	}
-
-	// file type first (or queries won't work)
-	BNodeInfo ninfo(&file);
-	ninfo.SetType("text/x-email");
 	
 	// make smtp server
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
@@ -1226,7 +1222,17 @@ HWriteWindow::SaveMail(bool send_now,entry_ref &ref,bool is_multipart)
 	file.WriteAttr(B_MAIL_ATTR_CONTENT,B_INT32_TYPE,0,&content_len,sizeof(int32));	
 	file.WriteAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&now,sizeof(time_t));
 	file.WriteAttrString(B_MAIL_ATTR_SMTP_SERVER,&smtp_host);
-	
+
+	// Ok, Scooby relies on the fact that the type of the file
+	// is not set while all attributes are added.
+	// This is odd, because it breaks Tracker's queries.
+	// We fix that by forcing a node monitor message to be
+	// sent _after_ we set the type.
+	BNodeInfo ninfo(&file);
+	ninfo.SetType("text/x-email");
+	// Don't remove this (it forces an extra node monitoring message)
+	file.WriteAttr(B_MAIL_ATTR_STATUS,B_STRING_TYPE,0,"Pending",8);
+
 	file.Sync();
 	return B_OK;
 }

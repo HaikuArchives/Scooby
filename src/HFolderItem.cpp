@@ -151,7 +151,8 @@ HFolderItem::AddMail(HMailItem *item)
 	::watch_node(&item->fNodeRef,B_WATCH_ATTR,this);
 	
 	if(!item->IsRead())
-		SetUnreadCount(fUnread+1);
+		fUnread++;
+	SetUnreadCount(fUnread);
 }
 
 /***********************************************************
@@ -280,9 +281,8 @@ HFolderItem::RemoveMails(BList* list)
 void
 HFolderItem::StartGathering()
 {
-	if(fThread != -1)
-		return;
-	//PRINT(("Folder Gathering\n"));
+	if ((fRefreshThread != -1) || (fThread != -1))
+		return;	
 	fThread = ::spawn_thread(ThreadFunc,"MailGathering",B_LOW_PRIORITY,this);
 	::resume_thread(fThread);
 }
@@ -293,6 +293,7 @@ HFolderItem::StartGathering()
 int32
 HFolderItem::ThreadFunc(void*data)
 {
+	PRINT(("Folder Gathering\n"));
 	HFolderItem *item = (HFolderItem*)data;
 	BListView *list = item->fOwner;
 	if(list->HasItem(item))
@@ -311,10 +312,11 @@ HFolderItem::ThreadFunc(void*data)
 void
 HFolderItem::Gather()
 {
+	// reset the unread mail count
+	SetUnreadCount(0);
+
 	if(ReadFromCache() == B_OK)
 		return;
-	
-	BPath	path;
 
 	BDirectory dir( &fFolderRef );
    	//load all email
@@ -343,18 +345,17 @@ HFolderItem::Gather()
 			ref.directory = dent->d_pino;
 			ref.set_name(dent->d_name);
 			/* Do something with the ref. */
+
 			if(node.SetTo(&ref) != B_OK)
 				continue;
-			node.ReadAttr("BEOS:TYPE",'MIMS',0,type,B_MIME_TYPE_LENGTH);
+			if(node.ReadAttr("BEOS:TYPE",B_MIME_TYPE,0,type,B_MIME_TYPE_LENGTH) <0)
+				continue;
 			if(::strcmp(type,B_MAIL_TYPE) == 0)
-			{
-				AddMail(item = new HMailItem(ref));
-				if(item&&!item->IsRead())
-					fUnread++;
-			}
+				AddMail(new HMailItem(ref));
 		} 
 	} 
 #else
+	BPath path;
 	int32 count,i=0;
 	struct dirent **dirents = NULL;
 	path.SetTo(&fFolderRef);
@@ -373,7 +374,7 @@ HFolderItem::Gather()
 		
 		if(node.SetTo(&ref) != B_OK)
 			continue;
-		if(node.ReadAttr("BEOS:TYPE",'MIMS',0,type,B_MIME_TYPE_LENGTH) <0)
+		if(node.ReadAttr("BEOS:TYPE",B_MIME_TYPE,0,type,B_MIME_TYPE_LENGTH) <0)
 			continue;
 		if(::strcmp(type,B_MAIL_TYPE) == 0)
 			AddMail(item = new HMailItem(ref));
@@ -404,8 +405,6 @@ HFolderItem::Gather()
 void
 HFolderItem::SetUnreadCount(int32 unread)
 {
-	//if(!IsDone())
-	//	return;
 	fUnread = unread;
 	
 	if(fUnread>0)
@@ -425,7 +424,6 @@ HFolderItem::RefreshCache()
 {
 	EmptyMailList();
 	PRINT(("Refresh Folder\n"));
-	SetUnreadCount(0);
 	fDone = false;
 	fCancel = false;
 	// Set icon to open folder
@@ -457,9 +455,8 @@ HFolderItem::InvalidateMe()
 void
 HFolderItem::StartRefreshCache()
 {
-	if(fRefreshThread != -1&&fThread == -1)
-		return;
-	
+	if ((fRefreshThread != -1) || (fThread != -1))
+		return;	
 	fRefreshThread = ::spawn_thread(RefreshCacheThread,"RefreshCache",B_NORMAL_PRIORITY,this);
 	::resume_thread(fRefreshThread);
 }
@@ -708,15 +705,25 @@ HFolderItem::CreateCacheThread(void *data)
 void
 HFolderItem::EmptyMailList()
 {
-	register int32 count = fMailList.CountItems();
-	HMailItem *item;
-	int32 i = 0;
-	while(count>0)
-	{
-		item = static_cast<HMailItem*>(fMailList.RemoveItem(--count));	
-		::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
-		delete item;
-		i++;
+	if (fOwner->LockLooper()) {
+		HMailItem *item = static_cast<HMailItem *>(fMailList.ItemAt(0));
+		if (item) {
+			HMailList *list = static_cast<HMailList *>(item->fOwner);
+			if (list && (list->LockLooper())) {
+				list->RemoveMails(&fMailList);
+				list->UnlockLooper();
+			}
+		}
+		fOwner->UnlockLooper();
+	}
+
+	if (fOwner->LockLooper()) {
+		while (!fMailList.IsEmpty()) {
+			HMailItem *item = static_cast<HMailItem *>(fMailList.RemoveItem((int32)0));
+			::watch_node(&item->fNodeRef,B_STOP_WATCHING,this);
+			delete item;
+		}
+		fOwner->UnlockLooper();
 	}
 }
 
@@ -729,7 +736,7 @@ HFolderItem::Launch()
 	BMessenger tracker("application/x-vnd.Be-TRAK" );
 	BMessage msg(B_REFS_RECEIVED);
 	msg.AddRef("refs",&fFolderRef);
-	BMessage reply ; 
+	BMessage reply; 
 	tracker.SendMessage( &msg, &reply ); 
 	//be_roster->Launch(&fFolderRef);
 }

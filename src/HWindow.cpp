@@ -726,7 +726,7 @@ HWindow::MessageReceived(BMessage *message)
 		while((sel = fMailList->CurrentSelection(i++)) >= 0)
 		{
 			HMailItem *item = fMailList->MailAt(sel);
-			if(item )
+			if(item)
 				itemList.AddItem(item);
 		}
 		// Filter items
@@ -806,16 +806,15 @@ HWindow::MessageReceived(BMessage *message)
 	{
 		fMailList->MakeEmpty();
 		
-		int32 sel = fFolderList->CurrentSelection();
-		if(sel<0)
+		const int32 sel = fFolderList->CurrentSelection();
+		if (sel<0)
 			break;
-		//HFolderItem *item = cast_as(fFolderList->ItemAt(sel),HFolderItem);
-		HFolderItem *item = (HFolderItem*)fFolderList->ItemAt(sel);
-		if(item)
+		HFolderItem *item = static_cast<HFolderItem*>(fFolderList->ItemAt(sel));
+		if (item)
 		{
-			fFolderList->SetWatching( true );
+			fFolderList->SetWatching(true);
 			item->StartRefreshCache();
-			fFolderList->InvalidateItem(fFolderList->IndexOf(item));
+			fFolderList->InvalidateItem(sel);
 			fFolderList->SetWatching(true);
 		}
 		break;
@@ -824,8 +823,10 @@ HWindow::MessageReceived(BMessage *message)
 	case M_ADD_FROM_NODEMONITOR:
 	{
 		HMailItem *item;
-		if(message->FindPointer("mail",(void**)&item) == B_OK)
+		if(message->FindPointer("mail",(void**)&item) == B_OK) {
 			fMailList->AddItem(item);
+			item->fOwner = fMailList;
+		}
 		break;
 	}
 	// Remove item by nodemonitor

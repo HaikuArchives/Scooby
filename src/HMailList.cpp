@@ -186,6 +186,10 @@ HMailList::MessageReceived(BMessage *message)
 				if (ReadSettings(path, &settings) != B_OK) RefreshColumns(NULL);
 				else RefreshColumns(&settings);
 			}
+			// set the owner of these mail items
+			const uint32 c = list->CountItems();
+			for (uint32 i=0 ; i<c ; i++)
+				static_cast<HMailItem *>(list->ItemAt(i))->fOwner = this;
 			//Add Mails
 			AddList(list);
 			SortItems();
@@ -345,6 +349,7 @@ HMailList::AddMail(HMailItem *mail)
 	if(sort_key < 0)
 	{
 		AddItem(mail);
+		mail->fOwner = this;
 		return;
 	}
 	// Get sort mode
@@ -353,6 +358,7 @@ HMailList::AddMail(HMailItem *mail)
 	int32 count = CountItems();
 	insert_pos = CalcInsertPosition(count,sort_key,sort_mode,mail);
 	AddItem(mail,insert_pos);
+	mail->fOwner = this;
 }
 
 /***********************************************************
@@ -393,23 +399,21 @@ HMailList::CalcInsertPosition(int32 count,
 void
 HMailList::RemoveMails(BList *list)
 {
-	int32 count = list->CountItems();
-	
-	if(count<2)
+	const int32 count = list->CountItems();
+	if (count<2)
 	{
-		for(int32 i = 0;i < count;i++)
-			RemoveItem((BListItem*)list->ItemAt(i));
+		for (int32 i=0 ; i<count ; i++)
+			RemoveItem(static_cast<BListItem *>(list->ItemAt(i)));
 		return;
 	}
-	HMailItem *item = (HMailItem*)list->RemoveItem(count-1);
-	
-	BScrollBar *bar = this->ScrollBar(B_VERTICAL);
-	bar->SetTarget((BView*)NULL);
-	for(int32 i = 0;i < count-1;i++)
-			RemoveItem((BListItem*)list->ItemAt(i));
 
-	bar->SetTarget(this);
-	RemoveItem(item);
+	BScrollBar *bar = ScrollBar(B_VERTICAL);
+	RemoveItem(static_cast<BListItem *>(list->ItemAt(0)));
+	if (bar) bar->SetTarget((BView*)NULL);
+	for (int32 i=1 ; i<count-1 ; i++)
+		RemoveItem(static_cast<BListItem *>(list->ItemAt(i)));
+	if (bar) bar->SetTarget(this);
+	RemoveItem(static_cast<BListItem *>(list->ItemAt(count-1)));
 }
 
 /***********************************************************
