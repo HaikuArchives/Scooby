@@ -414,17 +414,18 @@ PopClient::Retr(int32 index,BString &content)
 {
 	BString cmd = "RETR ";
 	cmd << index << CRLF;
-	PRINT(("%s\n",cmd.String() ));
+	
 	if( SendCommand(cmd.String()) != B_OK)
 	{
+		PRINT(("%s\n",cmd.String() ));
 		PRINT(("Retr error:%s %d\n",__FILE__,__LINE__));
 		return B_ERROR;
 	}
 	const char* log = fLog.String();
 	int32 size = atol(&log[4]);
 	int32 r;
-	//PRINT(("Content size:%d\n",size));
-	size += 5;
+	
+	size += 3;
 	BMessage msg(H_SET_MAX_SIZE);
 	msg.AddInt32("max_size",size);
 	fLooper->PostMessage(&msg,fHandler);
@@ -440,9 +441,12 @@ PopClient::Retr(int32 index,BString &content)
 	{
 		if(fEndpoint->IsDataPending(kTimeout))
 		{
-			r = fEndpoint->Receive(buf,size);
+			r = fEndpoint->Receive(buf,(size>0)?size:1);
 			if(r <= 0)
+			{
+				PRINT(("Receive Err:%d %d %s\n",r,size,buf));
 				return B_ERROR;
+			}
 			size -= r;
 			content_len += r;
 			buf[r] = '\0';
@@ -450,8 +454,8 @@ PopClient::Retr(int32 index,BString &content)
 			msg.ReplaceInt32("size",r);
 			fLooper->PostMessage(&msg,fHandler);
 			
-			if(content_len > 4 &&
-			          content[content_len-1] == '\n' && 
+			if(content_len > 5 &&
+			        content[content_len-1] == '\n' && 
 					content[content_len-2] == '\r' &&
 					content[content_len-3] == '.'  &&
 					content[content_len-4] == '\n' &&
@@ -459,7 +463,6 @@ PopClient::Retr(int32 index,BString &content)
 				break;
 		}
 	}
-	
 	delete[] buf;
 	content.Truncate(content.Length()-5);
 	content.ReplaceAll("\n..","\n.");
@@ -553,9 +556,11 @@ PopClient::SendCommand(const char* cmd)
 	
 	if(len <= 0)
 		return B_ERROR;
-	PRINT(("%s",fLog.String()));
 	if(strncmp(fLog.String(),"+OK",3) != 0)
+	{
+		PRINT(("ERR:%s recv len :%d\n",fLog.String(),len));
 		return B_ERROR;
+	}
 	return B_OK;
 }
 
@@ -582,7 +587,7 @@ PopClient::ReceiveLine(BString &line)
 			len += rcv;
 			line << c;
 		}else
-			break;			
+			break;
 	}
 	return len;
 }
