@@ -32,14 +32,14 @@ const char* kFormatedTime[] = {"Mon, 05 Feb 2001 04:33:10 PM",
 								"01/02/05 16:33:10",
 								"02/05 16:33:10"};
 
-const char* kLabels[] = {_("Cache mail folders"),
-							_("Create folder caches on startup (in background)"),
-							_("Open inbox on startup"),
-							_("Support mail sub-folders"),
-							_("Use Deskbar replicant"),
-							_("Always use HTML view"),
-							_("Always open links in new window (HTML view)"),
-							_("Use LED blinking")};
+const char* kLabels[] = {"Cache mail folders",
+							"Create folder caches on startup (in background)",
+							"Open inbox on startup",
+							"Support mail sub-folders",
+							"Use Deskbar replicant",
+							"Always use HTML view",
+							"Always open links in new window (HTML view)",
+							"Use LED blinking"};
 
 const char* kNames[] = {"use_folder_cache",
 							"load_list_on_start_up",
@@ -212,7 +212,7 @@ HGeneralSettingView::InitGUI()
 	int32 count = sizeof(kLabels)/sizeof(kLabels[0]);
 	for(int32 i = 0;i < count;i++)
 	{
-		checkbox = new BCheckBox(frame,kNames[i],kLabels[i],NULL);
+		checkbox = new BCheckBox(frame,kNames[i],_(kLabels[i]),NULL);
 		prefs->GetData(kNames[i],&bValue);
 		checkbox->SetValue(bValue);
 		box->AddChild(checkbox);
