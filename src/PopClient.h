@@ -40,7 +40,7 @@ public:
 		status_t	Uidl(int32 index,BString &outlist);
 		status_t	Last(int32 *index);
 			int32	ReceiveLine(BString &buf);
-		
+			void	ForceQuit();
 protected:
 		status_t	SendCommand(const char* cmd);	
 			void	PostError();

@@ -11,6 +11,7 @@
 #include <NodeInfo.h>
 #include <Message.h>
 #include <Autolock.h>
+#include <Alert.h>
 
 #define CRLF "\r\n"
 #define MAX_RECIEVE_BUF_SIZE 4096
@@ -684,6 +685,15 @@ PopClient::MD5Digest (unsigned char *s)
     	sprintf(ascii_digest+2*i, "%02x", digest[i]);
  
 	return strdup(ascii_digest);
+}
+
+/***********************************************************
+ * ForceQuit
+ ***********************************************************/
+void
+PopClient::ForceQuit()
+{
+	fEndpoint->Close();
 }
 
 /***********************************************************

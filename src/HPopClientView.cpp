@@ -956,3 +956,12 @@ HPopClientView::PlayNotifySound()
 {
 	system_beep("New E-mail");
 }
+
+/***********************************************************
+ * Cancel
+ ***********************************************************/
+void
+HPopClientView::Cancel()
+{
+	fPopClient->ForceQuit();
+}

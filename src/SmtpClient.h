@@ -31,8 +31,11 @@ public:
 							const char* data);
 		status_t		SendMail(HMailItem *item);
 		status_t		SmtpQuit();
+		
+			void		ForceQuit();
 protected:
 	virtual	void		MessageReceived(BMessage *message);
+	virtual bool		QuitRequested();
 			int32		ReceiveLine(BString &buf);
 			status_t	SendCommand(const char* cmd);
 			void		PostError(const char* log);

@@ -347,6 +347,15 @@ SmtpClient::PostError(const char* log)
 }
 
 /***********************************************************
+ * ForceQuit
+ ***********************************************************/
+void
+SmtpClient::ForceQuit()
+{
+	fEndpoint->Close();
+}
+
+/***********************************************************
  * SmtpQuit
  ***********************************************************/
 status_t
@@ -363,4 +372,14 @@ SmtpClient::SmtpQuit()
 	delete fEndpoint;
 	fEndpoint = NULL;
 	return B_OK;
+}
+
+/***********************************************************
+ * QuitRequested
+ ***********************************************************/
+bool
+SmtpClient::QuitRequested()
+{
+	SmtpQuit();
+	return BLooper::QuitRequested();
 }
