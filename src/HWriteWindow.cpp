@@ -168,6 +168,9 @@ HWriteWindow::InitMenu()
    	aMenu->AddSeparatorItem();
    	utils.AddMenuItem(aMenu,_("Select All"),B_SELECT_ALL,this,this,'A',0);
    	menubar->AddItem(aMenu);
+   	aMenu->AddSeparatorItem();
+   	utils.AddMenuItem(aMenu,_("Quote Selection"),M_QUOTE_SELECTION,this,this);
+
    	// Mail
 	aMenu = new BMenu(_("Mail"));
 	utils.AddMenuItem(aMenu,_("Send Now"),M_SEND_NOW,this,this,'M',0,
@@ -570,6 +573,30 @@ HWriteWindow::MessageReceived(BMessage *message)
 		utils.OpenFolder(ref);
 		break;
 	}
+	// Quote Selection
+	case M_QUOTE_SELECTION:
+	{
+		int32 start,end;
+		fTextView->GetSelection(&start,&end);
+		if(start != end)
+		{
+			// Make quoted text
+			BString text;
+			char *buf = text.LockBuffer(end-start+1);
+			fTextView->GetText(start,end-start,buf);
+			text.UnlockBuffer(end-start);
+			text.Insert(">",0);
+			text.ReplaceAll("\n","\n>");
+			int32 len = text.Length();
+			// Reset selection
+			fTextView->Select(start+len,start+len);
+			// Delete old selection
+			fTextView->Delete(start,end);
+			// Insert new text
+			fTextView->Insert(start,text.String(),len);
+		}
+		break;
+	}
 	// NodeMonitor
 	case B_NODE_MONITOR:
 	{
@@ -619,9 +646,11 @@ HWriteWindow::MenusBeginning()
 		{
 			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(true);
 			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(true);
+			KeyMenuBar()->FindItem(M_QUOTE_SELECTION)->SetEnabled(true);
 		} else {
 			KeyMenuBar()->FindItem(B_CUT)->SetEnabled(false);
 			KeyMenuBar()->FindItem(B_COPY )->SetEnabled(false);
+			KeyMenuBar()->FindItem(M_QUOTE_SELECTION)->SetEnabled(false);
 		}
 	}else if((ctrl = fTopView->FocusedView()))
 	{
