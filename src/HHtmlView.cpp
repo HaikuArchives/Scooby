@@ -8,6 +8,7 @@
 #include <Path.h>
 #include <Roster.h>
 #include <Application.h>
+#include <string.h>
 
 #define STARTUP_PAGE "netpositive:Startup.html"
 

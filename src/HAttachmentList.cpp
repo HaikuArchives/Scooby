@@ -6,6 +6,7 @@
 #include <Menu.h>
 #include <Window.h>
 #include <MenuItem.h>
+#include <string.h>
 
 /***********************************************************
  * Constructor
