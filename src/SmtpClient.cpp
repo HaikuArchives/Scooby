@@ -65,6 +65,7 @@ SmtpClient::Connect(const char* address,int16 port,bool esmtp)
 	if( SendCommand(cmd) != B_OK)
 	{
 		PRINT(("Err:%s\n",fLog.String()));
+		delete[] cmd;
 		return B_ERROR;
 	}
 	delete[] cmd;
