@@ -68,8 +68,6 @@ public:
 protected:
 			//!	Convert any encodings to UTF8
 			status_t	ISO2UTF8(BString &str,int32 &encoding);
-			//!	Convert character to mime character.
-			char	p_Charconv(char c);
 			//! Check whether input character is multibyte.
 			bool	p_IsMultiByte(char c);
 			//!	Guess BeOS internal encoding name by charset string.
