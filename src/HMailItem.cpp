@@ -22,8 +22,6 @@
 #include <View.h>
 #include <StopWatch.h>
 
-#define TIME_FORMAT "%a, %d %b %Y %r"
-
 const rgb_color kBorderColor = ui_color(B_PANEL_BACKGROUND_COLOR);
 
 /***********************************************************
