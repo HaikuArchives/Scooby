@@ -47,6 +47,8 @@ const property_info kMailPropertyList[] = {
 	}
 };
 
+const int32 kNumberOfColumns = 10;
+
 /***********************************************************
  * Constructor
  ***********************************************************/
@@ -68,11 +70,11 @@ HMailList::HMailList(BRect frame,
 		CLV_NOT_RESIZABLE|CLV_PUSH_PASS|CLV_SORT_KEYABLE) );
 	SetSortFunction(HMailItem::CompareItems);
 	
-	const char* label[] = {_("Subject"),_("From"),_("To"),_("When"),_("P"),_("A")};
+	const char* label[] = {_("Subject"),_("From"),_("To"),_("When"),_("P"),_("A"),_("Cc"),_("Size"),_("Account")};
 	CLVColumn*			column;
-	for(int32 i = 0;i < 6;i++)
+	for(int32 i = 0;i < kNumberOfColumns-1;i++)
 	{
-		if(i>=4)
+		if(i>=4 && i <= 5)
 			column = new CLVColumn(label[i],20,CLV_SORT_KEYABLE|CLV_NOT_RESIZABLE);
 		else
 			column = new CLVColumn(label[i],100,CLV_SORT_KEYABLE|CLV_TELL_ITEMS_WIDTH);
@@ -80,7 +82,7 @@ HMailList::HMailList(BRect frame,
 	}
 	SetInvocationMessage(new BMessage(M_INVOKE_MAIL));
 	
-	int32 display_order[7] = {0,5,6,1,2,3,4};
+	int32 display_order[kNumberOfColumns+1] = {0,5,6,1,2,3,4,7,8,9};
 	SetDisplayOrder(display_order);
 	int32 sort_key = 4,sort_mode = 1;
 	SetSortMode(sort_key,(CLVSortMode)sort_mode);
@@ -255,40 +257,7 @@ HMailList::SaveColumnsAndPos()
 {
 	if(!fCurrentFolder)
 		return;
-	/*
-	BPath path;
-	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
-	path.Append(APP_NAME);
-	path.Append("Attribute");
-	::create_directory(path.Path(),0777);
-	if(fFolderType == QUERY_TYPE)
-	{
-		path.Append("Query");
-		::create_directory(path.Path(),0777);
-	}else if(fFolderType == IMAP4_TYPE)
-	{
-		path.Append("IMAP4");
-		::create_directory(path.Path(),0777);
-	}else{
-		const char* p;
-		BPath folder_path(fCurrentFolder);
-		folder_path.GetParent(&folder_path);
-		while(1)
-		{
-			p = folder_path.Leaf();
-			if(::strcmp(p,"mail") == 0)
-				break;	
-			path.Append(p);
-			::create_directory(path.Path(),0777);
-			folder_path.GetParent(&folder_path);
-		}
-	}
-	
-	BString name( BPath(fCurrentFolder).Leaf());
-	name << ".attr";
-	
-	path.Append(name.String());
-	*/
+
 	BFile file(fCurrentFolder,B_WRITE_ONLY|B_CREATE_FILE);
 	if(file.InitCheck() != B_OK)
 	{
@@ -296,13 +265,13 @@ HMailList::SaveColumnsAndPos()
 		return;
 	}
 	const int32 kFlags[] = {COLUMN_SUBJECT,COLUMN_FROM,COLUMN_TO
-							,COLUMN_WHEN,COLUMN_PRIORITY,COLUMN_ATTACHMENT};
+							,COLUMN_WHEN,COLUMN_PRIORITY,COLUMN_ATTACHMENT,COLUMN_CC,COLUMN_SIZE,COLUMN_ACCOUNT};
 	
 	BMessage msg;
 	int32 flags = 0;
 	char width_name[] = "width1";
 	float width;
-	for(int32 i = 1;i < 7;i++)
+	for(int32 i = 1;i < kNumberOfColumns;i++)
 	{
 		CLVColumn *col = ColumnAt(i);
 		
@@ -316,8 +285,8 @@ HMailList::SaveColumnsAndPos()
 	
 	int32 mode = 0,sort_key = -1;
 	
-	int32 sortKeys[7];
-	CLVSortMode sortModes[7];
+	int32 sortKeys[kNumberOfColumns+1];
+	CLVSortMode sortModes[kNumberOfColumns+1];
 	int32 num = GetSorting(sortKeys,sortModes);
 	
 	for(int32 i = 0;i < num;i++)
@@ -332,10 +301,10 @@ HMailList::SaveColumnsAndPos()
 	msg.AddInt32("sort_mode",mode);
 	
 	// Save Display order
-	int32 display_order[7];
+	int32 display_order[kNumberOfColumns+1];
 	GetDisplayOrder(display_order);
 	char column_name[] = "column1";
-	for(int32 i = 0;i < 7;i++)
+	for(int32 i = 0;i < kNumberOfColumns;i++)
 	{
 		msg.AddInt32(column_name,display_order[i]);
 		column_name[6]++;
@@ -358,7 +327,7 @@ HMailList::AddMail(HMailItem *mail)
 {
 	// Find sortkey
 	int32 sort_key = -1;
-	for(int32 i = 1;i < 6;i++)
+	for(int32 i = 1;i < kNumberOfColumns+1;i++)
 	{
 		CLVColumn *col = ColumnAt(i);
 		
@@ -703,11 +672,11 @@ end:
 void
 HMailList::RefreshColumns(BMessage *settings)
 {
-	int32 display_order[7];
-	float column_width[6];
+	int32 display_order[kNumberOfColumns+1];
+	float column_width[kNumberOfColumns];
 	char column_name[] = "column1";
 	char width_name[] = "width1";
-	int32 flags,sort_key=-1,sort_mode=0;
+	int32 flags,sort_key=-1,sort_mode=0,order;
 	float width;
 	
 	if (settings)
@@ -716,16 +685,18 @@ HMailList::RefreshColumns(BMessage *settings)
 		settings->FindInt32("sort_key",&sort_key);
 		settings->FindInt32("sort_mode",&sort_mode);
 		
-		for(int32 i = 0;i < 7;i++)
+		for(int32 i = 0;i < kNumberOfColumns;i++)
 		{
-			display_order[i] = settings->FindInt32(column_name);
+			if(settings->FindInt32(column_name,&order) != B_OK)
+				order = column_name[6] - '1';
+			display_order[i] = order;
 			column_name[6]++;
 		}
 		
-		for(int32 i = 0;i < 6;i++)
+		for(int32 i = 0;i < kNumberOfColumns-1;i++)
 		{
 			if(settings->FindFloat(width_name,&width) != B_OK)
-				width = (i < 4)?100:20;
+				width = (i < 4 || i >5 )?100:20;
 			column_width[i] = width;
 			width_name[5]++;
 		}
@@ -735,14 +706,14 @@ HMailList::RefreshColumns(BMessage *settings)
 		PRINT(("Enter default column\n"));
 		display_order[0] = 0;display_order[1] = 5;display_order[2] = 6;
 		display_order[3] = 1;display_order[4] = 2;display_order[5] = 3;
-		display_order[6] = 4;
-		
+		display_order[6] = 4;display_order[7] = 7;display_order[8] = 8;
+		display_order[9] = 9;
 		sort_key = 4;
 		sort_mode = 1;
-		flags = COLUMN_SUBJECT|COLUMN_FROM|COLUMN_TO|COLUMN_WHEN|COLUMN_PRIORITY|COLUMN_ATTACHMENT;
-		for(int32 i = 0;i < 6;i++)
+		flags = COLUMN_SUBJECT|COLUMN_FROM|COLUMN_TO|COLUMN_WHEN|COLUMN_PRIORITY|COLUMN_ATTACHMENT|COLUMN_CC|COLUMN_SIZE|COLUMN_ACCOUNT;
+		for(int32 i = 0;i < kNumberOfColumns;i++)
 		{
-			column_width[i] = (i < 4)?100:20;
+			column_width[i] = (i < 4 || i > 5)?100:20;
 		}
 	}
 	SetColumns(flags,display_order,sort_key,sort_mode,column_width);
@@ -759,9 +730,9 @@ HMailList::SetColumns(int32 flags,
 						float *column_width)
 {
 	const int32 kFlags[] = {COLUMN_SUBJECT,COLUMN_FROM,COLUMN_TO
-							,COLUMN_WHEN,COLUMN_PRIORITY,COLUMN_ATTACHMENT};
+							,COLUMN_WHEN,COLUMN_PRIORITY,COLUMN_ATTACHMENT,COLUMN_CC,COLUMN_SIZE,COLUMN_ACCOUNT};
 
-	for(int32 i = 0;i < 6;i++)
+	for(int32 i = 0;i < kNumberOfColumns-1;i++)
 	{
 		if( flags & kFlags[i])
 			SetColumnShown((ColumnType)i,true);	
@@ -775,7 +746,7 @@ HMailList::SetColumns(int32 flags,
 	SetSortMode(sort_key,(CLVSortMode)sort_mode);
 	SetSortKey(sort_key);
 	
-	for(int32 i = 0;i < 6;i++)
+	for(int32 i = 0;i < kNumberOfColumns-1;i++)
 	{
 		CLVColumn *col = ColumnAt(i+1);
 		col->SetWidth(column_width[i]);

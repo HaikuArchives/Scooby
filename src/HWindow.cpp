@@ -206,9 +206,9 @@ HWindow::InitMenu()
     menubar->AddItem( aMenu );
 ////------------------------- Attr Menu ---------------------
 	aMenu = new BMenu(_("Attributes"));
-	const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachments")};
-	ColumnType attr_col[] = {COL_SUBJECT,COL_FROM,COL_TO,COL_WHEN,COL_PRIORITY,COL_ATTACHMENT};
-	for(int32 i = 0;i < 6;i++)
+	const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachments"),_("Cc"),_("Size"),_("Account")};
+	ColumnType attr_col[] = {COL_SUBJECT,COL_FROM,COL_TO,COL_WHEN,COL_PRIORITY,COL_ATTACHMENT,COL_CC,COL_SIZE,COL_ACCOUNT};
+	for(int32 i = 0;i < 9;i++)
 	{
 		BMessage *msg = new BMessage(M_ATTR_MSG);
 		msg->AddInt32("attr",attr_col[i]);
@@ -638,7 +638,7 @@ HWindow::MessageReceived(BMessage *message)
 	}
 	case M_ATTR_MSG:
 	{
-		const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachments")};
+		const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachments"),_("Cc"),_("Size"),_("Account")};
 
 		int32 col;
 		if(message->FindInt32("attr",&col) == B_OK)
@@ -974,10 +974,10 @@ HWindow::MessageReceived(BMessage *message)
 void
 HWindow::MenusBeginning()
 {
-	const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachments")};
-	ColumnType attr_col[] = {COL_SUBJECT,COL_FROM,COL_TO,COL_WHEN,COL_PRIORITY,COL_ATTACHMENT};
+	const char* kAttr[] = {_("Subject"),_("From"),_("To"),_("When"),_("Priority"),_("Attachments"),_("Cc"),_("Size"),_("Account")};
+	ColumnType attr_col[] = {COL_SUBJECT,COL_FROM,COL_TO,COL_WHEN,COL_PRIORITY,COL_ATTACHMENT,COL_CC,COL_SIZE,COL_ACCOUNT};
 	BMenuItem *item;
-	for(int32 i = 0;i < 6;i++)
+	for(int32 i = 0;i < 9;i++)
 	{
 		item = KeyMenuBar()->FindItem(kAttr[i]);
 		MarkMenuItem(item,fMailList->IsColumnShown(attr_col[i]));
