@@ -91,7 +91,7 @@ HMailItem::HMailItem(const entry_ref &ref,
 		fNodeRef.device = ref.device;
 	}
 
-	MakeTime(fDate);
+	MakeTime(fDate,fWhen);
 
 	SetColumnContent(1,fSubject.String());
 	SetColumnContent(2,fFrom.String());
@@ -168,7 +168,7 @@ HMailItem::HMailItem(const char* status,
 	,fAccount(account)
 	,fSize(size)
 {
-	MakeTime(fDate);
+	MakeTime(fDate,fWhen);
 	SetColumnContent(1,fSubject.String());
 	SetColumnContent(2,fFrom.String());
 	SetColumnContent(3,fTo.String());
@@ -323,7 +323,7 @@ HMailItem::InitItem()
 		if(node.GetAttrInfo(B_MAIL_ATTR_WHEN,&attr) == B_OK && attr.size > 0)
 		{	
 			node.ReadAttr(B_MAIL_ATTR_WHEN,B_TIME_TYPE,0,&fWhen,sizeof(time_t));
-			MakeTime(fDate);
+			MakeTime(fDate,fWhen);
 		}
 		ReadNodeAttrString(&node,B_MAIL_ATTR_PRIORITY,&fPriority,"");
 		int32 priority = atoi(fPriority.String() );
@@ -538,9 +538,9 @@ HMailItem::DrawItemColumn(BView* owner,
  * MakeTime
  ***********************************************************/
 void
-HMailItem::MakeTime(BString &out)
+HMailItem::MakeTime(BString &out,time_t &when)
 {
-	struct tm* time = localtime(&fWhen);
+	struct tm* time = localtime(&when);
 	char *tmp = out.LockBuffer(64);
 
 	const char* kTimeFormat;

@@ -1136,11 +1136,11 @@ HWindow::AddPopServer(entry_ref& ref,BMessage &sendMsg)
 		
 	if(msg.FindString("pop_password",&password) != B_OK)
 		return B_ERROR;
-	BString pass("");
 	int32 len = strlen(password);
+	char* pass = new char[len+1];
 	for(int32 k = 0;k < len;k++)
-		pass << (char)(255-password[k]);
-	
+		pass[k] =(char)(255-password[k]);
+	pass[len] = '\0';
 	sendMsg.AddString("name",name);
 	sendMsg.AddString("address",host);
 	sendMsg.AddInt16("port",atoi(port));
@@ -1151,6 +1151,7 @@ HWindow::AddPopServer(entry_ref& ref,BMessage &sendMsg)
 	sendMsg.AddString("uidl",uidl);
 	
 	sendMsg.AddString("password",pass);
+	delete[] pass;
 	return B_OK;
 }
 

@@ -298,28 +298,17 @@ HFilterView::Pulse()
 void
 HFilterView::New()
 {
-	BString filename("Untitled");
 	BPath path;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append("Filters");
 	::create_directory(path.Path(),0777);
 	
-	path.Append(filename.String());
+	BDirectory dir(path.Path());
 	BFile file;
-	status_t err = B_ERROR;
-	int32 i = 1;
-	while(err != B_OK)
-	{
-		err = file.SetTo(path.Path(),
-						B_WRITE_ONLY|B_CREATE_FILE|B_FAIL_IF_EXISTS);
-		if(err == B_OK)
-			break;
-		BString newname(filename);
-		path.GetParent(&path);
-		newname << i;
-		path.Append(newname.String());
-	}
+	entry_ref ref;
+	TrackerUtils().SmartCreateFile(&file,&dir,_("Untitled"),"",B_READ_WRITE,&ref);
+	path.SetTo(&ref);
 	fListView->AddItem(new BStringItem(path.Leaf()));
 }
 

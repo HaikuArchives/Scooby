@@ -16,11 +16,6 @@
 #include <Alert.h>
 #include <FindDirectory.h>
 
-#define CRLF "\r\n"
-#define xEOF    236
-
-#define SMTP_RESPONSE_SIZE 8192
-
 /***********************************************************
  * Constructor
  ***********************************************************/
@@ -124,11 +119,13 @@ SmtpLooper::SendMail(HMailItem *item)
 			const char* login,*password;
 			setting.FindString("pop_user",&login);
 			setting.FindString("pop_password",&password);
-			BString pass("");
 			int32 len = strlen(password);
+			char *pass = new char[len+1];
 			for(int32 k = 0;k < len;k++)
-				pass << (char)(255-password[k]);
-			status_t err = fSmtpClient->Login(login,pass.String());
+				pass[k] = (char)(255-password[k]);
+			pass[len] = '\0';
+			status_t err = fSmtpClient->Login(login,pass);
+			delete[] pass;
 			if(err != B_OK)
 			{
 				Alert(B_STOP_ALERT,fSmtpClient->Log());

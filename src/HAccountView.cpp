@@ -301,19 +301,18 @@ err:
 	
 	for(int32 i = 0;i < 9;i++)
 	{
-		BString str;
+		const char* str;
 		msg.FindString(kName[i],&str);
 		BTextControl *ctrl = cast_as(FindView(_(kLabel[i])),BTextControl);
 		if(i == 5){		
-			const char* text = str.String();
-			BString pass("");
-			int32 len = strlen(text);
+			int32 len = strlen(str);
+			char *pass = new char[len+1];
 			for(int32 k = 0;k < len;k++)
-				pass << (char)(255-text[k]);
-			ctrl->SetText(pass.String());
+				pass[k] = (char)(255-str[k]);
+			pass[len] = '\0';
+			ctrl->SetText(pass);
 		}else{
-			msg.FindString(kName[i],&str);
-			ctrl->SetText(str.String());
+			ctrl->SetText(str);
 		}
 	}
 	
@@ -364,21 +363,12 @@ HAccountView::New()
 	path.Append("Accounts");
 	::create_directory(path.Path(),0777);
 	
-	const char* kDefaultName = "New Account";
-	path.Append(kDefaultName);
+	BDirectory dir(path.Path());
+	BFile file;
+	entry_ref ref;
+	TrackerUtils().SmartCreateFile(&file,&dir,_("New Account"),"",B_READ_WRITE,&ref);
 	
-	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE|B_FAIL_IF_EXISTS);
-	status_t err = file.InitCheck();
-	int32 i = 1;
-	while(err != B_OK)
-	{
-		path.GetParent(&path);
-		BString newName(kDefaultName);
-		newName << i++;
-		path.Append(newName.String());
-		err = file.SetTo(path.Path(),B_WRITE_ONLY|B_CREATE_FILE|B_FAIL_IF_EXISTS);
-	}
-	
+	path.SetTo(&ref);	
 	fListView->AddItem(new BStringItem(path.Leaf()));
 	
 	const char* kName[] = {"name","address","pop_host","pop_port","pop_user",
@@ -425,7 +415,7 @@ HAccountView::SaveAccount(int32 index)
 		BEntry entry(path.Path());
 		if(entry.Rename(ctrl->Text()) != B_OK)
 		{
-			(new BAlert("",_("Could not create account file"),_("OK")))->Go();
+			(new BAlert("",_("Could not create the account file"),_("OK")))->Go();
 			PRINT(("LINE:%d\n",__LINE__));
 			return;
 		}
@@ -441,7 +431,7 @@ HAccountView::SaveAccount(int32 index)
 	{
 		if(file.SetTo(path.Path(),B_WRITE_ONLY|B_CREATE_FILE|B_ERASE_FILE) != B_OK)
 		{
-			(new BAlert("",_("Could not create account file"),_("OK")))->Go();
+			(new BAlert("",_("Could not create the account file"),_("OK")))->Go();
 			PRINT(("LINE:%d\n",__LINE__));
 		}
 		return;
@@ -459,12 +449,14 @@ HAccountView::SaveAccount(int32 index)
 		if(i == 5)
 		{
 			const char* text = ctrl->Text();
-			BString pass("");
 			int32 len = strlen(text);
+			char *pass = new char[len+1];
 			for(int32 k = 0;k < len;k++)
-				pass << (char)(255-text[k]);
+				pass[k] = (char)(255-text[k]);
+			pass[len] = '\0';
 			msg.RemoveData(kName[i]);
 			msg.AddString(kName[i],pass);
+			delete[] pass;
 		}else{
 			msg.RemoveData(kName[i]);
 			msg.AddString(kName[i],ctrl->Text());

@@ -178,7 +178,8 @@ HFindWindow::AddToHistory(const char* text)
 {
 	ComboBox *combo = cast_as(FindView("text"),ComboBox);
 	combo->AddItem(text);
-	
+	if(strlen(text) <=0)
+		return;
 	int32 count = combo->CountItems();
 	if(count > MAX_HISTORIES)
 		combo->RemoveItem(MAX_HISTORIES+1);

@@ -324,7 +324,7 @@ HReadWindow::LoadMessage(entry_ref ref)
 		PostMessage(M_SET_CONTENT,fMailView);
 		return;
 	}
-	BString from,subject,cc,to;
+	BString from,subject,cc,to,time;
 	time_t when;
 	ReadNodeAttrString(file,B_MAIL_ATTR_FROM,&from);
 	ReadNodeAttrString(file,B_MAIL_ATTR_SUBJECT,&subject);
@@ -332,12 +332,9 @@ HReadWindow::LoadMessage(entry_ref ref)
 	ReadNodeAttrString(file,B_MAIL_ATTR_CC,&cc);
 	ReadNodeAttrString(file,B_MAIL_ATTR_TO,&to);
 	
-	const char* kTimeFormat = "%a, %m/%d/%Y, %r";
-	char *buf = new char[64];
-	struct tm* time = localtime(&when);
-	 ::strftime(buf, 64,kTimeFormat, time);
-	fDetailView->SetInfo(subject.String(),from.String(),buf,cc.String(),to.String());
-	delete[] buf;
+	HMailItem::MakeTime(time,when);
+	fDetailView->SetInfo(subject.String(),from.String(),time.String(),cc.String(),to.String());
+	
 	BMessage msg(M_SET_CONTENT);
 	msg.AddPointer("pointer",file);
 	PostMessage(&msg,fMailView);
