@@ -291,7 +291,7 @@ HFolderItem::ThreadFunc(void*data)
 	BListView *list = item->fOwner;
 	item->SetName(item->fUnread);
 	BAutolock lock(list->Window());
-	list->InvalidateItem(((ColumnListView*)list)->FullListIndexOf(item));
+	list->InvalidateItem(((ColumnListView*)list)->IndexOf(item));
 	return 0;
 }
 
@@ -364,7 +364,8 @@ HFolderItem::Gather()
 		free(dirents[i++]);
 		if(node.SetTo(&ref) != B_OK)
 			continue;
-		node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH);
+		if(node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH) <0)
+			continue;
 		if(::strcmp(type,B_MAIL_TYPE) == 0)
 		{
 			fMailList.AddItem(item = new HMailItem(ref));
@@ -495,20 +496,36 @@ HFolderItem::ReadFromCache()
 	BStopWatch stopWatch("Cache Timer");
 #endif
 	BPath path(&fFolderRef);
+	BPath folder_path(&fFolderRef);
+	folder_path.GetParent(&folder_path);
 	BString name = path.Leaf();
 	name += ".cache";
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append("FolderCache");
 	::create_directory(path.Path(),0777);
+	const char *p;
+	
+	while(1)
+	{
+		p = folder_path.Leaf();
+		if(::strcmp(p,"mail") == 0)
+			break;	
+		path.Append(p);
+		::create_directory(path.Path(),0777);
+		folder_path.GetParent(&folder_path);
+	}
 	path.Append(name.String());
 
 	HMailCache cache(path.Path());
 	int32 count = cache.CountItems();
+	if(count < 0)
+		count = 0;
 	// check entry in directory and refs count
 	if(fChildItems+count + fMailList.CountItems() != BDirectory(&fFolderRef).CountEntries() )
 	{
 		PRINT(("Auto refresh:%s\n",name.String()));
+		PRINT(("ChildItem:%d CacheCount:%d List:%d %d\n",fChildItems,count,fMailList.CountItems(),BDirectory(&fFolderRef).CountEntries()));
 		EmptyMailList();
 		return B_ERROR;
 	}		

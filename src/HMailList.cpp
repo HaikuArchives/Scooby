@@ -474,7 +474,7 @@ HMailList::MouseDown(BPoint pos)
     	theMenu->AddItem(item);
     	theMenu->AddSeparatorItem();
  		// Status menu
-    	BMenu *statusMenu = new BMenu(_("Status"));
+    	BMenu *statusMenu = new BMenu(_("Change Status"));
     	statusMenu->SetFont(&font);
     	const char* status[] = {"New","Read","Replied","Forwarded"};
     	

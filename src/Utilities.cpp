@@ -30,12 +30,12 @@ DisallowMetaKeys(BTextView *textView)
 }
 
 
-int32 GetAllDirents(const char* path,struct dirent ***outdirent)
+int32 GetAllDirents(const char* path,struct dirent ***outdirent,bool folder_only)
 {
 	register int32 count;
 	register struct dirent **dirent;
 	
-	count = scandir(path,&dirent,NULL,NULL);
+	count = scandir(path,&dirent,(folder_only)?folderselector:NULL,NULL);
 	
 	*outdirent = dirent;
 	return count;

@@ -88,7 +88,7 @@ private:
 	HSimpleFolderItem	*fQueryFolders;
 		bool		fSkipMoveMail;
 		bool		fGatheredLocalFolders;
-
+		bool		fGatherOnStartup;
 		typedef ColumnListView	_inherited;
 };
 #endif

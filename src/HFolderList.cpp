@@ -22,6 +22,7 @@
 #include <ClassInfo.h>
 #include <NodeMonitor.h>
 #include <E-mail.h>
+#include <StopWatch.h>
 
 /***********************************************************
  * Constructor
@@ -67,6 +68,8 @@ HFolderList::HFolderList(BRect frame,
 	fLocalFolders->Added(true);
 	rgb_color selection_col = {184,194, 255,255};
 	SetItemSelectColor(true, selection_col);
+	
+	((HApp*)be_app)->Prefs()->GetData("load_list_on_start_up",&fGatherOnStartup);
 }
 
 /***********************************************************
@@ -135,7 +138,7 @@ HFolderList::MessageReceived(BMessage *message)
 	{
 	case M_GATHER_ALL_MAILS:
 	{
-		bool gather;
+		/*bool gather;
 		((HApp*)be_app)->Prefs()->GetData("load_list_on_start_up",&gather);
 		if(!gather)
 			break;
@@ -145,7 +148,7 @@ HFolderList::MessageReceived(BMessage *message)
 			HFolderItem *item = (HFolderItem*)fPointerList.ItemAt(i);
 			if(item && item->FolderType() == FOLDER_TYPE)
 				item->StartGathering();		
-		}
+		}*/
 		break;
 	}
 	case M_ADD_IMAP4_FOLDER:
@@ -197,6 +200,9 @@ HFolderList::MessageReceived(BMessage *message)
 			}
 			AddUnder(item,parent);
 			fPointerList.AddItem(item);
+			if(fGatherOnStartup && item->FolderType() == FOLDER_TYPE)
+				item->StartGathering();	
+	
 		}
 		break;
 	}
@@ -220,6 +226,8 @@ HFolderList::MessageReceived(BMessage *message)
 				{
 				case FOLDER_TYPE:
 					AddUnder(item,fLocalFolders);
+					if(fGatherOnStartup)
+						item->StartGathering();
 					break;
 				case IMAP4_TYPE:
 					if(!fIMAP4Folders->IsAdded())
@@ -428,7 +436,6 @@ HFolderList::GetFolders(void* data)
 			BSymLink link(path.Path());
 			if(B_BAD_VALUE == link.ReadLink(link_path,B_PATH_NAME_LENGTH)&& entry.IsDirectory())
 			{
-				entry.GetRef(&ref);
 				item = new HFolderItem(ref,list);
 				msg.AddPointer("item",item);
 				folderList.AddItem(item);
@@ -440,23 +447,21 @@ HFolderList::GetFolders(void* data)
 #else
 	int32 i=0;
 	struct dirent **dirents = NULL;
-	count = GetAllDirents(path.Path(),&dirents);
+	count = GetAllDirents(path.Path(),&dirents,true);
 	while(count>i && !list->fCancel )
 	{
 		dent = dirents[i++];
-		if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
-			continue;
+		//if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
+		//	continue;
 		ref.device = dent->d_pdev;
 		ref.directory = dent->d_pino;
 		ref.set_name(dent->d_name);
-		
 		if(entry.SetTo(&ref) != B_OK)
 			continue;
 		char link_path[B_PATH_NAME_LENGTH];
 		BSymLink link(path.Path());
 		if(B_BAD_VALUE == link.ReadLink(link_path,B_PATH_NAME_LENGTH)&& entry.IsDirectory())
 		{
-			entry.GetRef(&ref);
 			item = new HFolderItem(ref,list);
 			msg.AddPointer("item",item);
 			folderList.AddItem(item);
@@ -568,7 +573,7 @@ HFolderList::GetFolders(void* data)
 		list->Window()->PostMessage(&childMsg,list);
 	
 	list->fThread =  -1;
-	list->Window()->PostMessage(M_GATHER_ALL_MAILS,list);
+	//list->Window()->PostMessage(M_GATHER_ALL_MAILS,list);
 	list->fGatheredLocalFolders = true;
 	return 0;
 }
@@ -612,7 +617,6 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 				continue;
 			if(entry.IsDirectory())
 			{
-				entry.GetRef(&ref);
 				childMsg.AddPointer("item",(item = new HFolderItem(ref,list)));
 				childMsg.AddPointer("parent",parentItem);
 				parentItem->IncreaseChildItemCount();
@@ -631,28 +635,28 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 	BEntry entry;
 	BPath path;
 	inEntry.GetPath(&path);
-	
-	count = GetAllDirents(path.Path(),&dirents);
+	count = GetAllDirents(path.Path(),&dirents,true);
 	while(count>i)
 	{
 		dent = dirents[i++];
-		if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
-			continue;
+		//if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
+		//	continue;
 		
 		ref.device = dent->d_pdev;
 		ref.directory = dent->d_pino;
 		ref.set_name(dent->d_name);
 		if(entry.SetTo(&ref) != B_OK)
 			continue;
-		if(entry.IsDirectory())
-		{
-			entry.GetRef(&ref);
+		//PRINT(("Count:%d\n",count));
+		//if(entry.IsDirectory())
+		//{
+			//entry.GetRef(&ref);
 			childMsg.AddPointer("item",(item = new HFolderItem(ref,list)));
 			childMsg.AddPointer("parent",parentItem);	
 			parentItem->IncreaseChildItemCount();
 			GetChildFolders(entry,item,list,childMsg);
 			
-		} 
+		//} 
 	}
 	// free all dirents
 	for(int32 i = 0;i < count;i++)

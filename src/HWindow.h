@@ -82,6 +82,9 @@ public:
 				void	ChangeDeskbarIcon(int32 icon) {fCurrentDeskbarIcon = icon;}
 
 				void	ShowOpenPanel(int32 what);
+				
+		HFolderList*	FolderList() {return fFolderList;}
+		HMailList*		MailList() {return fMailList;}
 protected:		
 		virtual			~HWindow();
 

@@ -190,7 +190,7 @@ HWindow::InitMenu()
     						rsrc_utils.GetBitmapResource('BBMP',"BlackList"));
     aMenu->AddSeparatorItem();
     // Status menu
-    BMenu *statusMenu = new BMenu(_("Status"));
+    BMenu *statusMenu = new BMenu(_("Change Status"));
     const char* status[] = {"New","Read","Replied","Forwarded"};
     
     for(int32 i = 0;i < (int32)(sizeof(status)/sizeof(status[0]));i++)

@@ -7,7 +7,7 @@
 void	DisallowMetaKeys(BTextView *);
 void	DisallowFilenameKeys(BTextView *);
 
-int32	GetAllDirents(const char* path,struct dirent ***dirent);
+int32	GetAllDirents(const char* path,struct dirent ***dirent,bool folder_only=false);
 bool	IsHeaderLine(const char* line);
 int32	ReadLine(BFile *file,BString* out);
 void	EnableMenuItem(BMenuItem *item,bool enabled);
