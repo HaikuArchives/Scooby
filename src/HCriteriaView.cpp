@@ -42,7 +42,7 @@ HCriteriaView::InitGUI()
 	
 	rect.OffsetBy(80,0);
 	menu = new BMenu("menu");
-	menu->AddItem(new BMenuItem(_("contain"),NULL));
+	menu->AddItem(new BMenuItem(_("contains"),NULL));
 	menu->AddItem(new BMenuItem(_("is"),NULL));
 	menu->AddItem(new BMenuItem(_("begin with"),NULL));
 	menu->AddItem(new BMenuItem(_("end with"),NULL));
