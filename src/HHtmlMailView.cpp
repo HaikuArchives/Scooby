@@ -192,13 +192,13 @@ HHtmlMailView::OpenAttachment(int32 sel )
 	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
 	
 	const char* encoding = item->Encoding();
-	if(::strcasecmp(encoding,"base64") == 0)
+	if(encoding && ::strcasecmp(encoding,"base64") == 0)
 	{
 		bool is_text = false;
 		if(::strncmp(item->ContentType(),"text",4) == 0)
 			is_text = true;
 		data_len = decode_base64(data, data, data_len, is_text);
-	}else if(::strcasecmp(encoding,"base64") == 0){
+	}else if(encoding && ::strcasecmp(encoding,"base64") == 0){
 		data_len = Encoding().decode_quoted_printable(data,data,data_len,false);
 	}
 	file.Write(data,data_len);
@@ -325,6 +325,7 @@ HHtmlMailView::LoadMessage(BFile *file)
 	// Get content and header size
 	Encoding encode;
 	bool multipart = false;
+	bool bfile = false;
 	char *parameter = NULL;
 	char *charset = NULL;
 	int32 header_len,content_len;
@@ -359,6 +360,8 @@ HHtmlMailView::LoadMessage(BFile *file)
 	{
 		if(::strncmp(parameter,"multipart/",10) == 0)
 			multipart = true;
+		if(::strcmp(parameter,"multipart/x-bfile") == 0)
+			bfile = true;
 	}
 	transfer_encoding = ::strdup(parameter);
 	delete[] parameter;
@@ -729,6 +732,7 @@ HHtmlMailView::ParseAllParts(const char* str,const char* boundary,int32 header_l
 	int32 start=0;
 	int32 part_offset = 0;
 	BString part("");
+	char *subBoundary = NULL;
 	
 	while((start=content.FindFirst(new_boundary,start)) != B_ERROR)
 	{
@@ -737,7 +741,14 @@ HHtmlMailView::ParseAllParts(const char* str,const char* boundary,int32 header_l
 		part = "";
 		while(::strncmp(&content[start],new_boundary,boundary_len) != 0)
 			part += content[start++];
-		AddPart(part.String(),header_len+part_offset);
+		
+		if( GetParameter(part.String(),"boundary=",&subBoundary) )
+		{
+			ParseAllParts(part.String(),subBoundary,header_len+part_offset);
+		}else
+			AddPart(part.String(),header_len+part_offset);
+		free(subBoundary);
+		subBoundary = NULL;
 		if(::strncmp(&content[start],end_boundary,boundary_len+2) == 0)
 			break;
 	}
