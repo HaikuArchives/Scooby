@@ -294,15 +294,16 @@ Encoding::MimeDecode(BString &str,bool quoted_printable)
    if(quoted_printable)
    {
    		char *buf = new char[len+1];
-   		decode_quoted_printable(buf,old,len,false);	
-   		str = buf;
+   		len = decode_quoted_printable(buf,old,len,false);	
+   		buf[len] = '\0'; 
+   		::strcpy(old,buf);
    		delete[] buf;
    }else{	
    // MIME-B
   	 	char *buf = new char[len+1];
- 		ssize_t size = decode_base64(buf, old, len); 
-   		buf[size] = '\0';
-   		str = buf;
+ 		len = decode_base64(buf, old, len); 
+   		buf[len] = '\0';
+   		::strcpy(old,buf);
    		delete[] buf;
     }
     str.UnlockBuffer();
