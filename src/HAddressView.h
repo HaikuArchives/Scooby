@@ -13,6 +13,8 @@ enum{
 	M_SEL_GROUP = 'mSEG'
 };
 
+class BMenu;
+
 //! Address view for compose window.
 class HAddressView: public BView {
 public:

@@ -4,3 +4,5 @@ obj.x86
 obj.ppc
 (Objects.Scooby-x86)
 *.d
+.cvsignore
+Scooby-x86.proj
