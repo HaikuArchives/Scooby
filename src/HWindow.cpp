@@ -1295,13 +1295,14 @@ HWindow::DeleteMails()
 		while((selected = fMailList->CurrentSelection(sel_index++)) >= 0)
 		{
 			mail=cast_as(fMailList->RemoveItem(selected),HIMAP4Item);
-			if(!item)
+			if(!mail)
 				continue;
 			count_selected++;
 			mail->Delete();
 			//if(!mail->IsRead())
 			//	unread_mails++;
 			from->RemoveMail( mail );
+			delete mail;
 		}
 		
 	}
