@@ -43,7 +43,6 @@ protected:
 	virtual void		MessageReceived(BMessage *message);
 	
 			bool		CheckWord(const char* word);
-			bool		IsSameColor(rgb_color c1 ,rgb_color c2);
 			
 			void		InitDictionaries();
 private:
