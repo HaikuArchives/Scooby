@@ -800,13 +800,14 @@ HMailView::HighlightQuote(BTextView *view)
 		e = text.FindFirst("\n",i);
 		if(e == B_ERROR)
 			e = length-1;
-		if(i == e)
+		if(i == e )
 		{
 			i = e+1;
 			continue;
 		}
 		text.CopyInto(line,i,e);
 		j = 0;
+		
 		if(line[0] == '>')
 		{	
 			j++;
@@ -816,7 +817,11 @@ HMailView::HighlightQuote(BTextView *view)
 				if(line[2] == '>')
 					j++;
 			}
+		}else{
+			i = e+1;
+			continue;
 		}
+		PRINT(("%s\n",line.String()));
 		rgb_color col = kBlack;
 			
 		if(j==1)
@@ -1249,12 +1254,15 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 					else
 						sprintf(str, "Untitled");
 					index = 0;
+					
+					BString decodedName(str);
+					Encoding().Mime2UTF8(decodedName);
 					while ((type[index]) && (type[index] != ';')) {
 						index++;
 					}
 					type[index] = 0;
 					sprintf(hyper, "\n<Attachment: %s (MIME type: %s)>\n",
-								str, &type[strlen(CONTENT_TYPE)]);
+								decodedName.String(), &type[strlen(CONTENT_TYPE)]);
 					strcpy(enclosure->content_type, &type[strlen(CONTENT_TYPE)]);
 					info->view->GetSelection(&enclosure->text_start,
 											 &enclosure->text_end);
@@ -1262,7 +1270,7 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 					enclosure->text_end += strlen(hyper) - 1;
 					enclosure->file_offset = offset - base;
 					enclosure->file_length = len;
-					insert(info, hyper, strlen(hyper), TRUE);
+					insert(info, hyper, strlen(hyper), true);
 					delete[] hyper;
 					delete[] str;
 					info->enclosures->AddItem(enclosure);
