@@ -31,6 +31,7 @@
 #include "HMailItem.h"
 #include "HCreateFolderDialog.h"
 #include "Encoding.h"
+#include "Utilities.h"
 
 #include <Box.h>
 #include <Beep.h>
@@ -95,7 +96,7 @@ void
 HWindow::InitMenu()
 {
 	BMenuBar *menubar = new BMenuBar(Bounds(),"");
-    BMenu		*aMenu;
+    BMenu		*aMenu,*subMenu;
 	MenuUtils utils;
 	BMessage *msg;
 	ResourceUtils rsrc_utils;
@@ -110,7 +111,10 @@ HWindow::InitMenu()
 	utils.AddMenuItem(aMenu,_("Empty Trash"),M_EMPTY_TRASH,this,this,'T',B_SHIFT_KEY,
 							rsrc_utils.GetBitmapResource('BBMP',"Trash"));
 	aMenu->AddSeparatorItem();
-	utils.AddMenuItem(aMenu,_("Import Plain Text Mails"),M_IMPORT_PLAIN_TEXT_MAIL,this,this);
+	subMenu = new BMenu("Import");
+	utils.AddMenuItem(subMenu,_("Plain Text Mails"),M_IMPORT_PLAIN_TEXT_MAIL,this,this);
+	utils.AddMenuItem(subMenu,_("mbox"),M_IMPORT_MBOX,this,this);
+	aMenu->AddItem(subMenu);
 	aMenu->AddSeparatorItem();
 	utils.AddMenuItem(aMenu,_("Print Message"),M_PRINT_MESSAGE,this,this,'P',0,
 							rsrc_utils.GetBitmapResource('BBMP',"Printer"));
@@ -149,7 +153,7 @@ HWindow::InitMenu()
    	utils.AddMenuItem(aMenu,_("Check Mail"),M_POP_CONNECT,this,this,'M',0,
    							rsrc_utils.GetBitmapResource('BBMP',"Check Mail"));
 	// account
-	BMenu *subMenu = new BMenu(_("Check Mail From"));
+	subMenu = new BMenu(_("Check Mail From"));
 
 	aMenu->AddItem(subMenu);
 	aMenu->AddSeparatorItem();
@@ -373,11 +377,9 @@ HWindow::MessageReceived(BMessage *message)
 	{
 	// Show Open File Panel
 	case M_IMPORT_PLAIN_TEXT_MAIL:
-	{
 		ShowOpenPanel(M_CONVERT_PLAIN_TO_MAIL);
 		break;
-	}
-	// 
+	// Convert plain text mails to BeOS format.
 	case M_CONVERT_PLAIN_TO_MAIL:
 	{
 		type_code type;
@@ -390,6 +392,26 @@ HWindow::MessageReceived(BMessage *message)
 				continue;
 			BPath path(&ref);
 			Plain2BeMail(path.Path());
+		}
+		break;
+	}
+	// Show mbox open panel
+	case M_IMPORT_MBOX:
+		ShowOpenPanel(M_CONVERT_MBOX_TO_MAILS);
+		break;
+	// Convert mbox to BeOS mail format
+	case M_CONVERT_MBOX_TO_MAILS:
+	{
+		type_code type;
+		int32 count;
+		entry_ref ref;
+		message->GetInfo("refs",&type,&count);
+		for(int32 i = 0;i < count;i++)
+		{
+			if(message->FindRef("refs",i,&ref) != B_OK)
+				continue;
+			BPath path(&ref);
+			MBox2BeMail(path.Path());
 		}
 		break;
 	}
@@ -1886,7 +1908,57 @@ HWindow::Plain2BeMail(const char* path)
 void
 HWindow::MBox2BeMail(const char* path)
 {
-
+	BFile file(path,B_READ_ONLY);
+	if(file.InitCheck() != B_OK)
+		return;
+	
+	off_t size;
+	file.GetSize(&size);
+	
+	entry_ref folder_ref,file_ref;
+	bool del;
+	BString msgStr;
+	BString line;
+	while(1)
+	{
+		if(size == file.Position() )
+			break;
+		ReadLine(&file,&line);
+		if(line.Compare("From ",5) == 0)
+		{
+			msgStr = line;
+			ReadLine(&file,&line);
+			if(IsHeaderLine(line.String()))
+			{
+				if(line.Compare("Return-Path: ",13) == 0)
+					msgStr = line;
+				else{
+					msgStr = &msgStr[5];
+					msgStr.Insert("Return-Path: ",0);
+					msgStr += line;
+				}
+				
+				while(1)
+				{
+					ReadLine(&file,&line);
+					msgStr += line;
+					if(line.Compare("From ",5) == 0)
+					{
+						ReadLine(&file,&line);
+						if(IsHeaderLine(line.String()))
+						{
+							file.Seek(-line.Length(),SEEK_CUR);
+							break;
+						}else
+							msgStr += line;
+					}
+					if(size == file.Position() )
+						break;	
+				}
+				fPopClientView->SaveMail(msgStr.String(),&folder_ref,&file_ref,&del);
+			}
+		}
+	}
 }
 
 /***********************************************************
