@@ -710,6 +710,7 @@ Encoding::ConvertReturnsToCRLF(BString &str)
 	}
 	
 	str = text;
+	delete[] text;
 }
 
 /***********************************************************
