@@ -331,7 +331,16 @@ SmtpClient::ParseAddress(const char* in,BString& out)
 		}
 		out << CRLF;
 	}else{
-		out << "<" << in << ">"<< CRLF;
+		out += "<"; 
+		
+		int32 len = strlen(in);
+		for(int32 i = 0;i < len;i++)
+		{
+			if(in[i] == ' ')
+				break;
+			out += in[i];
+		}
+		out << ">"<< CRLF;
 	}
 }
 
