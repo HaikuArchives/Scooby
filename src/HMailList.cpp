@@ -458,14 +458,14 @@ HMailList::MouseDown(BPoint pos)
     	 
     	 msg = new BMessage(M_REPLY_MESSAGE);
     	 msg->AddBool("reply_all",false);
-    	 item = new IconMenuItem(_("Reply" B_UTF8_ELLIPSIS),msg,'R',0,
+    	 item = new IconMenuItem(_("Reply to Sender Only" B_UTF8_ELLIPSIS),msg,'R',0,
     	 						utils.GetBitmapResource('BBMP',"Reply"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
     	 
      	 msg = new BMessage(M_REPLY_MESSAGE);
     	 msg->AddBool("reply_all",true);
-    	 item = new IconMenuItem(_("Reply To All" B_UTF8_ELLIPSIS),msg,'R',B_SHIFT_KEY,
+    	 item = new IconMenuItem(_("Reply to All" B_UTF8_ELLIPSIS),msg,'R',B_SHIFT_KEY,
     	 						utils.GetBitmapResource('BBMP',"Reply To All"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
@@ -475,7 +475,7 @@ HMailList::MouseDown(BPoint pos)
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
     	 theMenu->AddSeparatorItem();
-    	 item = new IconMenuItem(_("Move To Trash"),new BMessage(M_DELETE_MSG),'T',0,
+    	 item = new IconMenuItem(_("Move to Trash"),new BMessage(M_DELETE_MSG),'T',0,
     	 						utils.GetBitmapResource('BBMP',"Trash"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
@@ -485,7 +485,7 @@ HMailList::MouseDown(BPoint pos)
     	 						utils.GetBitmapResource('BBMP',"Person"));
     	item->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(item);
-    	item = new IconMenuItem(_("Add To BlackList"),new BMessage(M_ADD_TO_BLACK_LIST),0,0,
+    	item = new IconMenuItem(_("Add to BlackList"),new BMessage(M_ADD_TO_BLACK_LIST),0,0,
     							utils.GetBitmapResource('BBMP',"BlackList"));
     	item->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(item);
