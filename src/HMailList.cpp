@@ -798,6 +798,7 @@ HMailList::MarkOldSelectionAsRead()
 		if( is_kind_of(fOldSelection,HIMAP4Item) )
 			fOldSelection->SetRead();
 		else{
+			// read status from real node
 			entry_ref ref = fOldSelection->Ref();
 			BNode node(&ref);
 			BString status;
@@ -805,7 +806,8 @@ HMailList::MarkOldSelectionAsRead()
 			if(status.Compare("New") == 0)
 				node.WriteAttr(B_MAIL_ATTR_STATUS,B_STRING_TYPE,0,"Read",5);
 		}
-		InvalidateItem(IndexOf(fOldSelection));
+		// No need to invalidate item; it will be invalidated when NodeMonitor message arrived.
+		// InvalidateItem(IndexOf(fOldSelection));
 		fOldSelection = NULL;
 	}
 }
