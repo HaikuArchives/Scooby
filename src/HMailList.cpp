@@ -168,12 +168,13 @@ void
 HMailList::SelectionChanged()
 {
 	int32 sel = this->CurrentSelection();
-	if(sel <0)
+	if(sel <0 && this->CurrentSelection(1) < 0)
 	{
 		// set content view empty
 		Window()->PostMessage(M_SET_CONTENT);
 		return;
 	}
+	
 	HMailItem *item = cast_as(ItemAt(sel),HMailItem);
 	if(item)
 	{
