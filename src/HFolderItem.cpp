@@ -302,32 +302,44 @@ HFolderItem::Gather()
 
 	BDirectory dir( &fFolderRef );
    	//load all email
-   	status_t err = B_NO_ERROR;
 	HMailItem *item(NULL);
 	char type[B_MIME_TYPE_LENGTH+1];
 	entry_ref ref;
 	BNode node;
-	dir.Rewind();
+
+	char buf[4096];
+	dirent *dent;
+	int32 count;
+	int32 offset;
 	
-	while( err == B_OK && !fCancel)
+	while((count = dir.GetNextDirents((dirent *)buf, 4096)) > 0)
 	{
-		if( (err = dir.GetNextRef( &ref )) == B_OK)
+		offset = 0;
+		/* Now we step through the dirents. */ 
+		while (count-- > 0)
 		{
-			item = NULL;
-			type[0] = '\0';
+			dent = (dirent *)buf + offset;
+			offset +=  dent->d_reclen;
+			/* Skip . and .. directory */
+			if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
+				continue;
+			ref.device = dent->d_pdev;
+			ref.directory = dent->d_pino;
+			ref.set_name(dent->d_name);
+			/* Do something with the ref. */
 			if(node.SetTo(&ref) != B_OK)
 				continue;
 			node.ReadAttr("BEOS:TYPE",B_STRING_TYPE,0,type,B_MIME_TYPE_LENGTH);
-			if(::strcmp(type,"text/x-email") == 0)
+			if(::strcmp(type,B_MAIL_TYPE) == 0)
 			{
 				fMailList.AddItem(item = new HMailItem(ref));
 				::watch_node(&item->fNodeRef,B_WATCH_ATTR,this,fOwner->Window());
 				if(item&&!item->IsRead())
 					fUnread++;
 			}
-		}
-	}
-	
+		} 
+	} 
+		
 	//fMailList.SortItems(HFolderItem::CompareFunc);
 	fDone = true;
 	// Set icon to open folder
