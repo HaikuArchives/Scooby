@@ -221,6 +221,7 @@ HHtmlMailView::OpenAttachment(int32 sel )
 	}
 	file.Write(data,data_len);
 	file.SetSize(data_len);
+	::update_mime_info(path.Path(),false,true,true);
 	// Open with tracker
 	BMessage	open(B_REFS_RECEIVED);
 	BMessenger tracker("application/x-vnd.Be-TRAK", -1, NULL);
