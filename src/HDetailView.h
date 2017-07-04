@@ -5,7 +5,7 @@
 #include <TextControl.h>
 #include <List.h>
 
-class MultiLineTextControl;
+//class ROTextControl;
 
 #define DETAIL_VIEW_HEIGHT 65
 #define DETAIL_VIEW_HEIGHT_EXPANDED 110
@@ -39,12 +39,11 @@ protected:
 	//! Override functions.
 			void	MessageReceived(BMessage *message);
 private:
-	MultiLineTextControl	*fSubject;
-	MultiLineTextControl	*fFrom;
-	MultiLineTextControl	*fWhen;
-	MultiLineTextControl	*fCc;
-	MultiLineTextControl	*fTo;
-	
+	BTextControl	*fSubject;
+	BTextControl	*fFrom;
+	BTextControl	*fWhen;
+	BTextControl	*fCc;
+	BTextControl	*fTo;
 		bool		fReadOnly;
 };
 #endif

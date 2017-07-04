@@ -1,7 +1,6 @@
 #include "HDetailView.h"
 #include "MenuUtils.h"
 #include "HApp.h"
-#include "MultiLineTextControl.h"
 #include "ArrowButton.h"
 
 #include <TextControl.h>
@@ -40,28 +39,28 @@ HDetailView::InitGUI()
 {
 	float divider = StringWidth(_("Subject:")) +5;
 	divider = max_c(divider, StringWidth(_("From:")));
-	divider = max_c(divider ,StringWidth(_("When:"))); 
-	
+	divider = max_c(divider ,StringWidth(_("When:")));
+
 	BRect rect = Bounds();
 	rect.top += 3;
 	rect.left += 20;
 	rect.right -= 5 + B_V_SCROLL_BAR_WIDTH;
-	rect.bottom = rect.top + 18;
-	
-	MultiLineTextControl *ctrl;
-	const char* kName[] = {"subject","from","when","cc","to"};
+	rect.bottom = rect.top + 20;
+
+	BTextControl *ctrl;
+
+	const char* kName[] = {"subject","from","when"};
 	const char* kLabel[] = {_("Subject:"),_("From:"),_("When:"),_("Cc:"),_("To:")};
-	
+
 	for(int32 i = 0;i < 5;i++)
 	{
-		
-		ctrl = new MultiLineTextControl(BRect(rect.left,rect.top
+		ctrl = new BTextControl(BRect(rect.left,rect.top
 								,rect.right
 								,rect.bottom)
-								,kName[i],kLabel[i],"","",NULL
+								,kName[i],kLabel[i],"",NULL
 								,B_FOLLOW_LEFT_RIGHT|B_FOLLOW_TOP,B_WILL_DRAW|B_NAVIGABLE);
 		ctrl->SetDivider(divider);
-		ctrl->SetTextMargin(1);
+
 		AddChild(ctrl);
 		// Add Arrow button
 		if(i == 2)
@@ -77,11 +76,11 @@ HDetailView::InitGUI()
 		}
 		rect.OffsetBy(0,21);
 	}
-	fSubject = cast_as(FindView("subject"),MultiLineTextControl);
-	fFrom = cast_as(FindView("from"),MultiLineTextControl);
-	fWhen = cast_as(FindView("when"),MultiLineTextControl);
-	fCc = cast_as(FindView("cc"),MultiLineTextControl);
-	fTo = cast_as(FindView("to"),MultiLineTextControl);
+	fSubject = cast_as(FindView("subject"),BTextControl);
+	fFrom = cast_as(FindView("from"),BTextControl);
+	fWhen = cast_as(FindView("when"),BTextControl);
+	fCc = cast_as(FindView("cc"),BTextControl);
+	fTo = cast_as(FindView("to"),BTextControl);
 }
 
 
@@ -91,14 +90,11 @@ HDetailView::InitGUI()
 void
 HDetailView::SetReadOnly(bool enable)
 {
-	//fSubject->SetEnabled(!enable);
-	//fFrom->SetEnabled(!enable);
-	//fWhen->SetEnabled(!enable);
-	fSubject->TextView()->MakeEditable(!enable);
-	fFrom->TextView()->MakeEditable(!enable);
-	fWhen->TextView()->MakeEditable(!enable);
-	fCc->TextView()->MakeEditable(!enable);
-	fTo->TextView()->MakeEditable(!enable);
+	fSubject->SetEnabled(!enable);
+	fFrom->SetEnabled(!enable);
+	fWhen->SetEnabled(!enable);
+	fCc->SetEnabled(!enable);
+	fTo->SetEnabled(!enable);
 }
 
 /***********************************************************
@@ -134,7 +130,7 @@ BTextControl*
 HDetailView::FocusedView() const
 {
 	int32 count = CountChildren();
-	
+
 	BTextControl *child(NULL);
 	for(int32 i = 0;i < count;i++)
 	{
@@ -166,7 +162,7 @@ HDetailView::MessageReceived(BMessage *message)
 		}else{
 			ResizeBy(0,DETAIL_VIEW_HEIGHT-DETAIL_VIEW_HEIGHT_EXPANDED);
 			siblingView->ResizeBy(0,DETAIL_VIEW_HEIGHT_EXPANDED-DETAIL_VIEW_HEIGHT);
-			siblingView->MoveBy(0,DETAIL_VIEW_HEIGHT-DETAIL_VIEW_HEIGHT_EXPANDED);		
+			siblingView->MoveBy(0,DETAIL_VIEW_HEIGHT-DETAIL_VIEW_HEIGHT_EXPANDED);
 		}
 		break;
 	}

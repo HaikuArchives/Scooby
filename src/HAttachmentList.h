@@ -1,7 +1,7 @@
 #ifndef __HATTACHMENTLIST_H__
 #define __HATTACHMENTLIST_H__
 
-#include "ColumnListView.h"
+#include <santa/ColumnListView.h>
 
 enum{
 	M_SAVE_ATTACHMENT = 'mSaT',
@@ -9,7 +9,7 @@ enum{
 };
 
 //!AttachmentList in HTML view mode.
-/*! 
+/*!
  * This class is used for incomming mails in HTMLView. not used in plain mode.
  */
 class HAttachmentList :public ColumnListView{
@@ -22,13 +22,13 @@ public:
 						~HAttachmentList();
 		//! Find attachment by content type.
 			int32		FindPart(const char* content_type);
-			
+
 protected:
 	//@{
 	//!Override function.
 		void		MouseDown(BPoint point);
-		bool		InitiateDrag(BPoint point, 
-								int32 index, 
+		bool		InitiateDrag(BPoint point,
+								int32 index,
 								bool wasSelected);
 	//@}
 };

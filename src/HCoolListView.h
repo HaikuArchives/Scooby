@@ -1,7 +1,7 @@
 #ifndef __HCOOLLISTVIEW_H__
 #define __HCOOLLISTVIEW_H__
 
-#include "ColumnListView.h"
+#include <santa/ColumnListView.h>
 
 //!Hover highlighting list view.
 class HCoolListView :public ColumnListView {
@@ -33,6 +33,6 @@ protected:
 private:
 	typedef ColumnListView	_inherited;
 	bool					fHovering;
-	int32					fOldSelection;	
+	int32					fOldSelection;
 };
 #endif

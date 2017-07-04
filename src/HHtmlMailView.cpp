@@ -2,7 +2,7 @@
 #include "CTextView.h"
 #include "HHtmlView.h"
 #include "HTabView.h"
-#include "BetterScrollView.h"
+#include <santa/BetterScrollView.h>
 #include "HAttachmentList.h"
 #include "HAttachmentItem.h"
 #include "Encoding.h"
@@ -43,12 +43,12 @@ HHtmlMailView::HHtmlMailView(BRect frame,const char* name,
 	const char* kTabNames[3] = {_("Body"),_("Headers"),_("Attachments")};
 	HTabView *tabview = new HTabView(rect,"tabview",kTabNames,3,B_FOLLOW_ALL);
 	tabview->SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
-	
+
 	BView* TabbedViews[3];
 	BRect ContentRect = tabview->GetContentArea();
 	fHtmlView = new HHtmlView(ContentRect,_("Body"),false,B_FOLLOW_ALL);
 	TabbedViews[0] = fHtmlView;
-	
+
 	BRect textRect = ContentRect;
 	textRect.right -= B_V_SCROLL_BAR_WIDTH;
 	fHeaderView = new CTextView(textRect,"headerview",B_FOLLOW_ALL,B_WILL_DRAW);
@@ -56,7 +56,7 @@ HHtmlMailView::HHtmlMailView(BRect frame,const char* name,
 	fHeaderView->SetViewColor(tint_color(ui_color(B_PANEL_BACKGROUND_COLOR),B_LIGHTEN_1_TINT));
 	BScrollView *scroll = new BScrollView(_("Headers"),fHeaderView,B_FOLLOW_ALL,0,true,true);
 	TabbedViews[1] = scroll;
-	
+
 	BetterScrollView *bscroll;
 	BRect attachlist = ContentRect;
 	attachlist.right -= B_V_SCROLL_BAR_WIDTH;
@@ -64,7 +64,7 @@ HHtmlMailView::HHtmlMailView(BRect frame,const char* name,
 
 	fAttachmentList = new HAttachmentList(attachlist,&bscroll,"attachmentlist");
 	TabbedViews[2] = bscroll;
-	
+
 	tabview->AddViews(TabbedViews);
 	tabview->SetTabEnabled(2,false);
 	AddChild(tabview);
@@ -80,9 +80,9 @@ HHtmlMailView::~HHtmlMailView()
 	delete fFilePanel;
 	// Remove tmp file
 	BPath path;
-	::find_directory(B_COMMON_TEMP_DIRECTORY,&path);
+	::find_directory(B_SYSTEM_TEMP_DIRECTORY,&path);
 	path.Append( TMP_FILE_NAME );
-	
+
 	BEntry entry(path.Path());
 	if(entry.InitCheck() == B_OK)
 		entry.Remove();
@@ -121,7 +121,7 @@ HHtmlMailView::MessageReceived(BMessage *message)
 	{
 		int32 sel;
 		int32 index = 0;
-		
+
 		while((sel = fAttachmentList->CurrentSelection(index++)) >= 0)
 		{
 			const char* name;
@@ -130,9 +130,9 @@ HHtmlMailView::MessageReceived(BMessage *message)
 				(message->FindString("name",&name) == B_OK))
 			{
 				PRINT(("%s\n",name));
-				SaveAttachment(sel,ref,name,false);	
+				SaveAttachment(sel,ref,name,false);
 			}else if(message->FindRef("directory",&ref) == B_OK){
-				
+
 				HAttachmentItem* item = cast_as(fAttachmentList->ItemAt(sel),HAttachmentItem);
 				if(!item)
 					continue;
@@ -152,7 +152,7 @@ HHtmlMailView::MessageReceived(BMessage *message)
 			if(fFile)
 			{
 				app_info info;
-    				be_app->GetAppInfo(&info); 
+    				be_app->GetAppInfo(&info);
     				BPath path(&info.ref);
     				path.GetParent(&path);
     				path.Append("html/startup.html");
@@ -161,12 +161,12 @@ HHtmlMailView::MessageReceived(BMessage *message)
     				fHtmlView->SetEncoding((EncodingMessages)fHtmlView->fDefaultEncoding);
     				fHtmlView->ShowURL(buf);
 				delete[] buf;
-				
+
 				ResetAttachmentList();
 				ResetScrollBar();
 				delete fFile;
 				fFile = NULL;
-				
+
 				fHeaderView->SetText(NULL);
 			}
 		}
@@ -191,7 +191,7 @@ HHtmlMailView::OpenAttachment(int32 sel )
 	}
 	int32 file_offset = item->Offset();
 	int32 data_len = item->DataLength();
-	
+
 	fFile->Seek(file_offset,SEEK_SET);
 
 	char *data = new char[data_len+1];
@@ -199,15 +199,15 @@ HHtmlMailView::OpenAttachment(int32 sel )
 	data[data_len] = '\0';
 
 	const char* name = item->Name();
-	
+
 	// dump to tmp directory
 	BPath path;
 	entry_ref ref;
-	::find_directory(B_COMMON_TEMP_DIRECTORY,&path);
+	::find_directory(B_SYSTEM_TEMP_DIRECTORY,&path);
 	path.Append((name)?name:_("Unknown"));
 	::get_ref_for_path(path.Path(),&ref);
 	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
-	
+
 	const char* encoding = item->ContentEncoding();
 	if(encoding && ::strcasecmp(encoding,"base64") == 0)
 	{
@@ -247,7 +247,7 @@ HHtmlMailView::OpenAttachment(int32 sel )
 void
 HHtmlMailView::SetContent(BFile *file)
 {
-	LoadMessage(file);	
+	LoadMessage(file);
 }
 
 /***********************************************************
@@ -265,16 +265,16 @@ HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name,bool rena
 	BDirectory destDir(&ref);
 	BPath path(&ref);
 	path.Append(name);
-	
+
 	int32 file_offset = item->Offset();
 	int32 data_len = item->DataLength();
-	
+
 	fFile->Seek(file_offset,SEEK_SET);
-	
+
 	char *data = new char[data_len+1];
 	fFile->Read(data,data_len);
 	data[data_len] = '\0';
-	
+
 	BFile file;
 	if(rename)
 		TrackerUtils().SmartCreateFile(&file,&destDir,path.Leaf(),"_");
@@ -284,7 +284,7 @@ HHtmlMailView::SaveAttachment(int32 sel,entry_ref ref,const char* name,bool rena
 			delete[] data;
 			return;
 		}
-	}	
+	}
 	const char* encoding = item->ContentEncoding();
 	if(encoding && ::strcasecmp(encoding,"base64") == 0)
 	{
@@ -320,7 +320,7 @@ HHtmlMailView::ResetScrollBar()
 	// Reset scrollbar
 	BScrollBar *bar(NULL);
 	BView* view = this->FindView("NetPositive");
-	if(view && (view = view->ChildAt(0))) 
+	if(view && (view = view->ChildAt(0)))
 	{
 		view = view->ChildAt(1);
 		bar = cast_as(view,BScrollBar);
@@ -465,7 +465,7 @@ HHtmlMailView::LoadMessage(BFile *file)
 			content.CopyInto(part,offset-header_len,data_len);
 			// Extract
 			const char* encoding = item->ContentEncoding();
-					
+
 			if(encoding)
 			{
 				bool mime_q = false;
@@ -493,7 +493,7 @@ HHtmlMailView::LoadMessage(BFile *file)
 				BString label(_("Attachments"));
 				label <<" [ " <<fAttachmentList->CountItems() << " ]";
 				HTabView *tabview = cast_as(FindView("tabview"),HTabView);
-				
+
 				tabview->SetTabLabel(2,label.String() );
 				tabview->SetTabEnabled(2,true);
 			}
@@ -534,7 +534,7 @@ HHtmlMailView::LoadMessage(BFile *file)
 	encode.ConvertReturnsToLF(header);
 	// Dump to tmp directory
 	BPath path;
-	::find_directory(B_COMMON_TEMP_DIRECTORY,&path);
+	::find_directory(B_SYSTEM_TEMP_DIRECTORY,&path);
 	path.Append( TMP_FILE_NAME );
 	BFile tmpFile(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
 	tmpFile.Write(content.String(),content.Length());
@@ -594,7 +594,7 @@ HHtmlMailView::ConvertLinkToBlankWindow(BString &str)
 	const char* text = str.String();
 	int32 len = str.Length();
 	BString out;
-	
+
 	for(int32 i = 0;i < len;i++)
 	{
 		if(strncasecmp(&text[i],"href ",4) == 0)
@@ -620,20 +620,20 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 {
 	bool openNewWindow;
 	((HApp*)be_app)->Prefs()->GetData("open_link_as_new_window",&openNewWindow);
-	
+
 	char buf[20];
 	Encoding encode;
 	bool translate_space = false;
 	BString out("");
 	out += "<html>\n";
 	out += "<body bgcolor=white>\n";
-	// Convert to UTF8 
+	// Convert to UTF8
 	// We need to convert to UTF8 for multibyte charactor support
 	if(transfer_encoding && ::strcasecmp(transfer_encoding,"quoted-printable") == 0)
 		encode.MimeDecode(content,true);
 	else if(transfer_encoding&&::strcasecmp(transfer_encoding,"base64") == 0)
 		encode.MimeDecode(content,false);
-	
+
 	int32 default_encoding = 0;
 	if(encoding)
 		encode.ConvertToUTF8(content,encoding);
@@ -649,7 +649,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 	}
 	// We must add higlight quote and replace line feed
 	const char* text = content.String();
-	
+
 	int32 len = content.Length();
 	BString tmp;
 	for(int32 i = 0;i < len;i++)
@@ -692,7 +692,7 @@ HHtmlMailView::Plain2Html(BString &content,const char* encoding,const char* tran
 					textw[i+2] = ' ';
 					textw[i+3] = ' ';
 					tmp << bullet << bulletb << bullet << bulletb;
-					tmp << bullet << bulletb << bullet << blank;				
+					tmp << bullet << bulletb << bullet << blank;
 				}
 				else if((text[i+1] == '>')
 				     && (text[i+2] == '>'))
@@ -814,7 +814,7 @@ HHtmlMailView::ConvertToHtmlCharactor(char c,char *out,bool *translate_space)
 		break;
 	case ' ':
 		if(*translate_space)
-			::strcpy(out,"&nbsp;");		
+			::strcpy(out,"&nbsp;");
 		else{
 			out[0] = c;
 			*translate_space = true;
@@ -835,7 +835,7 @@ HHtmlMailView::IsURI(char c)
 	if(c != ' '&&c != '\t'&&c != '>'&&c != '<'&&c != ')'&&c != '('&&
 		c != '"'&&c != '\''&&c != '\n'&&c != '\r'&&c != '['&&c != ']'&&!(c >> 7))
 		return true;
-	
+
 	return false;
 }
 
@@ -850,13 +850,13 @@ HHtmlMailView::ParseAllParts(const char* str,const char* boundary,int32 header_l
 	int32 boundary_len = ::strlen(new_boundary);
 	char *end_boundary = new char[boundary_len +3];
 	::sprintf(end_boundary,"%s--",new_boundary);
-	
+
 	BString content(str);
 	int32 start=0;
 	int32 part_offset = 0;
 	BString part("");
 	char *subBoundary = NULL;
-	
+
 	while((start=content.FindFirst(new_boundary,start)) != B_ERROR)
 	{
 		start+= boundary_len;
@@ -864,7 +864,7 @@ HHtmlMailView::ParseAllParts(const char* str,const char* boundary,int32 header_l
 		part = "";
 		while(::strncmp(&content[start],new_boundary,boundary_len) != 0)
 			part += content[start++];
-		
+
 		if( GetParameter(part.String(),"boundary=",&subBoundary) )
 		{
 			ParseAllParts(part.String(),subBoundary,header_len+part_offset);
@@ -875,7 +875,7 @@ HHtmlMailView::ParseAllParts(const char* str,const char* boundary,int32 header_l
 		if(::strncmp(&content[start],end_boundary,boundary_len+2) == 0)
 			break;
 	}
-	
+
 	delete[] new_boundary;
 	delete[] end_boundary;
 }
@@ -889,7 +889,7 @@ HHtmlMailView::AddPart(const char* part,int32 file_offset)
 	if(::strlen(part) == 0)
 		return;
 	BString line("");
-	
+
 	char* content_type = NULL;
 	char* name = NULL;
 	char* encoding = NULL;
@@ -901,7 +901,7 @@ HHtmlMailView::AddPart(const char* part,int32 file_offset)
 	GetParameter(part,"charset=",&charset);
 
 	//PRINT(("Type:%s\nName:%s\nEncoding:%s\ncharset:%s\n\n",content_type,name,encoding,charset));
-	
+
 	char *p = strstr(part,"\r\n\r\n");
 	int32 offset = 0;
 	int32 data_len = 0;
@@ -919,10 +919,10 @@ HHtmlMailView::AddPart(const char* part,int32 file_offset)
 												content_type,
 												encoding,
 												charset));
-	
+
 	delete[] content_type;
 	delete[] name;
-	delete[] encoding;	
+	delete[] encoding;
 	delete[] charset;
 }
 
@@ -937,7 +937,7 @@ HHtmlMailView::ClearList()
 	while(count>0)
 	{
 		item = cast_as(fAttachmentList->RemoveItem(--count),HAttachmentItem);
-		
+
 		if(item && item->IsExtracted())
 		{
 			entry_ref ref = item->FileRef();
@@ -956,7 +956,7 @@ MySavePanel::MySavePanel(BView *target)
 	:BFilePanel(B_SAVE_PANEL)
 	,fTargetView(target)
 {
-	
+
 }
 
 /***********************************************************
@@ -976,7 +976,7 @@ MySavePanel::SendMessage(const BMessenger*, BMessage* msg)
 	BMessage	save(B_REFS_RECEIVED);
 	entry_ref	ref;
 
-	if ((msg->FindRef("directory", &ref) == B_OK) && 
+	if ((msg->FindRef("directory", &ref) == B_OK) &&
 		(msg->FindString("name", &name) == B_OK)) {
 		save.AddString("name", name);
 		save.AddRef("directory", &ref);

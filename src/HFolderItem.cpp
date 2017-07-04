@@ -6,7 +6,7 @@
 #include "HWindow.h"
 #include "HMailCache.h"
 #include "Utilities.h"
-#include "ColumnListView.h"
+#include <santa/ColumnListView.h>
 #include "HMailList.h"
 #include "TrackerUtils.h"
 
@@ -48,20 +48,20 @@ HFolderItem::HFolderItem(const entry_ref &ref,BListView *target)
 	,fRefreshThread(-1)
 	,fFolderType(FOLDER_TYPE)
 	,fChildItems(0)
-{	
+{
 	BAutolock lock(target->Window());
 	target->Window()->AddHandler( this );
-	
+
 	BEntry entry(&ref);
 	entry.GetNodeRef(&fNodeRef);
 	Scooby::watch_node(&fNodeRef,B_WATCH_DIRECTORY|B_WATCH_NAME,this);
-	
+
 	if(BPath(&ref).InitCheck() == B_OK)
 		fName = BPath(&ref).Leaf();
 	else
 		fName = _("Unknown");
 	fMailList.MakeEmpty();
-	
+
 	BBitmap *icon(NULL);
 	HApp* app = (HApp*)be_app;
 	if(!entry.IsDirectory())
@@ -93,7 +93,7 @@ HFolderItem::HFolderItem(const char* name,int32 type,BListView *target)
 	,fRefreshThread(-1)
 	,fFolderType(IMAP4_TYPE)
 	,fChildItems(0)
-{	
+{
 	fMailList.MakeEmpty();
 	BBitmap *icon(NULL);
 	HApp* app = (HApp*)be_app;
@@ -111,28 +111,28 @@ HFolderItem::HFolderItem(const char* name,int32 type,BListView *target)
 HFolderItem::~HFolderItem()
 {
 	::stop_watching(this,fOwner->Window());
-	
+
 	status_t err;
-	
+
 	if(fThread >= 0)
 	{
 		thread_id id = fThread;
 		fCancel = true;
 		::wait_for_thread(id,&err);
 	}
-	
+
 	if(fCacheThread >= 0)
 	{
 		thread_id id = fCacheThread;
-		fCacheCancel = true;		
+		fCacheCancel = true;
 		::wait_for_thread(id,&err);
 	}
-	
+
 	if(fRefreshThread >= 0)
 	{
 		::wait_for_thread(fRefreshThread,&err);
 	}
-	
+
 	if(IsDone() && FolderType() == FOLDER_TYPE && fUseCache)
 		CreateCache();
 	else if(!IsDone() && FolderType() == FOLDER_TYPE&& fUseCache)
@@ -147,9 +147,9 @@ void
 HFolderItem::AddMail(HMailItem *item)
 {
 	fMailList.AddItem(item);
-	
+
 	Scooby::watch_node(&item->fNodeRef,B_WATCH_ATTR,this);
-	
+
 	if(!item->IsRead())
 		SetUnreadCount(fUnread+1);
 }
@@ -218,8 +218,8 @@ HFolderItem::FindMail(node_ref &nref)
 {
 	int32 count = fMailList.CountItems();
 	HMailItem **items = (HMailItem**)fMailList.Items();
-	
-	
+
+
 	for(int32 i = 0;i< count;i++)
 	{
 		HMailItem *item = (HMailItem*)items[i];
@@ -238,7 +238,7 @@ void
 HFolderItem::AddMails(BList* list)
 {
 	fMailList.AddList(list);
-	
+
 	int32 count = list->CountItems();
 	HMailItem *item;
 	int32 unread = 0;
@@ -281,7 +281,7 @@ void
 HFolderItem::StartGathering()
 {
 	if ((fRefreshThread != -1) || (fThread != -1))
-		return;	
+		return;
 	fThread = ::spawn_thread(ThreadFunc,"MailGathering",B_LOW_PRIORITY,this);
 	::resume_thread(fThread);
 }
@@ -326,11 +326,11 @@ HFolderItem::Gather()
 	dirent *dent;
 	int32 count;
 	int32 offset;
-	
+
 	while((count = dir.GetNextDirents((dirent *)buf, 4096)) > 0)
 	{
 		offset = 0;
-		/* Now we step through the dirents. */ 
+		/* Now we step through the dirents. */
 		while (count-- > 0)
 		{
 			dent = (dirent *)buf + offset;
@@ -349,8 +349,8 @@ HFolderItem::Gather()
 				continue;
 			if(::strcmp(type,B_MAIL_TYPE) == 0)
 				AddMail(new HMailItem(ref));
-		} 
-	} 
+		}
+	}
 #else
 	BPath path;
 	int32 count,i=0;
@@ -368,7 +368,7 @@ HFolderItem::Gather()
 		ref.device = dirents[i]->d_pdev;
 		ref.directory = dirents[i]->d_pino;
 		ref.set_name(dirents[i++]->d_name);
-		
+
 		if(node.SetTo(&ref) != B_OK)
 			continue;
 		if(node.ReadAttr("BEOS:TYPE",B_MIME_TYPE,0,type,B_MIME_TYPE_LENGTH) <0)
@@ -380,15 +380,15 @@ HFolderItem::Gather()
 	for(i = 0;i < count;i++)
 		free(dirents[i]);
 	free(dirents);
-#endif		
+#endif
 	//fMailList.SortItems(HFolderItem::CompareFunc);
 	fDone = true;
 	// Set icon to open folder
 	BBitmap *icon = ((HApp*)be_app)->GetIcon("OpenFolder");
 	SetColumnContent(ICON_COLUMN,icon,2.0,false,false);
-	
+
 	SetUnreadCount(fUnread);
-	
+
 	fThread = -1;
 	InvalidateMe();
 	//CreateCache();
@@ -403,7 +403,7 @@ void
 HFolderItem::SetUnreadCount(int32 unread)
 {
 	fUnread = unread;
-	
+
 	if(fUnread>0)
 	{
 		BString title=fName;
@@ -426,7 +426,7 @@ HFolderItem::RefreshCache()
 	// Set icon to open folder
 	BBitmap *icon = ((HApp*)be_app)->GetIcon("CloseFolder");
 	SetColumnContent(ICON_COLUMN,icon,2.0,false,false);
-	
+
 	InvalidateMe();
 	((HApp*)be_app)->MainWindow()->PostMessage(M_START_MAIL_BARBER_POLE);
 	fUseCache = false;
@@ -453,7 +453,7 @@ void
 HFolderItem::StartRefreshCache()
 {
 	if ((fRefreshThread != -1) || (fThread != -1))
-		return;	
+		return;
 	fRefreshThread = ::spawn_thread(RefreshCacheThread,"RefreshCache",B_NORMAL_PRIORITY,this);
 	::resume_thread(fRefreshThread);
 }
@@ -506,12 +506,12 @@ HFolderItem::ReadFromCache()
 	path.Append("FolderCache");
 	::create_directory(path.Path(),0777);
 	const char *p;
-	
+
 	while(1)
 	{
 		p = folder_path.Leaf();
 		if(::strcmp(p,"mail") == 0)
-			break;	
+			break;
 		path.Append(p);
 		::create_directory(path.Path(),0777);
 		folder_path.GetParent(&folder_path);
@@ -529,7 +529,7 @@ HFolderItem::ReadFromCache()
 		PRINT(("ChildItem:%d CacheCount:%d List:%d %d\n",fChildItems,count,fMailList.CountItems(),BDirectory(&fFolderRef).CountEntries()));
 		EmptyMailList();
 		return B_ERROR;
-	}		
+	}
 	//
 	if(cache.Open(this) == B_OK)
 	{
@@ -555,26 +555,26 @@ void
 HFolderItem::CreateCache()
 {
 	BPath path(&fFolderRef);
-	
+
 	BPath folder_path(&fFolderRef);
 	BString name("");
 	name = path.Leaf();
 	const char *p;
 	folder_path.GetParent(&folder_path);
-	
-	
+
+
 	name += ".cache";
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append("FolderCache");
-	
+
 	if( path.InitCheck() != B_OK)
 		::create_directory(path.Path(),0777);
 	while(1)
 	{
 		p = folder_path.Leaf();
 		if(::strcmp(p,"mail") == 0)
-			break;	
+			break;
 		path.Append(p);
 		::create_directory(path.Path(),0777);
 		folder_path.GetParent(&folder_path);
@@ -600,15 +600,15 @@ HFolderItem::AddMailsToCacheFile()
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append("FolderCache");
-	
+
 	if( path.InitCheck() != B_OK)
 		::create_directory(path.Path(),0777);
 	path.Append(name.String());
 	fCacheCancel = false;
-	
+
 #ifndef __NEW_CACHE__
 	BMessage cache;
-	
+
 	BFile file(path.Path(),B_READ_WRITE|B_CREATE_FILE);
 	if(file.InitCheck() == B_OK)
 	{
@@ -633,7 +633,7 @@ HFolderItem::AddMailsToCacheFile()
 			cache.AddInt8("enclosure",item->fEnclosure);
 			cache.AddInt64("ino_t",item->fNodeRef.node);
 		}
-		
+
 		if(file.InitCheck() == B_OK)
 		{
 			file.Seek(0,SEEK_SET);
@@ -670,18 +670,18 @@ HFolderItem::RemoveCacheFile()
 	entry_ref ref;
 	::get_ref_for_path(path.Path(),&ref);
 	BMessenger tracker("application/x-vnd.Be-TRAK" );
-	BMessage msg( B_DELETE_PROPERTY ) ; 
+	BMessage msg( B_DELETE_PROPERTY ) ;
 
 	BMessage specifier( 'sref' ) ;
-	specifier.AddRef( "refs", &ref ) ; 
-	specifier.AddString( "property", "Entry" ) ; 
-	msg.AddSpecifier( &specifier ) ; 
+	specifier.AddRef( "refs", &ref ) ;
+	specifier.AddString( "property", "Entry" ) ;
+	msg.AddSpecifier( &specifier ) ;
 
-	msg.AddSpecifier( "Poses" ) ; 
+	msg.AddSpecifier( "Poses" ) ;
 	msg.AddSpecifier( "Window", 1 ) ;
-	
-	BMessage reply ; 
-    tracker.SendMessage( &msg, &reply ); 
+
+	BMessage reply ;
+    tracker.SendMessage( &msg, &reply );
 }
 
 /***********************************************************
@@ -734,8 +734,8 @@ HFolderItem::Launch()
 	BMessenger tracker("application/x-vnd.Be-TRAK" );
 	BMessage msg(B_REFS_RECEIVED);
 	msg.AddRef("refs",&fFolderRef);
-	BMessage reply; 
-	tracker.SendMessage( &msg, &reply ); 
+	BMessage reply;
+	tracker.SendMessage( &msg, &reply );
 	//be_roster->Launch(&fFolderRef);
 }
 
@@ -768,21 +768,21 @@ HFolderItem::NodeMonitor(BMessage *message)
 	HMailItem *item;
 	BPath path;
 	BPath myPath(&fFolderRef);
-	
+
 	BNode node;
 	char mime_type[B_MIME_TYPE_LENGTH];
 	BNodeInfo ninfo;
-		
-	if(message->FindInt32("opcode",&opcode) != B_OK)	
+
+	if(message->FindInt32("opcode",&opcode) != B_OK)
 		return;
-	message->FindInt32("device", &ref.device); 
-	message->FindInt64("directory", &ref.directory); 
+	message->FindInt32("device", &ref.device);
+	message->FindInt64("directory", &ref.directory);
 	message->FindString("name", &name);
-	
+
 	node_ref nref;
 	message->FindInt64("node", &nref.node);
 	message->FindInt32("device",&nref.device);
-	
+
 	switch(opcode)
 	{
 	case B_ENTRY_CREATED:
@@ -821,7 +821,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 	case B_ENTRY_REMOVED:
 	{
 		BDirectory dir(&nref);
-		
+
 		if(dir.IsDirectory())
 		{
 			BMessage msg(M_REMOVE_FOLDER);
@@ -833,7 +833,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 			if(IsSelected())
 				((HFolderList*)fOwner)->RemoveFromMailList(item,true);
 			else
-				delete item;	
+				delete item;
 			InvalidateMe();
 		}
 		PRINT(("REMOVE\n"));
@@ -845,17 +845,17 @@ HFolderItem::NodeMonitor(BMessage *message)
 		BPath to_path,from_path;
 		BDirectory to_dir,from_dir;
 		entry_ref ref;
-	
+
 		message->FindInt32("device", &nref.device);
 		message->FindInt32("device", &from_nref.device);
 		message->FindInt64("to directory", &nref.node);
 		message->FindInt64("from directory", &from_nref.node);
 		to_dir.SetTo(&nref);
 		from_dir.SetTo(&from_nref);
-		
+
 		to_path.SetTo(&to_dir,NULL,false);
 		from_path.SetTo(&from_dir,NULL,false);
-			
+
 		message->FindString("name", &name);
 		// Add mail
 		if(to_path == myPath)
@@ -864,7 +864,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 			file_path.Append(name);
 			if(node.SetTo(file_path.Path()) != B_OK)
 				break;
-			
+
 			ninfo.SetTo(&node);
 			ninfo.GetType(mime_type);
 			if(::strcmp(mime_type,B_MAIL_TYPE) == 0)
@@ -882,7 +882,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 				msg.AddPointer("parent",this);
 				msg.AddPointer("item",folder);
 				fOwner->Window()->PostMessage(&msg,fOwner);
-			}	
+			}
 		}
 		// Remove mails
 		if(from_path == myPath)
@@ -891,7 +891,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 			old_nref.device =from_nref.device;
 			message->FindInt64("node", &old_nref.node);
 			BDirectory dir(&old_nref);
-			
+
 			if(dir.IsDirectory())
 			{
 				BMessage msg(M_REMOVE_FOLDER);
@@ -921,7 +921,7 @@ HFolderItem::NodeMonitor(BMessage *message)
 				SetUnreadCount(fUnread-1);
 			else
 				SetUnreadCount(fUnread+1);
-				
+
 			InvalidateMe();
 			// post invalidate item message to window
 			BMessage msg(M_INVALIDATE_MAIL);
@@ -950,7 +950,7 @@ HFolderItem::CompareFunc(const void *data1,const void* data2)
 		return -1;
 	else
 		return 0;
-	return 0;	
+	return 0;
 }
 
 /***********************************************************
@@ -971,7 +971,7 @@ HFolderItem::IsSelected()
 void
 HFolderItem::RemoveSettings()
 {
-	
+
 }
 
 /***********************************************************
@@ -988,20 +988,21 @@ HFolderItem::DeleteMe()
 /***********************************************************
  * CompareItems
  ***********************************************************/
-int HFolderItem::CompareItems(const CLVListItem *a_Item1, 
-								const CLVListItem *a_Item2, 
+int HFolderItem::CompareItems(const CLVListItem *a_Item1,
+								const CLVListItem *a_Item2,
 								int32 KeyColumn)
 {
+	/*
 	const HFolderItem* Item1 = cast_as(a_Item1,const HFolderItem);
 	const HFolderItem* Item2 = cast_as(a_Item2,const HFolderItem);
-	
+
 	if(Item1->FolderType() != Item2->FolderType())
-		return (Item1->FolderType() == QUERY_TYPE)?1:-1;	
-	
+		return (Item1->FolderType() == QUERY_TYPE)?1:-1;
+
 	if(Item1 == NULL || Item2 == NULL || Item1->m_column_types.CountItems() <= KeyColumn ||
 		Item2->m_column_types.CountItems() <= KeyColumn)
 		return 0;
-	
+
 	int32 type1 = ((int32)Item1->m_column_types.ItemAt(KeyColumn)) & CLVColTypesMask;
 	int32 type2 = ((int32)Item2->m_column_types.ItemAt(KeyColumn)) & CLVColTypesMask;
 
@@ -1022,15 +1023,16 @@ int HFolderItem::CompareItems(const CLVListItem *a_Item1,
 		text2 = (const char*)Item2->m_column_content.ItemAt(KeyColumn);
 	else if(type2 == CLVColTruncateUserText || type2 == CLVColUserText)
 		text2 = Item2->GetUserText(KeyColumn,-1);
-	
+
 	// display in and out folder first.
 	if(strcmp(text1,"in") == 0) return -1;
 	if(strcmp(text2,"in") == 0) return  1;
 	if(strcmp(text1,_("Local Folders")) == 0) return -1;
 	if(strcmp(text2,_("Local Folders")) == 0) return  1;
-	
+
 	if(strcmp(text1,"out") == 0 && strcmp(text2,"in") != 0) return -1;
 	if(strcmp(text2,"out") == 0 && strcmp(text1,"in") != 0) return  1;
-	
-	return strcasecmp(text1,text2);
+
+	return strcasecmp(text1,text2);*/
+	return 0;
 }

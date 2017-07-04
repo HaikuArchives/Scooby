@@ -1,7 +1,7 @@
 #ifndef __LOCAL_LIST_H__
 #define __LOCAL_LIST_H__
 
-#include "ColumnListView.h"
+#include <santa/ColumnListView.h>
 #include "HFolderItem.h"
 #include "HSimpleFolderItem.h"
 #include "HCoolListView.h"
@@ -75,7 +75,7 @@ public:
 protected:
 		//@{
 		//!Override function.
-			 	void 	MessageReceived(BMessage *message);		
+			 	void 	MessageReceived(BMessage *message);
 			 	void	SelectionChanged();
 			 	void	Pulse();
 			 	void	MouseDown(BPoint pos);
@@ -119,7 +119,7 @@ private:
 		bool		fSkipGathering;
 		CLVColumn	*cFolders;
 	//@{
-	//! Parent items	
+	//! Parent items
 	HSimpleFolderItem	*fLocalFolders;
 	HSimpleFolderItem	*fIMAP4Folders;
 	HSimpleFolderItem	*fQueryFolders;
@@ -127,7 +127,7 @@ private:
 		bool		fGatheredLocalFolders;
 		bool		fGatherOnStartup;
 		bool		fUseTreeMode;
-		
+
 		typedef ColumnListView	_inherited;
 };
 #endif

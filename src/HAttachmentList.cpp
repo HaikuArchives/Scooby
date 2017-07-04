@@ -1,5 +1,5 @@
 #include "HAttachmentList.h"
-#include "CLVColumn.h"
+#include <santa/CLVColumn.h>
 #include "HAttachmentItem.h"
 #include "HHtmlMailView.h"
 #include "HApp.h"
@@ -53,7 +53,7 @@ HAttachmentList::FindPart(const char* type)
 	if(!type)
 		return -1;
 	int32 count = CountItems();
-	
+
 	HAttachmentItem **items = (HAttachmentItem**)Items();
 	for(int32 i = 0;i < count;i++)
 	{
@@ -70,13 +70,13 @@ void
 HAttachmentList::MouseDown(BPoint pos)
 {
 	uint32			buttons;
-	
+
 	if (Window()->CurrentMessage())
 		Window()->CurrentMessage()->FindInt32("buttons", (int32 *)&buttons);
 	if(buttons == B_SECONDARY_MOUSE_BUTTON)
 	{
 		int32 sel = CurrentSelection();
-		
+
 		BPopUpMenu *theMenu = new BPopUpMenu("RIGHT_CLICK",false,false);
     	BFont font(be_plain_font);
     	font.SetSize(10);
@@ -93,14 +93,14 @@ HAttachmentList::MouseDown(BPoint pos)
         r.bottom = pos.y + 5;
         r.left = pos.x - 5;
         r.right = pos.x + 5;
-        
-    	item = theMenu->Go(pos, false,true,r);  
+
+    	item = theMenu->Go(pos, false,true,r);
     	if(item)
     	{
     	 	BMessage*	aMessage = item->Message();
 			if(aMessage)
 				this->Window()->PostMessage(aMessage);
-	 	} 
+	 	}
 	 	delete theMenu;
 	}else
 		ColumnListView::MouseDown(pos);
@@ -114,17 +114,17 @@ HAttachmentList::InitiateDrag(BPoint  point,
 						int32 index,
 						bool wasSelected)
 {
-	if (wasSelected) 
+	if (wasSelected)
 	{
 		BMessage msg(B_SIMPLE_DATA);
 		HAttachmentItem *item = cast_as(ItemAt(index),HAttachmentItem);
 		if(item == NULL)
 			return false;
 		BRect	theRect = this->ItemFrame(index);
-		
-		int32 selected; 
+
+		int32 selected;
 		int32 sel_index = 0;
-		
+
 		while((selected = CurrentSelection(sel_index++)) >= 0)
 		{
 			item=cast_as(ItemAt(selected),HAttachmentItem);
@@ -132,7 +132,7 @@ HAttachmentList::InitiateDrag(BPoint  point,
 				continue;
 			msg.AddPointer("pointer",item);
 		}
-			
+
 		const char *subject = item->GetColumnContentText(1);
 		theRect.OffsetTo(B_ORIGIN);
 		theRect.right = theRect.left + StringWidth(subject) + 20;
@@ -146,29 +146,29 @@ HAttachmentList::InitiateDrag(BPoint  point,
 		view->SetDrawingMode(B_OP_ALPHA);
 		view->SetHighColor(0,0,0,128);
 		view->SetBlendingMode(B_CONSTANT_ALPHA,B_ALPHA_COMPOSITE);
-		
+
 		BFont font;
 		font_height fheight;
-		GetFont(&font);	
+		GetFont(&font);
 		font.GetHeight(&fheight);
 		float fontHeight = ceil(fheight.ascent) + ceil(fheight.descent);
 		view->SetFont(&font);
 		view->MovePenTo(theRect.left+20, theRect.bottom - (theRect.Height()-fontHeight)/2);
 		if(subject)
 			view->DrawString( subject );
-		
+
 		const BBitmap *icon = item->GetColumnContentBitmap(0);
 		fontHeight = icon->Bounds().Height();
 		view->MovePenTo(theRect.left, theRect.top + (theRect.Height()-fontHeight)/2);
 		if(icon)
 			view->DrawBitmap(icon);
-		
-		
+
+
 		bitmap->Unlock();
-		
+
 		DragMessage(&msg, bitmap, B_OP_ALPHA,
 				BPoint(bitmap->Bounds().Width()/2,bitmap->Bounds().Height()/2));
 		// must not delete bitmap
-	}	
+	}
 	return (wasSelected);
 }

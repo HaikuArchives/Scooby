@@ -34,7 +34,7 @@ const rgb_color kQuote3 = {0,150,150};
 const rgb_color kBlack = {0,0,0};
 
 HMailView::HMailView(BRect frame, bool incoming, BFile *file)
-		  :_inherited(frame, "HMailView", 
+		  :_inherited(frame, "HMailView",
 		  	 B_FOLLOW_ALL, B_WILL_DRAW |B_NAVIGABLE)
 {
 	BFont	font = *be_plain_font;
@@ -95,14 +95,14 @@ HMailView::ResetFont()
 	HPrefs *prefs = ((HApp*)be_app)->Prefs();
 	const char* family,*style;
 	float size;
-	
+
 	prefs->GetData("font_family",&family);
 	prefs->GetData("font_style",&style);
 	prefs->GetData("font_size",&size);
-	
+
 	fFont.SetFamilyAndStyle(family,style);
 	fFont.SetSize(size);
-	
+
 	fFont.SetSpacing(B_FIXED_SPACING);
 	SetFontAndColor(0,TextLength(),&fFont);
 }
@@ -177,7 +177,7 @@ void HMailView::KeyDown(const char *key, int32 count)
 				{
 					int32 eol = OffsetAt(CurrentLine()+1) - 1;
 					if (eol == TextLength() - 1) eol++;	// special case at EOF
-					
+
 					Select(eol, eol);
 				}
 				ScrollToSelection();
@@ -374,7 +374,7 @@ void HMailView::MessageReceived(BMessage *msg)
 			SetText(NULL);
 			LoadMessage(fFile, FALSE, FALSE, NULL);
 			break;
-			
+
 		case M_RAW:
 			UnlockLooper();
 			StopLoad();
@@ -389,7 +389,7 @@ void HMailView::MessageReceived(BMessage *msg)
 			if (IsSelectable())
 				Select(0, TextLength());
 			break;
-		
+
 		case M_SAVE:
 			Save(msg);
 			break;
@@ -401,7 +401,7 @@ void HMailView::MessageReceived(BMessage *msg)
 			else
 				SetContent(NULL);
 			break;
-		}	
+		}
 		case 'find':
 		{
 			const char* text;
@@ -445,7 +445,7 @@ void HMailView::ResetTextRunArray()
 {
 	text_run_array array;
 	text_run	run;
-	
+
 	run.offset = 0;
 	run.font = fFont;
 	run.color = kBlack;
@@ -483,7 +483,7 @@ void HMailView::MouseDown(BPoint where)
 				point = where;
 				while ((buttons) && (abs((int)(point.x - where.x)) < 4) &&
 					   (abs((int)(point.y - where.y)) < 4) &&
-					    (system_time() < click)) 
+					    (system_time() < click))
 				{
 					snooze(10000);
 					GetMouse(&point, &buttons);
@@ -523,7 +523,7 @@ void HMailView::MouseDown(BPoint where)
 	}else if(buttons == B_SECONDARY_MOUSE_BUTTON){
 		if(!fIncoming)
 			return _inherited::MouseDown(where);
-		
+
 		BPopUpMenu* theMenu = new BPopUpMenu("Attachments");
 		BFont font(be_plain_font);
 		font.SetSize(10);
@@ -538,14 +538,14 @@ void HMailView::MouseDown(BPoint where)
 		theMenu->AddItem((item= new BMenuItem(_("Show Raw Message"), msg)));
 		item->SetMarked(fRaw);
 		item->SetEnabled( (fFile)?true:false);
-		
+
 		theMenu->AddSeparatorItem();
 		msg = new BMessage(M_PRINT_MESSAGE);
 		msg->AddPointer("view",this);
 		msg->AddString("job_name","untitled");
 		theMenu->AddItem((item = new BMenuItem(_("Print"),msg,'P',0)));
 		item->SetEnabled( (TextLength() > 0)?true:false);
-		
+
 		start = OffsetAt(where);
 		theMenu->AddSeparatorItem();
 		BMenuItem *saveItem,*openItem;
@@ -556,7 +556,7 @@ void HMailView::MouseDown(BPoint where)
 		openItem->SetEnabled(false);
 		saveItem->SetEnabled(false);
 		enclosure = NULL;
-		
+
 		items = fEnclosures->CountItems();
 		for (loop = 0; loop < items; loop++)
 		{
@@ -572,15 +572,15 @@ void HMailView::MouseDown(BPoint where)
 				}
 			}
 		}
-		
+
 		BRect r;
         ConvertToScreen(&where);
         r.top = where.y - 5;
         r.bottom = where.y + 5;
         r.left = where.x - 5;
         r.right = where.x + 5;
-         
-    	BMenuItem *theItem = theMenu->Go(where, false,true,r);  
+
+    	BMenuItem *theItem = theMenu->Go(where, false,true,r);
     	if(theItem)
     	{
     	 	BMessage*	aMessage = theItem->Message();
@@ -596,8 +596,8 @@ void HMailView::MouseDown(BPoint where)
 				Open(enclosure);
 			}else
 	 			Window()->PostMessage(aMessage);
-	 	} 
-	 	delete theMenu;	
+	 	}
+	 	delete theMenu;
 	}else
 		_inherited::MouseDown(where);
 }
@@ -665,7 +665,7 @@ void HMailView::LoadMessage(BFile *file, bool quote_it, bool close,
 {
 	reader			*info;
 	attr_info		a_info;
-	
+
 	ClearList();
 	MakeSelectable(FALSE);
 	if (text)
@@ -722,7 +722,7 @@ void HMailView::Open(hyper_text *enclosure)
 		case TYPE_ENCLOSURE:
 		case TYPE_BE_ENCLOSURE:
 			if (!enclosure->have_ref) {
-				if (find_directory(B_COMMON_TEMP_DIRECTORY, &path) == B_NO_ERROR) {
+				if (find_directory(B_SYSTEM_TEMP_DIRECTORY, &path) == B_NO_ERROR) {
 					dir.SetTo(path.Path());
 					if (dir.InitCheck() == B_NO_ERROR) {
 						if (enclosure->name)
@@ -778,7 +778,7 @@ status_t HMailView::Reader(reader *info)
 		if (!strip_it(msg, len, info))
 			goto done;
 	}
-	
+
 	if ((info->raw) || (!info->mime)) {
 		if (!strip_it(msg + len, size - len, info))
 			goto done;
@@ -787,7 +787,7 @@ status_t HMailView::Reader(reader *info)
 		goto done;
 
 	if (get_semaphore(info->view->Window(), info->stop_sem)) {
-		
+
 		info->view->Select(0, 0);
 		info->view->MakeSelectable(TRUE);
 		if (!info->incoming)
@@ -813,7 +813,7 @@ HMailView::HighlightQuote(BTextView *view)
 	BAutolock lock(view->Window());
 	BString text = view->Text();
 	int32 length = text.Length();
-	
+
 	BString line("");
 	int32 i = 0,e,j;
 	text_run_array *array;
@@ -829,9 +829,9 @@ HMailView::HighlightQuote(BTextView *view)
 		}
 		text.CopyInto(line,i,e);
 		j = 0;
-		
+
 		if(line[0] == '>')
-		{	
+		{
 			j++;
 			if(line[1] == '>')
 			{
@@ -843,9 +843,9 @@ HMailView::HighlightQuote(BTextView *view)
 			i = e+1;
 			continue;
 		}
-		
+
 		rgb_color col = kBlack;
-			
+
 		if(j==1)
 			col = kQuote1;
 		else if(j==2)
@@ -907,13 +907,13 @@ status_t HMailView::Save(BMessage *msg)
 				return result;
 			}
 		}
-		
+
 		if ((result = dir.CreateFile(name, &file)) == B_NO_ERROR) {
 			data = new char[enclosure->file_length+1];
 			fFile->Seek(enclosure->file_offset, 0);
 			size = fFile->Read(data, enclosure->file_length);
 			data[enclosure->file_length] = '\0';
-			
+
 			if (enclosure->type == TYPE_BE_ENCLOSURE)
 				SaveBeFile(&file, data, size);
 			else {
@@ -982,7 +982,7 @@ void HMailView::SaveBeFile(BFile *file, char *data, ssize_t size)
 		return;
 	boundary = data;
 	boundary[len - 2] = 0;
-	
+
 	while (1) {
 		if ((!(offset = find_boundary(offset, boundary, (data + size) - offset))) ||
 			(offset[strlen(boundary) + 1] == '-'))
@@ -1074,7 +1074,7 @@ HMailView::get_semaphore(BWindow *window, sem_id *sem)
 
 //--------------------------------------------------------------------
 
-bool 
+bool
 HMailView::insert(reader *info, char *line, int32 count, bool hyper)
 {
 	uint32			mode;
@@ -1086,7 +1086,7 @@ HMailView::insert(reader *info, char *line, int32 count, bool hyper)
 
 	info->view->GetFontAndColor(&font, &mode, &c);
 	style.count = 1;
-	style.runs[0].offset = 0;	
+	style.runs[0].offset = 0;
 	style.runs[0].font = font;
 	if (hyper)
 		style.runs[0].color = hyper_color;
@@ -1127,7 +1127,7 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 	off_t			amount;
 	hyper_text		*enclosure;
 	Encoding 		encode;
-	
+
 	offset = data;
 	while (1) {
 		is_bfile = false;
@@ -1136,7 +1136,7 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 		encoding = NULL;
 		new_boundary = NULL;
 		type = NULL;
-	
+
 		if (boundary) {
 			if ((!(offset = find_boundary(offset, boundary, (data + size) - offset))) ||
 				(offset[strlen(boundary) + 1] == '-')) {
@@ -1150,9 +1150,9 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 			if (!cistrncmp(offset, CONTENT_TYPE, strlen(CONTENT_TYPE))) {
 				offset[len - 2] = 0;
 				type = offset;
-				if (cistrstr(offset, MIME_TEXT) 
+				if (cistrstr(offset, MIME_TEXT)
 					&& !cistrstr(offset,MIME_HTML) ) {
-				
+
 				}else{
 					is_text = FALSE;
 					if (cistrstr(offset, MIME_MULTIPART)) {
@@ -1218,7 +1218,7 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 			{
 				utf8 = NULL;
 				saved_len = 0;
-				
+
 				// Decode base64
 				if ((encoding) && (cistrstr(encoding, "base64")))
 				{
@@ -1229,8 +1229,8 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 					saved_len = len;
 					len = encode.decode_quoted_printable(offset, offset, len, true);
 				}
-				
-				
+
+
 				if ((type) && (get_parameter(type, "charset=", type))) {
 					charset = type;
 					saved_len = len;
@@ -1284,7 +1284,7 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 					else
 						sprintf(str, _("Untitled"));
 					index = 0;
-					
+
 					BString decodedName(str);
 					Encoding().Mime2UTF8(decodedName);
 					while ((type[index]) && (type[index] != ';')) {
@@ -1318,17 +1318,17 @@ HMailView::parse_header(char *base, char *data, off_t size, char *boundary,
 
 //--------------------------------------------------------------------
 
-static int Index_Hex[128] = 
-{ 
-   -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
-     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
-     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
-     0, 1, 2, 3,  4, 5, 6, 7,  8, 9,-1,-1, -1,-1,-1,-1, 
-     -1,10,11,12, 13,14,15,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
-     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
-     -1,10,11,12, 13,14,15,-1, -1,-1,-1,-1, -1,-1,-1,-1, 
-     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 
-}; 
+static int Index_Hex[128] =
+{
+   -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+     0, 1, 2, 3,  4, 5, 6, 7,  8, 9,-1,-1, -1,-1,-1,-1,
+     -1,10,11,12, 13,14,15,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+     -1,10,11,12, 13,14,15,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+     -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1
+};
 #define HEX(c) (Index_Hex[(unsigned char)(c) & 0x7F])
 
 bool
@@ -1410,7 +1410,7 @@ HMailView::strip_it(char* data, int32 data_len, reader *info)
 			else if ((loop < data_len - 2) && (isxdigit(data[loop + 1])) &&
 										 (isxdigit(data[loop + 2]))) {
 				char ch = (HEX(data[loop+1]) << 4) | HEX(data[loop+2]);
-				
+
 				data[loop] = data[loop + 1];
 				data[loop + 1] = data[loop + 2];
 				data[loop + 2] = 'x';
@@ -1418,11 +1418,11 @@ HMailView::strip_it(char* data, int32 data_len, reader *info)
 				tmpBuf[0] = ch;
 				tmpBuf[1] = '\0';
 				encode.ConvertToUTF8(&tmpBuf,B_ISO1_CONVERSION);
-				
+
 				int32 charLen = strlen(tmpBuf);
 				for(int32 k = 0;k < charLen;k++)
 					line[count++] = tmpBuf[k];//strtol(&data[loop], NULL, 16);
-				
+
 				loop += 2;
 				delete[] tmpBuf;
 			}
@@ -1666,7 +1666,7 @@ HMailView::Find(const char* inText)
 
 	int32 start,end;
 	GetSelection(&start,&end);
-	
+
 	const char* text = Text();
 	int32 targetLen = strlen(inText);
 	for(int32 i = end;i < len;i++)
@@ -1697,22 +1697,22 @@ HMailView::GetDragParameters(BMessage *drag
 						,BPoint *point
 						,BHandler **handler)
 {
-	
+
 	int32 start,end;
 	GetSelection(&start,&end);
-	
+
 	hyper_text		*enclosure;
-	
+
 	int32 items = fEnclosures->CountItems();
 	for (int32 loop = 0; loop < items; loop++) {
 		enclosure = (hyper_text *)fEnclosures->ItemAt(loop);
 		if ((start >= enclosure->text_start) && (start < enclosure->text_end)) {
 			PRINT(("enclosure\n"));
 			drag->MakeEmpty();
-			
+
 			BString decodedName(enclosure->name);
 			Encoding().Mime2UTF8(decodedName);
-			
+
 			off_t size = enclosure->file_length;
 			fFile->Seek(enclosure->file_offset,SEEK_SET);
 			char *data = new char[size+1];
@@ -1728,12 +1728,12 @@ HMailView::GetDragParameters(BMessage *drag
 			dataMsg.AddData("data",B_ANY_TYPE,data,size);
 			drag->AddMessage("be:originator-data",&dataMsg);
 			drag->PrintToStream();
-			
+
 			delete[] data;
 			return;
 		}
 	}
-	_inherited::GetDragParameters(drag,bitmap,point,handler);	
+	_inherited::GetDragParameters(drag,bitmap,point,handler);
 }
 
 //====================================================================

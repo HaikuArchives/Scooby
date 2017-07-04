@@ -4,7 +4,7 @@
 #include "MenuUtils.h"
 #include "HApp.h"
 #include "HPrefs.h"
-#include "CLVColumn.h"
+#include <santa/CLVColumn.h>
 #include "HWindow.h"
 #include "IconMenuItem.h"
 #include "OpenWithMenu.h"
@@ -71,7 +71,7 @@ HMailList::HMailList(BRect frame,
 	AddColumn( new CLVColumn(NULL,22,CLV_LOCK_AT_BEGINNING|CLV_NOT_MOVABLE|
 		CLV_NOT_RESIZABLE|CLV_PUSH_PASS|CLV_SORT_KEYABLE) );
 	SetSortFunction(HMailItem::CompareItems);
-	
+
 	const char* label[] = {_("Subject"),_("From"),_("To"),_("When"),_("P"),_("A"),_("Cc"),_("Size"),_("Account")};
 	CLVColumn*			column;
 	for(int32 i = 0;i < kNumberOfColumns-1;i++)
@@ -83,7 +83,7 @@ HMailList::HMailList(BRect frame,
 		AddColumn(column);
 	}
 	SetInvocationMessage(new BMessage(M_INVOKE_MAIL));
-	
+
 	int32 display_order[kNumberOfColumns+1] = {0,5,6,1,2,3,4,7,8,9};
 	SetDisplayOrder(display_order);
 	int32 sort_key = 4,sort_mode = 1;
@@ -91,7 +91,7 @@ HMailList::HMailList(BRect frame,
 	SetSortKey(sort_key);
 	rgb_color selection_col = {184,194, 255,255};
 	SetItemSelectColor(true, selection_col);
-	
+
 	SetHovering(false);
 }
 
@@ -138,7 +138,7 @@ HMailList::MessageReceived(BMessage *message)
 {
 	if(HandleScriptingMessage(message))
 		return;
-	
+
 	switch(message->what)
 	{
 	// Select next mail
@@ -177,7 +177,7 @@ HMailList::MessageReceived(BMessage *message)
 			entry_ref ref;
 			BMessage settings;
 			const char* path;
-			
+
 			//PRINT(("%s\n",path));
 			if(message->FindString("path",&path) != B_OK)
 				RefreshColumns(NULL);
@@ -216,14 +216,14 @@ HMailList::SelectionChanged()
 {
 	int32 sel = this->CurrentSelection();
 	MarkOldSelectionAsRead();
-	
+
 	if(sel <0 || HasSomeSelection())
 	{
 		// set content view empty
 		Window()->PostMessage(M_SET_CONTENT);
 		return;
 	}
-	
+
 	HMailItem *item = MailAt(sel);
 	if(item)
 	{
@@ -238,7 +238,7 @@ HMailList::SelectionChanged()
 		msg.AddString("to",item->fTo);
 		fOldSelection = item;
 		Window()->PostMessage(&msg);
-		item->RefreshEnclosureAttr();		
+		item->RefreshEnclosureAttr();
 		item->RefreshStatus();
 		InvalidateItem(sel);
 	}
@@ -247,13 +247,13 @@ HMailList::SelectionChanged()
 /***********************************************************
  * KeyDown
  ***********************************************************/
-void 	
-HMailList::KeyDown(const char *bytes, int32 numBytes) 
+void
+HMailList::KeyDown(const char *bytes, int32 numBytes)
 {
 	if(bytes[0] == B_SPACE)
 		return;
 	else if(bytes[0] == B_DELETE&&numBytes == 1)
-		Window()->PostMessage(M_DELETE_MSG);		
+		Window()->PostMessage(M_DELETE_MSG);
 	_inherited::KeyDown(bytes,numBytes);
 }
 
@@ -274,7 +274,7 @@ HMailList::SaveColumnsAndPos()
 	}
 	const int32 kFlags[] = {COLUMN_SUBJECT,COLUMN_FROM,COLUMN_TO
 							,COLUMN_WHEN,COLUMN_PRIORITY,COLUMN_ATTACHMENT,COLUMN_CC,COLUMN_SIZE,COLUMN_ACCOUNT};
-	
+
 	BMessage msg;
 	int32 flags = 0;
 	char width_name[] = "width1";
@@ -282,7 +282,7 @@ HMailList::SaveColumnsAndPos()
 	for(int32 i = 1;i < kNumberOfColumns;i++)
 	{
 		CLVColumn *col = ColumnAt(i);
-		
+
 		width = col->Width();
 		msg.AddFloat(width_name,width);
 		width_name[5]++;
@@ -290,13 +290,13 @@ HMailList::SaveColumnsAndPos()
 			flags |= kFlags[i-1];
 	}
 	msg.AddInt32("flags",flags);
-	
+
 	int32 mode = 0,sort_key = -1;
-	
+
 	int32 sortKeys[kNumberOfColumns+1];
 	CLVSortMode sortModes[kNumberOfColumns+1];
 	int32 num = GetSorting(sortKeys,sortModes);
-	
+
 	for(int32 i = 0;i < num;i++)
 	{
 		if(sortModes[i] != NoSort)
@@ -307,7 +307,7 @@ HMailList::SaveColumnsAndPos()
 	}
 	msg.AddInt32("sort_key",sort_key);
 	msg.AddInt32("sort_mode",mode);
-	
+
 	// Save Display order
 	int32 display_order[kNumberOfColumns+1];
 	GetDisplayOrder(display_order);
@@ -317,9 +317,9 @@ HMailList::SaveColumnsAndPos()
 		msg.AddInt32(column_name,display_order[i]);
 		column_name[6]++;
 	}
-	
+
 	msg.AddPoint("scroll_pos", Bounds().LeftTop());
-	
+
 	msg.Flatten(&file);
 	entry_ref ref;
 	fCurrentFolder->GetRef(&ref);
@@ -338,7 +338,7 @@ HMailList::AddMail(HMailItem *mail)
 	for(int32 i = 1;i < kNumberOfColumns+1;i++)
 	{
 		CLVColumn *col = ColumnAt(i);
-		
+
 		if(col->SortMode() != NoSort )
 		{
 			sort_key = i;
@@ -374,7 +374,7 @@ HMailList::CalcInsertPosition(int32 count,
 		return 0;
 
 	int32 key = 1;
-	if(sort_mode == Ascending)	
+	if(sort_mode == Ascending)
 		key = -1;
 	else
 		key = 1;
@@ -422,15 +422,15 @@ HMailList::RemoveMails(BList *list)
 void
 HMailList::MouseDown(BPoint pos)
 {
-	int32 buttons = 0; 
+	int32 buttons = 0;
 	ResourceUtils utils;
 	BPoint point = pos;
 	BMessage *msg;
-    Window()->CurrentMessage()->FindInt32("buttons", &buttons); 
+    Window()->CurrentMessage()->FindInt32("buttons", &buttons);
     MakeFocus(true);
     HApp *app = (HApp*)be_app;
 	IconMenuItem *item;
-    // Right click 
+    // Right click
     if(buttons == B_SECONDARY_MOUSE_BUTTON)
     {
     	 // CurrentSelection func takes much time if too many items are selected
@@ -454,28 +454,28 @@ HMailList::MouseDown(BPoint pos)
     	 BFont font(be_plain_font);
     	 font.SetSize(10);
     	 theMenu->SetFont(&font);
-    	 
+
     	 item = new IconMenuItem(_("Open Message in New Window" B_UTF8_ELLIPSIS),new BMessage(M_INVOKE_MAIL),0,0,
 							app->GetIcon("Read"),false);
 		 item->SetEnabled( (sel >= 0)?true:false);
 		 theMenu->AddItem(item);
 		 theMenu->AddSeparatorItem();
-	
-    	 
+
+
     	 msg = new BMessage(M_REPLY_MESSAGE);
     	 msg->AddBool("reply_all",false);
     	 item = new IconMenuItem(_("Reply to Sender Only" B_UTF8_ELLIPSIS),msg,'R',0,
     	 						utils.GetBitmapResource('BBMP',"Reply"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
-    	 
+
      	 msg = new BMessage(M_REPLY_MESSAGE);
     	 msg->AddBool("reply_all",true);
     	 item = new IconMenuItem(_("Reply to All" B_UTF8_ELLIPSIS),msg,'R',B_SHIFT_KEY,
     	 						utils.GetBitmapResource('BBMP',"Reply To All"));
     	 item->SetEnabled( (sel >= 0)?true:false);
     	 theMenu->AddItem(item);
-    	 
+
     	 item = new IconMenuItem(_("Forward" B_UTF8_ELLIPSIS),new BMessage(M_FORWARD_MESSAGE),'J',0,
     	 						utils.GetBitmapResource('BBMP',"Forward"));
     	 item->SetEnabled( (sel >= 0)?true:false);
@@ -494,11 +494,11 @@ HMailList::MouseDown(BPoint pos)
     	item = new IconMenuItem(_("Filter"),new BMessage(M_FILTER_MAIL),0,0);
     	item->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(item);
-    	
+
     	item = new IconMenuItem(_("Create Filter"),new BMessage(M_CREATE_FILTER),0,0);
     	item->SetEnabled( (sel >= 0)?true:false);
     	theMenu->AddItem(item);
-    	
+
     	theMenu->AddSeparatorItem();
     	item = new IconMenuItem(_("Add to BlackList"),new BMessage(M_ADD_TO_BLACK_LIST),0,0,
     							utils.GetBitmapResource('BBMP',"BlackList"));
@@ -509,7 +509,7 @@ HMailList::MouseDown(BPoint pos)
     	BMenu *statusMenu = new BMenu(_("Change Status"));
     	statusMenu->SetFont(&font);
     	const char* status[] = {"New","Read","Replied","Forwarded"};
-    	
+
     	for(int32 i = 0;i < (int32)(sizeof(status)/sizeof(status[0]));i++)
     	{
     		msg = new BMessage(M_CHANGE_MAIL_STATUS);
@@ -530,21 +530,21 @@ HMailList::MouseDown(BPoint pos)
     	item = new IconMenuItem(submenu,NULL,0,0,icon);
     	item->SetEnabled( (sel>=0)?true:false);
     	theMenu->AddItem(item);
-    	
+
     	BRect r;
         ConvertToScreen(&pos);
         r.top = pos.y - 5;
         r.bottom = pos.y + 5;
         r.left = pos.x - 5;
         r.right = pos.x + 5;
-         
-    	BMenuItem *theItem = theMenu->Go(pos, false,true,r);  
+
+    	BMenuItem *theItem = theMenu->Go(pos, false,true,r);
     	if(theItem)
     	{
     	 	BMessage*	aMessage = theItem->Message();
 			if(aMessage)
 				this->Window()->PostMessage(aMessage);
-	 	} 
+	 	}
 	 	delete theMenu;
 	 }else{
 	 	_inherited::MouseDown(point);
@@ -559,7 +559,7 @@ HMailList::InitiateDrag(BPoint  point,
 						int32 index,
 						bool wasSelected)
 {
-	if (wasSelected) 
+	if (wasSelected)
 	{
 		BMessage msg(M_MAIL_DRAG);
 		HMailItem *item = MailAt(index);
@@ -571,7 +571,7 @@ HMailList::InitiateDrag(BPoint  point,
 			return false;
 		msg.AddInt32("sel",sel);
 		PRINT(("%d\n",sel));
-		int32 selected; 
+		int32 selected;
 		int32 sel_index = 0;
 		entry_ref ref;
 		while((selected = CurrentSelection(sel_index++)) >= 0)
@@ -584,7 +584,7 @@ HMailList::InitiateDrag(BPoint  point,
 			msg.AddRef("refs",&ref);
 			//PRINT(("Sel:%d\n",selected));
 		}
-			
+
 		const char *subject = item->GetColumnContentText(1);
 		theRect.OffsetTo(B_ORIGIN);
 		theRect.right = theRect.left + StringWidth(subject) + 20;
@@ -594,27 +594,27 @@ HMailList::InitiateDrag(BPoint  point,
 		bitmap->Lock();
 		view->SetHighColor(0,0,0,0);
 		view->FillRect(view->Bounds());
-		
+
 		view->SetDrawingMode(B_OP_ALPHA);
 		view->SetHighColor(0,0,0,128);
 		view->SetBlendingMode(B_CONSTANT_ALPHA,B_ALPHA_COMPOSITE);
 		const BBitmap *icon = item->GetColumnContentBitmap(0);
 		if(icon)
 			view->DrawBitmap(icon);
-		
+
 		BFont font;
-		GetFont(&font);	
+		GetFont(&font);
 		view->SetFont(&font);
 		view->MovePenTo(theRect.left+18, theRect.bottom-3);
-		
+
 		if(subject)
 			view->DrawString( subject );
 		bitmap->Unlock();
-		
+
 		DragMessage(&msg, bitmap, B_OP_ALPHA,
 				BPoint(bitmap->Bounds().Width()/2,bitmap->Bounds().Height()/2));
 		// must not delete bitmap
-	}	
+	}
 	return (wasSelected);
 }
 
@@ -627,12 +627,12 @@ HMailList::ReadSettings(const char* relativepath, BMessage *msg)
 {
 	BPath path;
 	BFile file;
-	
+
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append("Attribute");
 	::create_directory(path.Path(),0777);
-	
+
 	if(fFolderType == QUERY_TYPE)
 	{
 		path.Append("Query");
@@ -651,16 +651,16 @@ HMailList::ReadSettings(const char* relativepath, BMessage *msg)
 
 	if(file.SetTo(path.Path(),B_READ_ONLY) != B_OK)
 		return B_ERROR;
-	
+
 	msg->Unflatten(&file);
-	
+
 	return B_OK;
 }
- 
+
 
 /***********************************************************
  * MakePath
- ***********************************************************/ 
+ ***********************************************************/
 void
 HMailList::MakePath(BPath &basePath,const char* relative)
 {
@@ -680,7 +680,7 @@ HMailList::MakePath(BPath &basePath,const char* relative)
 				basePath.Append(leafName.String());
 				goto end;
 			}
-			leafName += path[i++];	
+			leafName += path[i++];
 		}
 		basePath.Append(leafName.String());
 		::create_directory(basePath.Path(),0777);
@@ -701,13 +701,13 @@ HMailList::RefreshColumns(BMessage *settings)
 	char width_name[] = "width1";
 	int32 flags,sort_key=-1,sort_mode=0,order;
 	float width;
-	
+
 	if (settings)
 	{
 		settings->FindInt32("flags",&flags);
 		settings->FindInt32("sort_key",&sort_key);
 		settings->FindInt32("sort_mode",&sort_mode);
-		
+
 		for(int32 i = 0;i < kNumberOfColumns;i++)
 		{
 			if(settings->FindInt32(column_name,&order) != B_OK)
@@ -715,7 +715,7 @@ HMailList::RefreshColumns(BMessage *settings)
 			display_order[i] = order;
 			column_name[6]++;
 		}
-		
+
 		for(int32 i = 0;i < kNumberOfColumns-1;i++)
 		{
 			if(settings->FindFloat(width_name,&width) != B_OK)
@@ -758,17 +758,17 @@ HMailList::SetColumns(int32 flags,
 	for(int32 i = 0;i < kNumberOfColumns-1;i++)
 	{
 		if( flags & kFlags[i])
-			SetColumnShown((ColumnType)i,true);	
+			SetColumnShown((ColumnType)i,true);
 		else
-			SetColumnShown((ColumnType)i,false);	
+			SetColumnShown((ColumnType)i,false);
 	}
-	
+
 	if(display_order)
 		SetDisplayOrder(display_order);
-	
+
 	SetSortMode(sort_key,(CLVSortMode)sort_mode);
 	SetSortKey(sort_key);
-	
+
 	for(int32 i = 0;i < kNumberOfColumns-1;i++)
 	{
 		CLVColumn *col = ColumnAt(i+1);
@@ -794,7 +794,7 @@ bool
 HMailList::HasSomeSelection()
 {
 	int32 count = 0,i = 0;
-	
+
 	while(CurrentSelection(i++) >= 0)
 	{
 		count++;
@@ -848,9 +848,9 @@ HMailList::ResolveSpecifier(BMessage *message,
 									const char *property)
 {
 	BPropertyInfo propertyInfo(const_cast<property_info *>(kMailPropertyList));
-	
+
 	int32 result = propertyInfo.FindMatch(message, index, specifier, what, property);
-	if (result < 0) 
+	if (result < 0)
 		return _inherited::ResolveSpecifier(message, index, specifier,what, property);
 
 	return this;
@@ -865,7 +865,7 @@ HMailList::GetSupportedSuites(BMessage *data)
 	data->AddString("suites", kScriptingSuites);
 	BPropertyInfo propertyInfo(const_cast<property_info *>(kMailPropertyList));
 	data->AddFlat("messages", &propertyInfo);
-	
+
 	return _inherited::GetSupportedSuites(data);
 }
 
@@ -882,7 +882,7 @@ HMailList::HandleScriptingMessage(BMessage *message)
 		&& message->what != B_DELETE_PROPERTY
 		&& message->what != B_EXECUTE_PROPERTY)
 		return false;
-	
+
 	// dispatch scripting messages
 	BMessage reply(B_REPLY);
 	const char *property = 0;
@@ -894,16 +894,16 @@ HMailList::HandleScriptingMessage(BMessage *message)
 	status_t result = message->GetCurrentSpecifier(&index, &specifier,
 		&form, &property);
 
-	if (result != B_OK || index == -1) 
+	if (result != B_OK || index == -1)
 		return false;
-		
-	switch (message->what) 
+
+	switch (message->what)
 	{
 		case B_GET_PROPERTY:
 			handled = GetProperty(&specifier, form, property, &reply);
 			break;
 	}
-	if (handled) 
+	if (handled)
 		// done handling message, send a reply
 		message->SendReply(&reply);
 	return handled;
@@ -920,7 +920,7 @@ HMailList::GetProperty(BMessage *specifier, int32 form, const char *property,
 	status_t error = B_OK;
 	entry_ref item_ref;
 	HMailItem *item(NULL);
-	
+
 	if (strcmp(property, "Entry") == 0) {
 		switch (form) {
 			case B_DIRECT_SPECIFIER:
@@ -932,7 +932,7 @@ HMailList::GetProperty(BMessage *specifier, int32 form, const char *property,
 					item = MailAt(index);
 					if(!item)
 						continue;
-					item_ref = item->Ref(); 
+					item_ref = item->Ref();
 					reply->AddRef("result",&item_ref);
 				}
 				handled = true;
@@ -944,16 +944,16 @@ HMailList::GetProperty(BMessage *specifier, int32 form, const char *property,
 					int32 index;
 					if (specifier->FindInt32("index", &index) != B_OK)
 						break;
-					
+
 					if (!MailAt(index)) {
 						error = B_BAD_INDEX;
 						handled = true;
 						break;
 					}
 					item = MailAt(index);
-					item_ref = item->Ref(); 
+					item_ref = item->Ref();
 					reply->AddRef("result", &item_ref);
-	
+
 					handled = true;
 					break;
 				}
@@ -964,7 +964,7 @@ HMailList::GetProperty(BMessage *specifier, int32 form, const char *property,
 					entry_ref ref;
 					if (specifier->FindRef("data", &ref) != B_OK)
 						break;
-					
+
 					int32 count = CountItems();
 					int32 tmp=-1;
 					for(int32 i = 0;i < count;i++)
@@ -975,30 +975,30 @@ HMailList::GetProperty(BMessage *specifier, int32 form, const char *property,
 						if(item->Ref() == ref)
 						{
 							tmp = IndexOf(item);
-							break;	
+							break;
 						}
 					}
 					if(form == (int32)kPreviousSpecifier)
 						tmp--;
 					else if(form == (int32)kNextSpecifier)
 						tmp++;
-						
+
 					if (tmp < 0 || count == tmp) {
 						error = B_ENTRY_NOT_FOUND;
 						handled = true;
 						break;
-					}					
+					}
 					item = MailAt(tmp);
 					item_ref = item->Ref();
 					reply->AddRef("result",&item_ref);
 					reply->AddInt32("index",tmp);
-	
+
 					handled = true;
 					break;
 				}
 		}
 	}
-	
+
 	if (error != B_OK)
 		reply->AddInt32("error", error);
 

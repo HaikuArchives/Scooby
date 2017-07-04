@@ -1,8 +1,9 @@
 #ifndef __HMailItem_H__
 #define __HMailItem_H__
 
-#include "CLVEasyItem.h"
+#include <santa/CLVEasyItem.h>
 #include <Entry.h>
+#include <Node.h>
 #include <String.h>
 #include <ListView.h>
 
@@ -28,7 +29,7 @@ public:
 								  BListView* fOwner = NULL,
 								  const char* account = NULL,
 								  int32	size = 0);
-						
+
 						HMailItem(const char* status,
 								  const char* subject,
 								  const char* from,
@@ -40,11 +41,11 @@ public:
 								  int8	enclosure,
 								  const char* account = NULL,
 								  int32 size = 0);
-								  
+
 	virtual				~HMailItem();
 			void		InitItem();
-	static 	int 		CompareItems(const CLVListItem *a_Item1, 
-									const CLVListItem *a_Item2, 
+	static 	int 		CompareItems(const CLVListItem *a_Item1,
+									const CLVListItem *a_Item2,
 									int32 KeyColumn);
 			bool		IsRead()const;
 	virtual	void		SetRead();
@@ -75,13 +76,13 @@ public:
 		BString		fAccount;
 		int32		fSize;
 protected:
-	virtual void 	DrawItemColumn(BView* owner, 
-								BRect item_column_rect, 
-								int32 column_index, 
+	virtual void 	DrawItemColumn(BView* owner,
+								BRect item_column_rect,
+								int32 column_index,
 								bool complete);
 private:
 	static int32	RefreshStatusWithThread(void* data);
-			
+
 	typedef	CLVEasyItem	_inherited;
 };
 #endif

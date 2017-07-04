@@ -1,8 +1,9 @@
 #ifndef __HFolderItem_H__
 #define __HFolderItem_H__
 
-#include "CLVEasyItem.h"
+#include <santa/CLVEasyItem.h>
 #include <Entry.h>
+#include <Node.h>
 #include <String.h>
 #include <Handler.h>
 
@@ -36,7 +37,7 @@ public:
 				//!Returns maillist pointer.
 		BList*		MailList() {return &fMailList;}
 				//!If mail gethring thread is ended,it returns true.
-			bool	IsReady()const {return (fThread == -1)?true:false;}		
+			bool	IsReady()const {return (fThread == -1)?true:false;}
 				//!If all mails were gathered, it returns true.
 			bool	IsDone()const {return fDone;}
 				//!
@@ -46,7 +47,7 @@ public:
 				//!Returns all mail count.
 			int32	CountMails() const {return fMailList.CountItems();}
 				//!Returns folder's entry_ref.
-		entry_ref	Ref(){return fFolderRef;}	
+		entry_ref	Ref(){return fFolderRef;}
 				//!Returns folder's entry_ref.(for NodeMonitor.)
 		node_ref	NodeRef() {return fNodeRef;}
 				//!Returns folder name.
@@ -73,14 +74,14 @@ public:
 				//!Return folder type such as QUERY_TYPE,FOLDER_TYPE and so on.
 			int32	FolderType() const{return fFolderType;}
 				//!Free all mail items.
-			void	EmptyMailList();	
+			void	EmptyMailList();
 				//!Launch this folder with Tracker.
 			void	Launch();
 				//!Mail gathering function.
 			void	Gather();
 				//!Folder sorting function.
-	static 	int 	CompareItems(const CLVListItem *a_Item1, 
-									const CLVListItem *a_Item2, 
+	static 	int 	CompareItems(const CLVListItem *a_Item1,
+									const CLVListItem *a_Item2,
 									int32 KeyColumn);
 				//!Returns owner listview.
 	BListView*		Owner() const{return fOwner;}
@@ -97,7 +98,7 @@ protected:
 				//!Re-create mail cache file.
 			void	RefreshCache();
 				//!Create cache with thread
-			void	StartCreateCache(); 
+			void	StartCreateCache();
 				//!Not implemented yet.
 			void	RemoveCacheFile();
 				//!Create cache file and save cache.
@@ -114,7 +115,7 @@ protected:
 	static	int32	CreateCacheThread(void *data);
 	static	int32	RefreshCacheThread(void *data);
 	//@}
-	
+
 	virtual void	MessageReceived(BMessage *message);
 				//!NodeMonitor handling function.
 			void	NodeMonitor(BMessage *message);

@@ -4,7 +4,7 @@
 #include <Entry.h>
 #include <File.h>
 #include <String.h>
-#include "CLVEasyItem.h"
+#include <santa/CLVEasyItem.h>
 
 //! Attachment item for AttachmentList in HTML view mode.
 /*!
@@ -36,12 +36,12 @@ public:
 			//! Returns attachment data length.
 			int32		DataLength() {return fDataLen;}
 			//! File offset that attachment is stored.
-			int32		Offset() {return fFileOffset;}	
+			int32		Offset() {return fFileOffset;}
 			//! Set extracted flag. If it set true, not extracted again.
 				void	SetExtracted(bool extracted) {fExtracted = extracted;}
 			//! Set mail file's entry_ref
 				void	SetFileRef(entry_ref &ref) {fFileRef = ref;}
-			//! Returns mail file's entry_ref	
+			//! Returns mail file's entry_ref
 			entry_ref	FileRef() {return fFileRef;}
 			//! Returns true if attachment is extracted.
 				bool	IsExtracted() const {return fExtracted;}

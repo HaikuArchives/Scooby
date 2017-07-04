@@ -44,7 +44,7 @@ HApp::HApp() :_inherited(APP_SIG)
 	fPref->LoadPrefs();
 	SetPulseRate(100000);
 	AddSoundEvent("New E-mail");
-	
+
 	BRect rect = RectUtils().CenterRect(250,80);// (100,100,300,180);
 	fFindWindow = new HFindWindow(rect,_("Find"));
 	fFindWindow->Hide();
@@ -54,7 +54,7 @@ HApp::HApp() :_inherited(APP_SIG)
 	//
 #ifdef CHECK_NETPOSITIVE
 	fFilterAdded(false)
-	
+
 	fMessageFilter = new BMessageFilter(B_ANY_DELIVERY,B_ANY_SOURCE,MessageFilter);
 #endif
 }
@@ -102,7 +102,7 @@ HApp::MessageReceived(BMessage *message)
 	{
 	case M_TRASH_FILE:
 	{
-		entry_ref ref;		
+		entry_ref ref;
 		int32 count;
 		type_code type;
 		message->GetInfo("refs",&type,&count);
@@ -117,20 +117,20 @@ printf("%ld\n",i);
 			}
 		}
 		break;
-	}	
+	}
 	// Move file
 	case M_MOVE_FILE:
 	{
 		entry_ref ref;
 		const char* path;
-		
+
 		int32 count;
 		type_code type;
 		message->GetInfo("refs",&type,&count);
 		PRINT(("Count:%d\n",count));
 		for(int32 i = 0;i < count;i++)
 		{
-			if(message->FindRef("refs",i,&ref) == B_OK && 
+			if(message->FindRef("refs",i,&ref) == B_OK &&
 				message->FindString("path",i,&path) == B_OK)
 			{
 				PRINT(("MOVE\n"));
@@ -138,7 +138,7 @@ printf("%ld\n",i);
 			}
 		}
 		break;
-	}	
+	}
 	// Change mail status
 	case M_CHANGE_MAIL_STATUS:
 	{
@@ -205,8 +205,8 @@ printf("%ld\n",i);
 			}else if(is_kind_of(window,HWriteWindow)){
 				target = window->FindView("HMailView");
 			}
-		}	
-		
+		}
+
 		fFindWindow->SetTarget(target);
 		break;
 	}
@@ -260,7 +260,7 @@ printf("%ld\n",i);
 #endif
 	default:
 		_inherited::MessageReceived(message);
-	}	
+	}
 }
 
 /***********************************************************
@@ -271,7 +271,7 @@ HApp::ArgvReceived(int32 argc,char** argv)
 {
 	bool send = false;
 	BString subject,to,cc,bcc,body,enclosure_path,path;
-	
+
 	for(int32 i = 0;i < argc;i++)
 	{
 		char *p;
@@ -305,20 +305,20 @@ HApp::ArgvReceived(int32 argc,char** argv)
 		}else
 			path = argv[i];
 	}
-	
+
 	MakeMainWindow(true);
 	if(fWindow->Lock())
 	{
 		if(send)
 		{
-		
+
 			fWindow->MakeWriteWindow(subject.String() // subject to cc bcc body	 enclosure_path
 									,to.String()
 									,cc.String()
 									,bcc.String()
 									,body.String()
 									,enclosure_path.String());
-		
+
 		}else{
 			entry_ref ref;
 			if(::get_ref_for_path(path.String(),&ref) == B_OK)
@@ -356,11 +356,11 @@ HApp::MakeMainWindow(bool hidden)
 {
 	if(fWindow)
 		return false;
-	
+
 	BRect rect;
 	fPref->GetData("window_rect",&rect);
 	fWindow = new HWindow(rect,APP_NAME);
-	
+
 	if(hidden)
 		fWindow->Minimize(true);
 	fWindow->Show();
@@ -391,8 +391,8 @@ HApp::Print(BView *view ,BView *detailView,const char* job_name)
 {
     status_t		err;
     BTextView		*textView = cast_as(view,BTextView);
-    BPrintJob print( job_name ); 
-    
+    BPrintJob print( job_name );
+
 	if(!fPrintSettings)
 	{
 		err = print.ConfigPage();
@@ -403,7 +403,7 @@ HApp::Print(BView *view ,BView *detailView,const char* job_name)
 			return;
 	}
 	print.SetSettings(new BMessage(*fPrintSettings));
-	
+
 	int32 lineCount = 0;
 	float lineHeight = 0;
 	float bodyHeight = 0;
@@ -430,20 +430,20 @@ HApp::Print(BView *view ,BView *detailView,const char* job_name)
 	if (print.ConfigJob() == B_NO_ERROR) {
 		BRect printRect(print.PrintableRect());
 		printRect.OffsetTo(0, 0);
-		
+
 		if(textView)
 			printRect.bottom = lineHeight * floor( printRect.Height() / lineHeight );
-	
+
 		print.BeginJob();
 		if (!print.CanContinue())
 			goto out;
-			
+
 		int32 firstPage=print.FirstPage();
 		int32 lastPage=print.LastPage();
-		
+
 		//print the first page
 		BRect headerRect;
-		
+
 	    if (detailView && detailView->LockLooper())
 	    {
 			BRect origDetailBounds=detailView->Bounds();
@@ -457,7 +457,7 @@ HApp::Print(BView *view ,BView *detailView,const char* job_name)
 		    }
 		    detailView->UnlockLooper();
 	    }
-	    
+
 	    float headerHeight;
 	    if(textView)
 	    	headerHeight=ceil(headerRect.Height()/lineHeight)*lineHeight;
@@ -474,14 +474,14 @@ HApp::Print(BView *view ,BView *detailView,const char* job_name)
 		printRect.OffsetBy(0, firstPageBodyRect.Height());
 		if (!print.CanContinue())
 			goto out;
-		
+
 		//print the other pages
 		float fullHeight = bodyHeight + headerHeight;
 		int32 pageCount = (int32) ceil(fullHeight / printRect.Height());
 		if (lastPage > pageCount) lastPage=pageCount;
-		
+
 		for (int32 loop = firstPage; loop <= lastPage; loop++) {
-			
+
 			print.DrawView((textView)?textView:view, printRect, BPoint(0, 0));
 			print.SpoolPage();
 			printRect.OffsetBy(0, printRect.Height());
@@ -534,7 +534,7 @@ HApp::AboutRequested()
 			"Created by Atsushi Takamatsu @ Sapporo,Japan.\n\nIf you want to send me bugs, include stack crawl info :)",
 			"http://scooby.sourceforge.net/",
 			"E-Mail: atsushi@io.ocn.ne.jp"))->Show();
-}	
+}
 
 /***********************************************************
  * RemoveTmpImapMails
@@ -543,12 +543,12 @@ void
 HApp::RemoveTmpImapMails()
 {
 	BPath path;
-	::find_directory(B_COMMON_TEMP_DIRECTORY,&path);
+	::find_directory(B_SYSTEM_TEMP_DIRECTORY,&path);
 	path.Append("*.imap");
 	BString cmd("rm ");
 	cmd += path.Path();
 	cmd += " 2> /dev/null";
-	
+
 	::system(cmd.String());
 }
 
@@ -561,7 +561,7 @@ HApp::IsNetPositiveRunning()
 {
 	int32 count = CountWindows();
 	BWindow *window(NULL);
-	
+
 	for(int32 i = 0;i < count;i++)
 	{
 		window = WindowAt(i);
@@ -601,13 +601,13 @@ HApp::Pulse()
 filter_result
 HApp::MessageFilter(BMessage *message,BHandler **target,BMessageFilter *messageFilter)
 {
-	if(message->what != '_PUL' && 
-		message->what != 'prog'&& 
+	if(message->what != '_PUL' &&
+		message->what != 'prog'&&
 		message->what != '_MCH' &&
-		message->what != '_MMV' && 
-		message->what != '_UPD' && 
-		message->what != '_UKD' && 
-		message->what != '_KYD' && 
+		message->what != '_MMV' &&
+		message->what != '_UPD' &&
+		message->what != '_UKD' &&
+		message->what != '_KYD' &&
 		message->what != '_EVP')
 	{
 		if(::strcmp((*target)->Name(),"__NetPositive__HTMLView") == 0)
@@ -669,7 +669,7 @@ BBitmap*
 HApp::GetIcon(const char* icon_name)
 {
 	BBitmap *bitmap(NULL);
-	
+
 	if(strcmp(icon_name,"New") == 0)
 		bitmap = fNewMailIcon;
 	else if(strcmp(icon_name,"Read") == 0)
@@ -707,7 +707,7 @@ HApp::GetIcon(const char* icon_name)
 	else if(strcmp(icon_name,"CloseIMAP")== 0)
 		bitmap = fCloseIMAPIcon;
 	else if(strcmp(icon_name,"Person") == 0)
-		bitmap = fPersonIcon;	
+		bitmap = fPersonIcon;
 	return bitmap;
 }
 

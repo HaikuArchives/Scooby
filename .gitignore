@@ -1,6 +1,1 @@
-Scooby
-Scooby.dbg
-obj.x86
-obj.ppc
-(Objects.Scooby-x86)
-*.d
+objects*/

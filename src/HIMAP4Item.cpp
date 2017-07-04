@@ -108,12 +108,12 @@ HIMAP4Item::Ref()
 	mail_name.ReplaceAll(":","_");
 	mail_name.ReplaceAll("\n","");
 	mail_name.ReplaceAll("\r","");
-	
-	::find_directory(B_COMMON_TEMP_DIRECTORY,&path);
-	
+
+	::find_directory(B_SYSTEM_TEMP_DIRECTORY,&path);
+
 	char *name = new char[mail_name.Length()+10];
 	::sprintf(name,"%s.imap",mail_name.String());
-	
+
 	while(err == B_OK)
 	{
 		path.Append(name);
@@ -124,21 +124,21 @@ HIMAP4Item::Ref()
 		path.GetParent(&path);
 	}
 	delete[] name;
-	
+
 	BFile file(path.Path(),B_WRITE_ONLY|B_CREATE_FILE);
-	
+
 	if(!fGotContent)
 	{
 		fClient->FetchBody(fMailIndex,fContent);
 		fGotContent = true;
 	}
 	int32 len = fContent.Length();
-	
+
 	if(fHeaderLength == 0)
 		CalcHeaderLength();
-	
+
 	int32 content_len = len - fHeaderLength;
-	
+
 	file.Write(fContent.String(),len);
 	file.SetSize(len);
 	file.WriteAttr(B_MAIL_ATTR_HEADER,B_INT32_TYPE,0,&fHeaderLength,sizeof(int32));

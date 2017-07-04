@@ -1,5 +1,5 @@
 #include "HFolderList.h"
-#include "CLVColumn.h"
+#include <santa/CLVColumn.h>
 #include "HFolderItem.h"
 #include "HQueryItem.h"
 #include "ResourceUtils.h"
@@ -54,24 +54,24 @@ HFolderList::HFolderList(BRect frame,
 	SetViewColor(tint_color( ui_color(B_PANEL_BACKGROUND_COLOR),B_LIGHTEN_2_TINT));
 	SetInvocationMessage(new BMessage(M_OPEN_FOLDER));
 	SetSortFunction(HFolderItem::CompareItems);
-	SetHighlightTextOnly(true);
+	//SetHighlightTextOnly(true);
 	SetSortKey(2);
-	
+
 	fLocalFolders = new HSimpleFolderItem(_("Local Folders"),this);
 	fPointerList.AddItem(fLocalFolders);
 	fIMAP4Folders = new HSimpleFolderItem(_("IMAP4 Folders"),this);
 	fPointerList.AddItem(fIMAP4Folders);
 	fQueryFolders = new HSimpleFolderItem(_("Queries"),this);
 	fPointerList.AddItem(fQueryFolders);
-	
+
 	AddItem(fLocalFolders);
 	fLocalFolders->Added(true);
 	rgb_color selection_col = {184,194, 255,255};
 	SetItemSelectColor(true, selection_col);
-	
+
 	((HApp*)be_app)->Prefs()->GetData("load_list_on_start_up",&fGatherOnStartup);
 	((HApp*)be_app)->Prefs()->GetData("tree_mode",&fUseTreeMode);
-	
+
 }
 
 /***********************************************************
@@ -102,7 +102,7 @@ HFolderList::WatchQueryFolder()
 	path.Append(QUERY_FOLDER);
 	entry_ref ref;
 	::get_ref_for_path(path.Path(),&ref);
-	
+
 	BEntry entry(&ref);
 	node_ref nref;
 	entry.GetNodeRef(&nref);
@@ -145,7 +145,7 @@ HFolderList::MessageReceived(BMessage *message)
 	{
 		if(!fUseTreeMode)
 			break;
-		
+
 		CLVColumn *expander_col = ColumnAt(0);
 		if(!expander_col->IsShown())
 			expander_col->SetShown(true);
@@ -154,10 +154,10 @@ HFolderList::MessageReceived(BMessage *message)
 		message->GetInfo("item",&type,&count);
 		HFolderItem *item;
 		HFolderItem *parent;
-		
-		
+
+
 		bool expand = false;
-		
+
 		for(int32 i = 0;i < count;i++)
 		{
 			message->FindPointer("item",i,(void**)&item);
@@ -174,8 +174,8 @@ HFolderList::MessageReceived(BMessage *message)
 			AddUnder(item,parent);
 			fPointerList.AddItem(item);
 			if(fGatherOnStartup && item->FolderType() == FOLDER_TYPE)
-				item->StartGathering();	
-	
+				item->StartGathering();
+
 		}
 		break;
 	}
@@ -189,7 +189,7 @@ HFolderList::MessageReceived(BMessage *message)
 		bool gather;
 		int32 item_type;
 		((HApp*)be_app)->Prefs()->GetData("load_list_on_start_up",&gather);
-		
+
 		for(int32 i = 0;i < count;i++)
 		{
 			if(message->FindPointer("item",i,(void**)&item) ==B_OK)
@@ -231,7 +231,7 @@ HFolderList::MessageReceived(BMessage *message)
 		((HApp*)be_app)->Prefs()->GetData("check_inbox",&check_inbox);
 		if(check_inbox)
 			Select(1);
-		
+
 		break;
 	}
 	case M_REMOVE_FOLDER:
@@ -241,21 +241,21 @@ HFolderList::MessageReceived(BMessage *message)
 		message->GetInfo("node",&type,&count);
 		HFolderItem *item,*parent;
 		node_ref nref;
-		
+
 		for(int32 i = 0;i < count;i++)
 		{
 			if(message->FindInt64("node",i,&nref.node) != B_OK ||
 				message->FindInt32("device",i,&nref.device) != B_OK)
 				continue;
 			index = FindFolder(nref);
-			
+
 			if(index < 0)
 				continue;
-				
+
 			item = (HFolderItem*)ItemAt(index);
 			if(!item)
 				continue;
-			
+
 			parent = cast_as(Superitem(item),HFolderItem);
 			item = RemoveFolder(index);
 
@@ -278,7 +278,7 @@ HFolderList::MessageReceived(BMessage *message)
 		if(message->FindInt32("index",&i) == B_OK)
 			InvalidateItem(i);
 		break;
-	}	
+	}
 	case B_NODE_MONITOR:
 	{
 		NodeMonitor(message);
@@ -320,7 +320,7 @@ HFolderList::FindFolder(node_ref nref)
 {
 	int32 count = fPointerList.CountItems();
 	HFolderItem **items = (HFolderItem**)fPointerList.Items();
-	
+
 	for(int32 i = 0;i < count;i++)
 	{
 		HFolderItem *item = cast_as(items[i],HFolderItem);
@@ -365,12 +365,12 @@ HFolderList::GetFolders(void* data)
 	path.Append("mail");
 	entry_ref ref;
 	::get_ref_for_path(path.Path(),&ref);
-	
+
 	BMessage msg(M_ADD_FOLDER);
 	msg.MakeEmpty();
 	BMessage childMsg(M_ADD_UNDER_ITEM);
 	childMsg.MakeEmpty();
-	
+
 	BDirectory dir( path.Path());
 	char buf[4096];
 	dirent *dent;
@@ -378,17 +378,17 @@ HFolderList::GetFolders(void* data)
 	status_t err = B_NO_ERROR;
 	int32 offset;
 	BEntry entry(path.Path());
-	
+
 	BPath cachePath;
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&cachePath);
 	cachePath.Append(APP_NAME);
 	cachePath.Append("Folders.cache");
-	
+
 	BFile cacheFile(cachePath.Path(),B_READ_ONLY);
 	list->fFoldersCache = new BMessage();
 	if(cacheFile.InitCheck() == B_OK)
 		list->fFoldersCache->Unflatten(&cacheFile);
-	
+
 	list->LoadFolders(ref,NULL,0,msg,childMsg);
 
 	delete list->fFoldersCache;
@@ -401,15 +401,15 @@ HFolderList::GetFolders(void* data)
 		dir.CreateDirectory(path.Path(),&dir);
 	HQueryItem *query(NULL);
 	BNode node;
-	
+
 	char type[B_MIME_TYPE_LENGTH+1];
 	while( (count = dir.GetNextDirents((dirent *)buf, 4096)) > 0 && !list->fCancel )
 	{
 		offset = 0;
-		/* Now we step through the dirents. */ 
+		/* Now we step through the dirents. */
 		while (count-- > 0)
 		{
-			dent = (dirent *)buf + offset; 
+			dent = (dirent *)buf + offset;
 			offset +=  dent->d_reclen;
 			/* Skip . and .. directory */
 			if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
@@ -427,30 +427,30 @@ HFolderList::GetFolders(void* data)
 				char pathBuf[B_PATH_NAME_LENGTH+1];
 				ssize_t len = link.ReadLink(pathBuf,B_PATH_NAME_LENGTH);
 				pathBuf[len] = '\0';
-			
+
 				::get_ref_for_path(pathBuf,&new_ref);
 				if(node.SetTo(&new_ref) != B_OK)
 					continue;
 			}
-			
+
 			node.ReadAttr("BEOS:TYPE",'MIMS',0,type,B_MIME_TYPE_LENGTH);
 			if(::strcmp(type,"application/x-vnd.Be-query") != 0)
 				continue;
-			
+
 			query = new HQueryItem(ref,list);
 			msg.AddPointer("item",query);
 		}
 	}
 	// Gather IMAP4 folders
 	list->LoadIMAP4Account(msg);
-	
+
 	// Send add list items message
 	if(!msg.IsEmpty())
 		list->Window()->PostMessage(&msg,list);
 
 	if(!childMsg.IsEmpty())
 		list->Window()->PostMessage(&childMsg,list);
-	
+
 	list->fThread =  -1;
 	//list->Window()->PostMessage(M_GATHER_ALL_MAILS,list);
 	list->fGatheredLocalFolders = true;
@@ -480,10 +480,10 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 	while((count = dir.GetNextDirents((dirent *)buf, 4096)) > 0)
 	{
 		offset = 0;
-		/* Now we step through the dirents. */ 
+		/* Now we step through the dirents. */
 		while (count-- > 0)
 		{
-			dent = (dirent *)buf + offset; 
+			dent = (dirent *)buf + offset;
 			offset +=  dent->d_reclen;
 			/* Skip . and .. directory */
 			if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
@@ -491,7 +491,7 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 			ref.device = dent->d_pdev;
 			ref.directory = dent->d_pino;
 			ref.set_name(dent->d_name);
-			
+
 			if(entry.SetTo(&ref) != B_OK)
 				continue;
 			if(entry.IsDirectory())
@@ -499,14 +499,14 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 				childMsg.AddPointer("item",(item = new HFolderItem(ref,list)));
 				childMsg.AddPointer("parent",parentItem);
 				parentItem->IncreaseChildItemCount();
-				GetChildFolders(entry,item,list,childMsg);			
+				GetChildFolders(entry,item,list,childMsg);
 			}
-		} 
+		}
 	}
 #else
 	BDirectory dir(&inEntry);
 	HFolderItem *item(NULL);
-	
+
 	int32 count,i=0;
 	struct dirent **dirents = NULL;
 	struct dirent *dent;
@@ -520,7 +520,7 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 		dent = dirents[i++];
 		//if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
 		//	continue;
-		
+
 		ref.device = dent->d_pdev;
 		ref.directory = dent->d_pino;
 		ref.set_name(dent->d_name);
@@ -531,17 +531,17 @@ HFolderList::GetChildFolders(const BEntry &inEntry,
 		//{
 			//entry.GetRef(&ref);
 			childMsg.AddPointer("item",(item = new HFolderItem(ref,list)));
-			childMsg.AddPointer("parent",parentItem);	
+			childMsg.AddPointer("parent",parentItem);
 			parentItem->IncreaseChildItemCount();
 			GetChildFolders(entry,item,list,childMsg);
-			
-		//} 
+
+		//}
 	}
 	// free all dirents
 	for(int32 i = 0;i < count;i++)
 		free(dirents[i]);
 	free(dirents);
-#endif 
+#endif
 }
 
 /***********************************************************
@@ -552,7 +552,7 @@ HFolderList::DeleteAll()
 {
 	int32 count = fPointerList.CountItems();
 	MakeEmpty();
-	
+
 	while(count>0)
 	{
 		HFolderItem *item = static_cast<HFolderItem*>(fPointerList.RemoveItem(--count));
@@ -588,10 +588,10 @@ HFolderList::WhenDropped(BMessage *message)
 	message->GetInfo("pointer",&type,&count);
 	int32 from;
 	message->FindInt32("sel",&from);
-	
+
 	HFolderItem *fromFolder = cast_as(ItemAt(from),HFolderItem);
 	HFolderItem *toFolder = cast_as(ItemAt(CurrentSelection()),HFolderItem);
-	
+
 	if(!toFolder||fromFolder == toFolder)
 		return;
 	// Remote->Remote
@@ -641,7 +641,7 @@ HFolderList::WhenDropped(BMessage *message)
 	else if(toFolder->FolderType() == FOLDER_TYPE)
 	{
 		PRINT(("From:%d To:%d\n",from,CurrentSelection()));
-	
+
 		BMessage msg(M_MOVE_MAIL);
 		HMailItem *mail;
 		for(int32 i = 0;i < count;i++)
@@ -649,7 +649,7 @@ HFolderList::WhenDropped(BMessage *message)
 			if(message->FindPointer("pointer",i,(void**)&mail) == B_OK)
 				msg.AddPointer("mail",mail);
 		}
-	
+
 		if(fromFolder&&toFolder)
 		{
 			msg.AddPointer("to",toFolder);
@@ -680,7 +680,7 @@ HFolderList::SelectionChanged()
 			fWatching = true;
 			Window()->PostMessage(M_LOCAL_SELECTION_CHANGED);
 			return;
-		}		
+		}
 		fWatching = false;
 		BList *list = theItem->MailList();
 		InvalidateItem(sel);
@@ -719,7 +719,7 @@ HFolderList::MouseMoved(BPoint point,
 				(transit == B_EXITED_VIEW||transit == B_OUTSIDE_VIEW)){
 			int32 sel;
 			message->FindInt32("sel",&sel);
-			
+
 			SelectWithoutGathering(sel);
 		}
 	}
@@ -744,7 +744,7 @@ status_t
 HFolderList::SelectItem(const BPoint point)
 {
 	int32 count = CountItems();
-	
+
 	CLVColumn *col = ColumnAt(2);
 	const float column_width = col->Width();
 
@@ -776,14 +776,14 @@ HFolderList::SelectItem(const BPoint point)
 void
 HFolderList::MouseDown(BPoint pos)
 {
-	int32 buttons = 0; 
+	int32 buttons = 0;
 	ResourceUtils utils;
-	
+
 	BPoint point = pos;
-	
-    Window()->CurrentMessage()->FindInt32("buttons", &buttons); 
+
+    Window()->CurrentMessage()->FindInt32("buttons", &buttons);
     this->MakeFocus(true);
-	
+
     // Right click
     if(buttons == B_SECONDARY_MOUSE_BUTTON)
     {
@@ -792,14 +792,14 @@ HFolderList::MouseDown(BPoint pos)
     	 BFont font(be_plain_font);
     	 font.SetSize(10);
     	 theMenu->SetFont(&font);
-    	 
-    	
+
+
     	 BMenuItem *item = new BMenuItem(_("Refresh Folder Cache"),new BMessage(M_REFRESH_CACHE),0,0);
     	 HFolderItem *folder= cast_as(ItemAt(sel),HFolderItem);
-    	 
+
     	 if(sel < 0)
     	 	item->SetEnabled(false);
-    	 else{	
+    	 else{
     	 	if(folder)
     	 	{
     	 		if(folder->FolderType() != SIMPLE_TYPE)
@@ -811,7 +811,7 @@ HFolderList::MouseDown(BPoint pos)
     	 }
     	 theMenu->AddItem(item);
     	 theMenu->AddSeparatorItem();
-    	 
+
     	 item = new BMenuItem(_("New Folder" B_UTF8_ELLIPSIS),new BMessage(M_CREATE_FOLDER_DIALOG),0,0);
     	 if(sel < 0)
     	 	item->SetEnabled(true);
@@ -820,13 +820,13 @@ HFolderList::MouseDown(BPoint pos)
     	 else
     	 	item->SetEnabled(false);
     	 theMenu->AddItem(item);
-    	 
+
     	 item = new BMenuItem(_("Delete Folder"),new BMessage(M_DELETE_FOLDER),0,0);
     	 if(folder&&folder->FolderType() == IMAP4_TYPE && !((HIMAP4Folder*)folder)->IsChildFolder())
-    	 	item->SetEnabled(false);	
+    	 	item->SetEnabled(false);
     	 else
     	 	item->SetEnabled((sel<0)?false:true);
-    	 
+
     	 theMenu->AddItem(item);
     	 /*
     	 theMenu->AddSeparatorItem();
@@ -849,14 +849,14 @@ HFolderList::MouseDown(BPoint pos)
          r.bottom = pos.y + 5;
          r.left = pos.x - 5;
          r.right = pos.x + 5;
-         
-    	BMenuItem *theItem = theMenu->Go(pos, false,true,r);  
+
+    	BMenuItem *theItem = theMenu->Go(pos, false,true,r);
     	if(theItem)
     	{
     	 	BMessage*	aMessage = theItem->Message();
 			if(aMessage)
 				Window()->PostMessage(aMessage);
-	 	} 
+	 	}
 	 	delete theMenu;
 	 }else
 	 	_inherited::MouseDown(point);
@@ -880,7 +880,7 @@ HFolderList::NodeMonitor(BMessage *message)
 	::find_directory(B_USER_DIRECTORY,&mail_folder);
 	mail_folder.Append("mail");
 	BNode file;
-	
+
 	if(message->FindInt32("opcode",&opcode) == B_OK)
 	{
 		switch(opcode)
@@ -899,32 +899,32 @@ HFolderList::NodeMonitor(BMessage *message)
 			message->FindInt64("from directory", &from_nref.node);
 			to_dir.SetTo(&nref);
 			from_dir.SetTo(&from_nref);
-			
+
 			to_path.SetTo(&to_dir,NULL,false);
 			from_path.SetTo(&from_dir,NULL,false);
-			
+
 			message->FindString("name", &name);
 			if( to_path == query_folder)
 			{
 				::get_ref_for_path(to_path.Path(),&dir_ref);
-	
+
 				to_path.Append(name);
 				entry_ref ref;
 				::get_ref_for_path(to_path.Path(),&ref);
 				AddQuery(ref);
 			}
-			
+
 			if( to_path == mail_folder)
 			{
 				::get_ref_for_path(to_path.Path(),&dir_ref);
-	
+
 				to_path.Append(name);
-				
+
 				if(file.SetTo(to_path.Path()) != B_OK)
 					break;
 				if(!file.IsDirectory())
 					break;
-			
+
 				entry_ref ref;
 				::get_ref_for_path(to_path.Path(),&ref);
 				HFolderItem *folder = new HFolderItem(ref,this);
@@ -932,7 +932,7 @@ HFolderList::NodeMonitor(BMessage *message)
 				msg.AddPointer("item",folder);
 				Window()->PostMessage(&msg,this);
 			}
-			
+
 			if(from_path == query_folder){
 				node_ref old_nref;
 				old_nref.device = from_nref.device;
@@ -947,7 +947,7 @@ HFolderList::NodeMonitor(BMessage *message)
 			}
 			break;
 		}
-		
+
 		case B_ENTRY_CREATED:
 		{
 			message->FindInt32("device", &ref.device);
@@ -980,7 +980,7 @@ HFolderList::NodeMonitor(BMessage *message)
 			node_ref nref;
 			message->FindInt32("device", &nref.device);
 			message->FindInt64("node", &nref.node);
-			
+
 			RemoveQuery(nref);
 			break;
 		}
@@ -998,12 +998,12 @@ HFolderList::AddQuery(entry_ref ref)
 	BPath path(&ref);
 	BNode node(&ref);
 	BEntry entry(&ref);
-	
+
 	if(entry.IsSymLink())
 	{
 		BSymLink link(&entry);
 		entry_ref new_ref;
-		
+
 		char buf[B_PATH_NAME_LENGTH+1];
 		ssize_t len = link.ReadLink(buf,B_PATH_NAME_LENGTH);
 		buf[len] = '\0';
@@ -1013,7 +1013,7 @@ HFolderList::AddQuery(entry_ref ref)
 		::get_ref_for_path(path.Path(),&new_ref);
 		if(node.SetTo(&new_ref) != B_OK)
 			return B_ERROR;
-	}	
+	}
 	BString type;
 	ReadNodeAttrString(&node,"BEOS:TYPE",&type);
 	if(type.Compare("application/x-vnd.Be-query") != 0)
@@ -1021,7 +1021,7 @@ HFolderList::AddQuery(entry_ref ref)
 	HQueryItem *item = new HQueryItem(ref,this);
 	BMessage msg(M_ADD_FOLDER);
 	msg.AddPointer("item",item);
-	Window()->PostMessage(&msg,this);	
+	Window()->PostMessage(&msg,this);
 	return B_OK;
 }
 
@@ -1035,7 +1035,7 @@ HFolderList::RemoveQuery(node_ref& in_nref)
 	int32 count = fPointerList.CountItems();
 	node_ref nref;
 	BEntry entry;
-	
+
 	for(int32 i = 0;i < count;i++)
 	{
 		HFolderItem *item = cast_as(items[i],HFolderItem);
@@ -1063,7 +1063,7 @@ HFolderList::RemoveQuery(entry_ref& ref)
 {
 	HFolderItem **items = (HFolderItem**)fPointerList.Items();
 	int32 count = fPointerList.CountItems();
-	
+
 	for(int32 i = 0;i < count;i++)
 	{
 		HQueryItem *item = cast_as(items[i],HQueryItem);
@@ -1134,13 +1134,13 @@ HFolderList::GenarateFolderPathes(BMessage &msg)
 	for(int32 i = 0; i < count;i++)
 	{
 		HFolderItem *item = cast_as(FullListItemAt(i),HFolderItem);
-		
+
 		if(strcmp(item->FolderName(),_("Local Folders")) == 0)
 			continue;
 		if(strcmp(item->FolderName(),_("IMAP4 Folders")) == 0 ||
 			strcmp(item->FolderName(),_("Queries")) == 0 )
 			break;
-		
+
 		GetFolderPath(item,msg);
 		result_count++;
 	}
@@ -1154,10 +1154,10 @@ void
 HFolderList::GetFolderPath(HFolderItem *item,BMessage &msg)
 {
 	BString path("");
-	
+
 	path += item->FolderName();
 	HFolderItem *parent = cast_as(Superitem(item),HFolderItem);
-	
+
 	while(parent)
 	{
 		if(strcmp(parent->FolderName(),_("Local Folders")) == 0 ||
@@ -1169,7 +1169,7 @@ HFolderList::GetFolderPath(HFolderItem *item,BMessage &msg)
 		parent = cast_as(Superitem(parent),HFolderItem);
 	}
 	msg.AddString("path",path.String() );
-	return; 
+	return;
 }
 
 /***********************************************************
@@ -1182,7 +1182,7 @@ HFolderList::SaveFolderStructure()
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append("Folders.cache");
-	
+
 	BFile file(path.Path(),B_CREATE_FILE|B_WRITE_ONLY);
 	if(file.InitCheck() != B_OK)
 		return;
@@ -1191,10 +1191,10 @@ HFolderList::SaveFolderStructure()
 	entry_ref ref;
 	struct stat st;
 	BEntry entry;
-	
+
 	int32 count = FullListCountItems();
 	PRINT(("count:%d\n",count));
-	
+
 	// Save mail folder
 	::find_directory(B_USER_DIRECTORY,&path);
 	path.Append("mail");
@@ -1205,7 +1205,7 @@ HFolderList::SaveFolderStructure()
 	msg.AddInt32("time",st.st_mtime);
 	msg.AddInt32("indent",0);
 	msg.AddBool("expanded",false);
-	
+
 	for(int32 i = 0;i < count;i++)
 	{
 		item = cast_as(FullListItemAt(i),HFolderItem);
@@ -1238,7 +1238,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 	type_code type;
 	time_t modified_time;
 	HFolderItem *item;
-	
+
 	fFoldersCache->GetInfo("refs",&type,&count);
 	bool useCache = false;
 	bool expanded = false;
@@ -1268,7 +1268,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		for(i = i+1;i < count;i++)
 		{
 			if(fFoldersCache->FindRef("refs",i,&ref)!= B_OK)
-				continue;	
+				continue;
 			if(entry.SetTo(&ref) != B_OK)
 				continue;
 			fFoldersCache->FindInt32("time",i,&modified_time);
@@ -1288,7 +1288,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 					LoadFolders(ref,item,childIndent,rootFolders,childFolders);
 			}else if(indent == childIndent)
 				break;
-				
+
 		}
 	}else{
 		// Load from local strage
@@ -1299,14 +1299,14 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		entry_ref childref;
 		BEntry childentry;
 		BDirectory dir(&inRef);
-		
+
 		while( (direntcount = dir.GetNextDirents((dirent *)buf, 4096)) > 0 && !this->fCancel )
 		{
 			offset = 0;
-			/* Now we step through the dirents. */ 
+			/* Now we step through the dirents. */
 			while (direntcount-- > 0)
 			{
-				dent = (dirent *)buf + offset; 
+				dent = (dirent *)buf + offset;
 				offset +=  dent->d_reclen;
 				/* Skip . and .. directory */
 				if(::strcmp(dent->d_name,".") == 0 || ::strcmp(dent->d_name,"..")== 0)
@@ -1314,7 +1314,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 				childref.device = dent->d_pdev;
 				childref.directory = dent->d_pino;
 				childref.set_name(dent->d_name);
-			
+
 				if(childentry.SetTo(&childref) != B_OK)
 					continue;
 				if(childentry.IsDirectory())
@@ -1346,7 +1346,7 @@ HFolderList::LoadFolders(entry_ref &inRef,HFolderItem *parent,int32 parentIndent
 		while(direntcount>i)
 		{
 			dent = dirents[i++];
-			
+
 			childref.device = dent->d_pdev;
 			childref.directory = dent->d_pino;
 			childref.set_name(dent->d_name);
@@ -1381,13 +1381,13 @@ HFolderList::LoadIMAP4Account(BMessage &msg)
 	::find_directory(B_USER_SETTINGS_DIRECTORY,&path);
 	path.Append(APP_NAME);
 	path.Append("Accounts");
-	
+
 	BDirectory dir(path.Path());
 	BEntry entry;
 	entry_ref ref;
 	BMessage setting;
 	const char* addr,*login,*pass,*name,*port;
-	
+
 	while(dir.GetNextEntry(&entry) == B_OK)
 	{
 		if(entry.IsDirectory())
@@ -1395,7 +1395,7 @@ HFolderList::LoadIMAP4Account(BMessage &msg)
 		entry.GetRef(&ref);
 		if(IsIMAP4Account(ref,&setting))
 		{
-			setting.FindString("name",&name);	
+			setting.FindString("name",&name);
 			setting.FindString("pop_host",&addr);
 			setting.FindString("pop_user",&login);
 			setting.FindString("pop_password",&pass);
@@ -1403,11 +1403,11 @@ HFolderList::LoadIMAP4Account(BMessage &msg)
 			int32 len = strlen(pass);
 			for(int32 i =0;i < len;i++)
 				password += (char)255-pass[i];
-				
+
 			setting.FindString("pop_port",&port);
 			msg.AddPointer("item",new HIMAP4Folder(name,"",addr,atoi(port),login,password.String(),this));
 		}
-	}	
+	}
 	return;
 }
 
@@ -1419,9 +1419,9 @@ HFolderList::IsIMAP4Account(entry_ref& ref,BMessage *outSetting)
 {
 	BMessage setting;
 	BFile file(&ref,B_READ_ONLY);
-	
+
 	setting.Unflatten(&file);
-	
+
 	int16 protocol;
 	if(setting.FindInt16("protocol_type",&protocol) == B_OK && protocol == 2)
 	{

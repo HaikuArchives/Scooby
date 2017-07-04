@@ -9,7 +9,7 @@
 //**** PROJECT HEADER FILES
 //******************************************************************************************************
 #include "HTabView.h"
-#include "Colors.h"
+#include <santa/Colors.h>
 
 
 //******************************************************************************************************
@@ -23,10 +23,10 @@ HTabView::HTabView(BRect frame, const char *name, const char** names, int32 numb
 	fViews = new BView*[number_of_views];
 	fEnabled = new bool[number_of_views];
 	int32 Counter;
-	
+
 	for(Counter = 0; Counter < number_of_views; Counter++)
 		fEnabled[Counter] = true;
-	
+
 	for(Counter = 0; Counter < number_of_views; Counter++)
 	{
 		fNames[Counter] = new char[strlen(names[Counter])+1];
@@ -44,9 +44,9 @@ HTabView::HTabView(BRect frame, const char *name, const char** names, int32 numb
 	fTabRect = new BRect[fNumberOfViews];
 	fLabelRect = new BRect[fNumberOfViews];
 	fLabelPosition = new BPoint[fNumberOfViews];
-	
+
 	CalcTabsWidth();
-	
+
 	fCurrentlyShowing = 0;
 	fBounds = Bounds();
 	fContentArea.Set(fBounds.left+1.0,TabViewBottom+1.0,fBounds.right-1.0,fBounds.bottom-1.0);
@@ -102,10 +102,10 @@ void HTabView::Draw(BRect updateRect)
 		if(ClippingRegion.Intersects(fTabRect[Counter]))
 		{
 			rgb_color BackgroundColor = ViewColor();
-	
+
 			SetHighColor(ViewColor());
 			SetLowColor(ViewColor());
-		
+
 			FillRect(BRect(fTabRect[Counter].left+1.0,fTabRect[Counter].top+1.0,
 				fTabRect[Counter].right-2.0,TabsBottom - (Counter!=fCurrentlyShowing?1.0:0.0)));
 			if(ClippingRegion.Intersects(fLabelRect[Counter]))
@@ -154,7 +154,7 @@ void HTabView::Draw(BRect updateRect)
 			StrokeLine(BPoint(fBounds.right,TabsBottom));
 		}
 	}
-	
+
 	//Draw the right border
 	SetHighColor(BeShadow);
 	if(updateRect.right >= fBounds.right)
@@ -264,7 +264,7 @@ void HTabView::CalcTabsWidth()
 	int32* LengthArray = new int32[fNumberOfViews];
 	for(int32 Counter = 0; Counter < fNumberOfViews; Counter++)
 		LengthArray[Counter] = strlen(fNames[Counter]);
-		
+
 	BFont labelFont;
 	GetFont(&labelFont);
 	labelFont.GetStringWidths((const char**)fNames,LengthArray,fNumberOfViews,Widths);
