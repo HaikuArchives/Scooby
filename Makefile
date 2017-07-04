@@ -91,11 +91,11 @@ SRCS =  \
 
 #	Specify the resource definition files to use. Full or relative paths can be
 #	used.
-RDEFS =
+RDEFS = ./resources/Icon.rdef ./resources/Resource.rdef
 
 #	Specify the resource files to use. Full or relative paths can be used.
 #	Both RDEFS and RSRCS can be utilized in the same Makefile.
-RSRCS = ./resources/Icon.rsrc ./resources/Resource.rsrc
+RSRCS =
 
 # End Pe/Eddie support.
 # @<-src@
