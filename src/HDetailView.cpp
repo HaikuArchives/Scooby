@@ -49,7 +49,7 @@ HDetailView::InitGUI()
 
 	BTextControl *ctrl;
 
-	const char* kName[] = {"subject","from","when"};
+	const char* kName[] = {"subject","from","when","cc","to"};
 	const char* kLabel[] = {_("Subject:"),_("From:"),_("When:"),_("Cc:"),_("To:")};
 
 	for(int32 i = 0;i < 5;i++)
